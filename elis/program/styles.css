@@ -144,3 +144,12 @@ table#class_selection_table {
 input.hide {
     display: none;
 }
+
+/*
+ Specific fix so that IE knows hidden fieldsets hidden by moving off
+ to the left are not wide enough to hit the viewing area
+ */
+fieldset.accesshide.custom_field_default_fieldset {
+  width: 100%;
+}
+

@@ -72,16 +72,6 @@ class clustercurriculumbasepage extends associationpage {
         return clustercurriculumpage::$contexts[$capability];
     }
 
-    /*public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        $action = $this->optional_param('action', 'default', PARAM_ACTION);
-
-        if ($id) {
-            return context_elis_userset::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }*/
     function can_do_add() {
         // the user must have 'elis/program:associate' permissions on both ends
         $clusterid = $this->required_param('clusterid', PARAM_INT);
@@ -252,17 +242,6 @@ class clustercurriculumpage extends clustercurriculumbasepage {
     const CPY_CURR_CRS_PREFIX     = 'add_crs_curr_';
     const CPY_CURR_CLS_PREFIX     = 'add_cls_curr_';
     const CPY_CURR_MDLCRS_PREFIX  = 'add_mdlcrs_curr_';
-
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        $action = $this->optional_param('action', 'default', PARAM_ACTION);
-
-        if ($id) {
-            return context_elis_userset::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
 
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
@@ -671,16 +650,6 @@ class curriculumclusterpage extends clustercurriculumbasepage {
 
     var $section = 'curr';
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        $action = $this->optional_param('action', 'default', PARAM_ACTION);
-
-        if ($id) {
-            return context_elis_program::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
 

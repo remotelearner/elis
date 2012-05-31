@@ -82,14 +82,17 @@ class usersetpage extends managementpage {
             return true;
         }
 
+      /* TBD: the folowing commented-out code was removed for ELIS-3846
         $cluster = new userset($clusterid);
-        if(!empty($cluster->parent)) {
-            //check to see if the current user has the secondary capability anywhere up the cluster tree
-            $contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
-            return $contexts->context_allowed($clusterid, 'cluster');
+        $cluster->load();
+        if (empty($cluster->parent)) {
+            return false;
         }
+      */
 
-        return false;
+        //check to see if the current user has the secondary capability anywhere up the cluster tree
+        $contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
+        return $contexts->context_allowed($clusterid, 'cluster');
     }
 
     /**
@@ -103,16 +106,6 @@ class usersetpage extends managementpage {
         }
         $context = context_elis_userset::instance($id);
         return has_capability($capability, $context);
-    }
-
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-
-        if ($id) {
-            return context_elis_userset::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
     }
 
     public function __construct(array $params=null) {
