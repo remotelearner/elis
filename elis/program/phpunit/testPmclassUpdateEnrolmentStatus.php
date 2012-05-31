@@ -41,11 +41,14 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
      * @return array The mapping of overlay tables to components
      */
     static protected function get_overlay_tables() {
-        return array(course::TABLE => 'elis_program',
+        return array('elis_field_data_num'   => 'elis_core', //TBD:customfields
+                     course::TABLE           => 'elis_program',
                      coursecompletion::TABLE => 'elis_program',
-                     pmclass::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program',
-                     student_grade::TABLE => 'elis_program');
+                     pmclass::TABLE          => 'elis_program',
+                     student::TABLE          => 'elis_program',
+                     student_grade::TABLE    => 'elis_program',
+                     user::TABLE             => 'elis_program'
+               );
     }
 
     /**
@@ -72,6 +75,7 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
         $dataset->addTable(course::TABLE, elis::component_file('program', 'phpunit/pmcoursewithgrade.csv'));
         //need PM classes to create associations
         $dataset->addTable(pmclass::TABLE, elis::component_file('program', 'phpunit/pmclass.csv'));
+        $dataset->addTable(user::TABLE, elis::component_file('program', 'phpunit/user2.csv'));
 
         if ($create_nonrequired_los) {
             //want a non-required learning objective
@@ -130,11 +134,15 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
      *
      * @param array $expected_enrolments The list of enrolments are are validating
      */
-    private function validate_expected_enrolments($expected_enrolments) {
+    private function validate_expected_enrolments($expected_enrolments, $pmuserid = 0) {
         global $DB;
 
         //validate count
-        $count = $DB->count_records(student::TABLE);
+        $params = array();
+        if ($pmuserid) {
+           $params = array('userid' => $pmuserid);
+        }
+        $count = $DB->count_records(student::TABLE, $params);
         $this->assertEquals(count($expected_enrolments), $count);
 
         //validate each enrolment individually
@@ -267,9 +275,10 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
             $class = new pmclass($classid);
             $class->update_enrolment_status(1);
         }
-
+        //var_dump($expected_enrolments);
         $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
-        $this->validate_expected_enrolments($expected_enrolments);
+        //var_dump($expected_enrolments);
+        $this->validate_expected_enrolments($expected_enrolments, 1);
     }
 
     /**
@@ -315,11 +324,11 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
 
         foreach ($classids as $classid) {
             $class = new pmclass($classid);
-            $class->update_enrolment_status();
+            $class->update_enrolment_status(1);
         }
 
         $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
-        $this->validate_expected_enrolments($expected_enrolments);
+        $this->validate_expected_enrolments($expected_enrolments, 1);
     }
 
     /**
@@ -466,10 +475,10 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
         $this->save_enrolments($enrolments, $lo_grades);
 
         $class = new pmclass($classid);
-        $class->update_enrolment_status();
+        $class->update_enrolment_status(1);
 
         $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
-        $this->validate_expected_enrolments($expected_enrolments);
+        $this->validate_expected_enrolments($expected_enrolments, 1);
     }
 
     /**
@@ -590,15 +599,12 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
 
         $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
 
-        $count = $DB->count_records(student::TABLE);
-
+        $count = $DB->count_records(student::TABLE, array('userid' => 1));
         $this->assertEquals(count($expected_enrolments), $count);
 
         foreach ($expected_enrolments as $expected_enrolment) {
             $exists = $DB->record_exists(student::TABLE, $expected_enrolment);
-
             $this->assertTrue($exists);
-
             if (!isset($expected_enrolment['completetime'])) {
                 //validate a time range
                 $record = $DB->get_record(student::TABLE, $expected_enrolment);
@@ -698,7 +704,7 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
         $class->update_enrolment_status(1);
 
         $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
-        $this->validate_expected_enrolments($expected_enrolments);
+        $this->validate_expected_enrolments($expected_enrolments, 1);
     }
 
     /**
@@ -836,7 +842,5 @@ class pmclassUpdateEnrolmentStatusTest extends elis_database_test {
 
         $expected_enrolments = $this->filter_by_userid($expected_enrolments, 1);
         $this->validate_expected_enrolments($expected_enrolments, 1);
-
-        $this->markTestIncomplete();
     }
 }
