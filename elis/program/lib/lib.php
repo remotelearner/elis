@@ -1008,6 +1008,33 @@ function pm_cron() {
 
     return $status;
 }
+
+/**
+ * Update all PM information for the provided user
+ *
+ * @param int $mdluserid the id of the Moodle user we want to migrate
+ * @return boolean true on success, otherwise false
+ */
+function pm_update_user_information($mdluserid) {
+    $status = true;
+
+    //create the PM user if necessary, regardless of time modified
+    $status = pm_migrate_moodle_users(false, 0, $mdluserid) && $status;
+    //sync enrolments and pass ones with sufficient grades and passed LOs
+    $status = pm_update_student_progress($mdluserid) && $status;
+
+    $pmuserid = pm_get_crlmuserid($mdluserid);
+
+    if ($pmuserid != false) {
+        //delete orphaned class - Moodle course associations the user is enrolled in
+        $status = pmclass::check_for_moodle_courses($pmuserid) && $status;
+        //fail users who took to long to complete classes
+        $status = pm_update_student_enrolment($pmuserid) && $status;
+    }
+
+    return $status;
+}
+
 /**
  * Check for nags...
  *
