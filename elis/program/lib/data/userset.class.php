@@ -338,24 +338,29 @@ class userset extends data_object_with_custom_fields {
         //get the clusters and check the context against them
         $cluster_context_instance = context_elis_userset::instance($clusterid);
 
-        $path = $DB->sql_concat('ctxt.path', "'/%'");
+        // ELIS-3848 -- Use named parameters otherwise array += array doesn't work correctly
+        $path = $DB->sql_concat('ctxt.path', ':pathwildcard');
 
         //query to get parent cluster contexts
         $cluster_permissions_sql = 'SELECT clst.*
                                     FROM {' . self::TABLE . "} clst
                                     JOIN {context} ctxt
                                          ON clst.id = ctxt.instanceid
-                                         AND ctxt.contextlevel = ?
-                                         AND ? LIKE {$path} ";
+                                         AND ctxt.contextlevel = :ctxlevel
+                                         AND :ctxpath LIKE {$path} ";
 
-        $params = array(CONTEXT_ELIS_USERSET, $cluster_context_instance->path);
+        $params = array(
+            'ctxlevel'     => CONTEXT_ELIS_USERSET,
+            'ctxpath'      => $cluster_context_instance->path,
+            'pathwildcard' => '/%'
+        );
 
         // filter out the records that the user can't see
         $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
-        $filtersql = $context->get_filter('id')->get_sql(true, 'clst');
+        $filtersql = $context->get_filter('id')->get_sql(true, 'clst', SQL_PARAMS_NAMED);
 
         if (isset($filtersql['join'])) {
-            $cluster_permission_sql .= $filtersql['join'];
+            $cluster_permissions_sql .= $filtersql['join'];
             $params = array_merge($params, $filtersql['join_params']);
         }
         if (isset($filtersql['where'])) {
