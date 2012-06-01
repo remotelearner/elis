@@ -3,7 +3,7 @@
  * Form used for editing / displaying a class record.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ class pmclassform extends cmform {
             }
 
             // Add course select
-            $attributes = array('onchange'=>'update_trk_multiselect(); ');
+            $attributes = array('onchange' => 'update_trk_multiselect(); update_crs_template();');
 
             $selections = array();
             if (!empty($courses)) {
@@ -314,6 +314,42 @@ class pmclassform extends cmform {
         global $CFG, $DB;
 
         $mform =& $this->_form;
+
+        $mform->addElement('html', '
+<script type="text/javascript">
+//<![CDATA[
+    function update_crs_template() {
+        var crselem = document.getElementById("id_courseid");
+        var mdlcrselem = document.getElementById("id_moodleCourses_moodlecourseid");
+        if (mdlcrselem && crselem && crselem.value) {
+
+            var crstmpl_failure = function(o) {
+                mdlcrselem.selectedIndex = 0;
+            }
+
+            var set_crs_tmpl = function(o) {
+                var i;
+                var mdlcrs = parseInt(o.responseText);
+                mdlcrselem.selectedIndex = 0;
+                for (i = 0; i < mdlcrselem.options.length; ++i) {
+                    if (mdlcrs == mdlcrselem.options[i].value) {
+                        mdlcrselem.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            var callback = {
+                success:set_crs_tmpl,
+                failure:crstmpl_failure
+            }
+
+            YAHOO.util.Connect.asyncRequest("GET", "coursetemplateid.php?courseid=" + crselem.value, callback, null);
+        }
+    }
+//]]>
+</script>
+');
 
         $select = 'id != \'' . SITEID . '\' AND fullname NOT LIKE \'.%\'';
 
