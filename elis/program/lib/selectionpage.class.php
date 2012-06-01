@@ -123,27 +123,25 @@ abstract class selectionpage extends pm_page { // TBD
     function checkbox_selection_session() {
         global $SESSION;
         $selection = optional_param('selected_checkboxes', '', PARAM_CLEAN);
+        $id = optional_param('id', 1, PARAM_INT);
         $selectedcheckboxes = json_decode($selection);
 
         if (is_array($selectedcheckboxes)) {
-            if (!isset($SESSION->selectionpage)) {
-                $SESSION->selectionpage = array();
-            }
+            $pagename = $this->pagename;
 
-            foreach($selectedcheckboxes as $id) {
-                // Store the user checkbox selection into the session if it does not exist
-                if (!array_key_exists($id, $SESSION->selectionpage)) {
-                    $SESSION->selectionpage[$id] = $id;
+            if (method_exists($this, 'is_assigning')) {
+                if ($this->is_assigning()) {
+                    $pagename = $this->pagename . $id . 'is_assigning';
+                } else {
+                    $pagename = $this->pagename . $id . 'is_not_assigning';
                 }
+             }
+
+            if (!isset($SESSION->selectionpage[$pagename])) {
+                $SESSION->selectionpage[$pagename] = array();
             }
 
-            // Diff between the current selection and previous selection to get the removed id's
-            $selectiondiff = array_diff($SESSION->selectionpage, $selectedcheckboxes);
-
-            foreach($selectiondiff as $id) {
-                // Remove the session data
-                unset($SESSION->selectionpage[$id]);
-            }
+            $SESSION->selectionpage[$pagename] = $selectedcheckboxes;
         }
     }
 
@@ -262,8 +260,18 @@ abstract class selectionpage extends pm_page { // TBD
         $this->print_record_count($count, $label);
         echo '</div>';
 
-        if(isset($SESSION->selectionpage)) {
-            $selectedcheckboxes = $SESSION->selectionpage;
+        $pagename = $this->pagename;
+
+        if (method_exists($this, 'is_assigning')) {
+           if ($this->is_assigning()) {
+                $pagename = $this->pagename . $id . 'is_assigning';
+            } else {
+                $pagename = $this->pagename . $id . 'is_not_assigning';
+            }
+        }
+
+        if(isset($SESSION->selectionpage[$pagename])) {
+            $selectedcheckboxes = $SESSION->selectionpage[$pagename];
             if (!empty($selectedcheckboxes) && is_array($selectedcheckboxes)) {
                 $selection  = implode(',', $selectedcheckboxes);
                 echo '<input type="hidden" id="selected_checkboxes" value="' . $selection .'" /> ';

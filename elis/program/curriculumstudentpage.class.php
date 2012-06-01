@@ -375,7 +375,7 @@ class studentcurriculumpage extends associationpage2 {
 
     protected function create_selection_table($records, $baseurl) {
         $records = $records ? $records : array();
-        $columns = array('_selection' => array('header' => ''),
+        $columns = array('_selection' => array('header' => get_string('selectall')),
                          'idnumber' => array('header' => get_string('idnumber','elis_program')),
                          'name' => array('header' => get_string('name','elis_program')),
                          'description' => array('header' => get_string('description','elis_program')),
