@@ -32,19 +32,29 @@ require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 require_once(elis::lib('data/customfield.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
+require_once(elispm::lib('data/user.class.php'));
+require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+require_once(elispm::file('usersetpage.class.php'));
 
 class usersetTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
     protected static function get_overlay_tables() {
         return array(
-            'context'      => 'moodle',
-            'course'       => 'moodle',
+            'cache_flags' => 'moodle',
+            'context' => 'moodle',
+            'course' => 'moodle',
+            'role' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'role_names' => 'moodle',
+            'user' => 'moodle',
             field::TABLE => 'elis_core',
             field_contextlevel::TABLE => 'elis_core',
             userset::TABLE => 'elis_program',
             curriculum::TABLE => 'elis_program',
-            'crlm_cluster_profile' => 'elis_program',
+            userset_profile::TABLE => 'elis_program',
         );
     }
 
@@ -66,11 +76,7 @@ class usersetTest extends elis_database_test {
             'filter_active' => 'moodle',
             'filter_config' => 'moodle',
             'comments' => 'moodle',
-            'rating' => 'moodle',
-            'cache_flags' => 'moodle',
-            'role_assignments' => 'moodle',
-            'role_capabilities' => 'moodle',
-            'role_names' => 'moodle',
+            'rating' => 'moodle'
         );
     }
 
@@ -88,15 +94,16 @@ class usersetTest extends elis_database_test {
 
         $site = self::$origdb->get_record('course', array('id' => SITEID));
         self::$overlaydb->import_record('course', $site);
-        $sitecontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,
+        $syscontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,
                                                                   'instanceid' => SITEID));
-        self::$overlaydb->import_record('context', $sitecontext);
+        self::$overlaydb->import_record('context', $syscontext);
     }
 
     protected function load_csv_data() {
         // load initial data from a CSV file
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
+        $dataset->addTable('user', elis::component_file('program', 'phpunit/mdluser.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
@@ -229,5 +236,101 @@ class usersetTest extends elis_database_test {
         $clusters = cluster_get_listing('priority, name', 'ASC', 0, 5, '', '', array('parent' => 0));
 
         $this->assertNotEmpty($clusters);
+    }
+
+    /**
+     * Test whether a user can enrol users into a sub-userset if they have the required capability on the
+     * parent userset.
+     */
+    public function testCanEnrolIntoClusterWithParentPermission() {
+        global $DB;
+
+        $this->load_csv_data();
+
+        // create role with cap: 'elis/program:class_view'
+        $testrole = new stdClass;
+        $testrole->name = 'ELIS Sub-Userset Manager';
+        $testrole->shortname = '_test_ELIS_3848';
+        $testrole->description = 'ELIS userset enrol into sub-userser';
+        $testrole->archetype = '';
+        $testrole->id = create_role($testrole->name, $testrole->shortname, $testrole->description, $testrole->archetype);
+
+        // Ensure our new role is assignable to ELIS class contexts
+        set_role_contextlevels($testrole->id, array(CONTEXT_ELIS_USERSET));
+
+        // Ensure the role has our required capability assigned
+        $syscontext = context_system::instance();
+        assign_capability('elis/program:userset', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('elis/program:userset_view', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('elis/program:userset_create', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('elis/program:userset_enrol_userset_user', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        $syscontext->mark_dirty();
+
+        // Assign a test user a role within the parent userset
+        $context = context_elis_userset::instance(1);
+        role_assign($testrole->id, 100, $context->id);
+        $context->mark_dirty();
+
+        // switch to testuser
+        $USER = $DB->get_record('user', array('id' => 100));
+        $USER->access = get_user_accessdata($USER->id);
+        load_role_access_by_context($testrole->id, $context, $USER->access); // We need to force the accesslib cache to refresh
+        $GLOBALS['USER'] = $USER;
+
+        // Check if the user can enrol users into the sub-userset
+        $this->assertTrue(usersetpage::can_enrol_into_cluster(2));
+    }
+
+    /**
+     * Test whether a user can enrol users into a sub-userset if they have the required capability on the
+     * parent userset.
+     */
+    public function testGetAllowedClustersWithParentPermission() {
+        global $DB;
+
+        $this->load_csv_data();
+
+        // create role with cap: 'elis/program:class_view'
+        $testrole = new stdClass;
+        $testrole->name = 'ELIS Sub-Userset Manager';
+        $testrole->shortname = '_test_ELIS_3848';
+        $testrole->description = 'ELIS userset enrol into sub-userser';
+        $testrole->archetype = '';
+        $testrole->id = create_role($testrole->name, $testrole->shortname, $testrole->description, $testrole->archetype);
+
+        // Ensure our new role is assignable to ELIS class contexts
+        set_role_contextlevels($testrole->id, array(CONTEXT_ELIS_USERSET));
+
+        // Ensure the role has our required capability assigned
+        $syscontext = context_system::instance();
+        assign_capability('elis/program:userset', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('elis/program:userset_view', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('elis/program:userset_create', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('elis/program:userset_enrol_userset_user', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        $syscontext->mark_dirty();
+
+        // Assign a test user a role within the parent userset
+        $context = context_elis_userset::instance(1);
+        role_assign($testrole->id, 100, $context->id);
+
+        // Assign a test user a role within the sub-sub-userset
+        $ctx2 = context_elis_userset::instance(4);
+        role_assign($testrole->id, 100, $ctx2->id);
+
+        // switch to testuser
+        $USER = $DB->get_record('user', array('id' => 100));
+        $USER->access = get_user_accessdata($USER->id);
+        load_role_access_by_context($testrole->id, $context, $USER->access); // We need to force the accesslib cache to refresh
+        $GLOBALS['USER'] = $USER;
+
+        // Check which of the parent usersets the user has access to based on the sub-userset
+        $allowed = userset::get_allowed_clusters(2);
+        $this->assertInternalType('array', $allowed);
+        $this->assertEquals(1, count($allowed));
+
+        // Check which of the parent usersets the user has access to basdd on the sub-sub-userset
+        $allowed = userset::get_allowed_clusters(4);
+        $this->assertInternalType('array', $allowed);
+        $this->assertEquals(2, count($allowed));
     }
 }

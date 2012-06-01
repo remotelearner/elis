@@ -83,7 +83,9 @@ class usersetpage extends managementpage {
         }
 
         $cluster = new userset($clusterid);
-        if(!empty($cluster->parent)) {
+        $cluster->load();  // ELIS-3848 Needed otherwise the 'parent' property is not set =(
+
+        if (!empty($cluster->parent)) {
             //check to see if the current user has the secondary capability anywhere up the cluster tree
             $contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
             return $contexts->context_allowed($clusterid, 'cluster');
