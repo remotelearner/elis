@@ -413,7 +413,10 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
 
                 /// If the user doesn't exist in CM, skip it -- should we flag it?
                 if (empty($sturec->cmid)) {
-                    mtrace("No user record for Moodle user id: {$sturec->muid}: {$sturec->username}<br />\n");
+                    if ($moodleuserid == 0) {
+                        //only show this if we are in the PM cron
+                        mtrace("No user record for Moodle user id: {$sturec->muid}: {$sturec->username}<br />\n");
+                    }
                     continue;
                 }
                 $cmuserid = $sturec->cmid;
