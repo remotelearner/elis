@@ -66,7 +66,7 @@ $string['not_available'] = 'Not Available';
 
 $string['of'] = '{$a->value} of {$a->total}';
 $string['optional_columns'] = 'Optional report columns';
-$string['optional_columns_help'] = '<p>Select optiional columns to display on report.</p>';
+$string['optional_columns_help'] = '<p>Select optional columns to display on report.</p>';
 $string['percent_symbol'] = '%';
 $string['pluginname'] = 'Individual Course Progress Report';
 $string['preposttest_label'] = 'Show Pre-Test/Post Test';
