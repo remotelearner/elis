@@ -447,7 +447,7 @@ class individual_course_progress_report extends table_report {
         }
 
         if (!empty($optional_columns_los) && !empty($optional_columns_los['0']['value'])) {
-            $max_los_sql = 'SELECT COUNT(\'x\') AS count FROM {'. coursecompletion::TABLE .'} GROUP BY courseid ORDER BY count DESC';
+            $max_los_sql = 'SELECT courseid, COUNT(\'x\') AS count FROM {'. coursecompletion::TABLE .'} GROUP BY courseid ORDER BY count DESC';
             $max_los = $DB->get_records_sql($max_los_sql);
             $max_los = empty($max_los) ? 0: current($max_los)->count;
             for ($i = 1; $i <= $max_los; ++$i) {
