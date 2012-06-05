@@ -463,6 +463,12 @@ function manual_field_validation($data, $field, $contextid) {
         return false;
     }
 
+    if (!isset($field->owners['manual'])) {
+        // BJB120605: Fix bug when viewing/editing disabled and no owner
+        error_log("manual_field_validation(): no manual owner for field: {$field->shortname}");
+        return false;
+    }
+
     $errstr = null;
     if ($field->multivalued) {
         $manual = new field_owner($field->owners['manual']);
