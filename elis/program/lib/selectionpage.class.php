@@ -120,7 +120,7 @@ abstract class selectionpage extends pm_page { // TBD
     }
 
     // Store the checkbox selection into a session
-    function checkbox_selection_session() {
+    function do_checkbox_selection_session() {
         global $SESSION;
         $selection = optional_param('selected_checkboxes', '', PARAM_CLEAN);
         $id = optional_param('id', 1, PARAM_INT);
@@ -150,7 +150,7 @@ abstract class selectionpage extends pm_page { // TBD
         $this->url->remove_params(array('mode')); // TBD
         $baseurl = htmlspecialchars_decode($this->url);
 
-        $this->checkbox_selection_session();
+        $this->do_checkbox_selection_session();
 
         if ($data = $form->get_data()) {
             $selection = json_decode($data->_selection);
@@ -199,7 +199,8 @@ abstract class selectionpage extends pm_page { // TBD
     }
 
     protected function print_js_selection_table($table, $filter, $count, $form, $baseurl) {
-        global $CFG, $OUTPUT, $PAGE, $SESSION;
+        global $CFG, $OUTPUT, $PAGE, $SESSION, $DB;
+
         if (!$this->is_bare()) {
             $title_sid = 'breadcrumb_'. get_class($this);
             if (method_exists($this, 'is_assigning') && !$this->is_assigning() &&
@@ -272,8 +273,14 @@ abstract class selectionpage extends pm_page { // TBD
 
         if(isset($SESSION->selectionpage[$pagename])) {
             $selectedcheckboxes = $SESSION->selectionpage[$pagename];
-            if (!empty($selectedcheckboxes) && is_array($selectedcheckboxes)) {
-                $selection  = implode(',', $selectedcheckboxes);
+            if (is_array($selectedcheckboxes)) {
+                $filtered = array();
+                foreach ($selectedcheckboxes as $id) {
+                    if ($DB->record_exists(user::TABLE, array('id' => $id))) {
+                        $filtered[] = $id;
+                    }
+                }
+                $selection  = implode(',', $filtered);
                 echo '<input type="hidden" id="selected_checkboxes" value="' . $selection .'" /> ';
             }
         }
@@ -302,7 +309,6 @@ abstract class selectionpage extends pm_page { // TBD
             }
             echo $this->get_table_footer();
             echo '</fieldset></div>'; // from above
-
             //if ($count)
             {
                 $form->display();

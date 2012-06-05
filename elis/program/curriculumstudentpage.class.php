@@ -166,6 +166,24 @@ class studentcurriculumpage extends associationpage2 {
         }
     }
 
+    function session_selection_deletion() {
+        global $SESSION;
+        $id = optional_param('id', 1, PARAM_INT);
+        $pagename = $this->pagename;
+
+        if (method_exists($this, 'is_assigning')) {
+            if ($this->is_assigning()) {
+                $pagename = $this->pagename . $id . 'is_assigning';
+            } else {
+                $pagename = $this->pagename . $id . 'is_not_assigning';
+            }
+        }
+
+        if (isset($SESSION->selectionpage[$pagename])) {
+            unset($SESSION->selectionpage[$pagename]);
+        }
+    }
+
     protected function process_assignment($data) {
         $userid  = $data->id;
         foreach ($data->_selection as $curid) {
@@ -177,6 +195,7 @@ class studentcurriculumpage extends associationpage2 {
         $tmppage = $this->get_new_page(array('_assign' => 'assign'));
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
+        $this->session_selection_deletion();
         redirect($tmppage->url, get_string('num_curricula_assigned', 'elis_program', $sparam));
     }
 
@@ -192,6 +211,7 @@ class studentcurriculumpage extends associationpage2 {
         $tmppage = $this->get_new_page(array('_assign' => 'unassign'));
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
+        $this->session_selection_deletion();
         redirect($tmppage->url, get_string('num_curricula_unassigned', 'elis_program', $sparam));
     }
 
@@ -375,7 +395,7 @@ class studentcurriculumpage extends associationpage2 {
 
     protected function create_selection_table($records, $baseurl) {
         $records = $records ? $records : array();
-        $columns = array('_selection' => array('header' => get_string('selectall')),
+        $columns = array('_selection' => array('header' => get_string('select')),
                          'idnumber' => array('header' => get_string('idnumber','elis_program')),
                          'name' => array('header' => get_string('name','elis_program')),
                          'description' => array('header' => get_string('description','elis_program')),

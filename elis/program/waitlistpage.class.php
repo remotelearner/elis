@@ -182,6 +182,13 @@ class waitlistpage extends selectionpage {
         }
     }
 
+    function session_selection_deletion() {
+        global $SESSION;
+        if (isset($SESSION->selectionpage[$this->pagename])) {
+            unset($SESSION->selectionpage[$this->pagename]);
+        }
+    }
+
     function do_remove() {
         $id = $this->required_param('id', PARAM_INT);
         $recs = explode(',', $this->required_param('selected',PARAM_TEXT));
@@ -200,6 +207,8 @@ class waitlistpage extends selectionpage {
             /* $result = */ $waitlistobj->delete(); // No return code from delete()
             /* if (!$result) break; */
         }
+
+        $this->session_selection_deletion();
 
         $tmppage = new waitlistpage(array('id' => $id));
         if ($result) {
@@ -227,6 +236,8 @@ class waitlistpage extends selectionpage {
             $waitlistobj->enrol();
         }
 
+        $this->session_selection_deletion();
+
         $tmppage = new waitlistpage(array('id' => $id));
         if ($result) {
             redirect($tmppage->url, get_string('success_waitlist_overenrol', self::LANG_FILE));
@@ -244,7 +255,7 @@ class waitlist_table extends selection_table {
         $dir          = optional_param('dir', 'ASC', PARAM_ALPHA);
 
         $columns = array(
-            '_selection'  => array('header' => '', 'sortable' => false,
+            '_selection'  => array('header' => get_string('select'), 'sortable' => false,
                                    'display_function' => array(&$this, 'get_item_display__selection')), // TBD
             'idnumber'    => array('header' => get_string('idnumber',        self::LANG_FILE)),
             'name'        => array('header' => get_string('name',            self::LANG_FILE)),

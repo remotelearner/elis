@@ -337,6 +337,8 @@ class instructor extends elis_data_object {
         }
 
         if (!empty($table) && !empty($newarr)) {
+            echo '<input type="button" onclick="checkbox_select(true)" value="'.get_string('selectall').'" /> ';
+            echo '<input type="button" onclick="checkbox_select(false)" value="'.get_string('deselectall').'" /> ';
             echo $table->get_html();
             $pagingbar = new paging_bar($usercount, $page, $perpage,
                              "index.php?s=ins&amp;section=curr&amp;id=$classid&amp;action=add&amp;" .

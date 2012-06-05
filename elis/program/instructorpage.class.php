@@ -386,12 +386,16 @@ class instructorpage extends associationpage {
     }
 
     function get_add_form($clsid, $sort, $dir, $page, $perpage, $namesearch, $alpha) {
+        global $PAGE;
         $output = '';
 
         $newins = new instructor(); // TBD: was new instructor($clsid)
         //$newins->classid = $clsid;
         //$cls = new pmclass($clsid); // cmclass($clsid)
 
+        $url = get_pm_url()->out_omit_querystring() . '?s=ins&id='.$clsid;
+        $output .= "<script>var basepage='$url';</script>";
+        $PAGE->requires->js('/elis/core/js/checkbox_selection.js');
         $output .= $newins->edit_form_html($clsid, $sort, $dir, $page, $perpage, $namesearch, $alpha);
 
         return $output;

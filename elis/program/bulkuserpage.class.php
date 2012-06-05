@@ -159,7 +159,7 @@ class bulkuserpage extends selectionpage {
         $result = $DB->execute('UPDATE {'. user::TABLE .'} SET inactive = 1
                                 WHERE id in ('.  implode(',', $users) .')');
 
-        $this->session_selection_deletion($users);
+        $this->session_selection_deletion();
 
         $tmppage = new bulkuserpage();
 
@@ -170,16 +170,11 @@ class bulkuserpage extends selectionpage {
         }
     }
 
-    function session_selection_deletion($ids) {
+    function session_selection_deletion() {
         global $SESSION;
-
         if (isset($SESSION->selectionpage[$this->pagename])) {
-            foreach ($ids as $id) {
-                $removedindex = array_search($id, $SESSION->selectionpage[$this->pagename]);
-                unset($SESSION->selectionpage[$this->pagename][$removedindex]);
-            }
+            unset($SESSION->selectionpage[$this->pagename]);
         }
-
     }
 
     function do_delete() { // action_delete()
@@ -199,7 +194,7 @@ class bulkuserpage extends selectionpage {
             $userobj->delete(); // TBD: try {} catch () {} ???
         }
 
-        $this->session_selection_deletion($users);
+        $this->session_selection_deletion();
 
         $tmppage = new bulkuserpage();
         redirect($tmppage->url, get_string('success_bulk_delete', 'elis_program'));

@@ -422,7 +422,7 @@ abstract class rolepage extends associationpage2 {
         $baseurl .= "&role={$role}";
 
         $records = $records ? $records : array();
-        $columns = array('_selection' => array('header' => ''),
+        $columns = array('_selection' => array('header' => get_string('select')),
                          'idnumber'   => array('header' => get_string('idnumber')),
                          'name'       => array('header' => array('firstname' => array('header' => get_string('firstname')),
                                                                  'lastname' => array('header' => get_string('lastname'))
