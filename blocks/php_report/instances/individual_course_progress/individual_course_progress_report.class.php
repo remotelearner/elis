@@ -724,22 +724,24 @@ class individual_course_progress_report extends table_report {
            $record->numresources = 0;
         }
 
-        if (!empty($record->pretestscore)) {
-            $record->pretestscore = pm_display_grade($record->pretestscore);
-            if ($export_format != php_report::$EXPORT_FORMAT_CSV) {
-                $record->pretestscore .= get_string('percent_symbol', $this->lang_file);
+        if ($this->preposttest_columns) {
+            if (!empty($record->pretestscore)) {
+                $record->pretestscore = pm_display_grade($record->pretestscore);
+                if ($export_format != php_report::$EXPORT_FORMAT_CSV) {
+                    $record->pretestscore .= get_string('percent_symbol', $this->lang_file);
+                }
+            } else {
+                $record->pretestscore = get_string('no_test_symbol', $this->lang_file);
             }
-        } else {
-            $record->pretestscore = get_string('no_test_symbol', $this->lang_file);
-        }
 
-        if (!empty($record->posttestscore)) {
-            $record->posttestscore = pm_display_grade($record->posttestscore);
-            if ($export_format != php_report::$EXPORT_FORMAT_CSV) {
-                $record->posttestscore .= get_string('percent_symbol', $this->lang_file);
+            if (!empty($record->posttestscore)) {
+                $record->posttestscore = pm_display_grade($record->posttestscore);
+                if ($export_format != php_report::$EXPORT_FORMAT_CSV) {
+                    $record->posttestscore .= get_string('percent_symbol', $this->lang_file);
+                }
+            } else {
+                $record->posttestscore = get_string('no_test_symbol', $this->lang_file);
             }
-        } else {
-            $record->posttestscore = get_string('no_test_symbol', $this->lang_file);
         }
 
         if ($this->los_columns) {
