@@ -90,6 +90,9 @@ function _print_checkbox($name, $value, $checked = true, $label = '', $alt = '',
  * @return string | boolean The value of the parameter, or $default.
  */
 function cm_get_param($param, $default = false) {
+    if (is_array($default)) {
+        return optional_param_array($param, $default, PARAM_CLEAN);
+    }
     return optional_param($param, $default, PARAM_CLEAN);
 }
 

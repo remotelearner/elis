@@ -284,7 +284,8 @@ class studentpage extends associationpage {
         global $DB;
         $stuid = $this->required_param('association_id', PARAM_INT);
         $clsid = $this->required_param('id', PARAM_INT);
-        $users = $this->required_param('users');
+        //$users = $this->required_param('users');
+        $users = pm_process_user_enrolment_data();
         //error_log("studentpage::do_update() stuid = {$stuid} clsid = {$clsid} ...");
         $uid   = key($users);
         $user  = current($users);
