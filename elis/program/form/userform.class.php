@@ -206,30 +206,8 @@ class userform extends cmform {
         $mform->setType('inactive', PARAM_TEXT);
         $mform->addHelpButton('inactive', 'user_inactive', 'elis_program');
 
-        $fields = field::get_for_context_level('user');
-        $fields = $fields ? $fields : array();
-
-        $lastcat = null;
-        $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? context_elis_user::instance($this->_customdata['obj']->id)
-            : context_system::instance();
-        require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
-        foreach ($fields as $rec) {
-            $field = new field($rec);
-            if (!isset($field->owners['manual'])) {
-                continue;
-            }
-            if ($lastcat != $rec->categoryid) {
-                $lastcat = $rec->categoryid;
-                $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
-            }
-
-            //capabilities for editing / viewing this context
-            $edit_cap = 'elis/program:user_edit';
-            $view_cap = 'elis/program:user_view'; 
-            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field,
-                                          true, $edit_cap, $view_cap);
-        }
+        $this->add_custom_fields('user', 'elis/program:user_edit',
+                                 'elis/program:user_view');
 
         $this->add_action_buttons();
     }
