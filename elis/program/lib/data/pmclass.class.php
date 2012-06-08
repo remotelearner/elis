@@ -835,8 +835,12 @@ class pmclass extends data_object_with_custom_fields {
         }
         $idnumber = $clone->idnumber;
         if (isset($userset)) {
+            $to_append = ' - '. $userset->name;
             // if cluster specified, append cluster's name to class
-            $idnumber = append_once($idnumber, ' - '. $userset->name);
+            if (stripos($idnumber, $to_append) === FALSE) {
+                $maxlen = 92 - strlen($userset->name);
+                $idnumber = append_once(substr($idnumber, 0, $maxlen), $to_append);
+            }
         }
 
         //get a unique idnumber
