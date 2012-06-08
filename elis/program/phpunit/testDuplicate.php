@@ -42,32 +42,31 @@ class duplicateTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
-        return array('crlm_coursetemplate' => 'elis_program');
+        return array('crlm_coursetemplate' => 'elis_program',
+                     'crlm_user_track' => 'elis_program'
+               );
     }
 
-	protected static function get_overlay_tables() {
-		return array('course' => 'moodle',
-		       'context' => 'moodle',
-            'elis_field_categories' => 'elis_core',
-            'elis_field_category_contexts' => 'elis_core',
-            'elis_field' => 'elis_core',
-            'elis_field_contextlevels' => 'elis_core',
-            'elis_field_owner' => 'elis_core',
-            'elis_field_data_text' => 'elis_core',
-            pmclass::TABLE => 'elis_program',
-            course::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-            trackassignment::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-            clustertrack::TABLE => 'elis_program',
-            clustercurriculum::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            curriculumcourse::TABLE => 'elis_program');
-	}
+    protected static function get_overlay_tables() {
+        return array('course' => 'moodle',
+                     'context' => 'moodle',
+                     'elis_field_categories' => 'elis_core',
+                     'elis_field_category_contexts' => 'elis_core',
+                     'elis_field' => 'elis_core',
+                     'elis_field_contextlevels' => 'elis_core',
+                     'elis_field_owner' => 'elis_core',
+                     'elis_field_data_text' => 'elis_core',
+                     pmclass::TABLE => 'elis_program',
+                     course::TABLE => 'elis_program',
+                     curriculum::TABLE => 'elis_program',
+                     track::TABLE => 'elis_program',
+                     trackassignment::TABLE => 'elis_program',
+                     userset::TABLE => 'elis_program',
+                     clustertrack::TABLE => 'elis_program',
+                     clustercurriculum::TABLE => 'elis_program',
+                     curriculum::TABLE => 'elis_program',
+                     curriculumcourse::TABLE => 'elis_program');
+    }
 
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();

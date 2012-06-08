@@ -139,8 +139,12 @@ class track extends data_object_with_custom_fields {
             //get a unique idnumber
             $idnumber = $this->idnumber;
             if (!empty($curcourec->idnumber)) {
-                $idnumber = append_once($idnumber, $curcourec->idnumber .'-',
-                                        true /* <= prepend flag */, true, true);
+                $to_prepend = $curcourec->idnumber .'-';
+                if (stripos($idnumber, $to_prepend) !== 0) {
+                    $maxlen = 94 - strlen($curcourec->idnumber);
+                    $idnumber = append_once(substr($idnumber, 0, $maxlen), $to_prepend,
+                                            true /* <= prepend flag */, true, true);
+                }
             }
 
             generate_unique_identifier(pmclass::TABLE,
@@ -481,9 +485,16 @@ class track extends data_object_with_custom_fields {
         $idnumber = $clone->idnumber;
         $name = $clone->name;
         if (isset($userset)) {
-            // if cluster specified, append cluster's name to track
-            $idnumber = append_once($idnumber, ' - '. $userset->name);
-            $name = append_once($name, ' - '. $userset->name);
+            $to_append = ' - '. $userset->name;
+            // if cluster specified, append cluster's name to course
+            if (stripos($idnumber, $to_append) === FALSE) {
+                $maxlen = 92 - strlen($userset->name);
+                $idnumber = append_once(substr($idnumber, 0, $maxlen), $to_append);
+            }
+            if (stripos($name, $to_append) === FALSE) {
+                $maxlen = 247 - strlen($userset->name);
+                $name = append_once(substr($name, 0, $maxlen), $to_append);
+            }
         }
 
         //get a unique idnumber
