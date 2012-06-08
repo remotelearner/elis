@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/../../../../config.php');
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
+require_once elispm::lib('lib.php');
 require_once elispm::lib('data/classmoodlecourse.class.php');
 require_once elispm::lib('data/clustertrack.class.php');
 require_once elispm::lib('data/course.class.php');
@@ -138,8 +139,12 @@ class track extends data_object_with_custom_fields {
             //get a unique idnumber
             $idnumber = $this->idnumber;
             if (!empty($curcourec->idnumber)) {
-                // if cluster specified, append cluster's name to class
-                $idnumber = $curcourec->idnumber.'-'.$idnumber;
+                $to_prepend = $curcourec->idnumber .'-';
+                if (stripos($idnumber, $to_prepend) !== 0) {
+                    $maxlen = 94 - strlen($curcourec->idnumber);
+                    $idnumber = append_once(substr($idnumber, 0, $maxlen), $to_prepend,
+                                            true /* <= prepend flag */, true, true);
+                }
             }
 
             generate_unique_identifier(pmclass::TABLE,
@@ -480,9 +485,16 @@ class track extends data_object_with_custom_fields {
         $idnumber = $clone->idnumber;
         $name = $clone->name;
         if (isset($userset)) {
-            // if cluster specified, append cluster's name to curriculum
-            $idnumber .= ' - '.$userset->name;
-            $name .= ' - '.$userset->name;
+            $to_append = ' - '. $userset->name;
+            // if cluster specified, append cluster's name to course
+            if (stripos($idnumber, $to_append) === FALSE) {
+                $maxlen = 92 - strlen($userset->name);
+                $idnumber = append_once(substr($idnumber, 0, $maxlen), $to_append);
+            }
+            if (stripos($name, $to_append) === FALSE) {
+                $maxlen = 247 - strlen($userset->name);
+                $name = append_once(substr($name, 0, $maxlen), $to_append);
+            }
         }
 
         //get a unique idnumber

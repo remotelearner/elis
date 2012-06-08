@@ -1927,3 +1927,32 @@ function pm_mymoodle_redirect($editing = false) {
     return (!empty(elis::$config->elis_program->mymoodle_redirect) &&
             elis::$config->elis_program->mymoodle_redirect == 1);
 }
+
+/**
+ * Function to append suffix to string, but, only once
+ * - if already present doesn't re-append
+ *
+ * @param string $str     The string to append to
+ * @param string $suffix  The string to append
+ * @param bool   $prepend If true $suffix becomes prefix, defaults to false
+ * @param bool   $icase   If true (default) check for suffix case insensitive
+ * @param bool   $strict  if true, $suffix must be at the end of $str not to
+ *                        re-append. Defaults to false.
+ * @return string         The appended string
+ */
+function append_once($str, $suffix, $prepend = false, $icase = true, $strict = false) {
+    $has_suffix = $icase ? stripos($str, $suffix)
+                         : strpos($str, $suffix);
+    if ($prepend) {
+        if ($has_suffix === FALSE || ($strict && $has_suffix !== 0)) {
+            return $suffix . $str;
+        }
+    } else if ($has_suffix === FALSE ||
+              ($strict && $has_suffix != (strlen($str) - strlen($suffix)))) {
+        return $str . $suffix;
+    }
+
+    // $suffix already in $str
+    return $str;
+}
+

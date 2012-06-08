@@ -125,31 +125,8 @@ class trackform extends cmform {
         }
 
         // custom fields
-        $fields = field::get_for_context_level('track');
-        $fields = $fields ? $fields : array();
-
-        $lastcat = null;
-        $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? context_elis_track::instance($this->_customdata['obj']->id)
-            : context_system::instance();
-        require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
-
-        foreach ($fields as $rec) {
-            $field = new field($rec);
-            if (!isset($field->owners['manual'])) {
-                continue;
-            }
-            if ($lastcat != $rec->categoryid) {
-                $lastcat = $rec->categoryid;
-                $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
-            }
-
-            //capabilities for editing / viewing this context
-            $edit_cap = 'elis/program:track_edit';
-            $view_cap = 'elis/program:track_view'; 
-            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field,
-                                          true, $edit_cap, $view_cap);
-        }
+        $this->add_custom_fields('track', 'elis/program:track_edit',
+                                 'elis/program:track_view');
 
         $this->add_action_buttons();
     }

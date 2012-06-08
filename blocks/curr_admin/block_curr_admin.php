@@ -153,7 +153,7 @@ class block_curr_admin extends block_base {
             $extrafilters = array('contexts' => $context_result,'parent' => 0);
             $num_records = cluster_count_records('', '', $extrafilters);
 
-            if ($clusters = cluster_get_listing('priority, name', 'ASC', 0, $num_block_icons, '', '', array('parent' => 0))) {
+            if ($clusters = cluster_get_listing('priority, name', 'ASC', 0, $num_block_icons, '', '', $extrafilters)) {
                 foreach($clusters as $cluster) {
                     $params = array('id'     => $cluster->id,
                                     'action' => 'view');
