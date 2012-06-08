@@ -284,7 +284,6 @@ class studentpage extends associationpage {
         global $DB;
         $stuid = $this->required_param('association_id', PARAM_INT);
         $clsid = $this->required_param('id', PARAM_INT);
-        //$users = $this->required_param('users');
         $users = pm_process_user_enrolment_data();
         //error_log("studentpage::do_update() stuid = {$stuid} clsid = {$clsid} ...");
         $uid   = key($users);
@@ -321,8 +320,8 @@ class studentpage extends associationpage {
         /// Check for grade records...
         $element = cm_get_param('element', array());
         $newelement = cm_get_param('newelement', array());
-        $timegraded = cm_get_param('timegraded', array());
-        $newtimegraded = cm_get_param('newtimegraded', array());
+        $timegraded = $this->optional_param_array('timegraded', array(), PARAM_CLEAN);
+        $newtimegraded = $this->optional_param_array('newtimegraded', array(), PARAM_CLEAN);
         $completionid = cm_get_param('completionid', array());
         $newcompletionid = cm_get_param('newcompletionid', array());
         $grade = cm_get_param('grade', array());
