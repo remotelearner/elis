@@ -553,7 +553,6 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
             $sql_condition = new select_filter('TRUE');
         } else {
             //user does not have capability at system level, so filter
-
             $viewable_clusters = userset::get_viewable_clusters();
 
             if (empty($viewable_clusters)) {
@@ -567,7 +566,7 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
                 list($IN, $inparams) = $DB->get_in_or_equal($viewable_clusters);
 
                 $sql_condition = new select_filter(
-                    "id IN (SELECT parent_context.instanceid
+                    "clst.id IN (SELECT parent_context.instanceid
                               FROM {context} parent_context
                               JOIN {context} child_context
                                 ON child_context.path LIKE {$path}
