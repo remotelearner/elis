@@ -30,6 +30,7 @@ require_once(dirname(__FILE__).'/../../../../config.php');
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
+require_once elispm::lib('lib.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/curriculumstudent.class.php');
@@ -471,8 +472,8 @@ class curriculum extends data_object_with_custom_fields {
         $name = $clone->name;
         if (isset($userset)) {
             // if cluster specified, append cluster's name to curriculum
-            $idnumber .= ' - '.$userset->name;
-            $name .= ' - '.$userset->name;
+            $idnumber = append_once($idnumber, ' - '. $userset->name);
+            $name = append_once($name, ' - '. $userset->name);
         }
 
         //get a unique idnumber
