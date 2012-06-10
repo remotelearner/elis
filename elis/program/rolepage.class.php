@@ -225,6 +225,7 @@ abstract class rolepage extends associationpage2 {
     }
 
     protected function process_assignment($data) {
+        $this->session_selection_deletion();
         $context = $this->get_context();
 
         //make sure the current user can assign roles on the current context
@@ -249,6 +250,7 @@ abstract class rolepage extends associationpage2 {
     }
 
     protected function process_unassignment($data) {
+        $this->session_selection_deletion();
         $context = $this->get_context();
 
         //make sure the current user can assign roles on the current context

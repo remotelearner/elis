@@ -127,21 +127,41 @@ abstract class selectionpage extends pm_page { // TBD
         $selectedcheckboxes = json_decode($selection);
 
         if (is_array($selectedcheckboxes)) {
-            $pagename = $this->pagename;
-
-            if (method_exists($this, 'is_assigning')) {
-                if ($this->is_assigning()) {
-                    $pagename = $this->pagename . $id . 'is_assigning';
-                } else {
-                    $pagename = $this->pagename . $id . 'is_not_assigning';
-                }
-             }
+            // Identify the page that the session is for
+            $pagename = $this->page_identity($id);
 
             if (!isset($SESSION->selectionpage[$pagename])) {
                 $SESSION->selectionpage[$pagename] = array();
             }
 
             $SESSION->selectionpage[$pagename] = $selectedcheckboxes;
+        }
+    }
+
+    // Retrieve a unique page name identified by the page name, id and action
+    function page_identity($id) {
+        $pagename = $this->pagename;
+
+        if (method_exists($this, 'is_assigning')) {
+            if ($this->is_assigning()) {
+                $pagename = $this->pagename . $id . 'is_assigning';
+            } else {
+                $pagename = $this->pagename . $id . 'is_not_assigning';
+            }
+        }
+
+        return $pagename;
+    }
+
+    // Remove all session data for a given page
+    function session_selection_deletion() {
+        global $SESSION;
+        $id = optional_param('id', 1, PARAM_INT);
+
+        $pagename = $this->page_identity();
+
+        if (isset($SESSION->selectionpage[$pagename])) {
+            unset($SESSION->selectionpage[$pagename]);
         }
     }
 

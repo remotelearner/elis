@@ -182,16 +182,11 @@ class waitlistpage extends selectionpage {
         }
     }
 
-    function session_selection_deletion() {
-        global $SESSION;
-        if (isset($SESSION->selectionpage[$this->pagename])) {
-            unset($SESSION->selectionpage[$this->pagename]);
-        }
-    }
-
     function do_remove() {
         $id = $this->required_param('id', PARAM_INT);
         $recs = explode(',', $this->required_param('selected',PARAM_TEXT));
+
+        $this->session_selection_deletion();
 
         // make sure everything is an int
         foreach ($recs as $key => $val) {
@@ -208,8 +203,6 @@ class waitlistpage extends selectionpage {
             /* if (!$result) break; */
         }
 
-        $this->session_selection_deletion();
-
         $tmppage = new waitlistpage(array('id' => $id));
         if ($result) {
             redirect($tmppage->url, get_string('success_waitlist_remove', self::LANG_FILE));
@@ -221,6 +214,8 @@ class waitlistpage extends selectionpage {
     function do_overenrol() {
         $id = $this->required_param('id', PARAM_INT);
         $recs = explode(',', $this->required_param('selected', PARAM_TEXT));
+
+        $this->session_selection_deletion();
 
         // make sure everything is an int
         foreach ($recs as $key => $val) {
@@ -235,8 +230,6 @@ class waitlistpage extends selectionpage {
             $waitlistobj = new waitlist($recid);
             $waitlistobj->enrol();
         }
-
-        $this->session_selection_deletion();
 
         $tmppage = new waitlistpage(array('id' => $id));
         if ($result) {

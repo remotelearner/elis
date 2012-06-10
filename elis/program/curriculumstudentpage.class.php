@@ -166,25 +166,8 @@ class studentcurriculumpage extends associationpage2 {
         }
     }
 
-    function session_selection_deletion() {
-        global $SESSION;
-        $id = optional_param('id', 1, PARAM_INT);
-        $pagename = $this->pagename;
-
-        if (method_exists($this, 'is_assigning')) {
-            if ($this->is_assigning()) {
-                $pagename = $this->pagename . $id . 'is_assigning';
-            } else {
-                $pagename = $this->pagename . $id . 'is_not_assigning';
-            }
-        }
-
-        if (isset($SESSION->selectionpage[$pagename])) {
-            unset($SESSION->selectionpage[$pagename]);
-        }
-    }
-
     protected function process_assignment($data) {
+        $this->session_selection_deletion();
         $userid  = $data->id;
         foreach ($data->_selection as $curid) {
             $stucur = new curriculumstudent(array('userid' => $userid,
@@ -195,11 +178,11 @@ class studentcurriculumpage extends associationpage2 {
         $tmppage = $this->get_new_page(array('_assign' => 'assign'));
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
-        $this->session_selection_deletion();
         redirect($tmppage->url, get_string('num_curricula_assigned', 'elis_program', $sparam));
     }
 
     protected function process_unassignment($data) {
+        $this->session_selection_deletion();
         $userid  = $data->id;
         foreach ($data->_selection as $associd) {
             $curstu = new curriculumstudent($associd);
@@ -211,7 +194,6 @@ class studentcurriculumpage extends associationpage2 {
         $tmppage = $this->get_new_page(array('_assign' => 'unassign'));
         $sparam = new stdClass;
         $sparam->num = count($data->_selection);
-        $this->session_selection_deletion();
         redirect($tmppage->url, get_string('num_curricula_unassigned', 'elis_program', $sparam));
     }
 

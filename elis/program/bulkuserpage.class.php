@@ -148,6 +148,8 @@ class bulkuserpage extends selectionpage {
 
         $users = explode(',',$this->required_param('selectedusers',PARAM_TEXT));
 
+        $this->session_selection_deletion();
+
         // make sure everything is an int
         foreach ($users as $key => $val) {
             $users[$key] = (int)$val;
@@ -159,8 +161,6 @@ class bulkuserpage extends selectionpage {
         $result = $DB->execute('UPDATE {'. user::TABLE .'} SET inactive = 1
                                 WHERE id in ('.  implode(',', $users) .')');
 
-        $this->session_selection_deletion();
-
         $tmppage = new bulkuserpage();
 
         if ($result) {
@@ -170,15 +170,10 @@ class bulkuserpage extends selectionpage {
         }
     }
 
-    function session_selection_deletion() {
-        global $SESSION;
-        if (isset($SESSION->selectionpage[$this->pagename])) {
-            unset($SESSION->selectionpage[$this->pagename]);
-        }
-    }
-
     function do_delete() { // action_delete()
         require_once elispm::lib('data/user.class.php');
+
+        $this->session_selection_deletion();
 
         $users = explode(',', $this->required_param('selectedusers', PARAM_TEXT));
         // make sure everything is an int
@@ -193,8 +188,6 @@ class bulkuserpage extends selectionpage {
             $userobj = new user($userid);
             $userobj->delete(); // TBD: try {} catch () {} ???
         }
-
-        $this->session_selection_deletion();
 
         $tmppage = new bulkuserpage();
         redirect($tmppage->url, get_string('success_bulk_delete', 'elis_program'));
