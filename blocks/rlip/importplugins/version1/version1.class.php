@@ -1974,10 +1974,6 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                         'itemid' => 0);
         $role_assignment_exists = $DB->record_exists('role_assignments', $params);
 
-        $studentroleids = array();
-        if (isset($CFG->gradebookroles)) {
-            $studentroleids = explode(',', $CFG->gradebookroles);
-        }
         //track whether an enrolment exists
         $enrolment_exists = false;
 
@@ -1986,9 +1982,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //after this point, general error messages should contain role assignment info
-        //they should also contain enrolment info if the role is a gradebook role and the context
-        //is a course
-        $track_enrolments = in_array($roleid, $studentroleids) && $record->context == 'course';
+        //they should also contain enrolment info if the context is a course
+        $track_enrolments = $record->context == 'course';
         $this->fslogger->set_enrolment_state(true, $track_enrolments);
 
         //track the group and grouping specified
@@ -2052,7 +2047,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //going to collect all messages for this action
         $logmessages = array();
 
-        if ($record->context == 'course' && in_array($roleid, $studentroleids)) {
+        if ($record->context == 'course') {
 
             //set enrolment start time to the course start date
             $timestart = $DB->get_field('course', 'startdate', array('id' => $context->instanceid));
@@ -2090,25 +2085,6 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $logmessages[] = "User with {$user_descriptor} enrolled in course with shortname \"{$record->instance}\".";
             }
         } else {
-            if ($record->context == 'course' && isset($record->group)) {
-                if (!is_enrolled($context, $userid)) {
-                    $this->fslogger->log_failure("Could not assign user with {$user_descriptor} to group ".
-                                                 "with name \"{$record->group}\" because they are not enrolled ".
-                                                 "in course with shortname \"{$record->instance}\".",
-                                                 0, $filename, $this->linenumber, $record, 'enrolment');
-                    return false;
-                }
-            }
-
-            if ($record->context == 'course') {
-                if (!$DB->record_exists('role_capabilities', array('roleid' => $roleid,
-                                                                   'capability' => 'moodle/course:view'))) {
-                    $this->fslogger->log_failure("Role with shortname \"{$record->role}\" does not have ".
-                                                 "the moodle/course:view capability.", 0, $filename, $this->linenumber,
-                                                 $record, 'enrolment');
-                    return false;
-                }
-            }
 
             if ($role_assignment_exists) {
                 //role assignment already exists, so this action serves no purpose
@@ -2258,12 +2234,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                                                                'contextid' => $context->id,
                                                                                'userid' => $userid));
 
-        $studentroleids = explode(',', $CFG->gradebookroles);
-
         //after this point, general error messages should contain role assignment info
-        //they should also contain enrolment info if the role is a gradebook role and the context
-        //is a course
-        $track_enrolments = in_array($roleid, $studentroleids) && $record->context == 'course';
+        //they should also contain enrolment info if the the context is a course
+        $track_enrolments = $record->context == 'course';
         $this->fslogger->set_enrolment_state(true, $track_enrolments);
 
         if (!$role_assignment_exists) {
@@ -2272,7 +2245,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $message = "User with {$user_descriptor} is not assigned role with ".
                        "shortname \"{$record->role}\" on {$context_descriptor}.";
 
-            if (!in_array($roleid, $studentroleids) || $record->context != 'course') {
+            if ($record->context != 'course') {
                 //nothing to delete
                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
@@ -2281,6 +2254,18 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                             "course with shortname \"{$record->instance}\".";
                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'enrolment');
                 return false;
+            } else {
+                //count how many role assignments the user has on this context
+                $num_assignments = $DB->count_records('role_assignments', array('userid' => $userid,
+                                                                                'contextid' => $context->id));
+
+                if ($num_assignments > 0) {
+                    //can't unenrol because of some other role assignment
+                    $message .= " User with {$user_descriptor} requires their enrolment ".
+                                "to be maintained because they have another role assignment in this course.";
+                    $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'enrolment');
+                    return false;
+                }
             }
         }
 
@@ -2300,15 +2285,23 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $logmessages[] = "User with {$user_descriptor} successfully unassigned role with shortname \"{$record->role}\" on {$context_descriptor}.";
         }
 
-        if ($enrolment_exists && in_array($roleid, $studentroleids)) {
+        if ($enrolment_exists) {
             //remove enrolment
             if ($instance = $DB->get_record('enrol', array('enrol' => 'manual',
                                                            'courseid' => $context->instanceid))) {
-                $plugin = enrol_get_plugin('manual');
-                $plugin->unenrol_user($instance, $userid);
 
-                //collect success message for logging at end of action
-                $logmessages[] = "User with {$user_descriptor} unenrolled from course with shortname \"{$record->instance}\".";
+                //count how many role assignments the user has on this context
+                $num_assignments = $DB->count_records('role_assignments', array('userid' => $userid,
+                                                                                'contextid' => $context->id));
+
+                if ($num_assignments == 0) {
+                    //no role assignments left, so we can delete enrolment record
+                    $plugin = enrol_get_plugin('manual');
+                    $plugin->unenrol_user($instance, $userid);
+
+                    //collect success message for logging at end of action
+                    $logmessages[] = "User with {$user_descriptor} unenrolled from course with shortname \"{$record->instance}\".";
+                }
             }
         }
 

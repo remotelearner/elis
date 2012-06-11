@@ -295,54 +295,61 @@ class version1FilesystemLoggingTest extends rlip_test {
     static protected function get_ignored_tables() {
         global $DB;
 
-        $tables = array(
-            'block_instances' => 'moodle',
-            'cache_flags' => 'moodle',
-            'course_sections' => 'moodle',
-            'log' => 'moodle',
-            'message'            => 'moodle',
-            'message_read'       => 'moodle',
-            'message_working'    => 'moodle',
-            'cohort_members' => 'moodle',
-            'user_preferences' => 'moodle',
-            'user_info_data' => 'moodle',
-            'user_lastaccess' => 'moodle',
-            'filter_active' => 'moodle',
-            'filter_config' => 'moodle',
-            'comments' => 'moodle',
-            'rating' => 'moodle',
-            'files' => 'moodle',
-            'role_capabilities' => 'moodle',
-            'role_names' => 'moodle',
-            'course_completion_criteria' => 'moodle',
-            'course_completion_aggr_methd' => 'moodle',
-            'course_completions' => 'moodle',
-            'course_completion_crit_compl' => 'moodle',
-            'grade_categories_history' => 'moodle',
-            //'grade_items' => 'moodle',
-            'grade_items_history' => 'moodle',
-            'grade_outcomes_courses' => 'moodle',
-            'grade_settings' => 'moodle',
-            'grade_letters' => 'moodle',
-            'course_modules_completion' => 'moodle',
-            'course_modules_availability' => 'moodle',
-            'feedback_items' => 'moodle',
-            'feedback_template' => 'moodle',
-            'course_modules' => 'moodle',
-            'event' => 'moodle',
-            'course_display' => 'moodle',
-            'backup_log' => 'moodle',
-            'external_tokens' => 'moodle',
-            'external_services_users' => 'moodle',
-            'grade_grades' => 'moodle',
-            'grade_grades_history' => 'moodle',
-            'external_services_users' => 'moodle',
-            'url' => 'moodle',
-            'assignment' => 'moodle',
-            'assignment_submissions' => 'moodle',
-            'forum_track_prefs' => 'moodle',
-            'sessions' => 'moodle'
-        );
+        $tables = array('block_instances' => 'moodle',
+                     'course_sections' => 'moodle',
+                     'cache_flags' => 'moodle',
+                     'log' => 'moodle',
+                     'message'            => 'moodle',
+                     'message_read'       => 'moodle',
+                     'message_working'    => 'moodle',
+                     'cohort_members' => 'moodle',
+                     'user_preferences' => 'moodle',
+                     'user_info_data' => 'moodle',
+                     'user_lastaccess' => 'moodle',
+                     'filter_active' => 'moodle',
+                     'filter_config' => 'moodle',
+                     'comments' => 'moodle',
+                     'rating' => 'moodle',
+                     'files' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'course_completion_criteria' => 'moodle',
+                     'course_completion_aggr_methd' => 'moodle',
+                     'course_completions' => 'moodle',
+                     'course_completion_crit_compl' => 'moodle',
+                     '_categories_history' => 'moodle',
+                     //'grade_items' => 'moodle',
+                     'grade_items_history' => 'moodle',
+                     'grade_outcomes_courses' => 'moodle',
+                     'grade_categories_history' => 'moodle',
+                     'grade_settings' => 'moodle',
+                     'grade_letters' => 'moodle',
+                     'course_modules_completion' => 'moodle',
+                     'course_modules_availability' => 'moodle',
+                     'feedback_items' => 'moodle',
+                     'feedback_template' => 'moodle',
+                     'course_modules' => 'moodle',
+                     'event' => 'moodle',
+                     'course_display' => 'moodle',
+                     'backup_log' => 'moodle',
+                     'external_tokens' => 'moodle',
+                     'forum' => 'mod_forum',
+                     'forum_subscriptions' => 'mod_forum',
+                     'forum_read' => 'mod_forum',
+                     'external_services_users' => 'moodle',
+                     'grade_grades' => 'moodle',
+                     'grade_grades_history' => 'moodle',
+                     'external_services_users' => 'moodle',
+                     'quiz_attempts' => 'mod_quiz',
+                     'quiz_grades' => 'mod_quiz',
+                     'quiz_question_instances' => 'mod_quiz',
+                     'quiz_feedback' => 'mod_quiz',
+                     'quiz' => 'mod_quiz',
+                     'url' => 'moodle',
+                     'assignment' => 'moodle',
+                     'assignment_submissions' => 'moodle',
+                     'forum_track_prefs' => 'moodle',
+                     'sessions' => 'moodle');
 
         if ($DB->record_exists("block", array("name" => "curr_admin"))) {
             $tables['crlm_user_moodle'] = 'elis_program';
@@ -1578,7 +1585,8 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment create action on courses
      */
     public function testVersion1ImportLogsSuccesfulCourseRoleAssignmentCreate() {
-        global $DB, $UNITTEST;
+        global $DB, $CFG, $UNITTEST;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
 
         $UNITTEST = new stdClass;
         $UNITTEST->running = true;
@@ -1588,15 +1596,22 @@ class version1FilesystemLoggingTest extends rlip_test {
         //set up dependencies
         $this->create_contexts_and_site_course();
 
-        $this->create_test_user();
-        $this->create_test_course();
-        $syscontext = context_system::instance();
+        $userid = $this->create_test_user();
+        $courseid = $this->create_test_course();
         $roleid = $this->create_test_role();
+        $syscontext = context_system::instance();
 
-        //make sure it can be assigned as a non-student role
-        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
+        set_config('siteguest', '');
 
-        set_config('gradebookroles', '');
+        //make sure we can enrol the test user
+        $enrol = new stdClass;
+        $enrol->enrol = 'manual';
+        $enrol->courseid = $courseid;
+        $enrol->status = ENROL_INSTANCE_ENABLED;
+        $DB->insert_record('enrol', $enrol);
+
+        //set up an enrolment but no role assignment
+        enrol_try_internal_enrol($courseid, $userid);
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -1672,9 +1687,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $courseid = $this->create_test_course();
         $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
-
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
 
         //make sure they already have a role assignment
         role_assign($roleid, $userid, $context->id);
@@ -1754,9 +1766,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = $this->create_test_role();
-
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -1847,9 +1856,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $group->name = 'rlipname';
         groups_create_group($group);
 
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
-
         //make sure they already have a role assignment
         role_assign($roleid, $userid, $context->id);
 
@@ -1937,9 +1943,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = $this->create_test_role();
-
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
 
         //make sure they already have a role assignment
         role_assign($roleid, $userid, $context->id);
@@ -2036,9 +2039,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = $this->create_test_role();
-
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
 
         //make sure they already have a role assignment
         role_assign($roleid, $userid, $context->id);
@@ -2155,9 +2155,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $grouping->courseid = $courseid;
         $grouping->name = 'rlipname';
         groups_create_grouping($grouping);
-
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
 
         //make sure they already have a role assignment
         role_assign($roleid, $userid, $context->id);
@@ -2560,9 +2557,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $enrol->status = ENROL_INSTANCE_ENABLED;
         $DB->insert_record('enrol', $enrol);
 
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
-
         //base data used every time
         $basedata = array('action' => 'delete',
                           'context' => 'course',
@@ -2645,9 +2639,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $enrol->courseid = $courseid;
         $enrol->status = ENROL_INSTANCE_ENABLED;
         $DB->insert_record('enrol', $enrol);
-
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
 
         //base data used every time
         $basedata = array('action' => 'delete',
@@ -3007,7 +2998,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $courseid = $this->create_test_course();
         $context = get_context_instance(CONTEXT_COURSE, $courseid);
         $roleid = $this->create_test_role();
-        set_config('gradebookroles', $roleid);
 
         //create mapping records
         $this->create_mapping_record('enrolment', 'username', 'customusername');
@@ -3264,17 +3254,15 @@ class version1FilesystemLoggingTest extends rlip_test {
     }
 
     /**
-     * Validates log message for assigning a role that does not have the
-     * "course view" capability tied to it
+     * Validate that approval messages still work when roles do not have the
+     * standard Moodle "view course" capability 
      */
-    public function testVersion1ImportLogsMissingCourseViewCapability() {
+    public function testVersion1ImportLogsSuccessWhenMissingCourseViewCapability() {
         //set up dependencies
         $this->create_contexts_and_site_course();
         $this->create_test_user();
         $this->create_test_course();
         $this->create_test_role();
-
-        set_config('gradebookroles', '');
 
         //data
         $data = array('action' => 'create',
@@ -3284,7 +3272,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                       'context' => 'course',
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". Role with shortname \"rlipshortname\" does not have the moodle/course:view capability.\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" successfully assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" enrolled in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3383,7 +3371,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_mapping_record('enrolment', 'group', 'customgroup');
 
         set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
-        set_config('gradebookroles', '');
 
         $data = array('action' => 'create',
                       'username' => 'rlipusername',
@@ -3392,7 +3379,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                       'role' => 'rlipshortname',
                       'customgroup' => 'bogus');
 
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". customgroup value of \"bogus\" does not refer to a valid group in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" could not be enrolled in course with shortname \"rlipshortname\". customgroup value of \"bogus\" does not refer to a valid group in course with shortname \"rlipshortname\".\n";
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -3439,8 +3426,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $courseid = $this->create_test_course();
         $this->create_test_role();
 
-        set_config('gradebookroles', '');
-
         //create mapping record
         $this->create_mapping_record('enrolment', 'group', 'customgroup');
 
@@ -3461,7 +3446,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = array_merge($basedata, $data);
 
         $identifiers = $this->get_user_identifiers($data);
-        $message = "[enrolment.csv line 2] User with ".implode(', ', $identifiers)." could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". customgroup value of \"duplicate\" refers to multiple groups in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with ".implode(', ', $identifiers)." could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with ".implode(', ', $identifiers)." could not be enrolled in course with shortname \"rlipshortname\". customgroup value of \"duplicate\" refers to multiple groups in course with shortname \"rlipshortname\".\n";
 
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
@@ -3483,8 +3468,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         //create mapping record
         $this->create_mapping_record('enrolment', 'grouping', 'customgrouping');
 
-        set_config('gradebookroles', '');
-
         $group = new stdClass;
         $group->courseid = $courseid;
         $group->name = 'rlipname';
@@ -3501,7 +3484,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                       'customgrouping' => 'bogus');
 
         $identifiers = $this->get_user_identifiers($data);
-        $message = "[enrolment.csv line 2] User with ".implode(', ', $identifiers)." could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". customgrouping value of \"bogus\" does not refer to a valid grouping in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with ".implode(', ', $identifiers)." could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with ".implode(', ', $identifiers)." could not be enrolled in course with shortname \"rlipshortname\". customgrouping value of \"bogus\" does not refer to a valid grouping in course with shortname \"rlipshortname\".\n";
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -3527,8 +3510,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         //create mapping record
         $this->create_mapping_record('enrolment', 'grouping', 'customgrouping');
 
-        set_config('gradebookroles', '');
-
         $group = new stdClass;
         $group->courseid = $courseid;
         $group->name = 'rlipname';
@@ -3549,7 +3530,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                       'customgrouping' => 'duplicate');
 
         $identifiers = $this->get_user_identifiers($data);
-        $message = "[enrolment.csv line 2] User with ".implode(', ', $identifiers)." could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". customgrouping value of \"duplicate\" refers to multiple groupings in course with shortname \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with ".implode(', ', $identifiers)." could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with ".implode(', ', $identifiers)." could not be enrolled in course with shortname \"rlipshortname\". customgrouping value of \"duplicate\" refers to multiple groupings in course with shortname \"rlipshortname\".\n";
         //validation
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
@@ -3580,16 +3561,9 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         //enrol the user in some secondary student role
         $secondroleid = $this->create_test_role('secondfullname', 'secondshortname', 'seconddescription');
-        set_config('gradebookroles', "{$roleid},{$secondroleid}");
         enrol_try_internal_enrol($courseid, $userid, $secondroleid);
         //assign the user to the group
         groups_add_member($group->id, $userid);
-
-        //make our role a "student" role
-        //set_config('gradebookroles', $roleid);
-
-        //make sure they already have a role assignment
-        //role_assign($roleid, $userid, $context->id);
 
         //base data used every time
         $basedata = array('action' => 'create',
@@ -3681,9 +3655,6 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         groups_assign_grouping($grouping->id, $group->id);
 
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
-
         //make sure they already have a role assignment
         role_assign($roleid, $userid, $context->id);
 
@@ -3758,30 +3729,6 @@ class version1FilesystemLoggingTest extends rlip_test {
     }
 
     /**
-     * Validate log message for attempting to assign a non-student to a group
-     */
-    public function testVersion1ImportLogsGroupAssignmentForNonStudent() {
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
-        set_config('gradebookroles', '');
-
-        $this->create_contexts_and_site_course();
-        $this->create_test_user();
-        $this->create_test_course();
-        $this->create_test_role();
-
-        $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'email' => 'rlipuser@rlipdomain.com',
-                      'idnumber' => 'rlipidnumber',
-                      'context' => 'course',
-                      'instance' => 'rlipshortname',
-                      'role' => 'rlipshortname',
-                      'group' => 'rlipgroup');
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". Could not assign user with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" to group with name \"rlipgroup\" because they are not enrolled in course with shortname \"rlipshortname\".\n";
-        $this->assert_data_produces_error($data, $message, 'enrolment');
-    }
-
-    /**
      * Validates a duplicate enrolment failure message
      */
     public function testVersion1ImportLogsDuplicateEnrolmentFailureMessage() {
@@ -3808,9 +3755,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $enrol->courseid = $courseid;
         $enrol->status = ENROL_INSTANCE_ENABLED;
         $DB->insert_record('enrol', $enrol);
-
-        //make our role a "student" role
-        set_config('gradebookroles', $roleid);
 
         $timestart = $DB->get_field('course', 'startdate', array('id' => $courseid));
         enrol_try_internal_enrol($courseid, $userid, null,$timestart);
@@ -3887,41 +3831,34 @@ class version1FilesystemLoggingTest extends rlip_test {
         $adminuser = get_test_user('admin');
         set_config('siteadmins', $adminuser->id);
 
-        //make our role NOT a "student" role
-        set_config('gradebookroles', null);
-
         $userid = $this->create_test_user();
-        $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = get_context_instance(CONTEXT_SYSTEM);
         $roleid = $this->create_test_role();
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
-        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         //base data used every time
         $basedata = array('action' => 'create',
-                          'context' => 'course',
-                          'instance' => 'rlipshortname',
+                          'context' => 'system',
                           'role' => 'rlipshortname');
 
         //username
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['username'] = 'rlipusername';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\" could not be assigned role with shortname \"rlipshortname\" on the system context. User with email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //idnumber
         role_assign($roleid, $userid, $context->id);
         $data = $basedata;
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on the system context. User with idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email
@@ -3929,7 +3866,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" could not be assigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" is already assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, idnumber
@@ -3937,7 +3874,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = $basedata;
         $data['username'] = 'rlipusername';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //email, idnumber
@@ -3945,7 +3882,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data = $basedata;
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on the system context. User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
 
         //username, email, idnumber
@@ -3954,7 +3891,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $data['username'] = 'rlipusername';
         $data['email'] = 'rlipuser@rlipdomain.com';
         $data['idnumber'] = 'rlipidnumber';
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" could not be assigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" is already assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
@@ -4109,8 +4046,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_test_user();
         $roleid = $this->create_test_role();
         $this->create_test_course();
-        //make sure we are in the "student" scenario
-        set_config('gradebookroles', "$roleid");
 
         //data
         $data = array('action' => 'delete',
@@ -4140,8 +4075,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_test_user();
         $this->create_test_role();
         $this->create_test_course();
-        //make sure we are not in the "student" scenario
-        set_config('gradebookroles', '');
 
         //data
         $data = array('action' => 'delete',
@@ -4150,9 +4083,47 @@ class version1FilesystemLoggingTest extends rlip_test {
                       'instance' => 'rlipshortname',
                       'role' => 'rlipshortname');
 
-        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" could not be unenrolled from course with shortname \"rlipshortname\". User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is not enrolled in course with shortname \"rlipshortname\".\n";
 
         //validation
+        $this->assert_data_produces_error($data, $message, 'enrolment');
+    }
+
+    /**
+     * Validates that, for deletion of a course role that is not assigned, an error is logged
+     * instead of deleting the user's enrolment if they have some other role assignment on
+     * the coruse
+     */
+    public function testVersion1ImportLogsDeletionOfEnrolmentWhenRolesAssignmentsExist() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        //set up dependencies
+        $this->create_contexts_and_site_course();
+        $userid = $this->create_test_user();
+        $unassignedroleid = $this->create_test_role('unassigned', 'unassigned', 'unassigned');
+        $assignedroleid = $this->create_test_role('assigned', 'assigned', 'assigned');
+        $courseid = $this->create_test_course();
+
+        set_config('siteguest', '');
+
+        $enrol = new stdClass;
+        $enrol->enrol = 'manual';
+        $enrol->courseid = $courseid;
+        $enrol->status = ENROL_INSTANCE_ENABLED;
+        $DB->insert_record('enrol', $enrol);
+
+        //set up a role assignment and an enrolment
+        enrol_try_internal_enrol($courseid, $userid, $assignedroleid);
+
+        //data
+        $data = array('action' => 'delete',
+                      'username' => 'rlipusername',
+                      'context' => 'course',
+                      'instance' => 'rlipshortname',
+                      'role' => 'unassigned');
+
+        $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"unassigned\" on course \"rlipshortname\". User with username \"rlipusername\" could not be unenrolled from course with shortname \"rlipshortname\". User with username \"rlipusername\" is not assigned role with shortname \"unassigned\" on course \"rlipshortname\". User with username \"rlipusername\" requires their enrolment to be maintained because they have another role assignment in this course.\n";
         $this->assert_data_produces_error($data, $message, 'enrolment');
     }
 
@@ -6734,9 +6705,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $userid = $this->create_test_user();
         $roleid = $this->create_test_role();
 
-        //make sure not roles count as gradebook roles
-        set_config('gradebookroles', "{$roleid}");
-
         //assign a role
         $system_context = get_context_instance(CONTEXT_SYSTEM);
         role_assign($roleid, $userid, $system_context->id);
@@ -6759,69 +6727,12 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_test_user();
         $roleid = $this->create_test_role();
 
-        //make sure the test role counts as a gradebook role
-        set_config('gradebookroles', "{$roleid}");
-
         //run the import and validate
         $data = array('action' => 'delete',
                       'username' => 'rlipusername',
                       'context' => 'system',
                       'role' => 'rlipshortname');
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on the system context.\n";
-        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-    }
-
-    /**
-     * Validate that general enrolment errors are only displayed for graded
-     * roles on enrolment create
-     */
-    function testVersion1GeneralEnrolmentMessageIsGradedRolesSpecific() {
-        //setup
-        $this->create_contexts_and_site_course();
-
-        $userid = $this->create_test_user();
-        $courseid = $this->create_test_course();
-        $roleid = $this->create_test_role();
-
-        //make sure the test role doesn't count as a gradebook role
-        set_config('gradebookroles', '');
-
-        //assign a role
-        $course_context = get_context_instance(CONTEXT_COURSE, $courseid);
-        role_assign($roleid, $userid, $course_context->id);
-
-        //run the import and validate
-        $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'context' => 'course',
-                      'instance' => 'rlipshortname',
-                      'role' => 'rlipshortname');
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on course \"rlipshortname\". Role with shortname \"rlipshortname\" does not have the moodle/course:view capability.\n";
-        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-    }
-
-    /**
-     * Validate that general unenrolment errors are only displayed for graded
-     * roles on enrolment delete
-     */
-    function testVersion1GeneralUnenrolmentMessageIsGradedRolesSpecific() {
-        //setup
-        $this->create_contexts_and_site_course();
-
-        $this->create_test_user();
-        $this->create_test_course();
-        $this->create_test_role();
-
-        //make sure the test role doesn't count as a gradebook role
-        set_config('gradebookroles', '');
-
-        //run the import and validate
-        $data = array('action' => 'delete',
-                      'username' => 'rlipusername',
-                      'context' => 'course',
-                      'instance' => 'rlipshortname',
-                      'role' => 'rlipshortname');
-        $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on course \"rlipshortname\". User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on course \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
