@@ -473,14 +473,9 @@ class curriculum extends data_object_with_custom_fields {
         if (isset($userset)) {
             $to_append = ' - '. $userset->name;
             // if cluster specified, append cluster's name to curriculum
-            if (stripos($idnumber, $to_append) === FALSE) {
-                $maxlen = 92 - strlen($userset->name);
-                $idnumber = append_once(substr($idnumber, 0, $maxlen), $to_append);
-            }
-            if (stripos($name, $to_append) === FALSE) {
-                $maxlen = 56 - strlen($userset->name);
-                $name = append_once(substr($name, 0, $maxlen), $to_append);
-            }
+            $idnumber = append_once($idnumber, $to_append,
+                                    array('maxlength' => 95));
+            $name = append_once($name, $to_append, array('maxlength' => 59));
         }
 
         //get a unique idnumber
