@@ -1036,7 +1036,7 @@ function generate_unique_identifier($table, $iterator, $basevalue, $params, $cla
     //create a unique idnumber by appending a suffix
     $count = 0;
     $oldbase = $basevalue;
-    $basevalue = preg_replace('/\.[0-9].*$/', '', $basevalue);
+    $basevalue = preg_replace('/\.[0-9]+$/', '', $basevalue);
     if ($oldbase != $basevalue) {
         $count = intval(substr($oldbase, strrpos($oldbase, '.') + 1));
     }
