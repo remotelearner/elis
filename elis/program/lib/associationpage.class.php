@@ -621,6 +621,47 @@ class associationpage extends pm_page {
     function print_search() {
         pmsearchbox($this);
     }
+
+    // Store checkbox data into session
+    function checkbox_selection_session() {
+        global $SESSION;
+        $selection = optional_param('selected_checkboxes', '', PARAM_CLEAN);
+        $target = optional_param('target', '', PARAM_ALPHA);
+        $page = optional_param('s', '', PARAM_ALPHA);
+        $id = optional_param('id', 1, PARAM_INT);
+
+        $selectedcheckboxes = json_decode($selection);
+
+        if (is_array($selectedcheckboxes)) {
+            $pagename = $page . $id . $target;
+
+            if (!isset($SESSION->associationpage[$pagename])) {
+                $SESSION->associationpage[$pagename] = array();
+            }
+
+            $existing_selection = array();
+            $new_selection = array();
+            foreach ($selectedcheckboxes as $selectedcheckbox) {
+                $record = json_decode($selectedcheckbox);
+                /* If only the id is provided, the selection was stored previously
+                 * Get the corresponding session data, if available
+                 */
+                if(isset($record->bare)) {
+                    $result = retrieve_session_selection($record->id, $target);
+                    if ($result) {
+                        $existing_selection[] = $result;
+                    }
+                } else {
+                    // New selection record
+                    $new_selection[] = $selectedcheckbox;
+                }
+            }
+
+            $result = array_merge($existing_selection, $new_selection);
+            $SESSION->associationpage[$pagename] = $result;
+        }
+    }
+
 }
 
 class association_page_table extends display_table {
