@@ -59,10 +59,18 @@ class cmform extends moodleform {
 
         $contextlevel = context_elis_helper::get_level_from_name($entity);
         $contextclass = context_elis_helper::get_class_for_level($contextlevel);
-        $context = isset($this->_customdata['obj']) &&
-                   isset($this->_customdata['obj']->id)
-                 ? $contextclass::instance($this->_customdata['obj']->id)
-                 : context_system::instance();
+
+        if (isset($this->_customdata['obj'])) {
+            if(isset($this->_customdata['obj']->id)) {
+                $context = $contextclass::instance($this->_customdata['obj']->id);
+            } elseif (isset($this->_customdata['obj']->parent)) {
+                $context = $contextclass::instance($this->_customdata['obj']->parent);
+            } else {
+                $context = context_system::instance();
+            }
+        } else {
+            $context = context_system::instance();
+        }
 
         require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
 
@@ -74,7 +82,6 @@ class cmform extends moodleform {
             }
 
             //capabilities for editing / viewing this context
-
             if (manual_field_is_view_or_editable($field, $context, $edit_cap, $view_cap) != MANUAL_FIELD_NO_VIEW_OR_EDIT) {
                 if ($lastcat != $rec->categoryid) {
                     $lastcat = $rec->categoryid;
