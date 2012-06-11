@@ -65,6 +65,15 @@ class studentpage extends associationpage {
         parent::__construct($params);
     }
 
+    // Store checkbox data into session
+    function do_checkbox_selection_session() {
+        parent::checkbox_selection_session($this->pagename);
+    }
+
+    function _get_page_context() { // TBD
+        return parent::_get_page_context();
+    }
+
     function _get_page_params() { // TBD
         return parent::_get_page_params();
     }
@@ -238,6 +247,9 @@ class studentpage extends associationpage {
     }
 
     private function attempt_enrol($classid, $users) {
+        // Delete/reset checkbox selection for add action
+        session_selection_deletion('add');
+
         foreach ($users as $uid => $user) {
             if (!empty($user['enrol'])) {
                 $newstu = $this->build_student($uid, $classid, $user);
@@ -366,6 +378,9 @@ class studentpage extends associationpage {
         global $DB;
         $clsid = $this->required_param('id', PARAM_INT);
         $users = pm_process_user_enrolment_data();  // ELIS-4089 -- JJF
+
+        // Delete/reset checkbox selection for bulkedit action
+        session_selection_deletion('bulkedit');
 
         foreach($users as $uid => $user) {
             $sturecord            = array();

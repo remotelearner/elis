@@ -527,8 +527,7 @@ class student extends elis_data_object {
     function edit_form_html($classid, $type = '', $sort = 'idnumber', $dir = 'ASC', $page = 0,
                             $perpage = 30, $namesearch = '', $alpha = '') {
                             // ^^^ set non-zero default for $perpage
-        global $CFG, $OUTPUT, $PAGE;
-
+        global $CFG, $OUTPUT, $PAGE, $SESSION;
         $output = '';
         ob_start();
 
@@ -623,15 +622,33 @@ class student extends elis_data_object {
             pmshowmatches($alpha, $namesearch);
             $table = NULL;
         } else {
+
             $stuobj = new student();
 
-            $table->width = "100%";
             foreach ($users as $user) {
+                $locked = $this->locked;
+                $credits = $this->credits;
+                $grade = $this->grade;
+                $status = $this->completestatusid;
+                $enrolmenttime =  $this->enrolmenttime;
+                $completetime = $this->completetime;
+
+                $selection = json_decode(retrieve_session_selection($user->id, 'add'));
+
+                if ($selection) {
+                    $locked = $selection->locked;
+                    $credits = $selection->credits;
+                    $grade = $selection->grade;
+                    $status = $selection->status;
+                    $enrolmenttime = mktime(0, 0, 0, $selection->enrolment_date->month, $selection->enrolment_date->day, $selection->enrolment_date->year);
+                    $completetime = mktime(0, 0, 0, $selection->completion_date->month, $selection->completion_date->day, $selection->completion_date->year);
+                }
                 $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'enrol':
-                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][enrol]" value="1" />'.
+                            $tabobj->{$column} = '<input type="checkbox" id="checkbox'. $user->id .'"
+                            name="users[' . $user->id . '][enrol]" value="1" onClick="select_item(' . $user->id .')" '.($selection?'checked="checked"':''). '/>'.
                                         '<input type="hidden" name="users[' . $user->id . '][idnumber]" '.
                                         'value="' . $user->idnumber . '" />';
                             break;
@@ -646,14 +663,15 @@ class student extends elis_data_object {
                             $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][startday]',
                                                                'users[' . $user->id . '][startmonth]',
                                                                'users[' . $user->id . '][startyear]',
-                                                               $this->enrolmenttime, true);
+                                                               $enrolmenttime, true);
+
                             break;
 
                         case 'completetime':
                             $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][endday]',
                                                                'users[' . $user->id . '][endmonth]',
                                                                'users[' . $user->id . '][endyear]',
-                                                               $this->completetime, true);
+                                                               $completetime, true);
                             break;
 
                         case 'completestatusid':
@@ -664,22 +682,22 @@ class student extends elis_data_object {
                             }
                             $tabobj->{$column} = cm_choose_from_menu($choices,
                                                             'users[' . $user->id . '][completestatusid]',
-                                                            $this->completestatusid, '', '', '', true);
+                                                            $status, '', '', '', true);
                             break;
 
                         case 'grade':
-                            $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][grade]" ' .
-                                        'value="' . $this->grade . '" size="5" />';
+                            $tabobj->{$column} = '<input type="text" id="grade' .$user->id . '" name="users[' . $user->id . '][grade]" ' .
+                                        'value="' . $grade . '" size="5" />';
                             break;
 
                         case 'credits':
-                            $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][credits]" ' .
-                                        'value="' . $this->credits . '" size="5" />';
+                            $tabobj->{$column} = '<input type="text" id="credits' .$user->id . '" name="users[' . $user->id . '][credits]" ' .
+                                        'value="' . $credits . '" size="5" />';
                             break;
 
                         case 'locked':
-                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][locked]" ' .
-                                        'value="1" '.($this->locked?'checked="checked"':'').'/>';
+                            $tabobj->{$column} = '<input type="checkbox" id="locked' .$user->id . '" name="users[' . $user->id . '][locked]" ' .
+                                        'value="1" '.($locked?'checked="checked"':'').'/>';
                             break;
 
                         default:
@@ -691,8 +709,10 @@ class student extends elis_data_object {
                 //$table->data[] = $newarr;
             }
             // TBD: student_table() ???
-            $table = new display_table($newarr, $columns, $this->get_base_url());
+            $table = new display_table($newarr, $columns, $this->get_base_url(), null, null, array('id' => 'selectiontbl'));
         }
+
+        print_checkbox_selection($classid, 'stu', 'add');
 
         if (empty($this->id)) {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
@@ -708,11 +728,8 @@ class student extends elis_data_object {
         if (!empty($newarr)) { // TBD: $newarr or $table
             if(empty($this->id)) {
                 $PAGE->requires->js('/elis/program/js/classform.js');
-                echo '<span class="checkbox selectall">';
-                echo '<input type="checkbox" onclick="class_enrol_set_all_selected()"
-                             id="class_enrol_select_all" name="class_enrol_select_all"/>';
-                echo '<label for="class_enrol_select_all">' . get_string('enrol_select_all', self::LANG_FILE) . '</label>';
-                echo '</span>';
+                echo '<input type="button" onclick="checkbox_select(true,\'[enrol]\')" value="'.get_string('selectall').'" /> ';
+                echo '<input type="button" onclick="checkbox_select(false,\'[enrol]\')" value="'.get_string('deselectall').'" /> ';
             }
             echo $table->get_html();
         }
@@ -841,7 +858,7 @@ class student extends elis_data_object {
      */
     function view_form_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
                             $perpage = 0, $namesearch = '', $alpha = '') {
-        global $CFG, $OUTPUT, $PAGE;
+        global $CFG, $OUTPUT, $PAGE, $SESSION;
 
         $output = '';
         ob_start();
@@ -955,13 +972,30 @@ class student extends elis_data_object {
         } else {
             $stuobj = new student();
             $newarr = array();
-            $table->width = "100%"; // TBD
+            //$table->width = "100%"; // TBD
             $pmclass = new pmclass($classid);
             if (empty(elis::$config->elis_program->force_unenrol_in_moodle)) {
                 $mcourse = $pmclass->get_moodle_course_id();
                 $ctx = $mcourse ? get_context_instance(CONTEXT_COURSE, $mcourse) : 0;
             }
             foreach ($users as $user) {
+                $locked = $user->locked;
+                $credits = $user->credits;
+                $grade = $user->grade;
+                $status = $user->completestatusid;
+                $enrolmenttime =  $user->enrolmenttime;
+                $completetime = $user->completetime;
+
+                $selection = json_decode(retrieve_session_selection($user->id, 'bulkedit'));
+
+                if ($selection) {
+                    $locked = $selection->locked;
+                    $credits = $selection->credits;
+                    $grade = $selection->grade;
+                    $status = $selection->status;
+                    $enrolmenttime = mktime(0, 0, 0, $selection->enrolment_date->month, $selection->enrolment_date->day, $selection->enrolment_date->year);
+                    $completetime = mktime(0, 0, 0, $selection->completion_date->month, $selection->completion_date->day, $selection->completion_date->year);
+                }
                 $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
@@ -976,7 +1010,8 @@ class student extends elis_data_object {
                                     break;
                                 }
                             }
-                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][unenrol]" value="1" />';
+                            $tabobj->{$column} = '<input type="checkbox" onClick="select_item(' . $user->id .')"
+                            name="users[' . $user->id . '][unenrol]" value="1" id="checkbox' . $user->id .'" '.($selection?'checked="checked"':''). '/>';
                             break;
 
                         case 'name':
@@ -989,14 +1024,14 @@ class student extends elis_data_object {
                             $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][startday]',
                                                      'users[' . $user->id . '][startmonth]',
                                                      'users[' . $user->id . '][startyear]',
-                                                     $user->enrolmenttime, true);
+                                                     $enrolmenttime, true);
                             break;
 
                         case 'completetime':
                             $tabobj->{$column} = cm_print_date_selector('users[' . $user->id . '][endday]',
                                                      'users[' . $user->id . '][endmonth]',
                                                      'users[' . $user->id . '][endyear]',
-                                                     $user->completetime, true);
+                                                     $completetime, true);
                             break;
 
                         case 'completestatusid':
@@ -1006,22 +1041,22 @@ class student extends elis_data_object {
                             }
                             $tabobj->{$column} = cm_choose_from_menu($choices,
                                                      'users[' . $user->id . '][completestatusid]',
-                                                     $user->completestatusid, '', '', '', true);
+                                                     $status, '', '', '', true);
                             break;
 
                         case 'grade':
-                            $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][grade]" ' .
-                                        'value="' . $user->grade . '" size="5" />';
+                            $tabobj->{$column} = '<input type="text" id="grade' .$user->id . '" id="locked' .$user->id . '" name="users[' . $user->id . '][grade]" ' .
+                                        'value="' . $grade . '" size="5" />';
                             break;
 
                         case 'credits':
-                            $tabobj->{$column} = '<input type="text" name="users[' . $user->id . '][credits]" ' .
-                                        'value="' . $user->credits . '" size="5" />';
+                            $tabobj->{$column} = '<input type="text" id="credits' .$user->id . '" name="users[' . $user->id . '][credits]" ' .
+                                        'value="' . $credits . '" size="5" />';
                             break;
 
                         case 'locked':
-                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][locked]" ' .
-                                        'value="1" '.($user->locked?'checked="checked"':'').'/>'.
+                            $tabobj->{$column} = '<input type="checkbox" id="locked' .$user->id . '" name="users[' . $user->id . '][locked]" ' .
+                                        'value="1" '.($locked?'checked="checked"':'').'/>'.
                                         '<input type="hidden" name="users[' . $user->id . '][idnumber]" '.
                                         'value="' . $user->idnumber . '" />' .
                                         '<input type="hidden" name="users[' . $user->id . '][association_id]" '.
@@ -1037,8 +1072,10 @@ class student extends elis_data_object {
                 //$table->data[] = $newarr;
             }
             // TBD: student_table() ???
-            $table = new display_table($newarr, $columns, $this->get_base_url());
+            $table = new display_table($newarr, $columns, $this->get_base_url(), null, null, array('id' => 'selectiontbl'));
         }
+
+        print_checkbox_selection($classid, 'stu', 'bulkedit');
 
         if (empty($this->id)) {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
@@ -1054,12 +1091,8 @@ class student extends elis_data_object {
         if (!empty($newarr)) { // TBD: $newarr or $table?
             if(empty($this->id)) {
                 $PAGE->requires->js('/elis/program/js/classform.js');
-                echo '<span class="checkbox selectall">';
-
-                echo '<input type="checkbox" onclick="class_bulkedit_set_all_selected()"
-                             id="class_bulkedit_select_all" name="class_bulkedit_select_all"/>';
-                echo '<label for="class_bulkedit_select_all">' . get_string('bulkedit_select_all', self::LANG_FILE) . '</label>';
-                echo '</span>';
+                echo '<input type="button" onclick="checkbox_select(true,\'[unenrol]\')" value="'.get_string('selectall').'" /> ';
+                echo '<input type="button" onclick="checkbox_select(false,\'[unenrol]\')" value="'.get_string('deselectall').'" /> ';
             }
             echo $table->get_html();
         }
@@ -1156,7 +1189,7 @@ class student extends elis_data_object {
                     //$table->data[] = $newarr;
                 }
                 // TBD: student_table() ???
-                $table = new display_table($newarr, $columns, $this->get_base_url());
+                $table = new display_table($newarr, $columns, $this->get_base_url(), null, null, array('id' => 'wowwww'));
                 if (!empty($table)) { // TBD: $newarr or $table?
                     echo '<br />';
                     echo $table->get_html();
@@ -2459,7 +2492,7 @@ function student_get_class_from_course($crsid, $userid, $sort = 'cls.idnumber', 
             FROM {'. student::TABLE .'} stu
             INNER JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
             WHERE stu.userid = ?
-            AND cls.courseid = ? 
+            AND cls.courseid = ?
             ORDER BY '.$sort.' '.$dir;
     return $DB->get_records_sql($sql, array($userid, $crsid));
 }
