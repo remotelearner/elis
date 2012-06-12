@@ -42,4 +42,22 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                      get_string('coursefile', 'rlipimport_version1elis'),
                      get_string('enrolmentfile', 'rlipimport_version1elis'));
     }
+
+    /**
+     * Add custom entries to the Settings block tree menu
+     *
+     * @param object $adminroot The main admin tree root object
+     * @param string $parentname The name of the parent node to add children to
+     */
+    function admintree_setup(&$adminroot, $parentname) {
+        global $CFG;
+
+        //create a link to the page for configuring field mappings
+        $displaystring = get_string('configfieldstreelink', 'rlipimport_version1elis');
+        $url = $CFG->wwwroot.'/blocks/rlip/importplugins/version1elis/config_fields.php';
+        $page = new admin_externalpage("{$parentname}_fields", $displaystring, $url);
+
+        //add it to the tree
+        $adminroot->add($parentname, $page);
+    }
 }

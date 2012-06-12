@@ -24,8 +24,13 @@
  *
  */
 
+$string['columnheader'] = 'Column Header';
+$string['configfieldstreelink'] = 'Field mapping';
+$string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Export Fields';
 //TODO: remove this string when no longer needed
 $string['configplaceholdersetting'] = 'Replace with real settings';
 //TODO: remove this string when no longer needed
 $string['placeholdersetting'] = 'Placeholder for settings';
 $string['pluginname'] = 'Version 1 ELIS export';
+$string['profilefieldname'] = 'Profile Field Name';
+$string['profilefieldnotconfig'] = 'There are no profile fields configured.';

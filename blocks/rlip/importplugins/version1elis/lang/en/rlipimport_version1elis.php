@@ -24,11 +24,16 @@
  *
  */
 
+$string['configfieldstreelink'] = 'Field mapping';
+$string['configuretitle'] = 'Plugins Blocks: Configure Version 1 ELIS Import Fields';
 //TODO: remove this string when no longer needed
 $string['configplaceholdersetting'] = 'Replace with real settings';
 $string['coursefile'] = 'Course file';
+$string['coursetab'] = 'Course fields';
 $string['enrolmentfile'] = 'Enrolment file';
+$string['enrolmenttab'] = 'Enrolment fields';
 //TODO: remove this string when no longer needed
 $string['placeholdersetting'] = 'Placeholder for settings';
 $string['pluginname'] = 'Version 1 ELIS import';
 $string['userfile'] = 'User file';
+$string['usertab'] = 'User fields';
