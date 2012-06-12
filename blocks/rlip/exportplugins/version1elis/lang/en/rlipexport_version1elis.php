@@ -17,18 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    rlip
- * @subpackage blocks_rlip
+ * @subpackage importplugins_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->version = 2012050200;
-<<<<<<< HEAD
-$plugin->release = '2.2.0.x (Build: 20120601)';
-=======
-$plugin->release = '2.1.0.2 (Build: 20120523)';
->>>>>>> origin/wip-ELIS-5992
+$string['columnheader'] = 'Column Header';
+$string['configfieldstreelink'] = 'Field mapping';
+$string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Export Fields';
+//TODO: remove this string when no longer needed
+$string['configplaceholdersetting'] = 'Replace with real settings';
+//TODO: remove this string when no longer needed
+$string['placeholdersetting'] = 'Placeholder for settings';
+$string['pluginname'] = 'Version 1 ELIS export';
+$string['profilefieldname'] = 'Profile Field Name';
+$string['profilefieldnotconfig'] = 'There are no profile fields configured.';
