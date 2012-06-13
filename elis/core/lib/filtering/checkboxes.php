@@ -161,6 +161,8 @@ class generalized_filter_checkboxes extends generalized_filter_type {
         }
 
         if (!empty($this->_options['advanced'])) {
+            //include group name, required for show/hide advanced button
+            $mform->setAdvanced($this->_uniqueid.'_grp');
             foreach ($this->_options['advanced'] as $advanced) {
                 $mform->setAdvanced(
                         $this->_uniqueid . $this->_formdelim . $advanced);
