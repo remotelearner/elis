@@ -129,6 +129,30 @@ class usermanagementGetsUsersTest extends elis_database_test {
     }
 
     /**
+     * Set up the course and context records needed for many of the
+     * unit tests
+     */
+    private function init_contexts_and_site_course() {
+        global $DB, $USER;
+
+        $prefix = self::$origdb->get_prefix();
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
+        //set up the site course record
+        if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
+            unset($record->id);
+            $DB->insert_record('course', $record);
+        }
+
+        build_context_path();
+    }
+    /**
      * Test the basic functionality of the methods for fetching and counting
      * users in relation to userset permissions
      */
@@ -146,14 +170,9 @@ class usermanagementGetsUsersTest extends elis_database_test {
         accesslib_clear_all_caches_for_unit_testing();
         unset($UNITTEST->running);
 
-        //need the site context
-        $DB->execute("INSERT INTO {context}
-                      SELECT *
-                      FROM ".self::$origdb->get_prefix()."context
-                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
-
         //data setup
         $this->load_csv_data();
+        $this->init_contexts_and_site_course();
         $this->set_up_users();
 
         //the context set our user set administrator has access to
@@ -188,14 +207,9 @@ class usermanagementGetsUsersTest extends elis_database_test {
         accesslib_clear_all_caches_for_unit_testing();
         unset($UNITTEST->running);
 
-        //need the site context
-        $DB->execute("INSERT INTO {context}
-                      SELECT *
-                      FROM ".self::$origdb->get_prefix()."context
-                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
-
         //data setup
         $this->load_csv_data();
+        $this->init_contexts_and_site_course();
         $this->set_up_users();
 
         //the context set our user set administrator has access to
@@ -229,14 +243,9 @@ class usermanagementGetsUsersTest extends elis_database_test {
         accesslib_clear_all_caches_for_unit_testing();
         unset($UNITTEST->running);
 
-        //need the site context
-        $DB->execute("INSERT INTO {context}
-                      SELECT *
-                      FROM ".self::$origdb->get_prefix()."context
-                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
-
         //data setup
         $this->load_csv_data();
+        $this->init_contexts_and_site_course();
         $this->set_up_users();
 
         //assign a second user to the user set
@@ -288,14 +297,9 @@ class usermanagementGetsUsersTest extends elis_database_test {
         accesslib_clear_all_caches_for_unit_testing();
         unset($UNITTEST->running);
 
-        //need the site context
-        $DB->execute("INSERT INTO {context}
-                      SELECT *
-                      FROM ".self::$origdb->get_prefix()."context
-                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
-
         //data setup
         $this->load_csv_data();
+        $this->init_contexts_and_site_course();
         $this->set_up_users();
 
         //assign a second user to the user set
