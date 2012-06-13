@@ -41,6 +41,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                               'email',
                                               'country');
 
+    static $import_fields_user_update = array(array('username',
+                                                    'email',
+                                                    'idnumber'));
+
     static $import_fields_user_add = array('idnumber',
                                            'username',
                                            'firstname',
@@ -92,14 +96,35 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
 
         // TODO: validation
-        $user = new user(array('idnumber'    => $record->idnumber,
-                                  'username'    => $record->username,
-                                  'firstname'   => $record->firstname,
-                                  'lastname'    => $record->lastname,
-                                  'email'       => $record->email,
-                                  'country'     => $record->country));
+        $user = new user(array('idnumber'   => $record->idnumber,
+                               'username'   => $record->username,
+                               'firstname'  => $record->firstname,
+                               'lastname'   => $record->lastname,
+                               'email'      => $record->email,
+                               'country'    => $record->country));
 
         $user->save();
+        return true;
+    }
+
+    /**
+     * Update a user
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function user_update($record, $filename) {
+        global $CFG, $DB;
+
+        // TODO: validation
+        $params = array('username'  => $record->username,
+                        'email'     => $record->email,
+                        'idnumber'  => $record->idnumber);
+
+        $record->id = $DB->get_field('crlm_user', 'id', $params);
+        $DB->update_record('crlm_user', $record);
+
         return true;
     }
 

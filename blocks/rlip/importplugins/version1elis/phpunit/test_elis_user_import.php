@@ -105,6 +105,36 @@ class elis_user_import_test extends elis_database_test {
         $this->assertEquals($exists, true);
     }
 
+    function test_update_elis_user_import() {
+        global $CFG, $DB;
+
+        $this->run_elis_user_import(array());
+
+        $data = array('action'      => 'update',
+                      'idnumber'    => 'testidnumber',
+                      'username'    => 'testusername',
+                      'email'       => 'test@email.com',
+                      'firstname'   => 'testfirstnamechanged',
+                      'lastname'    => 'testlastnamechanged',
+                      'city'        => 'testcity',
+                      'country'     => 'US');
+
+        $this->run_elis_user_import($data, false);
+
+        $select = "username     = :username AND
+                   idnumber     = :idnumber AND
+                   firstname    = :firstname AND
+                   lastname     = :lastname AND
+                   email        = :email AND
+                   city         = :city AND
+                   country      = :country";
+
+        unset($data['action']);
+        $exists = $DB->record_exists_select('crlm_user', $select, $data);
+
+        $this->assertEquals($exists, true);
+    }
+
     /**
      * Helper function that runs the user import for a sample user
 
