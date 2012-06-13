@@ -73,19 +73,7 @@ class EditRequestPage extends pm_page {
             }
             $redir = true;
         } else if ($this->optional_param('update', null, PARAM_TEXT)) {
-            // ELIS-4089 -- Moodle 2.2 can only handle single-dimensional arrays via optional_param =(
-            $fields = array();
-
-            if (isset($_POST['FIELD'] )&& ($fielddata = $_POST['users']) && is_array($fielddata)) {
-                foreach ($fielddata as $i => $fielddatum) {
-                    if (is_array($fielddatum)) {
-                        foreach ($fielddatum as $key => $val) {
-                            $users[$i][$key] = clean_param($val, PARAM_SEQUENCE);
-                        }
-                    }
-                }
-            }
-//             $fields = $this->optional_param('field', array(), PARAM_SEQUENCE);
+            $fields = $this->optional_param('field', array(), PARAM_SEQUENCE);
             foreach ($fields as $id => $field) {
                 $rec = new stdClass;
                 $rec->id = $id;
@@ -98,10 +86,9 @@ class EditRequestPage extends pm_page {
             require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
 
             //the context levels we are checking for new fields at
-            $contextlevels = array(
-                CONTEXT_ELIS_COURSE,
-                CONTEXT_ELIS_CLASS
-            );
+            $contextlevels = array();            
+            $contextlevels[] = context_level_base::get_custom_context_level('course', 'elis_program');
+            $contextlevels[] = context_level_base::get_custom_context_level('class', 'elis_program');
 
             //go through all context levels to see if a new field was added at that level
             foreach ($contextlevels as $contextlevel) {
