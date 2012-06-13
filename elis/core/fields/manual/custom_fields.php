@@ -38,10 +38,73 @@ define('MANUAL_FIELD_EDITABLE', 1);
  * the supplied form in-place
  *
  * @param  object  $mform  A moodle quickform to add the necessary fields to
+ * @param  array   $attrs  Optional extra attributes to pass to form fields
+ *                 format: $attr[<fieldid>] = array('option1' => val1, ...);
+ *
+ * NOTE: including forms definition() must call
+ *       $PAGE->requires->yui2_lib(array('yahoo',
+ *                                       'dom'));
  */
-function manual_field_edit_form_definition($form) {
+function manual_field_edit_form_definition($form, $attrs = array()) {
     global $CFG;
     require_once($CFG->dirroot . '/elis/core/lib/setup.php');
+
+    $attrfields = array('manual_field_edit_capability',
+                        'manual_field_view_capability',
+                        'manual_field_control',
+                        'manual_field_options_source',
+                        'manual_field_columns',
+                        'manual_field_rows',
+                        'manual_field_maxlength',
+                        'manual_field_startyear',
+                        'manual_field_stopyear',
+                        'manual_field_inctime');
+    foreach ($attrfields as $attrfield) {
+        if (!isset($attrs[$attrfield])) {
+            $attrs[$attrfield] = array();
+        }
+    }
+
+    if (!isset($attrs['manual_field_control']['onchange'])) {
+        $attrs['manual_field_control']['onchange'] = '';
+    }
+    $attrs['manual_field_control']['onchange'] .= 'switchFieldOptions();';
+
+    $form->addElement('html', '<script type="text/javascript">
+        function switchFieldOptions() {
+            var fcontrol = document.getElementById("id_manual_field_control");
+            if (fcontrol) {
+                var fotext = document.getElementById("field_options_text");
+                var fomenu = document.getElementById("field_options_menu");
+                var fodatetime = document.getElementById("field_options_datetime");
+                var cftype = fcontrol.options[fcontrol.selectedIndex].value;
+                //alert("switchFieldOptions(): cftype = " + cftype);
+                if (fotext && fomenu && fodatetime) {
+                    if (cftype == "checkbox") {
+                        fotext.className = "accesshide custom_field_options_fieldset";
+                        fomenu.className = "accesshide custom_field_options_fieldset";
+                        fodatetime.className = "accesshide custom_field_options_fieldset";
+                    } else if (cftype == "menu") {
+                        fotext.className = "accesshide custom_field_options_fieldset";
+                        fomenu.className = "clearfix custom_field_options_fieldset";
+                        fodatetime.className = "accesshide custom_field_options_fieldset";
+                    } else if (cftype == "datetime") {
+                        fotext.className = "accesshide custom_field_options_fieldset";
+                        fomenu.className = "accesshide custom_field_options_fieldset";
+                        fodatetime.className = "clearfix custom_field_options_fieldset";
+                    } else {
+                        fotext.className = "clearfix custom_field_options_fieldset";
+                        fomenu.className = "accesshide custom_field_options_fieldset";
+                        fodatetime.className = "accesshide custom_field_options_fieldset";
+                    }
+                }
+            }
+        }
+        function initCustomFieldOptions() {
+            YAHOO.util.Event.addListener(window, "load", switchFieldOptions());
+        }
+        YAHOO.util.Event.onDOMReady(initCustomFieldOptions);
+    </script>');
 
     $form->addElement('header', '', get_string('field_manual_header', 'elisfields_manual'));
 
@@ -56,7 +119,9 @@ function manual_field_edit_form_definition($form) {
         'moodle/user:update' => get_string('field_manual_admin_edit', 'elisfields_manual'),
         'disabled' => get_string('field_manual_nobody', 'elisfields_manual'),
         );
-    $form->addElement('select', 'manual_field_edit_capability', get_string('manual_field_edit_capability', 'elisfields_manual'), $choices);
+    $form->addElement('select', 'manual_field_edit_capability',
+                      get_string('manual_field_edit_capability', 'elisfields_manual'),
+                      $choices, $attrs['manual_field_edit_capability']);
     $form->disabledIf('manual_field_edit_capability', 'manual_field_enabled', 'notchecked');
     $form->setAdvanced('manual_field_edit_capability');
 
@@ -64,7 +129,7 @@ function manual_field_edit_form_definition($form) {
         '' => get_string('field_manual_anyone_view', 'elisfields_manual'),
         'moodle/user:viewhiddendetails' => get_string('field_manual_admin_view', 'elisfields_manual'),
         );
-    $form->addElement('select', 'manual_field_view_capability', get_string('manual_field_view_capability', 'elisfields_manual'), $choices);
+    $form->addElement('select', 'manual_field_view_capability', get_string('manual_field_view_capability', 'elisfields_manual'), $choices, $attrs['manual_field_view_capability']);
     $form->disabledIf('manual_field_view_capability', 'manual_field_enabled', 'notchecked');
     $form->setAdvanced('manual_field_view_capability');
 
@@ -73,9 +138,10 @@ function manual_field_edit_form_definition($form) {
         'menu' => get_string('pluginname', 'profilefield_menu'),
         'text' => get_string('pluginname', 'profilefield_text'),
         'textarea' => get_string('pluginname', 'profilefield_textarea'),
+        'datetime' => get_string('pluginname', 'profilefield_datetime'),
         'password' => get_string('password_control', 'elisfields_manual'),
         );
-    $form->addElement('select', 'manual_field_control', get_string('manual_field_control', 'elisfields_manual'), $choices);
+    $form->addElement('select', 'manual_field_control', get_string('manual_field_control', 'elisfields_manual'), $choices, $attrs['manual_field_control']);
     $form->setType('manual_field_control', PARAM_ACTION);
     $form->disabledIf('manual_field_control', 'manual_field_enabled', 'notchecked');
 
@@ -100,29 +166,38 @@ function manual_field_edit_form_definition($form) {
     }
     asort($choices);
     $choices = array('' => get_string('options_source_text', 'elisfields_manual')) + $choices;
-    $form->addElement('select', 'manual_field_options_source', get_string('options_source', 'elisfields_manual'), $choices);
+
+    $form->addElement('html', '<fieldset class="accesshide" id="field_options_menu">');
+    $form->addElement('select', 'manual_field_options_source', get_string('options_source', 'elisfields_manual'), $choices, $attrs['manual_field_options_source']);
     $form->disabledIf('manual_field_options_source', 'manual_field_enabled', 'notchecked');
     $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'text');
     $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'textarea');
     $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'password');
+    $form->disabledIf('manual_field_options_source', 'manual_field_control', 'eq', 'datetime');
     $form->disabledIf('manual_field_options_source', 'datatype', 'eq', 'bool');
     $form->setAdvanced('manual_field_options_source');
 
-    $form->addElement('textarea', 'manual_field_options', get_string('profilemenuoptions', 'admin'), array('rows' => 6, 'cols' => 40));
+    $attrs['manual_field_options'] = array_merge(array('rows' => 6, 'cols' => 40),
+                                                 $attrs['manual_field_options']);
+    $form->addElement('textarea', 'manual_field_options', get_string('profilemenuoptions', 'admin'), $attrs['manual_field_options']);
     $form->setType('manual_field_options', PARAM_MULTILANG);
     $form->disabledIf('manual_field_options', 'manual_field_enabled', 'notchecked');
     $form->disabledIf('manual_field_options', 'manual_field_control', 'eq', 'text');
     $form->disabledIf('manual_field_options', 'manual_field_control', 'eq', 'textarea');
     $form->disabledIf('manual_field_options', 'manual_field_control', 'eq', 'password');
+    $form->disabledIf('manual_field_options', 'manual_field_control', 'eq', 'datetime');
     $form->disabledIf('manual_field_options', 'datatype', 'eq', 'bool');
     $form->disabledIf('manual_field_options', 'manual_field_options_source', 'neq', '');
+    $form->addElement('html', '</fieldset>');
 
+    $form->addElement('html', '<fieldset class="accesshide" id="field_options_text">');
     $form->addElement('text', 'manual_field_columns', get_string('profilefieldcolumns', 'admin'), 'size="6"');
     $form->setDefault('manual_field_columns', 30);
     $form->setType('manual_field_columns', PARAM_INT);
     $form->disabledIf('manual_field_columns', 'manual_field_enabled', 'notchecked');
     $form->disabledIf('manual_field_columns', 'manual_field_control', 'eq', 'checkbox');
     $form->disabledIf('manual_field_columns', 'manual_field_control', 'eq', 'menu');
+    $form->disabledIf('manual_field_columns', 'manual_field_control', 'eq', 'datetime');
     $form->disabledIf('manual_field_columns', 'datatype', 'eq', 'bool');
 
     $form->addElement('text', 'manual_field_rows', get_string('profilefieldrows', 'admin'), 'size="6"');
@@ -133,6 +208,7 @@ function manual_field_edit_form_definition($form) {
     $form->disabledIf('manual_field_rows', 'manual_field_control', 'eq', 'menu');
     $form->disabledIf('manual_field_rows', 'manual_field_control', 'eq', 'text');
     $form->disabledIf('manual_field_rows', 'manual_field_control', 'eq', 'password');
+    $form->disabledIf('manual_field_rows', 'manual_field_control', 'eq', 'datetime');
     $form->disabledIf('manual_field_rows', 'datatype', 'eq', 'bool');
 
     $form->addElement('text', 'manual_field_maxlength', get_string('profilefieldmaxlength', 'admin'), 'size="6"');
@@ -142,7 +218,22 @@ function manual_field_edit_form_definition($form) {
     $form->disabledIf('manual_field_maxlength', 'manual_field_control', 'eq', 'checkbox');
     $form->disabledIf('manual_field_maxlength', 'manual_field_control', 'eq', 'menu');
     $form->disabledIf('manual_field_maxlength', 'manual_field_control', 'eq', 'textarea');
+    $form->disabledIf('manual_field_maxlength', 'manual_field_control', 'eq', 'datetime');
     $form->disabledIf('manual_field_maxlength', 'datatype', 'eq', 'bool');
+    $form->addElement('html', '</fieldset>');
+
+    $form->addElement('html', '<fieldset class="accesshide" id="field_options_datetime">');
+    $year_opts = array();
+    for ($yr = 1902; $yr <= 2038; ++$yr) {
+        $year_opts[$yr] = $yr;
+    }
+    $form->addElement('select', 'manual_field_startyear', get_string('options_startyear', 'elisfields_manual'), $year_opts, $attrs['manual_field_startyear']);
+    $form->setDefault('manual_field_startyear', 1970);
+    $form->addElement('select', 'manual_field_stopyear', get_string('options_stopyear', 'elisfields_manual'), $year_opts, $attrs['manual_field_stopyear']);
+    $form->setDefault('manual_field_stopyear', 2038);
+    $form->addElement('checkbox', 'manual_field_inctime', get_string('options_inctime', 'elisfields_manual'), '', $attrs['manual_field_inctime']); // TBD
+    $form->setDefault('manual_field_inctime', false);
+    $form->addElement('html', '</fieldset>');
 }
 
 /**
@@ -161,7 +252,8 @@ function manual_field_get_form_data($form, $field) {
     $result = array('manual_field_enabled' => true);
     $parameters = array('required', 'edit_capability', 'view_capability',
                         'control', 'options_source', 'options', 'columns',
-                        'rows', 'maxlength', 'help_file');
+                        'rows', 'maxlength', 'help_file', 'startyear',
+                        'stopyear', 'inctime');
     foreach ($parameters as $param) {
         $paramname = "param_$param";
         if (isset($manual->$paramname)) {
@@ -199,7 +291,8 @@ function manual_field_save_form_data($form, $field, $data) {
         }
         $parameters = array('edit_capability', 'view_capability',
                             'control', 'options_source', 'options', 'columns',
-                            'rows', 'maxlength', 'help_file');
+                            'rows', 'maxlength', 'help_file', 'startyear',
+                            'stopyear', 'inctime');
         foreach ($parameters as $param) {
             $dataname = "manual_field_$param";
             if (isset($data->$dataname)) {
