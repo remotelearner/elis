@@ -82,6 +82,7 @@ class cmform extends moodleform {
             }
 
             //capabilities for editing / viewing this context
+
             if (manual_field_is_view_or_editable($field, $context, $edit_cap, $view_cap) != MANUAL_FIELD_NO_VIEW_OR_EDIT) {
                 if ($lastcat != $rec->categoryid) {
                     $lastcat = $rec->categoryid;
