@@ -372,10 +372,8 @@ class course_completion_by_cluster_report extends table_report {
 
         //filters for each of two cases, put inside the query for performance reasons
         //(use parent functionality because we are preventing filter application in the usual way)
-        ob_start(); // ELIS-4660
         $curriculum_filter = parent::get_filter_condition('WHERE');
         $noncurriculum_filter = parent::get_filter_condition('AND');
-        ob_end_clean(); // ELIS-4660
 
         //grouping for each of the two cases
         $group_by = "GROUP BY user.id, enrol.id, cluster.id, course.id, curriculum.id";
