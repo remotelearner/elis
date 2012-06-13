@@ -27,8 +27,5 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version = 2012050200;
-<<<<<<< HEAD
 $plugin->release = '2.2.0.x (Build: 20120601)';
-=======
-$plugin->release = '2.1.0.2 (Build: 20120523)';
->>>>>>> origin/wip-ELIS-5992
+
