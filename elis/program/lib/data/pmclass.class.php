@@ -879,6 +879,7 @@ class pmclass extends data_object_with_custom_fields {
                     return false;
                 }
                 // Rename the fullname, shortname and idnumber of the restored course
+                $restore = new stdClass;
                 $restore->id = $moodlecourseid;
                 // ELIS-2941: Don't prepend course name if already present ...
                 if (strpos($clone->idnumber, $clone->course->name) !== 0) {

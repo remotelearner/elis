@@ -165,11 +165,9 @@ class usersetTest extends elis_database_test {
      * Test that you can delete and promote user subsets
      */
     public function testDeletingRecordCanPromoteUserSubsets() {
-        global $UNITTEST;
-        $UNITTEST->running = true;
         $this->load_csv_data();
 
-        accesslib_clear_all_caches_for_unit_testing();
+        accesslib_clear_all_caches(true);
         // make sure all the contexts are created, so that we can find the children
         $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
         for ($i = 1; $i <= 4; $i++) {
@@ -204,11 +202,9 @@ class usersetTest extends elis_database_test {
      * Test that you can delete a user set and all its user subsets
      */
     public function testDeleteRecordCanDeleteUserSubsets() {
-        global $UNITTEST;
-        $UNITTEST->running = true;
         $this->load_csv_data();
 
-        accesslib_clear_all_caches_for_unit_testing();
+        accesslib_clear_all_caches(true);
         // make sure all the contexts are created, so that we can find the children
         for ($i = 1; $i <= 4; $i++) {
             $cluster_context_instance = context_elis_userset::instance($i);

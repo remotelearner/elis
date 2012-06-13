@@ -436,7 +436,10 @@ class curriculumCustomFieldsTest extends elis_database_test {
         $this->setUpCurriculum();
         $this->setUpCurriculumStudent();
         $user = new user(103);
+        // ELIS-5861 -- This method will write HTML to STDOUT, so wrap it in an output buffer
+        ob_start();
         $user->get_dashboard();
+        ob_end_clean();
 
         $this->setUpUserCustomFields();
         $fieldname = 'sometext';

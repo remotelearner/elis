@@ -719,6 +719,11 @@ function pm_moodle_user_to_pm($mu) {
     require_once(elispm::lib('data/usermoodle.class.php'));
     require_once(elis::lib('data/data_filter.class.php'));
     require_once($CFG->dirroot . '/user/profile/lib.php');
+
+    if (!isset($mu->id)) {
+        return true;
+    }
+
     // re-fetch, in case this is from a stale event
     $mu = $DB->get_record('user', array('id' => $mu->id));
 
