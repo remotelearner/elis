@@ -63,17 +63,6 @@ class trackassignmentpage extends associationpage {
         return trackassignmentpage::$contexts[$capability];
     }
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-
-        if ($id) {
-            return context_elis_track::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
-
     function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
 

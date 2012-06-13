@@ -65,10 +65,6 @@ class studentpage extends associationpage {
         parent::__construct($params);
     }
 
-    function _get_page_context() { // TBD
-        return parent::_get_page_context();
-    }
-
     function _get_page_params() { // TBD
         return parent::_get_page_params();
     }
@@ -486,7 +482,7 @@ class studentpage extends associationpage {
             } else {
                 $target_id = $id;
             }
-    
+
             $target = $this->get_new_page(array('action' => 'default', 'id' => $this->required_param('id', PARAM_INT)));
             redirect($target->url);
         }

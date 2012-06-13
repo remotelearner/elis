@@ -57,15 +57,6 @@ class studentcurriculumpage extends associationpage2 {
         parent::__construct($params);
     }
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        if ($id) {
-            return context_elis_user::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
     public function _get_page_params() {
         $params = parent::_get_page_params();
 
@@ -498,15 +489,6 @@ class curriculumstudentpage extends associationpage2 {
         $this->context = parent::_get_page_context();
         $this->params = $this->_get_page_params();
         parent::__construct($params);
-    }
-
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        if ($id) {
-            return context_elis_program::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
     }
 
     public function _get_page_params() {

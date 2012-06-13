@@ -48,6 +48,7 @@ class usermanagementGetsUsersTest extends elis_database_test {
                      clusterassignment::TABLE => 'elis_program',
                      'crlm_class_enrolment'   => 'elis_program',
                      'crlm_curriculum_assignment' => 'elis_program',
+                     course::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program',
                      usertrack::TABLE  => 'elis_program',
@@ -71,6 +72,31 @@ class usermanagementGetsUsersTest extends elis_database_test {
     static protected function get_ignored_tables() {
         return array('cache_flags' => 'moodle',
                      'message'     => 'moodle');
+    }
+
+    /**
+     * Set up the course and context records needed for many of the
+     * unit tests
+     */
+    private function init_contexts_and_site_course() {
+        global $DB, $USER;
+
+        $prefix = self::$origdb->get_prefix();
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
+        $DB->execute("INSERT INTO {context}
+                      SELECT * FROM
+                      {$prefix}context
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
+        //set up the site course record
+        if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
+            unset($record->id);
+            $DB->insert_record('course', $record);
+        }
+
+        build_context_path();
     }
 
     /**
@@ -116,7 +142,6 @@ class usermanagementGetsUsersTest extends elis_database_test {
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
         $roleid = create_role('clusteradmin', 'clusteradmin', 'clusteradmin');
         assign_capability('elis/program:user_edit', CAP_ALLOW, $roleid, $syscontext->id);
-
         //assign the userset administrator an appropriate role on the userset
         $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
         $instance     = $contextclass::instance(1);
