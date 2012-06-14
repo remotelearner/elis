@@ -41,9 +41,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                               'email',
                                               'country');
 
-    static $import_fields_user_update = array(array('username',
-                                                    'email',
-                                                    'idnumber'));
+    static $import_fields_user_update = array(array('username', 'email', 'idnumber'));
 
     static $import_fields_user_add = array('idnumber',
                                            'username',
@@ -51,6 +49,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                            'lastname',
                                            'email',
                                            'country');
+
+    static $import_fields_user_delete = array(array('username', 'email', 'idnumber'));
+
 
     //store mappings for the current entity type
     var $mappings = array();
@@ -123,7 +124,39 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                         'idnumber'  => $record->idnumber);
 
         $record->id = $DB->get_field('crlm_user', 'id', $params);
+        $record->timemodified = time();
         $DB->update_record('crlm_user', $record);
+
+        $user = new user($record);
+        $user->save();
+
+        return true;
+    }
+
+    /**
+     * Delete a user
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function user_delete($record, $filename) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/user/lib.php');
+
+        // TODO: validation
+        $params = array('username'  => $record->username,
+                        'email'     => $record->email,
+                        'idnumber'  => $record->idnumber);
+
+        if ($user = $DB->get_record('user', $params)) {
+            user_delete_user($user);
+        }
+
+        if ($user = $DB->get_record('crlm_user', $params)) {
+            $user = new user($user);
+            $user->delete();
+        }
 
         return true;
     }
