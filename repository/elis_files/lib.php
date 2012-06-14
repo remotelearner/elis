@@ -404,13 +404,20 @@ class repository_elis_files extends repository {
     public function print_search() {
         global $CFG, $DB;
 
+//        require_once $CFG->dirroot.'/repository/elis_files/renderer.php';
+//        //reset the page template
+//        // we need to send filepicker templates to the browser just once
+//        $fprenderer = $PAGE->get_renderer('repository', 'elis_files');
+
         require_once $CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php';
         require_once $CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php';
         require_once $CFG->dirroot.'/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
         require_once $CFG->dirroot.'/repository/elis_files/tree_menu_lib.php';
 
-        $str = '<p>'.get_string('searchforfilesinrepository', 'repository_elis_files').'</p>';
+        $str = get_string('searchforfilesinrepository', 'repository_elis_files');
 
+//        $renderer = $PAGE->get_renderer('repository', 'elis_files');
+//        $str .= $renderer->repository_default_searchform();
         $str .= parent::print_search();
 
         return $str;
