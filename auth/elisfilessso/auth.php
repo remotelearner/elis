@@ -145,7 +145,7 @@ class auth_plugin_elisfilessso extends auth_plugin_base {
         if (!$this->isactive) {
             echo $OUTPUT->heading(get_string('elisfilesnotfound', 'auth_elisfilessso'));
         } else {
-            $url = $CFG->wwwroot.'/admin/repository.php?action=edit&amp;repos=elis_files';
+            $url = $CFG->wwwroot.'/admin/repository.php?action=edit&amp;repos=elis_files&amp;sesskey='. sesskey();
 
             // TODO:  Have it link directly to the edit page if enabled, otherwise this will do...
             echo $OUTPUT->heading(get_string('configureelisfileshere', 'auth_elisfilessso', $url));
