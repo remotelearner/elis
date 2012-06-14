@@ -277,9 +277,8 @@ class repository_elis_files extends repository {
      * @return array
      */
     public function get_file($uuid, $file = '') {
-
+        //error_log("get_file($uuid, '{$file}');");
         $node = $this->elis_files->get_info($uuid);
-
         // Test to make sure this works with, say, a teacher or someone non-admin
         $username = '';
 
@@ -293,8 +292,7 @@ class repository_elis_files extends repository {
         $fp = fopen($path, 'w');
         $c = new curl;
         $response = $c->download(array(array('url'=>$url, 'file'=>$fp)));
-
-        return array('path'=>$path, 'url'=>$url);
+        return array('path' => $path, 'url' => $url);
     }
 
     /**
@@ -306,8 +304,50 @@ class repository_elis_files extends repository {
      */
     public function get_link($uuid) {
         global $CFG;
-
+        //error_log("get_link($uuid);");
         return $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='.$uuid;
+    }
+
+    /**
+     * Get file from external repository by reference
+     * {@link repository::get_file_reference()}
+     * {@link repository::get_file()}
+     *
+     * @param stdClass $ref    file reference db record
+     * @return stdClass|null|false
+     */
+    public function get_file_by_reference($ref) {
+        ob_start();
+        var_dump($ref);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("get_file_by_reference(ref = {$tmp});");
+        return parent::get_file_by_reference($ref); // TBD!!!
+    }
+
+    /**
+     * Repository method to serve file
+     *
+     * @param stored_file $storedfile
+     * @param int $lifetime Number of seconds before the file should expire from caches (default 24 hours)
+     * @param int $filter 0 (default)=no filtering, 1=all files, 2=html files only
+     * @param bool $forcedownload If true (default false), forces download of file rather than view in browser/plugin
+     * @param array $options additional options affecting the file serving
+     */
+    public function send_file($storedfile, $lifetime=86400 , $filter=0, $forcedownload=false, array $options = null) {
+        global $CFG;
+      /*
+        ob_start();
+        var_dump($storedfile);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("send_file(storedfile = {$tmp});");
+      */
+        $uuid = $storedfile->get_reference();
+        $ref = $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='.$uuid;
+        // Let Alfresco serve the file.
+        // TBD: this should probably open in a new window/tab???
+        header('Location: ' . $ref);
     }
 
     /*
@@ -830,7 +870,7 @@ class repository_elis_files extends repository {
     /*
      * Get visibility of this repository
      */
-    private static function is_repo_visible($typename) {
+    public static function is_repo_visible($typename) {
         global $DB;
         if (!$record = $DB->get_record('repository',array('type' => $typename))) {
             return false;
@@ -935,11 +975,10 @@ class repository_elis_files extends repository {
     }
 
     public function supported_returntypes() {
-        return (FILE_INTERNAL | FILE_EXTERNAL);
+        return (FILE_INTERNAL /* | FILE_EXTERNAL */ | FILE_REFERENCE); // TBD
     }
 
-    /// FILE FUNCTIONS ///////////////////////////////////////////////////////////
-
+    /// FILE FUNCTIONS //////////////////////////////////////////////////////
 
     /**
      * Recursively generate list of files to be deleted
