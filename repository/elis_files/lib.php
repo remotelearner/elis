@@ -927,9 +927,9 @@ class repository_elis_files extends repository {
             $repoisup = $repo->is_configured() && $repo->verify_setup();
             if ($repoisup) {
                 if (elis_files_validate_path($data)) {
-                    $valid = '<span class="pathok">&#x2714;</span>';
+                    $valid = '<span class="pathok" style="color:green;">&#x2714;</span>';
                 } else {
-                    $valid = '<span class="patherror">&#x2718;</span>';
+                    $valid = '<span class="patherror" style="color:red;">&#x2718;</span>';
                 }
             }
         }
