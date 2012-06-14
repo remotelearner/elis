@@ -45,7 +45,62 @@ class elis_user_import_test extends elis_database_test {
 
         $tables = array('crlm_user_moodle'  => 'elis_program',
                         'crlm_user' => 'elis_program',
-                        'user'      => 'moodle');
+                        'user' => 'moodle',
+                        'crlm_curriculum_assignment' => 'elis_program',
+                        'crlm_class_graded' => 'elis_program',
+                        'crlm_class_instructor' => 'elis_program',
+                        'crlm_wait_list' => 'elis_program',
+                        'crlm_tag' => 'elis_program',
+                        'crlm_tag_instance' => 'elis_program',
+                        'crlm_track' => 'elis_program',
+                        'crlm_track_class' => 'elis_program',
+                        'crlm_user' => 'elis_program',
+                        'crlm_user_moodle' => 'elis_program',
+                        'crlm_user_track' => 'elis_program',
+                        'crlm_usercluster' => 'elis_program',
+                        'crlm_results' => 'elis_program',
+                        'crlm_results_action' => 'elis_program',
+                        'crlm_curriculum_course' => 'elis_program',
+                        'crlm_environment' => 'elis_program',
+                        'crlm_cluster_assignments' => 'elis_program',
+                        'context' => 'moodle',
+                        'config' => 'moodle',
+                        'config_plugins' => 'moodle',
+                        'cohort_members' => 'moodle',
+                        'groups_members' => 'moodle',
+                        'user_preferences' => 'moodle',
+                        'user_info_data' => 'moodle',
+                        'user_lastaccess' => 'moodle',
+                        'sessions' => 'moodle',
+                        'block_instances' => 'moodle',
+                        'block_positions' => 'moodle',
+                        'filter_active' => 'moodle',
+                        'filter_config' => 'moodle',
+                        'comments' => 'moodle',
+                        'rating' => 'moodle',
+                        'role_assignments' => 'moodle',
+                        'role_capabilities' => 'moodle',
+                        'role_names' => 'moodle',
+                        'cache_flags' => 'moodle',
+                        'events_queue' => 'moodle',
+                        'groups' => 'moodle',
+                        'course' => 'moodle',
+                        'course_sections' => 'moodle',
+                        'course_categories' => 'moodle',
+                        'enrol' => 'moodle',
+                        'role' => 'moodle',
+                        'role_context_levels' => 'moodle',
+                        'message' => 'moodle',
+                        'message_read' => 'moodle',
+                        'message_working' => 'moodle',
+                        'grade_items' => 'moodle',
+                        'grade_items_history' => 'moodle',
+                        'grade_grades' => 'moodle',
+                        'grade_grades_history' => 'moodle',
+                        'grade_categories' => 'moodle',
+                        'grade_categories_history' => 'moodle',
+                        'user_enrolments' => 'moodle',
+                        'events_queue_handlers' => 'moodle');
 
         return $tables;
     }
@@ -61,7 +116,18 @@ class elis_user_import_test extends elis_database_test {
                      RLIP_LOG_TABLE     => 'block_rlip',
                      'files'            => 'moodle',
                      'external_tokens'  => 'moodle',
-                     'external_services_users' => 'moodle');
+                     'external_services_users'      => 'moodle',
+                     'elis_field_categories'        => 'elis_program',
+                     'elis_field_category_contexts' => 'elis_program',
+                     'elis_field_contextlevels'     => 'elis_program',
+                     'elis_field_data_char'         => 'elis_program',
+                     'elis_field'                   => 'elis_program',
+                     'elis_field_data_int'          => 'elis_program',
+                     'elis_field_data_num'          => 'elis_program',
+                     'elis_field_data_text'         => 'elis_program',
+                     'elis_field_owner'             => 'elis_program',
+                     'external_tokens'              => 'moodle',
+                     'external_services_users'      => 'moodle');
     }
 
     /**
@@ -101,7 +167,6 @@ class elis_user_import_test extends elis_database_test {
                         'country'   => 'CA');
 
         $exists = $DB->record_exists_select('crlm_user', $select, $params);
-
         $this->assertEquals($exists, true);
     }
 
@@ -130,9 +195,31 @@ class elis_user_import_test extends elis_database_test {
                    country      = :country";
 
         unset($data['action']);
-        $exists = $DB->record_exists_select('crlm_user', $select, $data);
+        $existselis = $DB->record_exists_select('crlm_user', $select, $data);
+        $existsmoodle = $DB->record_exists_select('user', $select, $data);
 
-        $this->assertEquals($exists, true);
+        $this->assertEquals($existselis && $existsmoodle, true);
+    }
+
+    function test_delete_elis_user_import() {
+        global $CFG, $DB;
+
+        $this->run_elis_user_import(array());
+
+        $data = array('action'      => 'delete',
+                      'username'    => 'testusername',
+                      'email'       => 'test@email.com',
+                      'idnumber'    => 'testidnumber');
+
+        unset($data['action']);
+        $moodleuserid = $DB->get_field('user', 'id', $data);
+        $elisuserid = $DB->get_field('crlm_user', 'id', $data);
+
+        $data['action'] = 'delete';
+        $this->run_elis_user_import($data, false);
+
+        $this->assertEquals($DB->record_exists('crlm_user', array('id' => $elisuserid)), false);
+        $this->assertEquals($DB->record_exists('user', array('id' => $moodleuserid, 'deleted' => 1)), true);
     }
 
     /**
