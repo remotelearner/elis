@@ -2462,6 +2462,7 @@ class ELIS_files {
                               'repository/elis_files:createowncontent'=> false,
                               'repository/elis_files:viewsharedcontent'=> false,
                               'repository/elis_files:createsharedcontent'=> false);
+
         $this->get_other_capabilities($USER, $capabilities);
 
         // Build the option for browsing from the repository userset / course / site files.
@@ -2694,12 +2695,12 @@ class ELIS_files {
                 if (!elis_files_has_permission($uuid, $USER->username, true)) {
                     $this->allow_edit($USER->username, $uuid);
                 }
-            } else { // viewalfuserset
+            } else if ($viewalfuserset) { // viewalfuserset
                 if (!elis_files_has_permission($uuid, $USER->username)) {
                     $this->allow_read($USER->username, $uuid);
                 }
             }
-            if (!$createonly || ($createonly && $editalfuserset)) {
+            if ((!$createonly && ($editalfuserset || $viewalfuserset)) || ($createonly && $editalfuserset)) {
                 $params = array('path'=>$uuid,
                                 'shared'=>(boolean)0,
                                 'oid'=>(int)$cluster->id,
@@ -3031,14 +3032,12 @@ class ELIS_files {
     function get_other_capabilities($user,&$capabilities) {
         global $CFG, $DB, $USER;
 
-        if (!empty($USER->access['rdef'])) {
-            foreach ($USER->access['rdef'] as $ctx) {
-                foreach ($capabilities as $capability=>$value) {
-                    if (isset($ctx[$capability]) &&
-                        $ctx[$capability] == CAP_ALLOW) {
-                        $capabilities[$capability] = true;
-                    }
-                }
+        $context = get_context_instance(CONTEXT_SYSTEM);
+
+        // Since these permissions/capabilities are technically in the system context, use has_capability
+        foreach ($capabilities as $capability=>$value) {
+            if (has_capability($capability,$context)) {
+                $capabilities[$capability] = true;
             }
         }
     }
