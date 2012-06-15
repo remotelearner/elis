@@ -52,6 +52,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     static $import_fields_user_delete = array(array('username', 'email', 'idnumber'));
 
+    static $import_fields_course_create = array('idnumber', 'name');
+    static $import_fields_course_update = array('idnumber');
+    static $import_fields_course_delete = array('idnumber');
 
     //store mappings for the current entity type
     var $mappings = array();
@@ -270,6 +273,179 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         return $action;
+    }
+
+    /**
+     * Validates whether the "action" field is correctly set on a record,
+     * logging error to the file system, if necessary - call from child class
+     * when needed
+     *
+     * @param string $entitytype The type of entity we are performing an action on
+     * @param object $record One data import record
+     * @param string $filename The name of the import file, to use in logging
+     * @return boolean true if action field is set, otherwise false
+     */
+    function check_action_field($entitytype, $record, $filename) {
+        if (!isset($record->action) || $record->action === '') {
+            //not set, so error
+
+            //use helper to do any display-related field name transformation
+            $field_display = $this->get_required_field_display('action');
+            //$message = "Required field {$field_display} is unspecified or empty.";
+            //$this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entitytype);
+            return false;
+        }
+
+        //feature, in the standard Moodle "plugin_supports" format
+        $feature = $entitytype.'_'.$record->action;
+        if (!$this->plugin_supports($feature)) {
+            //invalid action for this entity type
+            //$message = "Action of \"{$record->action}\" is not supported.";
+            //$this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $entitytype);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_course_createorupdate($record, $action) {
+        global $DB;
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
+
+        if (!empty($createorupdate)) {
+            if (isset($record->idnumber) && $record->idnumber !== '') {
+                //identify the course
+                if ($DB->record_exists('crlm_course', array('idnumber' => $record->idnumber))) {
+                    //course exists, so the action is an update
+                    $action = 'update';
+                } else {
+                    //course does not exist, so the action is a create
+                    $action = 'create';
+                }
+            } else {
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
+    /**
+     * Delegate processing of an import line for entity type "course"
+     *
+     * @param object $record One record of import data
+     * @param string $action The action to perform, or use data's action if
+     *                       not supplied
+     * @param string $filename The import file name, used for logging
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function course_action($record, $action = '', $filename = '') {
+        if ($action === '') {
+            //set from param
+            $action = isset($record->action) ? $record->action : '';
+        }
+
+        if (!$this->check_action_field('course', $record, $filename)) {
+            //missing an action value
+            return false;
+        }
+
+        //apply "createorupdate" flag, if necessary
+        if ($action == 'create') {
+            $action = $this->handle_course_createorupdate($record, $action);
+        }
+        $record->action = $action;
+
+        if (!$this->check_required_fields('course', $record, $filename)) {
+            //missing a required field
+            return false;
+        }
+
+        //remove empty fields
+        $record = $this->remove_empty_fields($record);
+
+        //perform action
+        $method = "course_{$action}";
+        return $this->$method($record, $filename);
+    }
+
+    /**
+     * Create a course
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function course_create($record, $filename) {
+        global $CFG, $DB;
+        require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+
+        // TODO: validation
+        $data = new object();
+        $data->idnumber = $record->idnumber;
+        $data->name = $record->name;
+        $data->syllabus = '';
+        $course = new course($data);
+        $course->save();
+
+        return true;
+    }
+
+    /**
+     * Delete a course
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function course_delete($record, $filename) {
+        global $CFG, $DB;
+        require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+
+        // TODO: validation
+        if ($course = $DB->get_record('crlm_course', array('idnumber' => $record->idnumber))) {
+            $course = new course($course);
+            $course->delete();
+        }
+
+        return true;
+    }
+
+    /**
+     * Update a course
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function course_update($record, $filename) {
+        global $CFG, $DB;
+        require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+
+        // TODO: validation
+        $id = $DB->get_field('crlm_course', 'id', array('idnumber'  => $record->idnumber));
+        $data = new object();
+        $data->id = $id;
+        $data->idnumber = $record->idnumber;
+        $data->name = $record->name;
+        $data->syllabus = '';
+        $course = new course($data);
+        $course->save();
+
+        return true;
     }
 
     /**
