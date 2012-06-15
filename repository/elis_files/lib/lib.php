@@ -129,7 +129,62 @@ function elis_files_get_services() {
     return $services;
 }
 
-function RLsimpleXMLelement($resp, $displayerrors = true) {
+/**
+ * Display an message with optional details from HTML
+ *
+ * @param string $msg     The message to display
+ * @param string $details Any message details to be initially hidden
+ * @param string $type    The 'type' of message: i.e. 'error','general', ???
+ * @uses  $OUTPUT
+ * @TODO  change this to display in pop-up window or light-box!
+ */
+function display_msg($msg, $details = '', $type = 'error') {
+    global $OUTPUT;
+    $width = '';
+    if (!empty($details)) {
+        $innertags = array('html', 'body');
+        foreach ($innertags as $tag) {
+            if (($tagpos = stripos($details, '<'. $tag)) !== false &&
+                ($firstend = strpos(substr($details, $tagpos), '>')) !== false) {
+                if (($tagend = stripos($details, '</'. $tag .'>')) !== false) {
+                    $details = substr($details, $tagpos + $firstend + 1, $tagend - $tagpos - $firstend - 1);
+                } else {
+                    $details = substr($details, $tagpos + $firstend + 1);
+                }
+            }
+        }
+        $details = addcslashes($details, "'");
+        $details = preg_replace("/\n/", '', $details);
+        $details = preg_replace("|/alfresco/images/logo/AlfrescoLogo32.png|",
+                                '/repository/elis_files/pix/icon.png',
+                                $details);
+    }
+    $output = $OUTPUT->box_start("generalbox {$type} boxaligncenter boxwidthwide", 'notice'); // TBD
+    $output .= $msg;
+    if (!empty($details)) {
+        $output .= '<p align="right"><input type="button" value="'.
+                   get_string('details', 'repository_elis_files') .
+                   '" onclick="toggle_msgdetails();" /></p>'
+                   .'<div id="msgdetails" style="overflow:auto;overflow-y:hidden;-ms-overflow-y:hidden"></div>';
+        $output .= "
+<script type=\"text/javascript\">
+//<![CDATA[
+function toggle_msgdetails() {
+    mddiv = document.getElementById('msgdetails');
+    if (mddiv) {
+        mddiv.innerHTML = (mddiv.innerHTML == '') ? '{$details}' : '';
+    }
+}
+//]]>
+</script>
+";
+    }
+
+    $output .= $OUTPUT->box_end();
+    echo $output;
+}
+
+function RLsimpleXMLelement($resp, $displayerrors = false) {
     //echo "RLsimpleXMLelement() => resp = {$resp}";
     $details = $resp;
     if (($preend = strpos($resp, '<title><!DOCTYPE')) !== false &&
@@ -137,6 +192,10 @@ function RLsimpleXMLelement($resp, $displayerrors = true) {
         $details = substr($resp, $preend + 7, -7);
         $resp = substr($resp, 0, $lastentry - 1) ."\n</feed>";
         error_log("repository/elis_files/lib/lib.php:: WARNING - Alfresco Server Error: {$details}");
+        if ($displayerrors) {
+            display_msg(get_string('incompletequeryresponse', 'repository_elis_files'),
+                        $details);
+        }
     }
     $resp = preg_replace('/&nbsp;/', ' ', $resp); // TBD?
     libxml_use_internal_errors(true);
@@ -144,6 +203,10 @@ function RLsimpleXMLelement($resp, $displayerrors = true) {
         $sxml = new SimpleXMLElement($resp);
     } catch (Exception $e) {
         error_log("repository/elis_files/lib/lib.php:: WARNING - Alfresco Server Error: BAD XML => {$details}");
+        if ($displayerrors) {
+            display_msg(get_string('badqueryresponse', 'repository_elis_files'),
+                        $details);
+        }
         return false;
     }
     return $sxml;
