@@ -56,6 +56,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_course_update = array('idnumber');
     static $import_fields_course_delete = array('idnumber');
 
+    static $import_fields_program_create = array('idnumber', 'name');
+    static $import_fields_program_update = array('idnumber');
+    static $import_fields_program_delete = array('idnumber');
+
     //store mappings for the current entity type
     var $mappings = array();
 
@@ -100,12 +104,33 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
 
         // TODO: validation
-        $user = new user(array('idnumber'   => $record->idnumber,
-                               'username'   => $record->username,
-                               'firstname'  => $record->firstname,
-                               'lastname'   => $record->lastname,
-                               'email'      => $record->email,
-                               'country'    => $record->country));
+        $data = new object();
+        $data->idnumber = $record->idnumber;
+        $data->username = $record->username;
+        $data->firstname = $record->firstname;
+        $data->lastname = $record->lastname;
+        $data->email = $record->email;
+        $data->country = $record->country;
+        /*$data->mi = $record->mi;
+        $data->email2 = $record->email2;
+        $data->address = $record->address;
+        $data->address2 = $record->address2;
+        $data->city = $record->city;
+        $data->state = $record->state;
+        $data->postalcode = $record->postalcode;
+        $data->phone = $record->phone;
+        $data->phone2 = $record->phone2;
+        $data->fax = $record->fax;
+        $data->birthdate = $record->birthdate;
+        $data->gender = $record->gender;
+        $data->language = $record->language;
+        $data->transfercredits = $record->transfercredits;
+        $data->comments = $record->comments;
+        $data->notes = $record->notes;
+        $data->inactive = $record->inactive;*/
+
+        // TODO: validation
+        $user = new user($data);
 
         $user->save();
         return true;
@@ -355,28 +380,92 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $action = isset($record->action) ? $record->action : '';
         }
 
-        if (!$this->check_action_field('course', $record, $filename)) {
-            //missing an action value
-            return false;
+        $context = '';
+        if (isset($record->context)) {
+            $context = $record->context;
         }
 
-        //apply "createorupdate" flag, if necessary
-        if ($action == 'create') {
-            $action = $this->handle_course_createorupdate($record, $action);
-        }
-        $record->action = $action;
+        switch ($context) {
+            case 'curriculum':
 
-        if (!$this->check_required_fields('course', $record, $filename)) {
-            //missing a required field
-            return false;
+            break;
+            case 'course':
+                if (!$this->check_action_field('course', $record, $filename)) {
+                    //missing an action value
+                    return false;
+                }
+
+                //apply "createorupdate" flag, if necessary
+                if ($action == 'create') {
+                    $action = $this->handle_course_createorupdate($record, $action);
+                }
+                $record->action = $action;
+
+                if (!$this->check_required_fields('course', $record, $filename)) {
+                    //missing a required field
+                    return false;
+                }
+            break;
         }
 
         //remove empty fields
         $record = $this->remove_empty_fields($record);
 
         //perform action
-        $method = "course_{$action}";
+        $method = "{$context}_{$action}";
         return $this->$method($record, $filename);
+    }
+
+    function curriculum_create($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        $data = new object();
+        $data->idnumber = $record->idnumber;
+        $data->name = $record->name;
+        /*$data->description = $record->description;
+        $data->reqcredits = $record->reqcredits;
+        $data->timetocomplete = $record->timetocomplete;
+        $data->frequency = $record->frequency;
+        $data->priority = $record->priority;*/
+
+        $cur = new curriculum($data);
+        $cur->save();
+
+        return true;
+    }
+
+    function curriculum_update($record, $filename) {
+        global $CFG, $DB;
+
+        // TODO: validation
+        $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber'  => $record->idnumber));
+        $data = new object();
+        $data->id = $id;
+        $data->idnumber = $record->idnumber;
+        $data->name = $record->name;
+        /*$data->description = $record->description;
+        $data->reqcredits = $record->reqcredits;
+        $data->timetocomplete = $record->timetocomplete;
+        $data->frequency = $record->frequency;
+        $data->priority = $record->priority;*/
+
+        $cur = new curriculum($data);
+        $cur->save();
+
+        return true;
+    }
+
+    function curriculum_delete($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        if ($cur = $DB->get_record('crlm_curriculum', array('idnumber' => $record->idnumber))) {
+            $cur = new curriculum($cur);
+            $cur->delete();
+        }
+
+        return true;
     }
 
     /**
@@ -396,6 +485,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->idnumber = $record->idnumber;
         $data->name = $record->name;
         $data->syllabus = '';
+        /*$data->code = $record->code;
+        $data->lengthdescription = $recrod->lengthdescription;
+        $data->length = $record->length;
+        $data->credits = $record->credits;
+        $data->completion_grade = $record->completion_grade;
+        $data->cost = $record->cost;
+        $data->version = $record->version;
+        $data->assignment = $record->assignment;
+        $data->link = $record->link;*/
+
         $course = new course($data);
         $course->save();
 
