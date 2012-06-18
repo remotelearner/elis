@@ -36,7 +36,7 @@ require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
-class elis_course_import_test extends elis_database_test {
+class elis_program_import_test extends elis_database_test {
 
 
     protected static function get_overlay_tables() {
@@ -44,7 +44,9 @@ class elis_course_import_test extends elis_database_test {
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
-        $tables = array('crlm_user_moodle'  => 'elis_program',
+        $tables = array('crlm_curriculum' => 'elis_program',
+                        'crlm_cluster_curriculum' => 'elis_program',
+                        'crlm_user_moodle'  => 'elis_program',
                         'crlm_user' => 'elis_program',
                         'crlm_course' => 'elis_program',
                         'crlm_coursetemplate' => 'elis_program',
@@ -133,63 +135,63 @@ class elis_course_import_test extends elis_database_test {
                      'external_services_users'      => 'moodle');
     }
 
-    function test_create_elis_course_import() {
+    function test_create_elis_program_import() {
        global $DB;
 
-        $this->run_core_course_import(array(), true);
+        $this->run_core_program_import(array(), true);
 
-        $this->assertTrue($DB->record_exists('crlm_course', array('idnumber' => 'testcourseid')));
+        $this->assertTrue($DB->record_exists('crlm_curriculum', array('idnumber' => 'testprogramid')));
     }
 
-    function test_delete_elis_course_import() {
+    function test_delete_elis_program_import() {
         global $DB;
 
-        $this->run_core_course_import(array(), true);
+        $this->run_core_program_import(array(), true);
 
-        $data = array('action' => 'delete', 'context' => 'course', 'idnumber' => 'testcourseid');
-        $this->run_core_course_import($data, false);
+        $data = array('action' => 'delete', 'context' => 'curriculum', 'idnumber' => 'testprogramid');
+        $this->run_core_program_import($data, false);
 
         unset($data['action'],$data['context']);
-        $this->assertFalse($DB->record_exists('crlm_course', $data));
+        $this->assertFalse($DB->record_exists('crlm_curriculum', $data));
     }
 
-    function test_update_elis_course_import() {
+    function test_update_elis_program_import() {
         global $DB;
-        $this->run_core_course_import(array(), true);
+        $this->run_core_program_import(array(), true);
 
-        $data = array('action' => 'update', 'context' => 'course', 'idnumber' => 'testcourseid', 'name' => 'testcoursenameupdated');
-        $this->run_core_course_import($data, false);
+        $data = array('action' => 'update', 'context' => 'curriculum', 'idnumber' => 'testcourseid', 'name' => 'testprogrampdated');
+        $this->run_core_program_import($data, false);
 
         unset($data['action'],$data['context']);
-        $this->assertTrue($DB->record_exists('crlm_course', $data));
+        $this->assertTrue($DB->record_exists('crlm_curriculum', $data));
     }
 
     /**
-     * Helper function to get the core fields for a sample course
+     * Helper function to get the core fields for a sample program
      *
-     * @return array The course data
+     * @return array The program data
      */
-    private function get_core_course_data() {
+    private function get_core_program_data() {
         $data = array('action' => 'create',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'name' => 'testcoursename');
+                      'context' => 'curriculum',
+                      'idnumber' => 'testprogramid',
+                      'name' => 'testprogram');
         return $data;
     }
 
     /**
-     * Helper function that runs the course import for a sample course
+     * Helper function that runs the program import for a sample program
      *
-     * @param array $extradata Extra fields to set for the new course
+     * @param array $extradata Extra fields to set for the new program
      */
-    private function run_core_course_import($extradata, $use_default_data = true) {
+    private function run_core_program_import($extradata, $use_default_data = true) {
         global $CFG;
 
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         if ($use_default_data) {
-            $data = $this->get_core_course_data();
+            $data = $this->get_core_program_data();
         } else {
             $data = array();
         }
@@ -198,7 +200,7 @@ class elis_course_import_test extends elis_database_test {
             $data[$key] = $value;
         }
 
-        $provider = new rlip_importprovider_mockcourse($data);
+        $provider = new rlip_importprovider_mockprogram($data);
 
         $importplugin = new rlip_importplugin_version1elis($provider);
         $importplugin->run();
@@ -207,9 +209,9 @@ class elis_course_import_test extends elis_database_test {
 }
 
 /**
- * Class that fetches import files for the course import
+ * Class that fetches import files for the program import
  */
-class rlip_importprovider_mockcourse extends rlip_importprovider_mock {
+class rlip_importprovider_mockprogram extends rlip_importprovider_mock {
 
     /**
      * Hook for providing a file plugin for a particular
