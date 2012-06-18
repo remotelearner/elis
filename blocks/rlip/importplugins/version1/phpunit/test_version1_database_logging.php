@@ -899,9 +899,6 @@ class version1DatabaseLoggingTest extends rlip_test {
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
 
-        //todo: remove this line when working on ELIS-5764
-        assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
-
         $data = array('entity' => 'enrolment',
                       'action' => 'create',
                       'username' => 'rlipusername',
