@@ -154,13 +154,17 @@ class studentpage extends associationpage {
     function can_do_bulkedit() {
         //todo: allow bulk editing for non-admins
         $id = $this->required_param('id');
-        return pmclasspage::_has_capability('elis/program:track_enrol', $id);
+        // TODO: Ugly, this needs to be overhauled
+        $cpage = new pmclasspage();
+        return $cpage->_has_capability('elis/program:track_enrol', $id);
     }
 
     function can_do_updatemultiple() {
         //todo: allow multi-update for non-admins
         $id = $this->required_param('id');
-        return pmclasspage::_has_capability('elis/program:track_enrol', $id);
+        // TODO: Ugly, this needs to be overhauled
+        $cpage = new pmclasspage();
+        return $cpage->_has_capability('elis/program:track_enrol', $id);
     }
 
     function do_add() { // TBD: must overload the parents since no studentform
@@ -587,7 +591,7 @@ class studentpage extends associationpage {
      * @param $items array of records to print
      * @param $columns associative array of column id => column heading text
      */
-    function print_list_view($items, $columns) { // TBD
+    function print_list_view($items, $columns, $itemstr = 'items') { // TBD
         global $CFG;
 
         $id = $this->required_param('id', PARAM_INT);
@@ -639,9 +643,9 @@ class studentpage extends associationpage {
         echo $newstu->edit_classid_html($cmclass->id, $type, $sort, $dir, $page, $perpage, $namesearch, $alpha);
     }
 
-    function print_edit_form($stu, $cls, $sort, $dir) {
-        $stu->classid = $cls->id; // TBD
-        echo $stu->edit_student_html($stu->id, '', $sort, $dir);
+    function print_edit_form($obj, $parent_obj, $sort, $dir) {
+        $obj->classid = $parent_obj->id; // TBD
+        echo $obj->edit_student_html($obj->id, '', $sort, $dir);
     }
 
     /**
@@ -672,7 +676,7 @@ class studentpage extends associationpage {
      */
     function print_num_items($classid, $max) {
         $pmclass = new pmclass($classid);
-        $students = pmclass::get_completion_counts($classid);
+        $students = $pmclass->get_completion_counts($classid);
 
         if(!empty($students[STUSTATUS_FAILED])) {
             echo '<div style="float:right;">' . get_string('num_students_failed', self::LANG_FILE) . ': ' . $students[STUSTATUS_FAILED] . '</div><br />';

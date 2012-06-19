@@ -74,7 +74,7 @@ class associationpage extends pm_page {
         return new $this->tab_page($params);
     }
 
-    function print_header() {
+    function print_header($_) {
         $id = $this->required_param('id', PARAM_INT);
         $default_tab = !empty($this->default_tab) ? $this->default_tab : get_class($this);
         $action = $this->optional_param('action', $default_tab, PARAM_CLEAN);
@@ -83,7 +83,7 @@ class associationpage extends pm_page {
         }
         $association_id = $this->optional_param('association_id', 0, PARAM_INT);
 
-        parent::print_header();
+        parent::print_header($_);
         $params = array('id' => $id);
         if (!empty($association_id)) {
             $params['association_id'] = $association_id;
@@ -284,7 +284,7 @@ class associationpage extends pm_page {
      * @param $obj The association object being edited.
      * @param $parent_obj The basic data object being associated with.
      */
-    function print_edit_form($obj, $parent_obj) {
+    function print_edit_form($obj, $parent_obj, $sort, $dir) {
         $parent_id = $this->required_param('id', PARAM_INT);
         $params = array('action' => 'edit', 'id' => $parent_id, 'association_id' => $obj->id);
         if ($parentid = $this->optional_param('parent', 0, PARAM_INT)) {
@@ -381,7 +381,7 @@ class associationpage extends pm_page {
         return $this->get_page_title_default();
     }
 
-    public function build_navbar_default() { // build_navigation_default
+    public function build_navbar_default($who = null, $addparent = true, $params = array()) { // build_navigation_default
         //parent::build_navbar_default();
         $id = $this->required_param('id', PARAM_INT);
         $params = array('action' => 'view', 'id' => $id);
@@ -519,7 +519,7 @@ class associationpage extends pm_page {
      * Prints out the item count for the list interface with the appropriate formatting.
      * @param $numitems number of items
      */
-    function print_num_items($numitems) {
+    function print_num_items($numitems, $max) {
         $a = new stdClass;
         $a->num = $numitems;
         echo '<div style="float:right;">' . get_string('items_found', self::LANG_FILE, $a) . '</div>';

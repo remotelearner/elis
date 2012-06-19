@@ -61,9 +61,9 @@ abstract class selectionpage extends pm_page { // TBD
         return $mode == 'bare';
     }
 
-    function print_header() {
+    function print_header($_) {
         if (!$this->is_bare()) {
-            parent::print_header();
+            parent::print_header($_);
             $this->print_tabs();
         }
     }

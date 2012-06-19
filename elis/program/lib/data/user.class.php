@@ -1734,7 +1734,7 @@ class pm_user_filtering extends user_filtering {
      * @param string $extra sql
      * @return string
      */
-    function get_sql_filter($extra='') {
+    function get_sql_filter($extra='', array $params = NULL) {
         global $SESSION;
 
         $newextra = '';

@@ -1481,7 +1481,7 @@ function pm_fix_duplicate_class_enrolments() {
     $dbman = $DB->get_manager();
 
     // Delete duplicate class completion element grades
-    $xmldbtable = new XMLDBTable('crlm_class_graded_temp');
+    $xmldbtable = new xmldb_table('crlm_class_graded_temp');
 
     if ($dbman->table_exists($xmldbtable)) {
         $dbman->drop_table($xmldbtable);
@@ -1584,7 +1584,7 @@ function pm_fix_duplicate_moodle_users() {
     $dbman = $DB->get_manager();
 
     // Delete duplicate class completion element grades
-    $xmldbtable = new XMLDBTable('user_idnumber_temp');
+    $xmldbtable = new xmldb_table('user_idnumber_temp');
 
     if ($dbman->table_exists($xmldbtable)) {
         $dbman->drop_table($xmldbtable);
@@ -1593,7 +1593,7 @@ function pm_fix_duplicate_moodle_users() {
     $result = true;
 
     // Create temporary table for storing qualifying idnumbers
-    $table = new XMLDBTable('user_idnumber_temp');
+    $table = new xmldb_table('user_idnumber_temp');
     $table->add_field('idnumber', XMLDB_TYPE_CHAR, '255', NULL, XMLDB_NOTNULL);
     $dbman->create_table($table);
 
@@ -1704,7 +1704,7 @@ function pm_fix_duplicate_pm_users() {
     $dbman = $DB->get_manager();
 
     // Delete duplicate class completion element grades
-    $xmldbtable = new XMLDBTable('crlm_user_idnumber_temp');
+    $xmldbtable = new xmldb_table('crlm_user_idnumber_temp');
 
     if ($dbman->table_exists($xmldbtable)) {
         $dbman->drop_table($xmldbtable);
@@ -1713,7 +1713,7 @@ function pm_fix_duplicate_pm_users() {
     $result = true;
 
     // Create temporary table for storing qualifying idnumbers
-    $table = new XMLDBTable('crlm_user_idnumber_temp');
+    $table = new xmldb_table('crlm_user_idnumber_temp');
     $table->add_field('idnumber', XMLDB_TYPE_CHAR, '255', NULL, XMLDB_NOTNULL);
     $dbman->create_table($table);
 

@@ -478,9 +478,11 @@ class treerepresentation {
     /**
      * Converts the tree representation to html markup
      *
+     * @param   string  $uniqueid        The unique id of the filter element
+     * @param   int     $execution_mode  The mode in which the report is being run
      * @return  string  The appropriate markup
      */
-    function convert_to_markup() {
+    function convert_to_markup($uniqueid = '', $execution_mode = null) {
         global $CFG;
 
         //this prevents handling an empty tree
@@ -540,7 +542,7 @@ class treerepresentation {
     /**
      * Determines the section the user is currently in
      */
-    function get_current_section() {
+    static function get_current_section() {
         global $CURMAN, $PAGE;
         
         //return the report shortname if we are specifically on a PHP report page
