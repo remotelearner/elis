@@ -13,9 +13,11 @@ class alfreso_test_form extends moodleform {
         $mform = & $this->_form;
         $fp_options = array('maxfiles'   => -1,
                             'maxbytes'   => 1000,
+                            'sesskey'    => sesskey()
                       );
         $attrs = array('id' => 'id_test_alfresco_file_manager',
-                       'name' => 'test_alfresco_file_manager'
+                       'name' => 'test_alfresco_file_manager',
+                       'sesskey' => sesskey()
                  );
         $this->afm_elem = $mform->createElement('alfresco_filemanager',
                              'test_alfresco_file_manager',
