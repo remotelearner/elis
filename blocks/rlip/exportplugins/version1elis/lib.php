@@ -85,3 +85,25 @@ function rlipexport_version1elis_page_setup($baseurl) {
     //use the default admin layout
     $PAGE->set_pagelayout('admin');
 }
+
+/**
+ * Callback function to clean up badly formatted incremental time values
+ *
+ * @param string $name The appropriate setting name
+ */
+function rlipexport_version1elis_incrementaldelta_updatedcallback($name) {
+    global $CFG;
+    require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+    if ($name == 's_rlipexport_version1elis_incrementaldelta') {
+        //have the right setting
+
+        //obtain the value
+        $time_string = get_config('rlipexport_version1elis', 'incrementaldelta');
+        //sanitize
+        $time_string = rlip_sanitize_time_string($time_string, '1d');
+
+        //flush
+        set_config('incrementaldelta', $time_string, 'rlipexport_version1elis');
+    }
+}

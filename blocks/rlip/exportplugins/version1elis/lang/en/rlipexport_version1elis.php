@@ -24,10 +24,16 @@
  *
  */
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['columnheader'] = 'Column Header';
 $string['completestatusstring'] = 'COMPLETED';
 $string['config_export_file'] = 'Enter the filename template to use for exporting data.';
 $string['configfieldstreelink'] = 'Field mapping';
+$string['configincrementaldelta'] = 'The time delta specifies how far back the manual export includes data from. The time delta must be specified in \*d\*h\*m format, with values representing days, hours and minutes.
+This setting only takes effect when using the incremental manual export, and is based on the time at which a user\'s course grade was last modified.
+This setting is not used in a scheduled incremental backup. The scheduled incremental backup uses the last schedule run time.';
+$string['confignonincremental'] = 'Include all historical data in manual exports';
 $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Export Fields';
 $string['configplaceholdersetting'] = 'Replace with real settings';
 $string['export_file'] = 'Export filename';
@@ -42,7 +48,10 @@ $string['header_enddate'] = 'End Date';
 $string['header_status'] = 'Status';
 $string['header_useridnumber'] = 'User Idnumber';
 $string['header_username'] = 'Username';
+$string['incrementaldelta'] = 'Time delta for incremental manual export';
+$string['nonincremental'] = 'Enable non-incremental export';
 $string['placeholdersetting'] = 'Placeholder for settings';
 $string['pluginname'] = 'Version 1 ELIS export';
 $string['profilefieldname'] = 'Profile Field Name';
 $string['profilefieldnotconfig'] = 'There are no profile fields configured.';
+$string['timeperiodheader'] = 'Time Period Settings';
