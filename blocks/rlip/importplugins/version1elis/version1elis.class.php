@@ -60,6 +60,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_program_update = array('idnumber');
     static $import_fields_program_delete = array('idnumber');
 
+    static $import_fields_class_create = array('idnumber','assignment');
+    static $import_fields_class_update = array('idnumber');
+    static $import_fields_class_creat = array('idnumber');
+    static $available_fields_class = array('idnumber', 'startdate', 'enddate', 'starttimehour',
+                                          'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
+                                          'enrol_from_waitlist', 'assignment', 'link');
+
     //store mappings for the current entity type
     var $mappings = array();
 
@@ -386,6 +393,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         switch ($context) {
+            // TODO
+            case 'class':
+
+            break;
             case 'curriculum':
 
             break;
@@ -414,6 +425,168 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //perform action
         $method = "{$context}_{$action}";
         return $this->$method($record, $filename);
+    }
+
+    function class_create($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        $record = $this->remove_invalid_class_fields($record);
+
+        $lengthcheck = $this->check_class_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
+        /*if (!$this->validate_core_class_data('create', $record, $filename)) {
+            return false;
+        }*/
+
+        $data = new object();
+        $data->idnumber = $record->idnumber;
+        $id = $DB->get_field('crlm_course', 'id', array('idnumber'  => $record->assignment));
+        $data->courseid = $id;
+        /*
+        $data->startdate = $record->startdate;
+        $data->enddate = $record->enddate;
+        $data->starttimehour = $record->starttimehour;
+        $data->starttimeminute = $record->starttimeminute;
+        $data->endtimehour = $record->endtimehour;
+        $data->endtimeminute = $record->endtimeminute;
+        $data->maxstudents = $record->maxstudents;
+        $data->enrol_from_waitlist = $record->enrol_from_waitlist;
+        */
+        $pmclass = new pmclass($data);
+        $pmclass->save();
+
+        return true;
+    }
+
+    /**
+     * Check the lengths of fields from a class record
+     * @todo: consider generalizing
+     *
+     * @param object $record The class record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_class_field_lengths($record, $filename) {
+        $lengths = array('idnumber' => 100);
+
+        return $this->check_field_lengths('class', $record, $filename, $lengths);
+    }
+
+    /**
+     * Check the lengths of fields based on the supplied maximum lengths
+     *
+     * @param string $entitytype The entity type, as expected by the logger
+     * @param object $record The import record
+     * @param string $filename The name of the import file, excluding path
+     * @param array $lengths Mapping of fields to max lengths
+     */
+    function check_field_lengths($entitytype, $record, $filename, $lengths) {
+        foreach ($lengths as $field => $length) {
+            //note: do not worry about missing fields here
+            if (isset($record->$field)) {
+                $value = $record->$field;
+                if (strlen($value) > $length) {
+                    $identifier = $this->mappings[$field];
+                    // TODO: validaton
+                    /*$this->fslogger->log_failure("{$identifier} value of \"{$value}\" exceeds ".
+                                                 "the maximum field length of {$length}.",
+                                                 0, $filename, $this->linenumber, $record, $entitytype);*/
+                    return false;
+                }
+            }
+        }
+
+        //no problems found
+        return true;
+    }
+
+    /**
+     * Remove invalid fields from a class record
+     * @todo: consider generalizing this
+     *
+     * @param object $record The class record
+     * @return object The class record with the invalid fields removed
+     */
+    function remove_invalid_class_fields($record) {
+        $allowed_fields = $this->get_available_fields('class');
+        foreach ($record as $key => $value) {
+            if (!in_array($key, $allowed_fields)) {
+                unset($record->$key);
+            }
+        }
+
+        return $record;
+    }
+
+    /**
+     * Obtains the listing of fields that are available for the specified
+     * entity type
+     *
+     * @param string $entitytype The type of entity
+     */
+    function get_available_fields($entitytype) {
+        global $DB;
+
+        // TODO: Add plugin support for "class" type?
+        //if ($this->plugin_supports($entitytype) !== false) {
+            $attribute = 'available_fields_'.$entitytype;
+
+            $result = array_merge(array('action'), static::$$attribute);
+
+            //add user profile fields
+            if ($entitytype == 'user') {
+                if ($fields = $DB->get_records('user_info_field')) {
+                    foreach ($fields as $field) {
+                        $result[] = 'profile_field_'.$field->shortname;
+                    }
+                }
+            }
+
+            return $result;
+        //} else {
+            //return false;
+        //}
+    }
+
+    function class_update($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        $record = $this->remove_invalid_class_fields($record);
+
+        $lengthcheck = $this->check_class_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
+        /*if (!$this->validate_core_class_data('update', $record, $filename)) {
+            return false;
+        }*/
+
+        $data = new object();
+        $id = $DB->get_field('crlm_class', 'id', array('idnumber'  => $record->idnumber));
+        $data->id = $id;
+        $data->idnumber = $record->idnumber;
+        $data->maxstudents = $record->maxstudents;
+        $pmclass = new pmclass($data);
+        $pmclass->save();
+
+        return true;
+    }
+
+    function class_delete($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        if ($course = $DB->get_record('crlm_class', array('idnumber' => $record->idnumber))) {
+            $course = new pmclass($course);
+            $course->delete();
+        }
+
+        return true;
     }
 
     function curriculum_create($record, $filename) {
