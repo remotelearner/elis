@@ -241,7 +241,8 @@ class version1ExportTest extends rlip_test {
                      'log'                     => 'moodle',
                      'message'                 => 'moodle',
                      'message_read'            => 'moodle',
-                     'message_working'         => 'moodle');
+                     'message_working'         => 'moodle',
+                     'sessions'                => 'moodle');
     }
 
     /**

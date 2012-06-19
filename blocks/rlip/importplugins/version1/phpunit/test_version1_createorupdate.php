@@ -299,7 +299,8 @@ class version1CreateorupdateTest extends rlip_test {
                      'user_info_data' => 'moodle',
                      'user_lastaccess' => 'moodle',
                      'user_preferences' => 'moodle',
-                     'url' => 'moodle');
+                     'url' => 'moodle',
+                     'sessions' => 'moodle');
     }
 
     /**

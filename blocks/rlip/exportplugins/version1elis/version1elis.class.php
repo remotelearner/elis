@@ -26,12 +26,18 @@
 
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
+require_once($CFG->dirroot.'/lib/gradelib.php');
 
 /**
  * PM class instance grade export compatible with the original PM grade
  * export for Moodle 1.9
  */
 class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
+    //recordset for tracking current export record
+    var $recordset = null;
+    //complete status string, used to avoid calling get_string for each row
+    var $completestatusstring = '';
+
     /**
      * Perform initialization that should
      * be done at the beginning of the export
@@ -42,7 +48,60 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
      *                             (required for incremental scheduled export)
      */
     function init($targetstarttime = 0, $lastruntime = 0) {
-        //TODO: implement
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/classmoodlecourse.class.php'));
+
+        //columns that are always displayed
+        $columns = array(get_string('header_firstname', 'rlipexport_version1'),
+                         get_string('header_lastname', 'rlipexport_version1'),
+                         get_string('header_username', 'rlipexport_version1'),
+                         get_string('header_useridnumber', 'rlipexport_version1'),
+                         get_string('header_courseidnumber', 'rlipexport_version1'),
+                         get_string('header_startdate', 'rlipexport_version1'),
+                         get_string('header_enddate', 'rlipexport_version1'),
+                         get_string('header_status', 'rlipexport_version1elis'),
+                         get_string('header_grade', 'rlipexport_version1'),
+                         get_string('header_letter', 'rlipexport_version1'));
+
+        //initialize our recordset to the core data
+        $sql = "SELECT u.firstname,
+                       u.lastname,
+                       u.username,
+                       u.idnumber,
+                       crs.idnumber AS crsidnumber,
+                       stu.enrolmenttime,
+                       stu.completetime,
+                       stu.grade,
+                       mdlcrs.id AS mdlcrsid
+                FROM {".user::TABLE."} u
+                JOIN {".student::TABLE."} stu
+                  ON u.id = stu.userid
+                JOIN {".pmclass::TABLE."} cls
+                  ON stu.classid = cls.id
+                JOIN {".course::TABLE."} crs
+                  ON cls.courseid = crs.id
+                LEFT JOIN {".classmoodlecourse::TABLE."} clsmdl
+                  ON cls.id = clsmdl.classid
+                LEFT JOIN {course} mdlcrs
+                  ON clsmdl.moodlecourseid = mdlcrs.id
+                WHERE stu.completestatusid = ?
+                ORDER BY u.idnumber,
+                         crs.idnumber,
+                         stu.completetime,
+                         stu.grade DESC,
+                         cls.idnumber";
+        $this->recordset = $DB->get_recordset_sql($sql, array(student::STUSTATUS_PASSED));
+
+        //write out header
+        $this->fileplugin->write($columns);
+
+        //load string to prevent calling get_string for every record
+        $this->completestatusstring = get_string('completestatusstring', 'rlipexport_version1elis');
     }
 
     /**
@@ -52,8 +111,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
      * @return boolean true if there is more data, otherwise false
      */
     function has_next() {
-        //TODO: implement
-        return false;
+        return $this->recordset->valid();
     }
 
     /**
@@ -62,8 +120,36 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
      * @return array The next record to be exported
      */
     function next() {
-        //TODO: implement
-        return array();
+        //fetch the current record
+        $record = $this->recordset->current();
+
+        //set up our grade item
+        $grade_item = new stdClass;
+        if ($record->mdlcrsid !== NULL) {
+            $grade_item->courseid = $record->mdlcrsid;
+        } else {
+            $grade_item->courseid = SITEID;
+        }
+        $grade_item->gradetype = GRADE_TYPE_VALUE;
+        $grade_item->grademin = 0;
+        $grade_item->grademax = 100;
+
+        //write the line out of a file
+        $csvrecord = array($record->firstname,
+                           $record->lastname,
+                           $record->username,
+                           $record->idnumber,
+                           $record->crsidnumber,
+                           date("M/d/Y", $record->enrolmenttime),
+                           date("M/d/Y", $record->completetime),
+                           $this->completestatusstring,
+                           $record->grade,
+                           grade_format_gradevalue($record->grade, $grade_item, true, GRADE_DISPLAY_TYPE_LETTER, 5));
+
+        //move on to the next data record
+        $this->recordset->next();
+
+        return $csvrecord;
     }
 
     /**
@@ -71,7 +157,9 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
      * be done at the end of the export
      */
     function close() {
-        //TODO: implement
+        //close our current recordset
+        $this->recordset->close();
+        $this->recordset = NULL;
     }
 
     /**

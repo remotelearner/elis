@@ -339,7 +339,9 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'quiz' => 'mod_quiz',
                      'url' => 'moodle',
                      'assignment' => 'moodle',
-                     'assignment_submissions' => 'moodle');
+                     'assignment_submissions' => 'moodle',
+                     'forum_track_prefs' => 'moodle',
+                     'sessions' => 'moodle');
 
         if ($DB->record_exists("block", array("name" => "curr_admin"))) {
             $tables['crlm_user_moodle'] = 'elis_program';
@@ -481,7 +483,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $category = new stdClass;
         $category->name = 'rlipname';
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $context_coursecat = get_context_instance(CONTEXT_COURSECAT, $categoryid);
 
         //create the course
         $course = new stdClass;
@@ -1574,16 +1576,21 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment create action on courses
      */
     public function testVersion1ImportLogsSuccesfulCourseRoleAssignmentCreate() {
-        global $CFG, $DB;
+        global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/lib/enrollib.php');
+
+        $UNITTEST = new stdClass;
+        $UNITTEST->running = true;
+        accesslib_clear_all_caches_for_unit_testing();
+        unset($UNITTEST->running);
 
         //set up dependencies
         $this->create_contexts_and_site_course();
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
+        $syscontext = context_system::instance();
         $roleid = $this->create_test_role();
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
 
         set_config('siteguest', '');
 
@@ -1669,7 +1676,7 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         //make sure they already have a role assignment
@@ -2307,6 +2314,8 @@ class version1FilesystemLoggingTest extends rlip_test {
     public function testVersion1ImportLogsSuccesfulUserRoleAssignmentCreate() {
         global $DB;
 
+        $this->create_contexts_and_site_course();
+
         //set up dependencies
         $this->create_test_user();
         $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
@@ -2378,6 +2387,8 @@ class version1FilesystemLoggingTest extends rlip_test {
      */
     public function testVersion1ImportLogsSuccesfulSystemRoleAssignmentCreate() {
         global $DB;
+
+        $this->create_contexts_and_site_course();
 
         //set up dependencies
         $this->create_test_user();
@@ -2768,6 +2779,10 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment delete action on users
      */
     public function testVersion1ImportLogsSuccesfulUserRoleAssignmentDelete() {
+        global $DB;
+
+        $this->create_contexts_and_site_course();
+
         //set up dependencies
         $userid = $this->create_test_user();
         $seconduserid = $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
@@ -2839,6 +2854,10 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment delete action on the system context
      */
     public function testVersion1ImportLogsSuccesfulSystemRoleAssignmentDelete() {
+        global $DB;
+
+        $this->create_contexts_and_site_course();
+
         //set up dependencies
         $userid = $this->create_test_user();
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -3331,6 +3350,8 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validate log message for invalid group name
      */
     public function testVersion1ImportLogsInvalidGroupNameOnRoleAssignmentCreate() {
+        global $DB;
+
         //set up dependencies
         $this->create_contexts_and_site_course();
         $this->create_test_user();
@@ -3387,7 +3408,7 @@ class version1FilesystemLoggingTest extends rlip_test {
      * @dataProvider roleAssignmentAmbiguousGroupNameUserProvider
      */
     public function testVersion1ImportLogsAmbiguousGroupNameOnRoleAssignmentCreate($data) {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/group/lib.php');
 
         //set up dependencies
