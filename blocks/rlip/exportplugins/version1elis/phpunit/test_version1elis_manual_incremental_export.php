@@ -38,7 +38,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 /**
  * File plugin that just stores read records in memory
  */
-class rlip_fileplugin_manual_nonincremental_elisexport extends rlip_fileplugin_base {
+class rlip_fileplugin_manual_incremental_elisexport extends rlip_fileplugin_base {
     //stored data
     private $data;
 
@@ -102,7 +102,7 @@ class rlip_fileplugin_manual_nonincremental_elisexport extends rlip_fileplugin_b
  * Test class for validating basic export data during a manual, nonincremental
  * export
  */
-class version1elisManualNonincrementalExportTest extends elis_database_test {
+class version1elisManualIncrementalExportTest extends elis_database_test {
     /**
      * Fetches our export data as a multi-dimensional array
      *
@@ -113,11 +113,13 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
-        //set the export to be nonincremental
-        set_config('nonincremental', 1, 'rlipexport_version1elis');
+        //set the export to be incremental
+        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        //set the incremental time delta
+        set_config('incrementaldelta', '1d', 'rlipexport_version1elis');
 
         //plugin for file IO
-    	$fileplugin = new rlip_fileplugin_manual_nonincremental_elisexport();
+    	$fileplugin = new rlip_fileplugin_manual_incremental_elisexport();
     	$fileplugin->open(RLIP_FILE_WRITE);
 
     	//our specific export
@@ -645,17 +647,21 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
      * @return array A variety of completion times
      */
     function completion_time_provider() {
-        return array(array(0),
-                     array(1000000000),
-                     array(time()));
+        return array(array(0, 1),
+                     array(1000000000, 1),
+                     array(time() - 25 * HOURSECS, 1),
+                     array(time() - 23 * HOURSECS, 2),
+                     array(time(), 2));
     }
 
     /**
      * Validate that export does not respect completion time
      *
+     * @param int $completiontime The completion time to assign the student
+     * @param int $numrows The total number of rows to expect, including the header
      * @dataProvider completion_time_provider
      */
-    public function testExportDoesNotRespectCompletionTime($completiontime) {
+    public function testExportRespectsCompletionTime($completiontime, $numrows) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
@@ -669,7 +675,7 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
 
         //validation
         $data = $this->get_export_data();
-        $this->assertEquals(2, count($data));
+        $this->assertEquals($numrows, count($data));
     }
 
     /**
@@ -683,11 +689,11 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         //data setup
         $this->load_csv_data();
 
-        //set the export to be nonincremental
-        set_config('nonincremental', 1, 'rlipexport_version1elis');
+        //set the export to be incremental
+        set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         //plugin for file IO
-    	$fileplugin = new rlip_fileplugin_manual_nonincremental_elisexport();
+    	$fileplugin = new rlip_fileplugin_manual_incremental_elisexport();
     	$fileplugin->open(RLIP_FILE_WRITE);
 
     	//our specific export
