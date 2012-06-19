@@ -68,6 +68,33 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                          get_string('header_grade', 'rlipexport_version1'),
                          get_string('header_letter', 'rlipexport_version1'));
 
+        //query parameters
+        $params = array(student::STUSTATUS_PASSED);
+
+        //sql time condition
+        $time_condition = '';
+
+        //determine if we're in incremental or non-incremental mode
+        $nonincremental = get_config('rlipexport_version1elis', 'nonincremental');
+        if (empty($nonincremental)) {
+            if ($this->manual) {
+                //manual export incremental mode
+
+                //get string delta
+                $incrementaldelta = get_config('rlipexport_version1elis', 'incrementaldelta');
+                //convert to number of seconds
+                $numsecs = rlip_time_string_to_offset($incrementaldelta);
+
+                //add to query parameters
+                $params[] = time() - $numsecs;
+
+                //add query fragment
+                $time_condition = 'AND stu.completetime >= ?';
+            } else {
+                //TODO: implement
+            }
+        }
+
         //initialize our recordset to the core data
         $sql = "SELECT u.firstname,
                        u.lastname,
@@ -90,12 +117,13 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                 LEFT JOIN {course} mdlcrs
                   ON clsmdl.moodlecourseid = mdlcrs.id
                 WHERE stu.completestatusid = ?
+                {$time_condition}
                 ORDER BY u.idnumber,
                          crs.idnumber,
                          stu.completetime,
                          stu.grade DESC,
                          cls.idnumber";
-        $this->recordset = $DB->get_recordset_sql($sql, array(student::STUSTATUS_PASSED));
+        $this->recordset = $DB->get_recordset_sql($sql, $params);
 
         //write out header
         $this->fileplugin->write($columns);

@@ -482,6 +482,11 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      */
     function sort_order_provider() {
         $data = array();
+
+        //set up some times that will be valid
+        $firsttime = time();
+        $secondtime = $firsttime + DAYSECS;
+
         //sort first based on idnumber
         $data[] = array(array('idnumber' => 'a'),
                         array(),
@@ -519,38 +524,38 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
         //sort third based on completion time / date
         $data[] = array(array('idnumber' => 'a'),
                         array('idnumber' => 'a'),
-                        array('completetime' => 1000000000),
+                        array('completetime' => $firsttime),
                         array('idnumber' => 'a'),
                         array('idnumber' => 'a'),
-                        array('completetime' => 1500000000),
+                        array('completetime' => $secondtime),
                         6,
-                        date("M/d/Y", 1000000000));
+                        date("M/d/Y", $firsttime));
         $data[] = array(array('idnumber' => 'a'),
                         array('idnumber' => 'a'),
-                        array('completetime' => 1500000000),
+                        array('completetime' => $secondtime),
                         array('idnumber' => 'a'),
                         array('idnumber' => 'a'),
-                        array('completetime' => 1000000000),
+                        array('completetime' => $firsttime),
                         6,
-                        date("M/d/Y", 1000000000));
+                        date("M/d/Y", $firsttime));
         //sort fourth based on completion grade
         $data[] = array(array('idnumber' => 'a'),
                        array('idnumber' => 'a'),
-                       array('completetime' => 1,
+                       array('completetime' => $firsttime,
                              'grade' => 2),
                        array('idnumber' => 'a'),
                        array('idnumber' => 'a'),
-                       array('completetime' => 1,
+                       array('completetime' => $firsttime,
                              'grade' => 1),
                        8,
                        2);
         $data[] = array(array('idnumber' => 'a'),
                         array('idnumber' => 'a'),
-                        array('completetime' => 1,
+                        array('completetime' => $firsttime,
                               'grade' => 1),
                         array('idnumber' => 'a'),
                         array('idnumber' => 'a'),
-                        array('completetime' => 1,
+                        array('completetime' => $firsttime,
                               'grade' => 2),
                         8,
                         2);
@@ -558,12 +563,12 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
         $data[] = array(array('username' => 'firstuser',
                               'idnumber' => 'a'),
                         array('idnumber' => 'a'),
-                        array('completetime' => 1,
+                        array('completetime' => $firsttime,
                               'grade' => 1),
                         array('username' => 'seconduser',
                               'idnumber' => 'a'),
                         array('idnumber' => 'a'),
-                        array('completetime' => 1,
+                        array('completetime' => $firsttime,
                               'grade' => 1),
                         2,
                         'firstuser');
