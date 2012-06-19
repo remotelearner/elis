@@ -1585,7 +1585,7 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment create action on courses
      */
     public function testVersion1ImportLogsSuccesfulCourseRoleAssignmentCreate() {
-        global $DB, $CFG, $UNITTEST;
+        global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         $UNITTEST = new stdClass;
@@ -1598,8 +1598,8 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $roleid = $this->create_test_role();
         $syscontext = context_system::instance();
+        $roleid = $this->create_test_role();
 
         set_config('siteguest', '');
 
