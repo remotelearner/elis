@@ -474,10 +474,11 @@ function userset_groups_update_groups($attributes = array()) {
             //error_log("userset_groups_update_groups()");
             $records = $DB->get_recordset_sql($sql, $params);
 
-            if($records->valid()) {
+            if (!empty($records) && $records->valid()) {
                 //used to track changes in clusters
                 $last_cluster_id = 0;
                 $last_group_id = 0;
+                $last_mdlcourse = 0;
 
                 foreach ($records as $record) {
 
@@ -485,7 +486,9 @@ function userset_groups_update_groups($attributes = array()) {
                     if(userset_groups_userset_allows_groups($record->clusterid)) {
 
                         //if first record cluster is different from last, create / retrieve group
-                        if($last_cluster_id === 0 || $last_cluster_id !== $record->clusterid) {
+                        if ($last_cluster_id === 0 ||
+                            $last_cluster_id !== $record->clusterid ||
+                            $last_mdlcourse !== $record->courseid) {
 
                             //determine if group already exists
                             if($DB->record_exists('groups', array('name' => $record->clustername, 'courseid' => $record->courseid))) {
@@ -505,6 +508,7 @@ function userset_groups_update_groups($attributes = array()) {
 
                             $last_cluster_id = $record->clusterid;
                             $last_group_id = $group->id;
+                            $last_mdlcourse = $record->courseid;
                         }
 
                         //add user to group
