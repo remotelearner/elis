@@ -113,6 +113,9 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
+        //set the export to be nonincremental
+        set_config('nonincremental', 1, 'rlipexport_version1elis');
+
         //plugin for file IO
     	$fileplugin = new rlip_fileplugin_manual_nonincremental_elisexport();
     	$fileplugin->open(RLIP_FILE_WRITE);
@@ -141,8 +144,6 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
 
 	    $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-	    //always just include this once
-	    $dataset->addTable(classmoodlecourse::TABLE, dirname(__FILE__).'/classmoodlecourse.csv');
 
 	    if ($multiple_users) {
 	        //data for multiple users
@@ -175,7 +176,8 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
-        return array('context' => 'moodle',
+        return array('config_plugins' => 'moodle',
+                     'context' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
                      'grade_letters' => 'moodle',
@@ -230,16 +232,16 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
      * @return array The expected header structure
      */
     function valid_header_provider() {
-        $expectedheader = array(get_string('header_firstname', 'rlipimport_version1elis'),
-                                get_string('header_lastname', 'rlipimport_version1elis'),
-                                get_string('header_username', 'rlipimport_version1elis'),
-                                get_string('header_useridnumber', 'rlipimport_version1elis'),
-                                get_string('header_courseidnumber', 'rlipimport_version1elis'),
-                                get_string('header_startdate', 'rlipimport_version1elis'),
-                                get_string('header_enddate', 'rlipimport_version1elis'),
-                                get_string('header_status', 'rlipimport_version1elis'),
-                                get_string('header_grade', 'rlipimport_version1elis'),
-                                get_string('header_letter', 'rlipimport_version1elis'));
+        $expectedheader = array(get_string('header_firstname', 'rlipexport_version1elis'),
+                                get_string('header_lastname', 'rlipexport_version1elis'),
+                                get_string('header_username', 'rlipexport_version1elis'),
+                                get_string('header_useridnumber', 'rlipexport_version1elis'),
+                                get_string('header_courseidnumber', 'rlipexport_version1elis'),
+                                get_string('header_startdate', 'rlipexport_version1elis'),
+                                get_string('header_enddate', 'rlipexport_version1elis'),
+                                get_string('header_status', 'rlipexport_version1elis'),
+                                get_string('header_grade', 'rlipexport_version1elis'),
+                                get_string('header_letter', 'rlipexport_version1elis'));
         return array(array($expectedheader));
     }
 
@@ -254,7 +256,7 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         $data = $this->get_export_data();
 
         //validation
-        $this->assertEquals($expectedheader, $data);
+        $this->assertEquals($expectedheader, $data[0]);
     }
 
     /**
@@ -265,7 +267,7 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
     function valid_data_provider() {
         $expecteddata = array('exportfirstname', 'exportlastname', 'exportusername', 'exportidnumber',
                               'testcourseidnumber', date('M/d/Y', 1000000000), date('M/d/Y', 1500000000),
-                              'COMPLETED', '70', 'A-');
+                              'COMPLETED', '70.00000', 'C-');
         return array(array($expecteddata)); 
     }
 
@@ -291,13 +293,9 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
      */
     public function testExportWorksWithMinimalAssociations() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/classmoodlecourse.class.php'));
 
         //setup
         $this->load_csv_data();
-        //not a required table
-        $DB->delete_records(classmoodlecourse::TABLE);
         $data = $this->get_export_data();
 
         //validation
@@ -340,8 +338,8 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         $DB->delete_records($tablename);
         $data = $this->get_export_data();
 
-        //validation
-        $this->assertEquals(0, count($data));
+        //validation (should only have the header row)
+        $this->assertEquals(1, count($data));
     }
 
     /**
@@ -380,7 +378,7 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         $data = $this->get_export_data();
 
         //validation
-        if ($status = student::STUSTATUS_PASSED) {
+        if ($status == student::STUSTATUS_PASSED) {
             //the record should be included
             $this->assertEquals(2, count($data));
         } else {
@@ -420,6 +418,7 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         require_once($CFG->dirroot.'/course/lib.php');
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/classmoodlecourse.class.php'));
 
         //setup
         $this->init_contexts_and_site_course();
@@ -436,6 +435,11 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         $coursedata->fullname = 'testcourse';
         $coursedata = create_course($coursedata);
 
+        //associate the PM class instance to the Moodle course
+        $classmoodle = new classmoodlecourse(array('classid' => 200,
+                                                   'moodlecourseid' => $coursedata->id));
+        $classmoodle->save();
+
         //create grade letter mappings
         $context = context_course::instance($coursedata->id);
         $mappings = array(10 => 1,
@@ -448,11 +452,11 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
                           80 => 8,
                           90 => 9,
                           100 => 10);
-        foreach ($mappings as $lowerboundary => $letter) {
+        foreach ($mappings as $insertlowerboundary => $insertletter) {
             $record = new stdClass;
             $record->contextid = $context->id;
-            $record->lowerboundary = $lowerboundary;
-            $record->letter = $letter;
+            $record->lowerboundary = $insertlowerboundary;
+            $record->letter = $insertletter;
             $DB->insert_record('grade_letters', $record);
         }
 
@@ -631,7 +635,7 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         $data = $this->get_export_data();
 
         //validation
-        $this->assertEquals(2, count($data));
+        $this->assertEquals(3, count($data));
         $this->assertEquals($checkvalue, $data[1][$checkfield]);
     }
 
@@ -666,5 +670,38 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         //validation
         $data = $this->get_export_data();
         $this->assertEquals(2, count($data));
+    }
+
+    /**
+     * Validate that the export resets state appropriately
+     */
+    public function testExportResetsState() {
+        global $CFG;
+        $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
+        require_once($file);
+
+        //data setup
+        $this->load_csv_data();
+
+        //set the export to be nonincremental
+        set_config('nonincremental', 1, 'rlipexport_version1elis');
+
+        //plugin for file IO
+    	$fileplugin = new rlip_fileplugin_manual_nonincremental_elisexport();
+    	$fileplugin->open(RLIP_FILE_WRITE);
+
+    	//our specific export
+        $exportplugin = new rlip_exportplugin_version1elis($fileplugin, true);
+        $exportplugin->init(0, 0);
+
+        //validate setup
+        $this->assertTrue($exportplugin->recordset->valid());
+
+        $exportplugin->close();
+
+        //validate result
+        $this->assertNull($exportplugin->recordset);
+
+        $fileplugin->close();
     }
 }

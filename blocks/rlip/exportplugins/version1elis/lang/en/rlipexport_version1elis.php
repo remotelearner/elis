@@ -25,11 +25,23 @@
  */
 
 $string['columnheader'] = 'Column Header';
+$string['completestatusstring'] = 'COMPLETED';
+$string['config_export_file'] = 'Enter the filename template to use for exporting data.';
 $string['configfieldstreelink'] = 'Field mapping';
 $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Export Fields';
-//TODO: remove this string when no longer needed
 $string['configplaceholdersetting'] = 'Replace with real settings';
-//TODO: remove this string when no longer needed
+$string['export_file'] = 'Export filename';
+$string['exportfilesheading'] = 'Scheduled Export File Locations';
+$string['header_courseidnumber'] = 'Course Idnumber';
+$string['header_firstname'] = 'First Name';
+$string['header_grade'] = 'Grade';
+$string['header_lastname'] = 'Last Name';
+$string['header_letter'] = 'Letter';
+$string['header_startdate'] = 'Start Date';
+$string['header_enddate'] = 'End Date';
+$string['header_status'] = 'Status';
+$string['header_useridnumber'] = 'User Idnumber';
+$string['header_username'] = 'Username';
 $string['placeholdersetting'] = 'Placeholder for settings';
 $string['pluginname'] = 'Version 1 ELIS export';
 $string['profilefieldname'] = 'Profile Field Name';
