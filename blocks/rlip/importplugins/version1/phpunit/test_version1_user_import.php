@@ -153,7 +153,11 @@ class version1UserImportTest extends elis_database_test {
                      RLIP_LOG_TABLE => 'block_rlip',
                      'files' => 'moodle',
                      'external_tokens' => 'moodle',
-                     'external_services_users' => 'moodle');
+                     'external_services_users' => 'moodle',
+                     'sessions' => 'moodle',
+                     'forum_subscriptions' => 'moodle',
+                     'forum_track_prefs' => 'moodle',
+                     'forum_read' => 'moodle');
     }
 
     /**
@@ -396,7 +400,7 @@ class version1UserImportTest extends elis_database_test {
                       'trackforums' => '1',
                       'screenreader' => '1',
                       'timezone' => -5.0,
-                      'theme' => 'rlmaster',
+                      'theme' => 'standard',
                       'lang' => 'en',
                       'description' => 'rlipdescription',
                       'idnumber' => 'rlipidnumber',
@@ -427,7 +431,7 @@ class version1UserImportTest extends elis_database_test {
                         'trackforums' => 1,
                         'screenreader' => 1,
                         'timezone' => -5.0,
-                        'theme' => 'rlmaster',
+                        'theme' => 'standard',
                         'lang' => 'en',
                         'description' => 'rlipdescription',
                         'idnumber' => 'rlipidnumber',
@@ -435,8 +439,8 @@ class version1UserImportTest extends elis_database_test {
                         'department' => 'rlipdepartment');
 
         //print_object($DB->get_records('user'));
-        $exists = $DB->record_exists_select('user', $select, $params);
 
+        $exists = $DB->record_exists_select('user', $select, $params);
         $this->assertEquals($exists, true);
     }
 
@@ -456,7 +460,7 @@ class version1UserImportTest extends elis_database_test {
                       'trackforums' => 1,
                       'screenreader' => 1,
                       'timezone' => -5.0,
-                      'theme' => 'rlmaster',
+                      'theme' => 'standard',
                       'lang' => 'en',
                       'description' => 'rlipdescription',
                       'institution' => 'rlipinstitution',
@@ -502,7 +506,7 @@ class version1UserImportTest extends elis_database_test {
                       'trackforums' => 'yes',
                       'screenreader' => 'no',
                       'timezone' => -5.0,
-                      'theme' => 'rlmaster',
+                      'theme' => 'standard',
                       'lang' => 'en',
                       'description' => 'rlipdescription',
                       'institution' => 'rlipinstitution',
@@ -1036,6 +1040,7 @@ class version1UserImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        require_once($CFG->dirroot.'/elis/core/fields/moodle_profile/custom_fields.php');
 
         //make sure we are not auto-assigning idnumbers
         set_config('auto_assign_user_idnumber', 0, 'elis_program');
@@ -1050,7 +1055,7 @@ class version1UserImportTest extends elis_database_test {
         $this->create_profile_field('rliptext', 'text', $category->id);
 
         //obtain the PM user context level
-        $contextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+        $contextlevel = CONTEXT_ELIS_USER;
 
         //make sure the PM category and field exist
         $category = new field_category(array('name' => 'rlipcategory'));
@@ -1121,7 +1126,7 @@ class version1UserImportTest extends elis_database_test {
         $this->create_profile_field('rliptext', 'text', $category->id);
 
         //obtain the PM user context level
-        $contextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+        $contextlevel = CONTEXT_ELIS_USER;
 
         //make sure the PM category and field exist
         $category = new field_category(array('name' => 'rlipcategory'));
@@ -1190,7 +1195,7 @@ class version1UserImportTest extends elis_database_test {
         $this->create_profile_field('rliptext', 'text', $category->id);
 
         //obtain the PM user context level
-        $contextlevel = context_level_base::get_custom_context_level('user', 'elis_program');
+        $contextlevel = CONTEXT_ELIS_USER;
 
         //make sure the PM category and field exist
         $category = new field_category(array('name' => 'rlipcategory'));
@@ -2438,7 +2443,7 @@ class version1UserImportTest extends elis_database_test {
                       'city1' => 'rlipcity',
                       'country1' => 'CA',
                       'timezone1' => -5.0,
-                      'theme1' => 'rlmaster',
+                      'theme1' => 'standard',
                       'lang1' => 'en',
                       'description1' => 'rlipdescription',
                       'idnumber1' => 'rlipidnumber',
@@ -2480,7 +2485,7 @@ class version1UserImportTest extends elis_database_test {
                         'city' => 'rlipcity',
                         'country' => 'CA',
                         'timezone' => -5.0,
-                        'theme' => 'rlmaster',
+                        'theme' => 'standard',
                         'lang' => 'en',
                         'description' => 'rlipdescription',
                         'idnumber' => 'rlipidnumber',
