@@ -647,12 +647,15 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
     function completion_time_provider() {
         return array(array(0),
                      array(1000000000),
+                     array(time() - 25 * HOURSECS),
+                     array(time() - 23 * HOURSECS),
                      array(time()));
     }
 
     /**
      * Validate that export does not respect completion time
      *
+     * @param int $completiontime The completion time to assign the student
      * @dataProvider completion_time_provider
      */
     public function testExportDoesNotRespectCompletionTime($completiontime) {
