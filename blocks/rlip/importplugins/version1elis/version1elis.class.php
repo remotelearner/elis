@@ -534,6 +534,24 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return $record;
     }
 
+        /**
+     * Remove invalid fields from a class record
+     * @todo: consider generalizing this
+     *
+     * @param object $record The class record
+     * @return object The class record with the invalid fields removed
+     */
+    function remove_invalid_track_fields($record) {
+        $allowed_fields = $this->get_available_fields('track');
+        foreach ($record as $key => $value) {
+            if (!in_array($key, $allowed_fields)) {
+                unset($record->$key);
+            }
+        }
+
+        return $record;
+    }
+
     /**
      * Obtains the listing of fields that are available for the specified
      * entity type
@@ -769,18 +787,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function track_create($record, $filename) {
         global $DB, $CFG;
 
-        // TODO: validation
-        $data = new object();
-        $data->name = $record->name;
-        $data->idnumber = $record->idnumber;
-        $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment));
-        $data->curid = $id;
-        $data->description = $record->description;
-        $data->startdate = $record->startdate;
-        $data->enddate = $record->enddate;
-        $data->timecreated = time();
+        $record = $this->remove_invalid_track_fields($record);
 
-        $track = new track($data);
+        // TODO: validation
+        $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment));
+        $record->curid = $id;
+        $record->timecreated = time();
+
+        $track = new track($record);
         $track->save();
 
         return true;
@@ -790,17 +804,20 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $DB, $CFG;
 
         // TODO: Validaiton
-        $data = new object();
-        $id = $DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber));
-        $data->id = $id;
-        $data->name = $record->name;
-        $data->description = $record->description;
-        $data->startdate = $record->startdate;
-        $data->enddate = $record->enddate;
-        $data->timemodified = time();
-        $data->idnumber = $record->idnumber;
 
-        $track = new track($data);
+        $record = $this->remove_invalid_track_fields($record);
+
+       // $data = new object();
+        $id = $DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber));
+        $record->id = $id;
+      //  $data->name = $record->name;
+      //  $data->description = $record->description;
+      //  $data->startdate = $record->startdate;
+      //  $data->enddate = $record->enddate;
+        $record->timemodified = time();
+       // $data->idnumber = $record->idnumber;
+
+        $track = new track($record);
         $track->save();
 
         return true;
