@@ -123,7 +123,7 @@ class elis_userset_import_test extends elis_database_test {
      *
      * @param string $fieldname The name of the one import field we are setting
      * @param string $value The value to set for that import field
-     * @dataProvider update_field_provider
+     * @dataProvider minimal_update_field_provider
      */
     public function test_update_elis_userset_import_with_minimal_fields($fieldname, $value) {
         global $CFG, $DB;
