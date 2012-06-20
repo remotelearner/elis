@@ -61,7 +61,10 @@ class elis_userset_import_test extends elis_database_test {
                      clustertrack::TABLE => 'elis_program',
                      curriculum::TABLE => 'elis_program',
                      field::TABLE => 'elis_core',
+                     field_data_char::TABLE => 'elis_core',
                      field_data_int::TABLE => 'elis_core',
+                     field_data_num::TABLE => 'elis_core',
+                     field_data_text::TABLE => 'elis_core',
                      track::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program',
@@ -80,7 +83,19 @@ class elis_userset_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
-                     'context' => 'moodle');
+                     'block_instances' => 'moodle',
+                     'block_positions' => 'moodle',
+                     'cache_flags' => 'moodle',
+                     'comments' => 'moodle',
+                     'context' => 'moodle',
+                     'files' => 'moodle',
+                     'filter_active' => 'moodle',
+                     'filter_config' => 'moodle',
+                     'rating' => 'moodle',
+                     'role_assignments' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'user_preferences' => 'moodle');
     }
 
     /**
@@ -234,6 +249,9 @@ class elis_userset_import_test extends elis_database_test {
         require_once(elispm::lib('data/clustertrack.class.php'));
         require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
 
+        //for context level access
+        require_once(elispm::file('accesslib.php'));
+
         //set up user set
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
@@ -271,7 +289,9 @@ class elis_userset_import_test extends elis_database_test {
         $field = new field(array('name' => 'testfieldname',
                                  'categoryid' => 9999));
         $field->save();
-        $data = new field_data_int(array('fieldid' => $field->id,
+        $context = context_elis_userset::instance($userset->id);
+        $data = new field_data_int(array('contextid' => $context->id,
+                                         'fieldid' => $field->id,
                                          'data' => 1));
         $data->save();
 
@@ -298,7 +318,7 @@ class elis_userset_import_test extends elis_database_test {
         $this->run_core_userset_import($data, true);
 
         //validation
-        $this->assertEquals(1, $DB->count_records(userset::TABLE));
+        $this->assertEquals(0, $DB->count_records(userset::TABLE));
         $this->assertEquals(1, $DB->count_records(user::TABLE));
         $this->assertEquals(0, $DB->count_records(clusterassignment::TABLE));
         $this->assertEquals(1, $DB->count_records(curriculum::TABLE));
