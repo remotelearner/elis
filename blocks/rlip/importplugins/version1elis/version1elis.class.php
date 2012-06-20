@@ -73,6 +73,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                           'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
                                           'enrol_from_waitlist', 'assignment', 'link');
 
+    static $import_fields_track_create = array('idnumber', 'assignment');
+    static $import_fields_track_update = array('idnumber');
+    static $import_fields_track_delete = array('idnumber');
+    static $available_fields_track = array('idnumber', 'name', 'description', 'startdate',
+                                          'enddate', 'assignment');
+
+
     //store mappings for the current entity type
     var $mappings = array();
 
@@ -755,6 +762,58 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->syllabus = '';
         $course = new course($data);
         $course->save();
+
+        return true;
+    }
+
+    function track_create($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        $data = new object();
+        $data->name = $record->name;
+        $data->idnumber = $record->idnumber;
+        $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment));
+        $data->curid = $id;
+        $data->description = $record->description;
+        $data->startdate = $record->startdate;
+        $data->enddate = $record->enddate;
+        $data->timecreated = time();
+
+        $track = new track($data);
+        $track->save();
+
+        return true;
+    }
+
+    function track_update($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: Validaiton
+        $data = new object();
+        $id = $DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber));
+        $data->id = $id;
+        $data->name = $record->name;
+        $data->description = $record->description;
+        $data->startdate = $record->startdate;
+        $data->enddate = $record->enddate;
+        $data->timemodified = time();
+        $data->idnumber = $record->idnumber;
+
+        $track = new track($data);
+        $track->save();
+
+        return true;
+    }
+
+    function track_delete($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        if ($track = $DB->get_record('crlm_track', array('idnumber' => $record->idnumber))) {
+            $track = new track($track);
+            $track->delete();
+        }
 
         return true;
     }
