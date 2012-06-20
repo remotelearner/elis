@@ -100,8 +100,77 @@ class elis_userset_import_test extends elis_database_test {
         $this->run_core_userset_import($data, true);
 
         //validation
+        $data['name'] = 'testusersetname';
         $data['parent'] = $parent->id;
         $data['depth'] = 2;
+        $this->assertTrue($DB->record_exists(userset::TABLE, $data));
+    }
+
+    /**
+     * Data provider for a minimum update
+     *
+     * @return array Data needed for the appropriate unit test
+     */
+    function minimal_update_field_provider() {
+        return array(array('display', 'updatedusersetdisplay'));
+    }
+
+    /**
+     * Validate that a userset can be updated with a minimal set of fields specified
+     *
+     * NOTE: This test current performs the same function of the next unit test, but is
+     * conceptually different
+     *
+     * @param string $fieldname The name of the one import field we are setting
+     * @param string $value The value to set for that import field
+     * @dataProvider update_field_provider
+     */
+    public function test_update_elis_userset_import_with_minimal_fields($fieldname, $value) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+
+        //set up a userset
+        $userset = new userset(array('name' => 'testusersetname',
+                                     'display' => 'testusersetdisplay'));
+        $userset->save();
+
+        //run the import
+        $data = array('action' => 'update',
+                      $fieldname => $value);
+        $this->run_core_userset_import($data, true);
+
+        //validation
+        unset($data['action']);
+        $data['name'] = 'testusersetname';
+        $data['parent'] = 0;
+        $data['depth'] = 1;
+        $this->assertTrue($DB->record_exists(userset::TABLE, $data));
+    }
+
+    /**
+     * Validate that a userset can be updated, setting all available fields
+     */
+    public function test_update_elis_userset_import_with_all_fields() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+
+        //set up a userset
+        $userset = new userset(array('name' => 'testusersetname',
+                                     'display' => 'testusersetdisplay'));
+        $userset->save();
+
+        //run the import
+        $data = array('action' => 'update',
+                      'display' => 'updatedusersetdisplay');
+        $this->run_core_userset_import($data, true);
+
+        //validation
+        unset($data['action']);
+        $data['name'] = 'testusersetname';
+        $data['parent'] = 0;
+        $data['depth'] = 1;
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
     }
 
