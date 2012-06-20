@@ -77,7 +77,8 @@ class elis_userset_import_test extends elis_database_test {
         //validation
         $data = array('name' => 'testusersetname',
                       'display' => '',
-                      'parent' => 0);
+                      'parent' => 0,
+                      'depth' => 1);
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
     }
 
@@ -94,13 +95,13 @@ class elis_userset_import_test extends elis_database_test {
         $parent->save();
 
         //run the import
-        $data = array('name' => 'testusersetname',
-                      'display' => 'testusersetdisplay',
+        $data = array('display' => 'testusersetdisplay',
                       'parent' => 'testparentusersetname');
-        $this->run_core_userset_import($data, false);
+        $this->run_core_userset_import($data, true);
 
         //validation
         $data['parent'] = $parent->id;
+        $data['depth'] = 2;
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
     }
 
@@ -110,9 +111,9 @@ class elis_userset_import_test extends elis_database_test {
      *  @return array Mapping of parent values to expected results in the database
      */
     function parent_provider() {
-        return array(array('', 0),
-                     array('top', 0),
-                     array('testparentusersetname', 1));
+        return array(array('', 0, 1),
+                     array('top', 0, 1),
+                     array('testparentusersetname', 1, 2));
     }
 
     /**
@@ -120,9 +121,10 @@ class elis_userset_import_test extends elis_database_test {
      *
      * @param string $input_value The parent value specified
      * @param int $db_value The expected parent value stored in the database
+     * @param int $depth The expected userset depth
      * @dataProvider parent_provider
      */
-    function test_create_elis_userset_respects_parent_field($input_value, $db_value) {
+    function test_create_elis_userset_respects_parent_field($input_value, $db_value, $depth) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
@@ -132,12 +134,13 @@ class elis_userset_import_test extends elis_database_test {
         $parent->save();
 
         //run the import
-        $data = array('name' => 'testusersetname',
-                      'parent' => $input_value);
-        $this->run_core_userset_import($data, false);
+        $data = array('parent' => $input_value);
+        $this->run_core_userset_import($data, true);
 
         //validation
+        $data['name'] = 'testusersetname';
         $data['parent'] = $db_value;
+        $data['depth'] = $depth;
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
     }
 
