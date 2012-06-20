@@ -122,6 +122,7 @@ class version1EmptyValueUpdatesTest extends rlip_test {
             'role_context_levels' => 'moodle',
             'context' => 'moodle',
             'config_plugins' => 'moodle',
+            'enrol' => 'moodle',
             'role_assignments' => 'moodle',
             'role_capabilities' => 'moodle',
             RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
@@ -155,7 +156,6 @@ class version1EmptyValueUpdatesTest extends rlip_test {
                      'block_instances' => 'moodle',
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
-                     'enrol' => 'moodle',
                      'log' => 'moodle',
                      'user_enrolments' => 'moodle');
     }
@@ -310,9 +310,13 @@ class version1EmptyValueUpdatesTest extends rlip_test {
 
         require_once($CFG->dirroot.'/course/lib.php');
         require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot.'/lib/enrollib.php');
 
         set_config('createorupdate', 0, 'rlipimport_version1');
         set_config('gradebookroles', '');
+
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
 
         //set up the site course record
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {

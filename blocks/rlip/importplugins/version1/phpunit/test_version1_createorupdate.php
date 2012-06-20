@@ -207,6 +207,7 @@ class version1CreateorupdateTest extends rlip_test {
             'course' => 'moodle',
             'course_categories' => 'moodle',
             'context' => 'moodle',
+            'enrol' => 'moodle',
             'grade_categories' => 'moodle',
             'grade_items' => 'moodle',
             'role' => 'moodle',
@@ -261,7 +262,6 @@ class version1CreateorupdateTest extends rlip_test {
                      'course_modules_completion' => 'moodle',
                      'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
-                     'enrol' => 'moodle',
                      'event' => 'moodle',
                      'events_queue' => 'moodle',
                      'events_queue_handlers' => 'moodle',
@@ -590,12 +590,16 @@ class version1CreateorupdateTest extends rlip_test {
      * actions can create enrolments
      */
     public function testVersion1CreateorupdateCreatesEnrolmentFromCreateAction() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //set up initial conditions
         set_config('createorupdate', 1, 'rlipimport_version1');
         set_config('gradebookroles', '');
         $this->init_contexts_and_site_course();
+
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
 
         //initial data setup
         $userid = $this->create_test_user();
