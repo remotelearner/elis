@@ -52,9 +52,15 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     static $import_fields_user_delete = array(array('username', 'email', 'idnumber'));
 
+    static $import_fields_course_create = array('context');
+    static $import_fields_course_update = array('context');
+    static $import_fields_course_delete = array('context');
+    //TODO: deal with all required fields structures / setup
+    /*
     static $import_fields_course_create = array('idnumber', 'name');
     static $import_fields_course_update = array('idnumber');
     static $import_fields_course_delete = array('idnumber');
+    */
 
     static $import_fields_program_create = array('idnumber', 'name');
     static $import_fields_program_update = array('idnumber');
@@ -66,6 +72,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $available_fields_class = array('idnumber', 'startdate', 'enddate', 'starttimehour',
                                           'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
                                           'enrol_from_waitlist', 'assignment', 'link');
+
+    static $import_fields_track_create = array('idnumber', 'assignment');
+    static $import_fields_track_update = array('idnumber');
+    static $import_fields_track_delete = array('idnumber');
+    static $available_fields_track = array('idnumber', 'name', 'description', 'startdate',
+                                          'enddate', 'assignment');
+
 
     //store mappings for the current entity type
     var $mappings = array();
@@ -521,6 +534,24 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return $record;
     }
 
+        /**
+     * Remove invalid fields from a class record
+     * @todo: consider generalizing this
+     *
+     * @param object $record The class record
+     * @return object The class record with the invalid fields removed
+     */
+    function remove_invalid_track_fields($record) {
+        $allowed_fields = $this->get_available_fields('track');
+        foreach ($record as $key => $value) {
+            if (!in_array($key, $allowed_fields)) {
+                unset($record->$key);
+            }
+        }
+
+        return $record;
+    }
+
     /**
      * Obtains the listing of fields that are available for the specified
      * entity type
@@ -642,6 +673,39 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Create a cluster (user set)
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function cluster_create($record, $filename) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+
+        //TODO: remove unavailable fields from the record
+        if (!isset($record->parent) || $record->parent == 'top') {
+            $record->parent = 0;
+        } else if ($parentid = $DB->get_field(userset::TABLE, 'id', array('name' => $record->parent))) {
+            $record->parent = $parentid;
+        } else {
+            //invalid parent specification
+            //TODO: log error and return false
+        }
+
+        if (!isset($record->display)) {
+            //should default to the empty string rather than null
+            $record->display = '';
+        }
+
+        $cluster = new userset($record);
+        $cluster->save();
+
+        return true;
+    }
+
+    /**
      * Create a course
      * @todo: consider factoring this some more once other actions exist
      *
@@ -716,6 +780,57 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->syllabus = '';
         $course = new course($data);
         $course->save();
+
+        return true;
+    }
+
+    function track_create($record, $filename) {
+        global $DB, $CFG;
+
+        $record = $this->remove_invalid_track_fields($record);
+
+        // TODO: validation
+        $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment));
+        $record->curid = $id;
+        $record->timecreated = time();
+
+        $track = new track($record);
+        $track->save();
+
+        return true;
+    }
+
+    function track_update($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: Validaiton
+
+        $record = $this->remove_invalid_track_fields($record);
+
+       // $data = new object();
+        $id = $DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber));
+        $record->id = $id;
+      //  $data->name = $record->name;
+      //  $data->description = $record->description;
+      //  $data->startdate = $record->startdate;
+      //  $data->enddate = $record->enddate;
+        $record->timemodified = time();
+       // $data->idnumber = $record->idnumber;
+
+        $track = new track($record);
+        $track->save();
+
+        return true;
+    }
+
+    function track_delete($record, $filename) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        if ($track = $DB->get_record('crlm_track', array('idnumber' => $record->idnumber))) {
+            $track = new track($track);
+            $track->delete();
+        }
 
         return true;
     }
