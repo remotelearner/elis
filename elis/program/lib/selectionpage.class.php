@@ -158,7 +158,7 @@ abstract class selectionpage extends pm_page { // TBD
         global $SESSION;
         $id = optional_param('id', 1, PARAM_INT);
 
-        $pagename = $this->page_identity();
+        $pagename = $this->page_identity($id);
 
         if (isset($SESSION->selectionpage[$pagename])) {
             unset($SESSION->selectionpage[$pagename]);
