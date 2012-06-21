@@ -734,6 +734,33 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Update a cluster (user set)
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function cluster_delete($record, $filename) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+
+        //TODO: remove unspported fields here
+
+        $id = $DB->get_field(userset::TABLE, 'id', array('name'  => $record->name));
+
+        if (!$id) {
+            //invalid name specification
+            //TODO: log an error and return false
+        }
+
+        $data = new userset($id);
+        $data->delete();
+
+        return true;
+    }
+
+    /**
      * Create a course
      * @todo: consider factoring this some more once other actions exist
      *
