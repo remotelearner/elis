@@ -45,9 +45,32 @@ class elis_userset_import_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/clustercurriculum.class.php'));
+        require_once(elispm::lib('data/clustertrack.class.php'));
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
+        require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
 
-        return array(userset::TABLE => 'elis_program');
+        return array(clusterassignment::TABLE => 'elis_program',
+                     clustercurriculum::TABLE => 'elis_program',
+                     clustertrack::TABLE => 'elis_program',
+                     curriculum::TABLE => 'elis_program',
+                     field::TABLE => 'elis_core',
+                     field_data_char::TABLE => 'elis_core',
+                     field_data_int::TABLE => 'elis_core',
+                     field_data_num::TABLE => 'elis_core',
+                     field_data_text::TABLE => 'elis_core',
+                     track::TABLE => 'elis_program',
+                     user::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program',
+                     userset::TABLE => 'elis_program',
+                     userset_profile::TABLE => 'elis_program',
+                     'user' => 'moodle');
     }
 
     /**
@@ -60,7 +83,19 @@ class elis_userset_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         return array(RLIP_LOG_TABLE => 'block_rlip',
-                     'context' => 'moodle');
+                     'block_instances' => 'moodle',
+                     'block_positions' => 'moodle',
+                     'cache_flags' => 'moodle',
+                     'comments' => 'moodle',
+                     'context' => 'moodle',
+                     'files' => 'moodle',
+                     'filter_active' => 'moodle',
+                     'filter_config' => 'moodle',
+                     'rating' => 'moodle',
+                     'role_assignments' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'user_preferences' => 'moodle');
     }
 
     /**
@@ -100,9 +135,199 @@ class elis_userset_import_test extends elis_database_test {
         $this->run_core_userset_import($data, true);
 
         //validation
+        $data['name'] = 'testusersetname';
         $data['parent'] = $parent->id;
         $data['depth'] = 2;
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
+    }
+
+    /**
+     * Data provider for a minimum update
+     *
+     * @return array Data needed for the appropriate unit test
+     */
+    function minimal_update_field_provider() {
+        return array(array('display', 'updatedusersetdisplay'));
+    }
+
+    /**
+     * Validate that a userset can be updated with a minimal set of fields specified
+     *
+     * NOTE: This test current performs the same function of the next unit test, but is
+     * conceptually different
+     *
+     * @param string $fieldname The name of the one import field we are setting
+     * @param string $value The value to set for that import field
+     * @dataProvider minimal_update_field_provider
+     */
+    public function test_update_elis_userset_import_with_minimal_fields($fieldname, $value) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+
+        //set up a userset
+        $userset = new userset(array('name' => 'testusersetname',
+                                     'display' => 'testusersetdisplay'));
+        $userset->save();
+
+        //run the import
+        $data = array('action' => 'update',
+                      $fieldname => $value);
+        $this->run_core_userset_import($data, true);
+
+        //validation
+        unset($data['action']);
+        $data['name'] = 'testusersetname';
+        $data['parent'] = 0;
+        $data['depth'] = 1;
+        $this->assertTrue($DB->record_exists(userset::TABLE, $data));
+    }
+
+    /**
+     * Validate that a userset can be updated, setting all available fields
+     */
+    public function test_update_elis_userset_import_with_all_fields() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+
+        //set up a userset
+        $userset = new userset(array('name' => 'testusersetname',
+                                     'display' => 'testusersetdisplay'));
+        $userset->save();
+
+        //run the import
+        $data = array('action' => 'update',
+                      'display' => 'updatedusersetdisplay');
+        $this->run_core_userset_import($data, true);
+
+        //validation
+        unset($data['action']);
+        $data['name'] = 'testusersetname';
+        $data['parent'] = 0;
+        $data['depth'] = 1;
+        $this->assertTrue($DB->record_exists(userset::TABLE, $data));
+    }
+
+    /**
+     * Validate that a userset can be deleted with a minimal set of fields specified
+     */
+    public function test_delete_elis_userset_import_with_minimal_fields() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+
+        //set up a userset
+        $userset = new userset(array('name' => 'testusersetname'));
+        $userset->save();
+
+        //run the import
+        $data = array('action' => 'delete');
+        $this->run_core_userset_import($data, true);
+
+        //validation
+        $count = $DB->count_records(userset::TABLE);
+        $this->assertEquals(0, $count);
+    }
+
+    /**
+     * Validate that deleting a userset deletes all appropriate associations
+     */
+    public function test_delete_elis_userset_deletes_associations() {
+        global $CFG, $DB;
+        //entities
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elis::lib('data/customfield.class.php'));
+
+        //associations
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/clustercurriculum.class.php'));
+        require_once(elispm::lib('data/clustertrack.class.php'));
+        require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+
+        //for context level access
+        require_once(elispm::file('accesslib.php'));
+
+        //set up user set
+        $userset = new userset(array('name' => 'testusersetname'));
+        $userset->save();
+
+        //set up other entities and associations
+
+        //cluster enrolment
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'test@useremail.com',
+                               'country' => 'CA'));
+        $user->save();
+        $clusterassignment = new clusterassignment(array('clusterid' => $userset->id,
+                                                         'userid' => $user->id));
+        $clusterassignment->save();
+
+        //cluster-curriculum assignment
+        $curriculum = new curriculum(array('idnumber' => 'testcurriculumidnumber'));
+        $curriculum->save();
+        $clustercurriculum = new clustercurriculum(array('clusterid' => $userset->id,
+                                                         'curriculumid' => $curriculum->id));
+        $clustercurriculum->save();
+
+        //cluster-track assignment
+        $track = new track(array('curid' => $curriculum->id,
+                                 'idnumber' => 'testtrackidnumber'));
+        $track->save();
+        $clustertrack = new clustertrack(array('clusterid' => $userset->id,
+                                               'trackid' => $track->id));
+        $clustertrack->save();
+
+        //custom field
+        $field = new field(array('name' => 'testfieldname',
+                                 'categoryid' => 9999));
+        $field->save();
+        $context = context_elis_userset::instance($userset->id);
+        $data = new field_data_int(array('contextid' => $context->id,
+                                         'fieldid' => $field->id,
+                                         'data' => 1));
+        $data->save();
+
+        //cluster profile criteria
+        $clusterprofile = new userset_profile(array('clusterid' => $userset->id,
+                                                    'fieldid' => $field->id,
+                                                    'value' => 0));
+        $clusterprofile->save();
+
+        //validate setup
+        $this->assertEquals(1, $DB->count_records(userset::TABLE));
+        $this->assertEquals(1, $DB->count_records(user::TABLE));
+        $this->assertEquals(1, $DB->count_records(clusterassignment::TABLE));
+        $this->assertEquals(1, $DB->count_records(curriculum::TABLE));
+        $this->assertEquals(1, $DB->count_records(clustercurriculum::TABLE));
+        $this->assertEquals(1, $DB->count_records(track::TABLE));
+        $this->assertEquals(1, $DB->count_records(clustertrack::TABLE));
+        $this->assertEquals(1, $DB->count_records(field::TABLE));
+        $this->assertEquals(1, $DB->count_records(field_data_int::TABLE));
+        $this->assertEquals(1, $DB->count_records(userset_profile::TABLE));
+
+        //run the import
+        $data = array('action' => 'delete');
+        $this->run_core_userset_import($data, true);
+
+        //validation
+        $this->assertEquals(0, $DB->count_records(userset::TABLE));
+        $this->assertEquals(1, $DB->count_records(user::TABLE));
+        $this->assertEquals(0, $DB->count_records(clusterassignment::TABLE));
+        $this->assertEquals(1, $DB->count_records(curriculum::TABLE));
+        $this->assertEquals(0, $DB->count_records(clustercurriculum::TABLE));
+        $this->assertEquals(1, $DB->count_records(track::TABLE));
+        $this->assertEquals(0, $DB->count_records(clustertrack::TABLE));
+        $this->assertEquals(1, $DB->count_records(field::TABLE));
+        $this->assertEquals(0, $DB->count_records(field_data_int::TABLE));
+        $this->assertEquals(0, $DB->count_records(userset_profile::TABLE));
     }
 
     /**

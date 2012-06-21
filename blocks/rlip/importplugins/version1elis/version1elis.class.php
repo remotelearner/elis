@@ -71,7 +71,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_class_creat = array('idnumber');
     static $available_fields_class = array('idnumber', 'startdate', 'enddate', 'starttimehour',
                                           'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
-                                          'enrol_from_waitlist', 'assignment', 'link');
+                                          'enrol_from_waitlist', 'assignment', 'track', 'autoenrol', 'link');
 
     static $import_fields_track_create = array('idnumber', 'assignment');
     static $import_fields_track_update = array('idnumber');
@@ -440,8 +440,38 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return $this->$method($record, $filename);
     }
 
+    /**
+     * Associate a class instance to a track, if necessary
+     *
+     * @param object $record The import record containing information about the track
+     * @param int $classid The id of the class instance
+     */
+    function associate_class_to_track($record, $classid) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/track.class.php'));
+
+        if (isset($record->track)) {
+            //attempt to associate this class instance to a track
+            if ($trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $record->track))) {
+                //valid track, so associate
+
+                //determine whether we should auto-enrol
+                $autoenrol = (isset($record->autoenrol) && $record->autoenrol == 1) ? 1 : 0;
+                $trackassignment = new trackassignment(array('trackid' => $trackid,
+                                                             'classid' => $classid,
+                                                             'autoenrol' => $autoenrol));
+                $trackassignment->save();
+            }
+        }
+
+        //TODO: return a status, add error handling
+    }
+
     function class_create($record, $filename) {
         global $DB, $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
 
         // TODO: validation
         $record = $this->remove_invalid_class_fields($record);
@@ -471,6 +501,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         */
         $pmclass = new pmclass($data);
         $pmclass->save();
+
+        //associate this class instance to a track, if necessary
+        $this->associate_class_to_track($record, $pmclass->id);
 
         return true;
     }
@@ -584,6 +617,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     function class_update($record, $filename) {
         global $DB, $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
 
         // TODO: validation
         $record = $this->remove_invalid_class_fields($record);
@@ -604,6 +639,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->maxstudents = $record->maxstudents;
         $pmclass = new pmclass($data);
         $pmclass->save();
+
+        //associate this class instance to a track, if necessary
+        $this->associate_class_to_track($record, $pmclass->id);
 
         return true;
     }
@@ -706,6 +744,86 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Create a cluster (user set)
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function cluster_update($record, $filename) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+
+        //TODO: remove unspported fields here
+
+        $id = $DB->get_field(userset::TABLE, 'id', array('name'  => $record->name));
+
+        if (!$id) {
+            //invalid name specification
+            //TODO: log an error and return false
+        }
+
+        $data = new userset($record);
+        $data->id = $id;
+        $data->save();
+
+        return true;
+    }
+
+    /**
+     * Update a cluster (user set)
+     * @todo: consider factoring this some more once other actions exist
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function cluster_delete($record, $filename) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+
+        //TODO: remove unspported fields here
+
+        $id = $DB->get_field(userset::TABLE, 'id', array('name'  => $record->name));
+
+        if (!$id) {
+            //invalid name specification
+            //TODO: log an error and return false
+        }
+
+        $data = new userset($id);
+        $data->delete();
+
+        return true;
+    }
+
+    /**
+     * Associate a course description to a Moodle template course, if necessary
+     *
+     * @param object $record The import record containing information about the moodle course
+     * @param int $courseid The id of the course description
+     */
+    function associate_course_to_moodle_course($record, $courseid) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/coursetemplate.class.php'));
+
+        if (isset($record->link)) {
+            //attempt to associate this course description to a Moodle course
+            if ($mdlcourseid = $DB->get_field('course', 'id', array('shortname' => $record->link))) {
+                //valid Moodle course, so associate
+                $coursetemplate = new coursetemplate(array('courseid' => $courseid,
+                                                           'location' => $mdlcourseid,
+                                                           'templateclass' => 'moodlecourseurl'));
+                $coursetemplate->save();
+            }
+        }
+
+        //TODO: return a status, add error handling
+    }
+
+    /**
      * Create a course
      * @todo: consider factoring this some more once other actions exist
      *
@@ -734,6 +852,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $course = new course($data);
         $course->save();
+
+        //associate this course description to a Moodle course, if necessary
+        $this->associate_course_to_moodle_course($record, $course->id);
 
         return true;
     }
@@ -780,6 +901,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->syllabus = '';
         $course = new course($data);
         $course->save();
+
+        //associate this course description to a Moodle course, if necessary
+        $this->associate_course_to_moodle_course($record, $course->id);
 
         return true;
     }
