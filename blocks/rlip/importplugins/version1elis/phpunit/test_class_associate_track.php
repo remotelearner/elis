@@ -71,10 +71,25 @@ class elis_class_associate_track_test extends elis_database_test {
     }
 
     /**
+     * Data provider for testing various scenarios related to the autoenrol flag
+     *
+     * @return array Data in the expected format
+     */
+    function autoenrol_provider() {
+        return array(array(NULL, 0),
+                     array(0, 0),
+                     array(1, 1));
+    }
+
+    /**
      * Validate that track-class associations can be created during a class instance
      * create action
+     *
+     * @param mixed $autoenrol The appropriate autoenrol value specified 
+     * @param int $db_autoenrol The value expected to be set in the db for autoenrol
+     * @dataProvider autoenrol_provider
      */
-    function test_associate_track_during_class_create() {
+    function test_associate_track_during_class_create($autoenrol, $db_autoenrol) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -108,6 +123,9 @@ class elis_class_associate_track_test extends elis_database_test {
         $record->assignment = 'testcourseidnumber';
         $record->idnumber = 'testclassidnumber';
         $record->track = 'testtrackidnumber';
+        if ($autoenrol !== NULL) {
+            $record->autoenrol = $autoenrol;
+        }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->class_create($record, 'bogus');
@@ -115,14 +133,19 @@ class elis_class_associate_track_test extends elis_database_test {
         //validation
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => 'testclassidnumber'));
         $this->assertTrue($DB->record_exists(trackassignment::TABLE, array('trackid' => $track->id,
-                                                                           'classid' => $classid)));
+                                                                           'classid' => $classid,
+                                                                           'autoenrol' => $db_autoenrol)));
     }
 
     /**
      * Validate that track-class associations can be created during a class instance
      * update action
+     *
+     * @param mixed $autoenrol The appropriate autoenrol value specified 
+     * @param int $db_autoenrol The value expected to be set in the db for autoenrol
+     * @dataProvider autoenrol_provider
      */
-    function test_associate_track_during_class_update() {
+    function test_associate_track_during_class_update($autoenrol, $db_autoenrol) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -161,6 +184,9 @@ class elis_class_associate_track_test extends elis_database_test {
         $record->assignment = 'testcourseidnumber';
         $record->idnumber = 'testclassidnumber';
         $record->track = 'testtrackidnumber';
+        if ($autoenrol !== NULL) {
+            $record->autoenrol = $autoenrol;
+        }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->class_update($record, 'bogus');
@@ -168,6 +194,7 @@ class elis_class_associate_track_test extends elis_database_test {
         //validation
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => 'testclassidnumber'));
         $this->assertTrue($DB->record_exists(trackassignment::TABLE, array('trackid' => $track->id,
-                                                                           'classid' => $classid)));
+                                                                           'classid' => $classid,
+                                                                           'autoenrol' => $db_autoenrol)));
     }
 }
