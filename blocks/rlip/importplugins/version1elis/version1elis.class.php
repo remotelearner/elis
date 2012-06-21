@@ -836,6 +836,67 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Delegate processing of an import line for entity type "enrolment"
+     *
+     * @param object $record One record of import data
+     * @param string $action The action to perform, or use data's action if
+     *                       not supplied
+     * @param string $filename The import file name, used for logging
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function enrolment_action($record, $action = '', $filename = '') {
+        if ($action === '') {
+            //set from param
+            $action = isset($record->action) ? $record->action : '';
+        }
+
+        // TODO: more validation
+
+        //remove empty fields
+        $record = $this->remove_empty_fields($record);
+
+        $pos = strpos($record->context, "_");
+        $entity = substr($record->context, 0, $pos);
+        $idnumber = substr($record->context, $pos + 1);
+
+        $method = "{$entity}_enrolment_{$action}";
+        if (method_exists($this, $method)) {
+            return $this->$method($record, $filename, $idnumber);
+        } else {
+            //todo: add logging
+            return false;
+        }
+    }
+
+    function curriculum_enrolment_create($record, $filename, $idnumber) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        $curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $idnumber));
+        $userid = $DB->get_field('crlm_user', 'id', array('idnumber' => $record->user_idnumber));
+
+        $stucur = new curriculumstudent(array('userid' => $userid, 'curriculumid' => $curid));
+        $stucur->save();
+
+        return true;
+    }
+
+    function curriculum_enrolment_delete($record, $filename, $idnumber) {
+        global $DB, $CFG;
+
+        // TODO: validation
+        $curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $idnumber));
+        $userid = $DB->get_field('crlm_user', 'id', array('idnumber' => $record->user_idnumber));
+        $associd = $DB->get_field('crlm_curriculum_assignment', 'id', array('userid' => $userid, 'curriculumid' => $curid));
+
+        $stucur = new curriculumstudent(array('id' => $associd));
+        $stucur->delete();
+
+        return true;
+    }
+
+    /**
      * Hook run after a file header is read
      *
      * @param string $entity The type of entity
