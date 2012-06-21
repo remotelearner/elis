@@ -71,7 +71,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_class_creat = array('idnumber');
     static $available_fields_class = array('idnumber', 'startdate', 'enddate', 'starttimehour',
                                           'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
-                                          'enrol_from_waitlist', 'assignment', 'link');
+                                          'enrol_from_waitlist', 'assignment', 'track', 'autoenrol', 'link');
 
     static $import_fields_track_create = array('idnumber', 'assignment');
     static $import_fields_track_update = array('idnumber');
@@ -440,8 +440,38 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return $this->$method($record, $filename);
     }
 
+    /**
+     * Associate a class instance to a track, if necessary
+     *
+     * @param object $record The import record containing information about the track
+     * @param int $classid The id of the class instance
+     */
+    function associate_class_to_track($record, $classid) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/track.class.php'));
+
+        if (isset($record->track)) {
+            //attempt to associate this class instance to a track
+            if ($trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $record->track))) {
+                //valid track, so associate
+
+                //determine whether we should auto-enrol
+                $autoenrol = (isset($record->autoenrol) && $record->autoenrol == 1) ? 1 : 0;
+                $trackassignment = new trackassignment(array('trackid' => $trackid,
+                                                             'classid' => $classid,
+                                                             'autoenrol' => $autoenrol));
+                $trackassignment->save();
+            }
+        }
+
+        //TODO: return a status, add error handling
+    }
+
     function class_create($record, $filename) {
         global $DB, $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
 
         // TODO: validation
         $record = $this->remove_invalid_class_fields($record);
@@ -471,6 +501,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         */
         $pmclass = new pmclass($data);
         $pmclass->save();
+
+        //associate this class instance to a track, if necessary
+        $this->associate_class_to_track($record, $pmclass->id);
 
         return true;
     }
@@ -584,6 +617,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     function class_update($record, $filename) {
         global $DB, $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
 
         // TODO: validation
         $record = $this->remove_invalid_class_fields($record);
@@ -604,6 +639,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->maxstudents = $record->maxstudents;
         $pmclass = new pmclass($data);
         $pmclass->save();
+
+        //associate this class instance to a track, if necessary
+        $this->associate_class_to_track($record, $pmclass->id);
 
         return true;
     }
