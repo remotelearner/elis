@@ -799,6 +799,31 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Associate a course description to a Moodle template course, if necessary
+     *
+     * @param object $record The import record containing information about the moodle course
+     * @param int $courseid The id of the course description
+     */
+    function associate_course_to_moodle_course($record, $courseid) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/coursetemplate.class.php'));
+
+        if (isset($record->link)) {
+            //attempt to associate this course description to a Moodle course
+            if ($mdlcourseid = $DB->get_field('course', 'id', array('shortname' => $record->link))) {
+                //valid Moodle course, so associate
+                $coursetemplate = new coursetemplate(array('courseid' => $courseid,
+                                                           'location' => $mdlcourseid,
+                                                           'templateclass' => 'moodlecourseurl'));
+                $coursetemplate->save();
+            }
+        }
+
+        //TODO: return a status, add error handling
+    }
+
+    /**
      * Create a course
      * @todo: consider factoring this some more once other actions exist
      *
@@ -827,6 +852,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $course = new course($data);
         $course->save();
+
+        //associate this course description to a Moodle course, if necessary
+        $this->associate_course_to_moodle_course($record, $course->id);
 
         return true;
     }
@@ -873,6 +901,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->syllabus = '';
         $course = new course($data);
         $course->save();
+
+        //associate this course description to a Moodle course, if necessary
+        $this->associate_course_to_moodle_course($record, $course->id);
 
         return true;
     }

@@ -73,6 +73,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/coursetemplate.class.php'));
 
         //set up the site course record
@@ -86,6 +87,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
 
         $templatecourse = new stdClass;
         $templatecourse->category = $coursecategory->id;
+        $templatecourse->shortname = 'testcourseshortname';
         $templatecourse->fullname = 'testcoursefullname';
         $templatecourse = create_course($templatecourse);
 
@@ -93,13 +95,13 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
         $record = new stdClass;
         $record->name = 'testcoursename';
         $record->idnumber = 'testcourseidnumber';
-        $record->link = $templatecourse->idnumber;
+        $record->link = $templatecourse->shortname;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->course_create($record, 'bogus');
 
         //validation
-        $pmcourseid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => 'testclassidnumber'));
+        $pmcourseid = $DB->get_field(course::TABLE, 'id', array('idnumber' => 'testcourseidnumber'));
         $this->assertTrue($DB->record_exists(coursetemplate::TABLE, array('courseid' => $pmcourseid,
                                                                           'location' => $templatecourse->id,
                                                                           'templateclass' => 'moodlecourseurl')));
@@ -127,6 +129,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
 
         $templatecourse = new stdClass;
         $templatecourse->category = $coursecategory->id;
+        $templatecourse->shortname = 'testcourseshortname';
         $templatecourse->fullname = 'testcoursefullname';
         $templatecourse = create_course($templatecourse);
 
@@ -140,7 +143,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
         $record = new stdClass;
         $record->name = 'testcoursename';
         $record->idnumber = 'testcourseidnumber';
-        $record->link = $templatecourse->idnumber;
+        $record->link = $templatecourse->shortname;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->course_update($record, 'bogus');
