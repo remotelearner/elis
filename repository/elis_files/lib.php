@@ -27,7 +27,9 @@
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  */
 
+defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__) .'/../lib.php');
 
 // Define constants for the default file browsing location.
 defined('ELIS_FILES_BROWSE_SITE_FILES') or define('ELIS_FILES_BROWSE_SITE_FILES',   20);
@@ -885,6 +887,202 @@ class repository_elis_files extends repository {
         if ($record->visible) {
             return true;
         }
+    }
+
+    /**
+     * Prepares list of files before passing it to AJAX, makes sure data is in the correct
+     * format and stores formatted values.
+     *
+     * @param array|stdClass $listing result of get_listing() or search() or file_get_drafarea_files()
+     * @uses   $CFG
+     * @uses   $OUTPUT
+     * @return list((array)listing, count)
+     */
+    public function prepare_fm_listing($listing) {
+        global $CFG, $OUTPUT;
+
+        $topchildren = array();
+        $children = &$topchildren;
+        $locations = null;
+        if (is_array($listing) && !empty($listing['locations'])) {
+            $locations = &$listing['locations'];
+        } else if (is_object($listing) && !empty($listing->locations)) {
+            $locations = &$listing->locations;
+        }
+        if (!empty($locations)) {
+            foreach ($locations as $location) {
+                $subdir = new stdClass;
+                $subdir->id = $location['path']; // TBD
+                $subdir->filepath = $location['path'];
+                $subdir->textpath = $location['name'];
+                $subdir->fullname = $location['name'];
+                $subdir->sortorder = 0; // TBD
+                $subdir->children = array();
+                $children[] = $subdir;
+            }
+        }
+
+        $defaultfoldericon = $OUTPUT->pix_url(file_folder_icon(24))->out(false);
+        // prepare $listing['path'] or $listing->path
+        if (is_array($listing) && isset($listing['path']) && is_array($listing['path'])) {
+            $path = &$listing['path'];
+        } else if (is_object($listing) && isset($listing->path) && is_array($listing->path)) {
+            $path = &$listing->path;
+        }
+        $textpath = '';
+        $lastpathvalue = 0;
+        if (isset($path)) {
+            $len = count($path);
+            for ($i = 0; $i < $len; $i++) {
+                $pathname = false;
+                $pathvalue = false;
+                if (is_array($path[$i])) {
+                    if (!isset($path[$i]['icon'])) {
+                        $path[$i]['icon'] = $defaultfoldericon;
+                    }
+                    if (!empty($path[$i]['name'])) {
+                        $pathname = $path[$i]['name'];
+                    }
+                    if (!empty($path[$i]['path'])) {
+                        $pathvalue = $path[$i]['path'];
+                    }
+                } else if (is_object($path[$i])) {
+                    if (!isset($path[$i]->icon)) {
+                        $path[$i]->icon = $defaultfoldericon;
+                    }
+                    if (!empty($path[$i]->name)) {
+                        $pathname = $path[$i]->name;
+                    }
+                    if (!empty($path[$i]->path)) {
+                        $pathvalue = $path[$i]->path;
+                    }
+                }
+                if ($pathname && $pathvalue && $lastpathvalue != $pathvalue) {
+                    $lastpathvalue = $pathvalue;
+                    if (!empty($textpath)) { // TBD
+                        $textpath .= '/';
+                    }
+                    $textpath .= $pathname;
+                    $subdir = new stdClass;
+                    $subdir->id = $pathvalue; // TBD
+                    $subdir->filepath = $pathvalue;
+                    $subdir->textpath = $pathname;
+                    $subdir->fullname = $pathname;
+                    $subdir->sortorder = i; // TBD
+                    $subdir->children = array();
+                    $children[] = $subdir;
+                    $children = &$subdir->children;
+                }
+            }
+        }
+
+        // prepare $listing['list'] or $listing->list
+        if (is_array($listing) && isset($listing['list']) && is_array($listing['list'])) {
+            $listing['list'] = array_values($listing['list']); // convert to array
+            $files = &$listing['list'];
+        } else if (is_object($listing) && isset($listing->list) && is_array($listing->list)) {
+            $listing->list = array_values($listing->list); // convert to array
+            $files = &$listing->list;
+        } else {
+            return array($listing, 0); // TBD
+        }
+        $len = count($files);
+        for ($i = 0; $i < $len; $i++) {
+            if (is_object($files[$i])) {
+                $file = (array)$files[$i];
+                $converttoobject = true;
+            } else {
+                $file = & $files[$i];
+                $converttoobject = false;
+            }
+            if (isset($file['size'])) { // TBD
+                $file['size'] = (int)$file['size'];
+                $file['size_f'] = display_size($file['size']);
+            }
+            if (isset($file['license']) &&
+                    get_string_manager()->string_exists($file['license'], 'license')) {
+                $file['license_f'] = get_string($file['license'], 'license');
+            }
+            if (isset($file['image_width']) && isset($file['image_height'])) {
+                $a = array('width' => $file['image_width'], 'height' => $file['image_height']);
+                $file['dimensions'] = get_string('imagesize', 'repository', (object)$a);
+            }
+            // Map date fields
+            foreach (array('date'     => 'date',
+                           'modified' => 'datemodified',
+                           'created'  => 'datecreated'
+                     ) as $key => $value) {
+                if (!isset($file[$key]) && isset($file['date'])) {
+                    $file[$value] = $file['date'];
+                }
+                if (isset($file[$key])) {
+                    $file[$value] = $file[$key];
+                    $file[$value.'_f'] = $file[$key];
+                    $file[$value.'_f_s'] = $file[$key];
+                }
+            }
+            // Map other fields
+            foreach (array('owner' => 'author',
+                           'path'  => 'filepath' // TBD
+                     ) as $key => $value) {
+                if (isset($file[$key])) {
+                    $file[$value] = $file[$key];
+                } else {
+                    $file[$value] = ''; // TBD
+                }
+            }
+            $isfolder = (array_key_exists('children', $file) || (isset($file['type']) && $file['type'] == 'folder'));
+            if (!isset($file['type'])) {
+                $file['type'] = $isfolder ? 'folder' : 'file';
+            }
+            if ($isfolder) {
+                $subdir = new stdClass;
+                $subdir->id = $file['filepath']; // TBD
+                $subdir->filepath = $file['path'];
+                $subdir->textpath = $file['title'];
+                $subdir->fullname = $subdir->textpath;
+                $subdir->sortorder = 0; // TBD
+                $subdir->children = array();
+                $children[] = $subdir;
+            }
+            $filename = null;
+            if (isset($file['title'])) {
+                $filename = $file['title'];
+            }
+            else if (isset($file['fullname'])) {
+                $filename = $file['fullname'];
+            }
+            if ($filename) {
+                $file['filename'] = $filename;
+                $file['fullname'] = $filename;
+            }
+            if (isset($file['source'])) {
+                $file['url'] = $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='. $file['source'];
+            }
+            //error_log("/repository/elis_files/lib.php::prepare_listing(): filepath = {$textpath}");
+            $file['textpath'] = $textpath; // TBD
+            if (!isset($file['mimetype']) && !$isfolder && $filename) {
+                $file['mimetype'] = get_mimetype_description(array('filename' => $filename));
+            }
+            if (!isset($file['icon'])) {
+                if ($isfolder) {
+                    $file['icon'] = $defaultfoldericon;
+                } else if ($filename) {
+                    $file['icon'] = $OUTPUT->pix_url(file_extension_icon($filename, 24))->out(false);
+                }
+            }
+            if ($converttoobject) {
+                $files[$i] = (object)$file;
+            }
+        }
+        if (is_array($listing)) {
+            $listing['tree'] = array('children' => $topchildren);
+        } else {
+            $treeelm = new stdClass;
+            $treeelm->children = $topchildren;
+            $listing->tree = $treeelm;
+        }
+        return array($listing, $len);
     }
 
     private static function output_root_folder_html($data, $query = '') {

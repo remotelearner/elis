@@ -182,6 +182,7 @@ $string['lockingdownpermissionson'] = 'Locking down permissions on Alfresco fold
 $string['myfiles'] = 'My Files';
 $string['myfilesquota'] = 'My Files - {$a} free';
 $string['modifiedby'] = 'Modified By';
+$string['moodle'] = 'Moodle';
 $string['move'] = 'Move';
 $string['movefiles'] = 'Move file(s) to:';
 $string['nocategoriesfound'] = 'No categories found';
