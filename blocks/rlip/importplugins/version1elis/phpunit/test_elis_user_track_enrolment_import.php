@@ -123,7 +123,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->track_enrolment_create($record, 'bogus', 'testprogramid');
+        $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
 
         //validation
         $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id,
