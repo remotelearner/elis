@@ -1049,6 +1049,48 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Delegate processing of an import line for entity type "enrolment"
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the track
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function track_enrolment_create($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
+
+        //TODO: validation
+
+        //obtain the track id
+        $trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $params = array();
+        if (isset($record->user_username)) {
+            $params['username'] = $record->user_username;
+        }
+        if (isset($record->user_email)) {
+            $params['email'] = $record->user_email;
+        }
+        if (isset($record->user_idnumber)) {
+            $params['idnumber'] = $record->user_idnumber;
+        }
+        $userid = $DB->get_field(user::TABLE, 'id', $params);
+
+        //create the association
+        $usertrack = new usertrack(array('userid' => $userid,
+                                         'trackid' => $trackid));
+        $usertrack->save();
+
+        return true;
+    }
+
+    /**
      * Hook run after a file header is read
      *
      * @param string $entity The type of entity
