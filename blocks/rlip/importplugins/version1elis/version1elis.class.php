@@ -468,6 +468,30 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //TODO: return a status, add error handling
     }
 
+    /**
+     * Associate a class instance to a Moodle course, if necessary, either by
+     * auto-creating that Moodle course or by using a new one
+     *
+     * @param object $record The import record containing information about the track
+     * @param int $classid The id of the class instance
+     */
+    function associate_class_to_moodle_course($record, $classid) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/classmoodlecourse.class.php'));
+
+        if (isset($record->link)) {
+            if ($record->link == 'auto') {
+                moodle_attach_class($classid, 0, '', true, true, true);
+            } else {
+                $moodlecourseid = $DB->get_field('course', 'id', array('shortname' => $record->link));
+                moodle_attach_class($classid, $moodlecourseid, '', true, true, false);
+            }
+        }
+
+        //TODO: return a status, add error handling
+    }
+
     function class_create($record, $filename) {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
@@ -504,6 +528,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //associate this class instance to a track, if necessary
         $this->associate_class_to_track($record, $pmclass->id);
+        //associate this class instance to a Moodle course, if necessary
+        $this->associate_class_to_moodle_course($record, $pmclass->id);
 
         return true;
     }
@@ -642,6 +668,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //associate this class instance to a track, if necessary
         $this->associate_class_to_track($record, $pmclass->id);
+        //associate this class instance to a Moodle course, if necessary
+        $this->associate_class_to_moodle_course($record, $pmclass->id);
 
         return true;
     }
