@@ -639,7 +639,6 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
     }
 }
 
-
 /**
  * Create a directory on the repository.
  *
@@ -655,6 +654,11 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     global $CFG, $USER;
 
     $properties = elis_files_node_properties($uuid);
+
+    if (!(ELIS_files::$version = elis_files_get_repository_version())) {
+        return false;
+    }
+    //error_log("elis_files_create_dir('$name', '$uuid', '$description', $useadmin): version = ". ELIS_files::$version);
 
     if (ELIS_files::is_version('3.2')) {
         $data = '<?xml version="1.0" encoding="utf-8"?>
@@ -711,6 +715,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
 
     if ($response === false) {
 //        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
+        error_log('elis_files_create_dir(): '. get_string('couldnotaccessserviceat', 'repository_elis_files', $uri));
         return false;
     }
 
@@ -723,6 +728,7 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     $nodes = $dom->getElementsByTagName('entry');
 
     if (!$nodes->length) {
+        error_log('elis_files_create_dir(): empty nodes->length');
         return false;
     }
 
