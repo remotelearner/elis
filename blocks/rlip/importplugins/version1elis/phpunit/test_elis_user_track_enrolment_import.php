@@ -109,7 +109,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
                                  'idnumber' => 'testtrackidnumber'));
         $track->save();
 
-        //run the course description update action
+        //run the track enrolment create action
         $record = new stdClass;
         $record->context = 'track_testtrackidnumber';
         if ($username != NULL) {
@@ -128,5 +128,64 @@ class elis_user_track_enrolment_test extends elis_database_test {
         //validation
         $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id,
                                                                      'trackid' => $track->id)));
+    }
+
+    /**
+     * Validate that users can be unenrolled from tracks
+     *
+     * @param string $username A sample user's username, or NULL if not used in the import
+     * @param string $email A sample user's email, or NULL if not used in the import
+     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @dataProvider user_identifier_provider
+     */
+    function test_elis_user_track_unenrolment_import($username, $email, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
+        $program->save();
+
+        $track = new track(array('curid' => $program->id,
+                                 'idnumber' => 'testtrackidnumber'));
+        $track->save();
+
+        $usertrack = new usertrack(array('userid' => $user->id,
+                                         'trackid' => $track->id));
+        $usertrack->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id,
+                                                                     'trackid' => $track->id)));
+
+        //run the track enrolment delete action
+        $record = new stdClass;
+        $record->context = 'track_testtrackidnumber';
+        if ($username != NULL) {
+            $record->user_username = $user->username;
+        }
+        if ($email != NULL) {
+            $record->user_email = $user->email;
+        }
+        if ($idnumber != NULL) {
+            $record->user_idnumber = $user->idnumber;
+        }
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->track_enrolment_delete($record, 'bogus', 'testtrackidnumber');
+
+        //validation
+        $this->assertEquals(0, $DB->count_records(usertrack::TABLE));
     }
 }
