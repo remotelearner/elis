@@ -790,9 +790,13 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         return false;
     }
 
+    if (!(ELIS_files::$version = elis_files_get_repository_version())) {
+        return false;
+    }
+    //error_log("elis_files_upload_file('$upload', '$path', '$uuid', $useadmin): version = ". ELIS_files::$version);
+
     if (empty($uuid)) {
         $uuid = $repo->get_root()->uuid;
-
     }
 
     switch (get_config('elis_files', 'file_transfer_method')) {
