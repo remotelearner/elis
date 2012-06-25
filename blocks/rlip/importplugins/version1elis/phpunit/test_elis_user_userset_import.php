@@ -43,10 +43,12 @@ class elis_user_track_enrolment_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array(user::TABLE => 'elis_program',
+        return array(clusterassignment::TABLE => 'elis_program',
+                     user::TABLE => 'elis_program',
                      userset::TABLE => 'elis_program');
     }
 
@@ -83,7 +85,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
      * @dataProvider user_identifier_provider
      */
     function test_elis_user_userset_enrolment_import($username, $email, $idnumber) {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -118,7 +120,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
 
         //validation
         $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => $user->id,
-                                                                             'clsuterid' => $userset->id,
+                                                                             'clusterid' => $userset->id,
                                                                              'plugin' => 'manual',
                                                                              'autoenrol' => 0,
                                                                              'leader' => 0)));
