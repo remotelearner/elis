@@ -799,7 +799,8 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $uuid = $repo->get_root()->uuid;
     }
 
-    switch (get_config('elis_files', 'file_transfer_method')) {
+    $xfermethod = get_config('elis_files', 'file_transfer_method');
+    switch ($xfermethod) {
         case ELIS_FILES_XFER_WS:
             return elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid, $useadmin);
             break;
@@ -808,7 +809,8 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
             return elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid, $useadmin);
             break;
 
-        default:
+        default: // TBD
+            error_log("elis_files_upload_file(): Invalid ELIS files setting for 'file_transfer_method' = {$xfermethod}");
             return false;
     }
 }
