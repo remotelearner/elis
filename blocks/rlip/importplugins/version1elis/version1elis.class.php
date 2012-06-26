@@ -113,6 +113,68 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Converts a date in MMM/DD/YYYY format or one of the legacy IP formats
+     * to a unix timestamp
+     * @todo: consider further generalizing / moving to base class
+     *
+     * @param string $date Date in MMM/DD/YYYY format
+     * @return mixed The unix timestamp, or false if date is
+     *               not in the right format
+     */
+    function parse_date($date) {
+        //determine which case we are in  
+        if (strpos($date, '/') !== false) {
+            $delimiter = '/';
+        } else if (strpos($date, '-') !== false) {
+            $delimiter = '-';
+        } else if (strpos($date, '.') !== false) {
+            $delimiter = '.';
+        } else {
+            return false;
+        }
+
+        //make sure there are three parts
+        $parts = explode($delimiter, $date);
+        if (count($parts) != 3) {
+            return false;
+        }
+
+        if ($delimiter == '/') {
+            //MMM/DD/YYYY or MM/DD/YYYY format
+            //make sure the month is valid
+            list($month, $day, $year) = $parts;;
+            $months = array('jan', 'feb', 'mar', 'apr',
+                            'may', 'jun', 'jul', 'aug',
+                            'sep', 'oct', 'nov', 'dec');
+            $pos = array_search(strtolower($month), $months);
+            if ($pos === false) {
+                //legacy format (zero values handled below by checkdate)
+                $month = (int)$month;
+            } else {
+                //new "text" format
+                $month = $pos + 1;
+            }
+        } else if ($delimiter == '-') {
+            //DD-MM-YYYY format
+            list($day, $month, $year) = $parts;
+        } else {
+            //YYYY.MM.DD format
+            list($year, $month, $day) = $parts;
+        }
+
+        //make sure the combination of date components is valid
+        $day = (int)$day;
+        $year = (int)$year;
+        if (!checkdate($month, $day, $year)) {
+            //invalid combination of month, day and year
+            return false;
+        }
+
+        //return unix timestamp
+        return mktime(0, 0, 0, $month, $day, $year);
+    }
+
+    /**
      * Create a user
      * @todo: consider factoring this some more once other actions exist
      *
@@ -1216,6 +1278,117 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                                                                     'plugin' => 'manual'));
         $clusterassignment = new clusterassignment($clusterassignmentid);
         $clusterassignment->delete();
+
+        return true;
+    }
+
+    /**
+     * Obtain the back-end completion status constant from an enrolment import record
+     *
+     * @param object $record An import record
+     * @return mixed The numerical completion status value, or NULL if not valid
+     */
+    function get_completestatusid($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/student.class.php'));
+
+        $result = NULL;
+
+        if (!isset($record->completestatusid)) {
+            //not set
+            return $result;
+        }
+
+        //should be case-insensitive
+        $completestatusid = strtolower($record->completestatusid);
+
+        if ($completestatusid === "passed") {
+            $result = student::STUSTATUS_PASSED;
+        } else if ($completestatusid === "failed") {
+            $result = student::STUSTATUS_FAILED;
+        } else if ($completestatusid === "not completed") {
+            $result = student::STUSTATUS_NOTCOMPLETE;
+        } else {
+            //TODO: actually validate here
+            $result = (int)$record->completestatusid;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Create a student class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_create($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //TODO: validation
+        //TODO: consider delegating to do some of this work once instuctor enrolment
+        //are supported
+
+        //obtain the cluster / userset id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $params = array();
+        if (isset($record->user_username)) {
+            $params['username'] = $record->user_username;
+        }
+        if (isset($record->user_email)) {
+            $params['email'] = $record->user_email;
+        }
+        if (isset($record->user_idnumber)) {
+            $params['idnumber'] = $record->user_idnumber;
+        }
+        $userid = $DB->get_field(user::TABLE, 'id', $params);
+
+        //determine enrolment and completion times
+        $today = mktime(0, 0, 0);
+        if (isset($record->enrolmenttime)) {
+            $enrolmenttime = $this->parse_date($record->enrolmenttime);
+        } else {
+            $enrolmenttime = $today;
+        }
+        if (isset($record->completetime)) {
+            $completetime = $this->parse_date($record->completetime);
+        } else {
+            $completetime = $today;
+        }
+
+        //create the association
+        $student = new student(array('userid' => $userid,
+                                     'classid' => $classid,
+                                     'enrolmenttime' => $enrolmenttime,
+                                     'completetime' => $completetime));
+        $completestatusid = $this->get_completestatusid($record);
+        //set up a completion status, if set
+        if ($completestatusid !== NULL) {
+            $student->completestatusid = $completestatusid;
+        }
+
+        //handle optional values
+        if (isset($record->grade)) {
+            $student->grade = $record->grade;
+        }
+        if (isset($record->credits)) {
+            $student->credits = $record->credits;
+        }
+        if (isset($record->locked)) {
+            $student->locked = $record->locked;
+        }
+
+        $student->save();
 
         return true;
     }
