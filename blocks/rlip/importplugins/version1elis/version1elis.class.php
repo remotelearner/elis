@@ -124,6 +124,68 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Converts a date in MMM/DD/YYYY format or one of the legacy IP formats
+     * to a unix timestamp
+     * @todo: consider further generalizing / moving to base class
+     *
+     * @param string $date Date in MMM/DD/YYYY format
+     * @return mixed The unix timestamp, or false if date is
+     *               not in the right format
+     */
+    function parse_date($date) {
+        //determine which case we are in  
+        if (strpos($date, '/') !== false) {
+            $delimiter = '/';
+        } else if (strpos($date, '-') !== false) {
+            $delimiter = '-';
+        } else if (strpos($date, '.') !== false) {
+            $delimiter = '.';
+        } else {
+            return false;
+        }
+
+        //make sure there are three parts
+        $parts = explode($delimiter, $date);
+        if (count($parts) != 3) {
+            return false;
+        }
+
+        if ($delimiter == '/') {
+            //MMM/DD/YYYY or MM/DD/YYYY format
+            //make sure the month is valid
+            list($month, $day, $year) = $parts;;
+            $months = array('jan', 'feb', 'mar', 'apr',
+                            'may', 'jun', 'jul', 'aug',
+                            'sep', 'oct', 'nov', 'dec');
+            $pos = array_search(strtolower($month), $months);
+            if ($pos === false) {
+                //legacy format (zero values handled below by checkdate)
+                $month = (int)$month;
+            } else {
+                //new "text" format
+                $month = $pos + 1;
+            }
+        } else if ($delimiter == '-') {
+            //DD-MM-YYYY format
+            list($day, $month, $year) = $parts;
+        } else {
+            //YYYY.MM.DD format
+            list($year, $month, $day) = $parts;
+        }
+
+        //make sure the combination of date components is valid
+        $day = (int)$day;
+        $year = (int)$year;
+        if (!checkdate($month, $day, $year)) {
+            //invalid combination of month, day and year
+            return false;
+        }
+
+        //return unix timestamp
+        return mktime(0, 0, 0, $month, $day, $year);
+    }
+
+    /**
      * Create a user
      * @todo: consider factoring this some more once other actions exist
      *
@@ -523,6 +585,30 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //TODO: return a status, add error handling
     }
 
+    /**
+     * Associate a class instance to a Moodle course, if necessary, either by
+     * auto-creating that Moodle course or by using a new one
+     *
+     * @param object $record The import record containing information about the track
+     * @param int $classid The id of the class instance
+     */
+    function associate_class_to_moodle_course($record, $classid) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/classmoodlecourse.class.php'));
+
+        if (isset($record->link)) {
+            if ($record->link == 'auto') {
+                moodle_attach_class($classid, 0, '', true, true, true);
+            } else {
+                $moodlecourseid = $DB->get_field('course', 'id', array('shortname' => $record->link));
+                moodle_attach_class($classid, $moodlecourseid, '', true, true, false);
+            }
+        }
+
+        //TODO: return a status, add error handling
+    }
+
     function class_create($record, $filename) {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
@@ -559,6 +645,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //associate this class instance to a track, if necessary
         $this->associate_class_to_track($record, $pmclass->id);
+        //associate this class instance to a Moodle course, if necessary
+        $this->associate_class_to_moodle_course($record, $pmclass->id);
 
         return true;
     }
@@ -697,6 +785,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //associate this class instance to a track, if necessary
         $this->associate_class_to_track($record, $pmclass->id);
+        //associate this class instance to a Moodle course, if necessary
+        $this->associate_class_to_moodle_course($record, $pmclass->id);
 
         return true;
     }
@@ -1052,12 +1142,38 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
     }
 
+    /**
+     * Obtains a userid from a data record for enrolment purposes
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return mixed The user id, or false if not found
+     */
+    function get_userid_from_record($record, $filename) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');;
+        require_once(elispm::lib('data/user.class.php'));
+
+        $params = array();
+        if (isset($record->user_username)) {
+            $params['username'] = $record->user_username;
+        }
+        if (isset($record->user_email)) {
+            $params['email'] = $record->user_email;
+        }
+        if (isset($record->user_idnumber)) {
+            $params['idnumber'] = $record->user_idnumber;
+        }
+
+        return $DB->get_field(user::TABLE, 'id', $params);
+    }
+
     function curriculum_enrolment_create($record, $filename, $idnumber) {
         global $DB, $CFG;
 
         // TODO: validation
         $curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $idnumber));
-        $userid = $DB->get_field('crlm_user', 'id', array('idnumber' => $record->user_idnumber));
+        $userid = $this->get_userid_from_record($record, $filename);
 
         $stucur = new curriculumstudent(array('userid' => $userid, 'curriculumid' => $curid));
         $stucur->save();
@@ -1070,11 +1186,355 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         // TODO: validation
         $curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $idnumber));
-        $userid = $DB->get_field('crlm_user', 'id', array('idnumber' => $record->user_idnumber));
+        $userid = $this->get_userid_from_record($record, $filename);
         $associd = $DB->get_field('crlm_curriculum_assignment', 'id', array('userid' => $userid, 'curriculumid' => $curid));
 
         $stucur = new curriculumstudent(array('id' => $associd));
         $stucur->delete();
+
+        return true;
+    }
+
+    /**
+     * Create a track enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the track
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function track_enrolment_create($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
+
+        //TODO: validation
+
+        //obtain the track id
+        $trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //create the association
+        $usertrack = new usertrack(array('userid' => $userid,
+                                         'trackid' => $trackid));
+        $usertrack->save();
+
+        return true;
+    }
+
+    /**
+     * Delete a track enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the track
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function track_enrolment_delete($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
+
+        //TODO: validation
+
+        //obtain the track id
+        $trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //delete the association
+        $usertrackid = $DB->get_field(usertrack::TABLE, 'id', array('userid' => $userid,
+                                                                    'trackid' => $trackid));
+        $usertrack = new usertrack($usertrackid);
+        $usertrack->delete();
+
+        return true;
+    }
+
+    /**
+     * Create a cluster (user set) enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $name The name of the cluster / user set
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function cluster_enrolment_create($record, $filename, $name) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
+
+        //TODO: validation
+
+        //obtain the cluster / userset id
+        $clusterid = $DB->get_field(userset::TABLE, 'id', array('name' => $name));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //create the association
+        $clusterassignment = new clusterassignment(array('userid' => $userid,
+                                                         'clusterid' => $clusterid,
+                                                         'plugin' => 'manual',
+                                                         'autoenrol' => 0));
+        $clusterassignment->save();
+
+        return true;
+    }
+
+    /**
+     * Delete a cluster (user set) enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $name The name of the cluster / user set
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function cluster_enrolment_delete($record, $filename, $name) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
+
+        //TODO: validation
+
+        //obtain the cluster / userset id
+        $clusterid = $DB->get_field(userset::TABLE, 'id', array('name' => $name));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //delete the association
+        $clusterassignmentid = $DB->get_field(clusterassignment::TABLE, 'id', array('userid' => $userid,
+                                                                                    'clusterid' => $clusterid,
+                                                                                    'plugin' => 'manual'));
+        $clusterassignment = new clusterassignment($clusterassignmentid);
+        $clusterassignment->delete();
+
+        return true;
+    }
+
+    /**
+     * Obtain the back-end completion status constant from an enrolment import record
+     *
+     * @param object $record An import record
+     * @return mixed The numerical completion status value, or NULL if not valid
+     */
+    function get_completestatusid($record) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/student.class.php'));
+
+        $result = NULL;
+
+        if (!isset($record->completestatusid)) {
+            //not set
+            return $result;
+        }
+
+        //should be case-insensitive
+        $completestatusid = strtolower($record->completestatusid);
+
+        if ($completestatusid === "passed") {
+            $result = student::STUSTATUS_PASSED;
+        } else if ($completestatusid === "failed") {
+            $result = student::STUSTATUS_FAILED;
+        } else if ($completestatusid === "not completed") {
+            $result = student::STUSTATUS_NOTCOMPLETE;
+        } else {
+            //TODO: actually validate here
+            $result = (int)$record->completestatusid;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Create a student class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_create_student($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+
+        //TODO: validation
+
+        //obtain the class id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //determine enrolment and completion times
+        $today = mktime(0, 0, 0);
+        if (isset($record->enrolmenttime)) {
+            $enrolmenttime = $this->parse_date($record->enrolmenttime);
+        } else {
+            $enrolmenttime = $today;
+        }
+        if (isset($record->completetime)) {
+            $completetime = $this->parse_date($record->completetime);
+        } else {
+            $completetime = $today;
+        }
+
+        //create the association
+        $student = new student(array('userid' => $userid,
+                                     'classid' => $classid,
+                                     'enrolmenttime' => $enrolmenttime,
+                                     'completetime' => $completetime));
+        $completestatusid = $this->get_completestatusid($record);
+        //set up a completion status, if set
+        if ($completestatusid !== NULL) {
+            $student->completestatusid = $completestatusid;
+        }
+
+        //handle optional values
+        if (isset($record->grade)) {
+            $student->grade = $record->grade;
+        }
+        if (isset($record->credits)) {
+            $student->credits = $record->credits;
+        }
+        if (isset($record->locked)) {
+            $student->locked = $record->locked;
+        }
+
+        $student->save();
+
+        return true;
+    }
+
+    /**
+     * Create an instructor class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_create_instructor($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+
+        //TODO: validation
+
+        //obtain the class id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //determine assignment and completion times
+        $today = mktime(0, 0, 0);
+        if (isset($record->assigntime)) {
+            $assigntime = $this->parse_date($record->assigntime);
+        } else {
+            $assigntime = $today;
+        }
+        if (isset($record->completetime)) {
+            $completetime = $this->parse_date($record->completetime);
+        } else {
+            $completetime = $today;
+        }
+
+        //create the association
+        $instructor = new instructor(array('userid' => $userid,
+                                           'classid' => $classid,
+                                           'assigntime' => $assigntime,
+                                           'completetime' => $completetime));
+        $instructor->save();
+
+        return true;
+    }
+
+    /**
+     * Create a student or instructor class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_create($record, $filename, $idnumber) {
+        //determine if student or instructor
+        if (isset($record->role)) {
+            $role = strtolower($record->role);
+            $is_instructor = $role == 'teacher' || $role == 'instructor';
+        } else {
+            $is_instructor = false;
+        }
+
+        if ($is_instructor) {
+            //run instructor import
+            return $this->class_enrolment_create_instructor($record, $filename, $idnumber);
+        } else {
+            //run student import
+            return $this->class_enrolment_create_student($record, $filename, $idnumber);
+        }
+    }
+
+    /**
+     * Delete a student or instructor class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_delete($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //TODO: validation
+        //TODO: consider delegating to do some of this work once instuctor enrolment
+        //are supported
+
+        //obtain the cluster / userset id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $params = array();
+        if (isset($record->user_username)) {
+            $params['username'] = $record->user_username;
+        }
+        if (isset($record->user_email)) {
+            $params['email'] = $record->user_email;
+        }
+        if (isset($record->user_idnumber)) {
+            $params['idnumber'] = $record->user_idnumber;
+        }
+        $userid = $DB->get_field(user::TABLE, 'id', $params);
+
+        //delete the association
+        $studentid = $DB->get_field(student::TABLE, 'id', array('userid' => $userid,
+                                                                'classid' => $classid));
+        $student = new student($studentid);
+        $student->delete();
 
         return true;
     }

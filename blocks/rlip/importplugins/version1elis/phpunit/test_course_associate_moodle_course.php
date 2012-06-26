@@ -67,7 +67,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
 
     /**
      * Validate that course description-moodle template course associations
-     * can be created during a class instance create action
+     * can be created during a course description create action
      */
     function test_associate_moodle_course_during_course_create() {
         global $CFG, $DB;
@@ -109,7 +109,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
 
     /**
      * Validate that course description-moodle template course associations
-     * can be created during a class instance update action
+     * can be created during a course description update action
      */
     function test_associate_moodle_course_during_course_update() {
         global $CFG, $DB;
