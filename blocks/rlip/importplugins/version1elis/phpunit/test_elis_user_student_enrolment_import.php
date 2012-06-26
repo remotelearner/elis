@@ -359,4 +359,65 @@ class elis_user_student_enrolment_test extends elis_database_test {
                                                                    'credits' => 0.00,
                                                                    'locked' => 0)));
     }
+
+    /**
+     * Validate that users can be enrolled from class instances (when assigned as a student)
+     *
+     * @param string $username A sample user's username, or NULL if not used in the import
+     * @param string $email A sample user's email, or NULL if not used in the import
+     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @dataProvider user_identifier_provider
+     */
+    public function test_elis_user_student_unenrolment_import($username, $email, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        $student = new student(array('userid' => $user->id,
+                                     'classid' => $class->id));
+        $student->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
+                                                                   'classid' => $class->id)));
+
+        //run the stidemt enrolment delete action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        if ($username != NULL) {
+            $record->user_username = $user->username;
+        }
+        if ($email != NULL) {
+            $record->user_email = $user->email;
+        }
+        if ($idnumber != NULL) {
+            $record->user_idnumber = $user->idnumber;
+        }
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_delete($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $this->assertEquals(0, $DB->count_records(student::TABLE));
+    }
 }
