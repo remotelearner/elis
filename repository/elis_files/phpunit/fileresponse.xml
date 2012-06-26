@@ -1,0 +1,65 @@
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+    <author><name>admin</name></author>
+    <generator version="3.2.1 (.2 3)">Alfresco (Enterprise)</generator>
+    <icon>http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico</icon>
+    <id>urn:uuid:1d3c0b11-7064-488c-aecf-880853b93993-children</id>
+    <link rel="self" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/1d3c0b11-7064-488c-aecf-880853b93993/children?alf_ticket=TICKET_edd0417f8ba654b6c4ac3f7c4317fbae31b648e9"></link>
+    <link rel="source" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/1d3c0b11-7064-488c-aecf-880853b93993"></link>
+    <link rel="first" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/1d3c0b11-7064-488c-aecf-880853b93993/children?alf_ticket=TICKET_edd0417f8ba654b6c4ac3f7c4317fbae31b648e9&amp;pageNo=1&amp;pageSize=0&amp;guest=&amp;format=atomfeed" type="application/atom+xml;type=feed"></link>
+    <link rel="last" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/1d3c0b11-7064-488c-aecf-880853b93993/children?alf_ticket=TICKET_edd0417f8ba654b6c4ac3f7c4317fbae31b648e9&amp;pageNo=1&amp;pageSize=0&amp;guest=&amp;format=atomfeed" type="application/atom+xml;type=feed"></link>
+    <title>moodleadmin Children</title>
+    <updated>2012-02-17T13:10:18.500-05:00</updated>
+    <entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">
+        <author><name>admin</name></author>
+        <content type="text/plain" src="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/content.txt"></content>
+        <id>urn:uuid:fff6c376-bf63-4475-a25d-383251dcb3fb</id>
+        <link rel="self" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb"></link>
+        <link rel="enclosure" type="text/plain" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/content.txt"></link>
+        <link rel="edit" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb"></link>
+        <link rel="edit-media" type="text/plain" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/content.txt"></link>
+        <link rel="allowableactions" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/permissions"></link>
+        <link rel="relationships" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/rels"></link>
+        <link rel="parents" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/parents"></link>
+        <link rel="allversions" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/versions"></link>
+        <link rel="stream" type="text/plain" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/content.txt"></link>
+        <link rel="type" href="http://localhost:8080/alfresco/s/api/type/document"></link>
+        <link rel="repository" href="http://localhost:8080/alfresco/s/api/repository"></link>
+        <published>2012-03-02T12:50:20.353-05:00</published>
+        <summary>Uploaded by Moodle</summary>
+        <title>Import_questions.txt</title>
+        <updated>2012-03-02T15:52:24.790-05:00</updated>
+        <cmis:object>
+            <cmis:properties>
+                <cmis:propertyString cmis:name="BaseType"><cmis:value>document</cmis:value></cmis:propertyString>
+                <cmis:propertyString cmis:name="ContentStreamFilename"><cmis:value>Import_questions.txt</cmis:value></cmis:propertyString>
+                <cmis:propertyString cmis:name="CheckinComment"></cmis:propertyString>
+                <cmis:propertyInteger cmis:name="ContentStreamLength"><cmis:value>321</cmis:value></cmis:propertyInteger>
+                <cmis:propertyString cmis:name="VersionLabel"></cmis:propertyString>
+                <cmis:propertyString cmis:name="ContentStreamAllowed"><cmis:value>ALLOWED</cmis:value></cmis:propertyString>
+                <cmis:propertyUri cmis:name="ContentStreamUri"><cmis:value>http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb/content.txt</cmis:value></cmis:propertyUri>
+                <cmis:propertyBoolean cmis:name="IsLatestVersion"><cmis:value>true</cmis:value></cmis:propertyBoolean>
+                <cmis:propertyString cmis:name="ContentStreamMimeType"><cmis:value>text/plain</cmis:value></cmis:propertyString>
+                <cmis:propertyBoolean cmis:name="IsVersionSeriesCheckedOut"><cmis:value>false</cmis:value></cmis:propertyBoolean>
+                <cmis:propertyBoolean cmis:name="IsMajorVersion"><cmis:value>false</cmis:value></cmis:propertyBoolean>
+                <cmis:propertyString cmis:name="VersionSeriesCheckedOutBy"></cmis:propertyString>
+                <cmis:propertyDateTime cmis:name="CreationDate"><cmis:value>2012-03-02T12:50:20.353-05:00</cmis:value></cmis:propertyDateTime>
+                <cmis:propertyString cmis:name="ChangeToken"></cmis:propertyString>
+                <cmis:propertyString cmis:name="LastModifiedBy"><cmis:value>admin</cmis:value></cmis:propertyString>
+                <cmis:propertyId cmis:name="VersionSeriesId"><cmis:value>workspace://SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb</cmis:value></cmis:propertyId>
+                <cmis:propertyBoolean cmis:name="IsLatestMajorVersion"><cmis:value>false</cmis:value></cmis:propertyBoolean>
+                <cmis:propertyString cmis:name="Name"><cmis:value>Import_questions.txt</cmis:value></cmis:propertyString>
+                <cmis:propertyBoolean cmis:name="IsImmutable"><cmis:value>false</cmis:value></cmis:propertyBoolean>
+                <cmis:propertyDateTime cmis:name="LastModificationDate"><cmis:value>2012-03-02T15:52:24.790-05:00</cmis:value></cmis:propertyDateTime>
+                <cmis:propertyUri cmis:name="Uri"></cmis:propertyUri>
+                <cmis:propertyString cmis:name="CreatedBy"><cmis:value>admin</cmis:value></cmis:propertyString>
+                <cmis:propertyId cmis:name="VersionSeriesCheckedOutId"></cmis:propertyId>
+                <cmis:propertyId cmis:name="ObjectTypeId"><cmis:value>document</cmis:value></cmis:propertyId>
+                <cmis:propertyId cmis:name="ObjectId"><cmis:value>workspace://SpacesStore/fff6c376-bf63-4475-a25d-383251dcb3fb</cmis:value></cmis:propertyId>
+            </cmis:properties>
+        </cmis:object>
+        <cmis:terminator></cmis:terminator>
+        <app:edited>2012-03-02T15:52:24.790-05:00</app:edited>
+        <alf:icon>http://localhost:8080/alfresco/images/filetypes/txt.gif</alf:icon>
+    </entry>
+    <cmis:hasMoreItems>false</cmis:hasMoreItems>
+</feed>

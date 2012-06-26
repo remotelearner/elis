@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">
+	<author><name>admin</name></author>
+	<generator version="3.2.1 (.2 3)">Alfresco (Enterprise)</generator>
+	<icon>http://localhost:8080/alfresco/images/logo/AlfrescoLogo16.ico</icon>
+	<id>urn:uuid:1d3c0b11-7064-488c-aecf-880853b93993-parent</id>
+	<link rel="self" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/1d3c0b11-7064-488c-aecf-880853b93993/parent?alf_ticket=TICKET_cd1789c78273022d311fa7a529f7daee30371b56"></link>
+	<link rel="source" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/1d3c0b11-7064-488c-aecf-880853b93993"></link>
+	<title>moodleadmin Parent</title>
+	<updated>2012-02-17T13:10:18.500-05:00</updated>
+	<entry>
+		<author><name>System</name></author>
+		<content>d60de32a-9e4d-40c5-888a-08607fedf9f5</content>
+		<id>urn:uuid:d60de32a-9e4d-40c5-888a-08607fedf9f5</id>
+		<link rel="self" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/d60de32a-9e4d-40c5-888a-08607fedf9f5"></link>
+		<link rel="edit" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/d60de32a-9e4d-40c5-888a-08607fedf9f5"></link>
+		<link rel="allowableactions" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/d60de32a-9e4d-40c5-888a-08607fedf9f5/permissions"></link>
+		<link rel="relationships" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/d60de32a-9e4d-40c5-888a-08607fedf9f5/rels"></link>
+		<link rel="parents" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/d60de32a-9e4d-40c5-888a-08607fedf9f5/parent"></link>
+		<link rel="children" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/d60de32a-9e4d-40c5-888a-08607fedf9f5/children"></link>
+		<link rel="descendants" href="http://localhost:8080/alfresco/s/api/node/workspace/SpacesStore/d60de32a-9e4d-40c5-888a-08607fedf9f5/descendants"></link>
+		<link rel="type" href="http://localhost:8080/alfresco/s/api/type/folder"></link>
+		<link rel="repository" href="http://localhost:8080/alfresco/s/api/repository"></link>
+		<published>2012-02-17T10:49:07.215-05:00</published>
+		<summary>User Homes</summary><title>User Homes</title>
+		<updated>2012-02-17T10:49:07.230-05:00</updated>
+		<cmis:object>
+			<cmis:properties>
+				<cmis:propertyString cmis:name="BaseType"><cmis:value>folder</cmis:value></cmis:propertyString>
+				<cmis:propertyString cmis:name="Name"><cmis:value>User Homes</cmis:value></cmis:propertyString>
+				<cmis:propertyId cmis:name="ParentId"><cmis:value>workspace://SpacesStore/8cd9dec5-1596-4123-9009-3b0ba02253ea</cmis:value></cmis:propertyId>
+				<cmis:propertyDateTime cmis:name="LastModificationDate"><cmis:value>2012-02-17T10:49:07.230-05:00</cmis:value></cmis:propertyDateTime>
+				<cmis:propertyUri cmis:name="Uri"></cmis:propertyUri>
+				<cmis:propertyId cmis:name="AllowedChildObjectTypeIds"></cmis:propertyId>
+				<cmis:propertyString cmis:name="CreatedBy"><cmis:value>System</cmis:value></cmis:propertyString>
+				<cmis:propertyDateTime cmis:name="CreationDate"><cmis:value>2012-02-17T10:49:07.215-05:00</cmis:value></cmis:propertyDateTime>
+				<cmis:propertyString cmis:name="ChangeToken"></cmis:propertyString>
+				<cmis:propertyString cmis:name="LastModifiedBy"><cmis:value>System</cmis:value></cmis:propertyString>
+				<cmis:propertyId cmis:name="ObjectTypeId"><cmis:value>folder</cmis:value></cmis:propertyId>
+				<cmis:propertyId cmis:name="ObjectId"><cmis:value>workspace://SpacesStore/d60de32a-9e4d-40c5-888a-08607fedf9f5</cmis:value></cmis:propertyId>
+			</cmis:properties>
+		</cmis:object>
+		<cmis:terminator></cmis:terminator>
+		<app:edited>2012-02-17T10:49:07.230-05:00</app:edited>
+		<alf:icon>http://localhost:8080/alfresco/images/icons/space-icon-default-16.gif</alf:icon>
+	</entry>
+	<cmis:hasMoreItems>false</cmis:hasMoreItems>
+</feed>
