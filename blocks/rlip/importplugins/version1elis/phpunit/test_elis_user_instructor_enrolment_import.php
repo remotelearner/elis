@@ -45,10 +45,12 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
         return array(course::TABLE => 'elis_program',
+                     instructor::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
                      user::TABLE => 'elis_program');
     }
@@ -227,7 +229,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
      * Validate that the role field is handled as needed
      *
      * @param string $role The input value for the role field
-     * @dataProvider date_provider
+     * @dataProvider role_provider
      */
     public function test_elis_user_instructor_enrolment_handles_role($role) {
         global $CFG, $DB;
