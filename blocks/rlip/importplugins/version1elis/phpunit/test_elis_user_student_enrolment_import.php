@@ -52,6 +52,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
         return array(course::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
+                     student_grade::TABLE => 'elis_program',
                      user::TABLE => 'elis_program');
     }
 

@@ -1318,7 +1318,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
-     * Create a student class instance enrolment
+     * Create a student or instructor class instance enrolment
      *
      * @param object $record One record of import data
      * @param string $filename The import file name, used for logging
@@ -1389,6 +1389,51 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         $student->save();
+
+        return true;
+    }
+
+    /**
+     * Delete a student or instructor class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_delete($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //TODO: validation
+        //TODO: consider delegating to do some of this work once instuctor enrolment
+        //are supported
+
+        //obtain the cluster / userset id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $params = array();
+        if (isset($record->user_username)) {
+            $params['username'] = $record->user_username;
+        }
+        if (isset($record->user_email)) {
+            $params['email'] = $record->user_email;
+        }
+        if (isset($record->user_idnumber)) {
+            $params['idnumber'] = $record->user_idnumber;
+        }
+        $userid = $DB->get_field(user::TABLE, 'id', $params);
+
+        //delete the association
+        $studentid = $DB->get_field(student::TABLE, 'id', array('userid' => $userid,
+                                                                'classid' => $classid));
+        $student = new student($studentid);
+        $student->delete();
 
         return true;
     }
