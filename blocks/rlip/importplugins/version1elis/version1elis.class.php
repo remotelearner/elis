@@ -1300,6 +1300,24 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Validates whether the specified class-context enrolment record is an
+     * instructor enrolment
+     *
+     * @param $record The current class-context enrolment import record
+     * @return boolean Return true if instructor enrolment, or false if student
+     */
+    function record_is_instructor_assignment($record) {
+        if (isset($record->role)) {
+            $role = strtolower($record->role);
+            $is_instructor = $role == 'teacher' || $role == 'instructor';
+        } else {
+            $is_instructor = false;
+        }
+
+        return $is_instructor;
+    }
+
+    /**
      * Create a student class instance enrolment
      *
      * @param object $record One record of import data
@@ -1419,14 +1437,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function class_enrolment_create($record, $filename, $idnumber) {
         //determine if student or instructor
-        if (isset($record->role)) {
-            $role = strtolower($record->role);
-            $is_instructor = $role == 'teacher' || $role == 'instructor';
-        } else {
-            $is_instructor = false;
-        }
-
-        if ($is_instructor) {
+        if ($this->record_is_instructor_assignment($record)) {
             //run instructor import
             return $this->class_enrolment_create_instructor($record, $filename, $idnumber);
         } else {
@@ -1436,7 +1447,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
-     * Delete a student or instructor class instance enrolment
+     * Delete a student class instance enrolment
      *
      * @param object $record One record of import data
      * @param string $filename The import file name, used for logging
@@ -1444,7 +1455,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      *
      * @return boolean true on success, otherwise false
      */
-    function class_enrolment_delete($record, $filename, $idnumber) {
+    function class_enrolment_delete_student($record, $filename, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
@@ -1459,17 +1470,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
         //obtain the user id
-        $params = array();
-        if (isset($record->user_username)) {
-            $params['username'] = $record->user_username;
-        }
-        if (isset($record->user_email)) {
-            $params['email'] = $record->user_email;
-        }
-        if (isset($record->user_idnumber)) {
-            $params['idnumber'] = $record->user_idnumber;
-        }
-        $userid = $DB->get_field(user::TABLE, 'id', $params);
+        $userid = $this->get_userid_from_record($record, $filename);
 
         //delete the association
         $studentid = $DB->get_field(student::TABLE, 'id', array('userid' => $userid,
@@ -1478,6 +1479,61 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $student->delete();
 
         return true;
+    }
+
+    /**
+     * Delete an instructor class instance assignment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_delete_instructor($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //TODO: validation
+        //TODO: consider delegating to do some of this work once instuctor enrolment
+        //are supported
+
+        //obtain the cluster / userset id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //delete the association
+        $studentid = $DB->get_field(instructor::TABLE, 'id', array('userid' => $userid,
+                                                                   'classid' => $classid));
+        $instructor = new instructor($studentid);
+        $instructor->delete();
+
+        return true;
+    }
+
+    /**
+     * Delete a student or instructor class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_delete($record, $filename, $idnumber) {
+        //determine if student or instructor
+        if ($this->record_is_instructor_assignment($record)) {
+            //run instructor import
+            return $this->class_enrolment_delete_instructor($record, $filename, $idnumber);
+        } else {
+            //run student import
+            return $this->class_enrolment_delete_student($record, $filename, $idnumber);
+        }
     }
 
     /**
