@@ -46,10 +46,12 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
         return array(course::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
+                     student::TABLE => 'elis_program',
                      user::TABLE => 'elis_program');
     }
 
@@ -126,7 +128,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->class_enrolment_create($record, 'bogus', 'testtrackidnumber');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
         //validation
         $midnight_today = mktime(0, 0, 0);
@@ -194,7 +196,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $record->locked = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->class_enrolment_create($record, 'bogus', 'testtrackidnumber');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
         //validation
         $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
@@ -270,7 +272,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $record->completetime = $datestring;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->class_enrolment_create($record, 'bogus', 'testtrackidnumber');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
         //validation
         $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
@@ -297,10 +299,13 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         return array(array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
                      array("Not Completed", student::STUSTATUS_NOTCOMPLETE),
+                     array("not completed", student::STUSTATUS_NOTCOMPLETE),
                      array(student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
                      array("Failed", student::STUSTATUS_FAILED),
+                     array("failed", student::STUSTATUS_FAILED),
                      array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
-                     array("Passed", student::STUSTATUS_PASSED));
+                     array("Passed", student::STUSTATUS_PASSED),
+                     array("passed", student::STUSTATUS_PASSED));
     }
 
     /**
@@ -342,7 +347,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $record->completestatusid = $completionstring;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->class_enrolment_create($record, 'bogus', 'testtrackidnumber');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
         //validation
         $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
