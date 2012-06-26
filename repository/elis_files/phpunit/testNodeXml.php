@@ -27,7 +27,6 @@
  */
 
 define('CLI_SCRIPT', true);
-$_SERVER['SERVER_NAME'] = 'localhost';
 require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
@@ -66,18 +65,6 @@ class filenodeXMLTest extends elis_database_test {
             'describedby' => "http://localhost:8080/alfresco/s/cmis/type/cmis:folder",
             'service' => "http://localhost:8080/alfresco/s/cmis"
         );
-
-//        $node->properties = array(
-//            'cmis:path' => "/",
-//            'cmis:lastModifiedBy' => "System",
-//            'cmis:objectTypeId' => "cmis:folder",
-//            'cmis:createdBy' => "System",
-//            'cmis:name' => "Company Home",
-//            'cmis:objectId' => "workspace://SpacesStore/e54d46e5-f047-4c6c-a39e-258d1370671c",
-//            'cmis:creationDate' => "2011-12-16T14:51:06.933-05:00",
-//            'cmis:baseTypeId' => "cmis:folder",
-//            'cmis:lastModificationDate' => "2012-05-15T10:29:48.205-04:00"
-//        );
         return $node;
     }
 
@@ -281,7 +268,6 @@ class filenodeXMLTest extends elis_database_test {
      */
     public function testProcessNodeNoChildNodes() {
 
-//        $this->markTestSkipped('No child nodes in DOMDocument causes undefined variable: contentNode');
         $dom = new DOMDocument();
         libxml_use_internal_errors(true);
         $string = '<feed xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org" xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/">'.

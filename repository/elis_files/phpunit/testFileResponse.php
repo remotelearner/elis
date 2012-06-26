@@ -34,7 +34,10 @@ require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
 
-class folderresponseTest extends elis_database_test {
+define('ELIS_FILES_TEST_FILE', 'elis_files_test_file_response.txt');
+define('ELIS_FILES_TEST_STRING', 'This is a test text file.');
+
+class fileresponseTest extends elis_database_test {
 
     protected static function get_overlay_tables() {
         return array(
@@ -57,10 +60,25 @@ class folderresponseTest extends elis_database_test {
         $USER = get_admin();
         $GLOBALS['USER'] = $USER;
     }
+
+    protected function tearDown() {
+        if ($dir = elis_files_read_dir()) {
+            foreach ($dir->files as $file) {
+                if (strpos($file->title, ELIS_FILES_TEST_FILE) === 0) {
+                    elis_files_delete($file->uuid);
+                }
+            }
+        }
+
+        parent::tearDown();
+    }
+
     /**
-     * Test that info is returned for the root uuid
+     * Test that uploading a file generates a valid response
      */
-    public function testGetFolderResponse() {
+    public function testUploadAndGetResponse() {
+        global $CFG;
+
         // Check if Alfresco is enabled, configured and running first
         if (!$repo = repository_factory::factory('elis_files')) {
             $this->markTestSkipped();
@@ -70,23 +88,27 @@ class folderresponseTest extends elis_database_test {
             $this->markTestSkipped('Repository not configured or enabled');
         }
 
-        // Look for the Company Home folder
-        $uuid = $repo->root->uuid;
+        $filename = ELIS_FILES_TEST_FILE;
+        $path = $CFG->dirroot.'/repository/elis_files/phpunit/';
 
-        $response = $repo->get_info($uuid);
+        $uploadresponse = elis_files_upload_file('', $path.$filename);
 
         // Verify that we get a valid response
-        $this->assertNotEquals(false, $response);
+        $this->assertNotEquals(false, $uploadresponse);
         // Verify that response has a uuid
-        $this->assertObjectHasAttribute('uuid', $response);
-        // Verify that the correct uuid is returned
-        $this->assertEquals($repo->root->uuid, $response->uuid);
+        $this->assertObjectHasAttribute('uuid', $uploadresponse);
+
+        // Get info on the uploaded file's uuid...
+        $response = $repo->get_info($uploadresponse->uuid);
+
         // Verify that response has a type
         $this->assertObjectHasAttribute('type', $response);
         // Verify that type is folder
-        $this->assertEquals(ELIS_files::$type_folder, $response->type);
+        $this->assertEquals(ELIS_files::$type_document, $response->type);
         // Verify that title is set
         $this->assertObjectHasAttribute('title', $response);
+        // Verify that title the same as the file name
+        $this->assertEquals(ELIS_FILES_TEST_FILE, $response->title);
         // Verify that created is set
         $this->assertObjectHasAttribute('created', $response);
         // Verify that modified is set
