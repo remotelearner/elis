@@ -34,9 +34,9 @@ require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
- * Class for validating that enrolment of users into tracks works
+ * Class for validating that enrolment of users into user sets works
  */
-class elis_user_track_enrolment_test extends elis_database_test {
+class elis_user_userset_enrolment_test extends elis_database_test {
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -124,5 +124,122 @@ class elis_user_track_enrolment_test extends elis_database_test {
                                                                              'plugin' => 'manual',
                                                                              'autoenrol' => 0,
                                                                              'leader' => 0)));
+    }
+
+    /**
+     * Validate that users can be enrolled from user sets
+     *
+     * @param string $username A sample user's username, or NULL if not used in the import
+     * @param string $email A sample user's email, or NULL if not used in the import
+     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @dataProvider user_identifier_provider
+     */
+    function test_elis_user_userset_unenrolment_import($username, $email, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $userset = new userset(array('name' => 'testusersetname'));
+        $userset->save();
+
+        $clusterassignment = new clusterassignment(array('userid' => $user->id,
+                                                         'clusterid' => $userset->id,
+                                                         'plugin' => 'manual',
+                                                         'autoenrol' => 0));
+        $clusterassignment->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => $user->id,
+                                                                             'clusterid' => $userset->id,
+                                                                             'plugin' => 'manual',
+                                                                             'autoenrol' => 0)));
+
+        //run the userset enrolment delete action
+        $record = new stdClass;
+        $record->context = 'cluster_testusersetname';
+        if ($username != NULL) {
+            $record->user_username = $user->username;
+        }
+        if ($email != NULL) {
+            $record->user_email = $user->email;
+        }
+        if ($idnumber != NULL) {
+            $record->user_idnumber = $user->idnumber;
+        }
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->cluster_enrolment_delete($record, 'bogus', 'testusersetname');
+
+        //validation
+        $this->assertEquals(0, $DB->count_records(clusterassignment::TABLE));
+    }
+
+    /**
+     * Validate that user unenrolment from user sets only happens for the manual
+     * userset ("cluster") plugin
+     */
+    function test_elis_user_userset_unenrolment_respects_userset_plugin() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $userset = new userset(array('name' => 'testusersetname'));
+        $userset->save();
+
+        $clusterassignment = new clusterassignment(array('userid' => $user->id,
+                                                         'clusterid' => $userset->id,
+                                                         'plugin' => 'manual',
+                                                         'autoenrol' => 0));
+        $clusterassignment->save();
+        $clusterassignment = new clusterassignment(array('userid' => $user->id,
+                                                         'clusterid' => $userset->id,
+                                                         'plugin' => 'another',
+                                                         'autoenrol' => 0));
+        $clusterassignment->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => $user->id,
+                                                                             'clusterid' => $userset->id,
+                                                                             'plugin' => 'manual',
+                                                                             'autoenrol' => 0)));
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => $user->id,
+                                                                             'clusterid' => $userset->id,
+                                                                             'plugin' => 'another',
+                                                                             'autoenrol' => 0)));
+
+        //run the userset enrolment delete action
+        $record = new stdClass;
+        $record->context = 'cluster_testusersetname';
+        $record->user_username = 'testuserusername';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->cluster_enrolment_delete($record, 'bogus', 'testusersetname');
+
+        //validation
+        $this->assertEquals(1, $DB->count_records(clusterassignment::TABLE));
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => $user->id,
+                                                                             'clusterid' => $userset->id,
+                                                                             'plugin' => 'another',
+                                                                             'autoenrol' => 0)));
     }
 }
