@@ -226,7 +226,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
     }
 
     /**
-     * Validate that the role field is handled as needed
+     * Validate that the role field is handled as needed during assignment
      *
      * @param string $role The input value for the role field
      * @dataProvider role_provider
@@ -271,5 +271,119 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
                                                                       'classid' => $class->id,
                                                                       'assigntime' => $midnight_today,
                                                                       'completetime' => $midnight_today)));
+    }
+
+    /**
+     * Validate that users can be enrolled from class instances (when assigned as an instructor)
+     *
+     * @param string $username A sample user's username, or NULL if not used in the import
+     * @param string $email A sample user's email, or NULL if not used in the import
+     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @dataProvider user_identifier_provider
+     */
+    public function test_elis_user_instructor_unenrolment_import($username, $email, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        $instructor = new instructor(array('userid' => $user->id,
+                                           'classid' => $class->id));
+        $instructor->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id)));
+
+        //run the instructor assignment delete action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        if ($username != NULL) {
+            $record->user_username = $user->username;
+        }
+        if ($email != NULL) {
+            $record->user_email = $user->email;
+        }
+        if ($idnumber != NULL) {
+            $record->user_idnumber = $user->idnumber;
+        }
+        $record->role = 'instructor';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_delete($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $this->assertEquals(0, $DB->count_records(instructor::TABLE));
+    }
+
+    /**
+     * Validate that the role field is handled as needed during unassignment
+     *
+     * @param string $role The input value for the role field
+     * @dataProvider role_provider
+     */
+    public function test_elis_user_instructor_unenrolment_handles_role($role) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        $instructor = new instructor(array('userid' => $user->id,
+                                           'classid' => $class->id));
+        $instructor->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id)));
+
+        //run the instructor assignment delete action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        $record->username = 'testuserusername';
+        $record->role = $role;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_delete($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $this->assertEquals(0, $DB->count_records(instructor::TABLE));
     }
 }
