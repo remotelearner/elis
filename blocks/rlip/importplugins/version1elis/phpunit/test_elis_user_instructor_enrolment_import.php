@@ -1,0 +1,275 @@
+<?php
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    rlip
+ * @subpackage importplugins/version1elis/phpunit
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
+if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+    define('CLI_SCRIPT', true);
+}
+
+require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+global $CFG;
+require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+
+/**
+ * Class for validating that assignment of users to class instances as instructors
+ * works
+ */
+class elis_user_instructor_enrolment_test extends elis_database_test {
+    /**
+     * Return the list of tables that should be overlayed.
+     */
+    static protected function get_overlay_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        return array(course::TABLE => 'elis_program',
+                     instructor::TABLE => 'elis_program',
+                     pmclass::TABLE => 'elis_program',
+                     user::TABLE => 'elis_program');
+    }
+
+    /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/coursetemplate.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
+
+        return array('context' => 'moodle',
+                     'user' => 'moodle',
+                     coursetemplate::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program');
+    }
+
+    /**
+     * Data provider for fields that identify user records
+     *
+     * @return array Parameter data, as needed by the test methods
+     */
+    function user_identifier_provider() {
+        return array(array('testuserusername', NULL, NULL),
+                     array(NULL, 'testuser@email.com', NULL),
+                     array(NULL, NULL, 'testuseridnumber'));
+    }
+
+    /**
+     * Validate that users can be assigned to class instances as instructors
+     *
+     * @param string $username A sample user's username, or NULL if not used in the import
+     * @param string $email A sample user's email, or NULL if not used in the import
+     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @dataProvider user_identifier_provider
+     */
+    function test_elis_user_instructor_enrolment_import($username, $email, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        //run the instructor assignment create action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        if ($username != NULL) {
+            $record->user_username = $user->username;
+        }
+        if ($email != NULL) {
+            $record->user_email = $user->email;
+        }
+        if ($idnumber != NULL) {
+            $record->user_idnumber = $user->idnumber;
+        }
+        $record->role = 'teacher';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $midnight_today = mktime(0, 0, 0);
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id,
+                                                                      'assigntime' => $midnight_today,
+                                                                      'completetime' => $midnight_today)));
+    }
+
+    /**
+     * Data provider for testing the various date formats
+     *
+     * @return array Parameter data, as needed by the test method
+     */
+    function date_provider() {
+        //legacy formats are MM/DD/YYYY, DD-MM-YYYY and YYYY.MM.DD
+        //also need to support cases with no leading zeros
+
+        return array(//new MMM/DD/YYYY format
+                     array('Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('Feb/4/2012', mktime(0, 0, 0, 2, 4, 2012)),
+                     //legacy MM/DD/YYYY format
+                     array('01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('2/4/2012', mktime(0, 0, 0, 2, 4, 2012)),
+                     //legacy DD-MM-YYYY format
+                     array('03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('4-2-2012', mktime(0, 0, 0, 2, 4, 2012)),
+                     //legacy YYYY.MM.DD format
+                     array('2012.01.03', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('2012.2.4', mktime(0, 0, 0, 2, 4, 2012)));
+    }
+
+    /**
+     * Validate that date fields handle all necessary date formats
+     *
+     * @param string $datestring The provided date value
+     * @param int $timestamp The equivalent timestamp
+     * @dataProvider date_provider
+     */
+    public function test_elis_user_instructor_enrolment_handles_dates($datestring, $timestamp) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        //run the instructor assignment create action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        $record->user_username = 'testuserusername';
+        $record->assigntime = $datestring;
+        $record->completetime = $datestring;
+        $record->role = 'teacher';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id,
+                                                                      'assigntime' => $timestamp,
+                                                                      'completetime' => $timestamp)));
+    }
+
+    /**
+     * Data provider for testing the various roles that should all be tread as
+     * instructors
+     *
+     * @return array Parameter data, as needed by the test method
+     */
+    function role_provider() {
+        return array(array('Teacher'),
+                     array('teacher'),
+                     array('Instructor'),
+                     array('instructor'));
+    }
+
+    /**
+     * Validate that the role field is handled as needed
+     *
+     * @param string $role The input value for the role field
+     * @dataProvider role_provider
+     */
+    public function test_elis_user_instructor_enrolment_handles_role($role) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        //run the instructor assignment create action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        $record->user_username = 'testuserusername';
+        $record->role = $role;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $midnight_today = mktime(0, 0, 0);
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id,
+                                                                      'assigntime' => $midnight_today,
+                                                                      'completetime' => $midnight_today)));
+    }
+}
