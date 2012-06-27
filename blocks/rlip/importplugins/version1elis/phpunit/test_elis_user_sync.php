@@ -62,6 +62,9 @@ class elis_user_sync_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
+        //TODO: may need to actuallu set up language pack later on when
+        //validation is implemented
+
         //run the user create action
         $record = new stdClass;
         $record->idnumber = 'testuseridnumber';
@@ -72,7 +75,7 @@ class elis_user_sync_test extends elis_database_test {
         $record->address = 'testuseraddress';
         $record->city = 'testusercity';
         $record->country = 'CA';
-        $record->language = 'en';
+        $record->language = 'fr';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->user_create($record, 'bogus');
@@ -96,5 +99,54 @@ class elis_user_sync_test extends elis_database_test {
                                                            'city' => $record->city,
                                                            'country' => $record->country,
                                                            'lang' => $record->language)));
+    }
+
+    /**
+     * Validate that appropriate fields are synched over to Moodle when PM user is updated
+     * during an import
+     */
+    public function test_user_sync_on_pm_user_update() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/user.class.php'));
+
+        //TODO: may need to actuallu set up language pack later on when
+        //validation is implemented
+
+        //create our "existing" user
+        $user = new user(array('idnumber' => 'initial',
+                               'username' => 'initial',
+                               'firstname' => 'initial',
+                               'lastname' => 'initial',
+                               'email' => 'initial@initial.com',
+                               'city' => 'initial',
+                               'country' => 'CA',
+                               'language' => 'fr'));
+        $user->save();
+
+        //run the user update action
+        $record = new stdClass;
+        $record->idnumber = 'initial';
+        $record->username = 'initial';
+        $record->firstname = 'final';
+        $record->lastname = 'final';
+        $record->email = 'initial@initial.com';
+        $record->city = 'final';
+        $record->country = 'FR';
+        $record->language = 'en_us';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->user_update($record, 'bogus');
+
+        //validation
+        $this->assertEquals(1, $DB->count_records('user'));
+        $this->assertTrue($DB->record_exists('user', array('idnumber' => 'initial',
+                                                           'username' => 'initial',
+                                                           'firstname' => $record->firstname,
+                                                           'lastname' => $record->lastname,
+                                                           'email' => 'initial@initial.com',
+                                                           'city' => $record->city,
+                                                           'country' => 'FR',
+                                                           'lang' => 'en_us')));
     }
 }

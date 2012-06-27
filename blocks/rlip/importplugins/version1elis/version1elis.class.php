@@ -225,7 +225,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 //        $data->fax = $record->fax;
 //        $data->birthdate = $record->birthdate;
 //        $data->gender = $record->gender;
-//        $data->language = $record->language;
+        if (isset($record->language)) {
+            $data->language = $record->language;
+        }
 //        $data->transfercredits = $record->transfercredits;
 //        $data->comments = $record->comments;
 //        $data->notes = $record->notes;
