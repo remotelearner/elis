@@ -232,13 +232,13 @@ class repository_elis_files extends repository {
                                 'cid'=>(int)$cid,
                                 'uid'=>(int)$uid);
                 $encodedpath = base64_encode(serialize($params));
+                $info = $this->elis_files->get_info($child->uuid);
+                $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>$encodedpath, //$child->uuid,
                         'name'=>$child->title,
                         'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
-                        'created'=>'',
-                        'modified'=>'',
-                        'owner'=>'',
+                        'author' => $owner,
                         'children'=>array());
             }
         }
@@ -257,14 +257,19 @@ class repository_elis_files extends repository {
                                 'cid'=>(int)$cid,
                                 'uid'=>(int)$uid);
                 $encodedpath = base64_encode(serialize($params));
-
+                $info = $this->elis_files->get_info($child->uuid);
+                $filesize = isset($info->filesize) ? $info->filesize : '';
+                $created = isset($info->created) ? $info->created : '';
+                $modified = isset($info->modified) ? $info->modified : '';
+                $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
-                        'path'=>$encodedpath, //$child->uuid,
+                        'path'=>$encodedpath,
                         'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 32))->out(false),
-                        'created'=>date("M. j, Y",$child->created),
-                        'modified'=>date("M. j, Y",$child->modified),
-                        'owner'=>$child->owner,
-                        'source'=>$child->uuid); // or links['self']???
+                        'size' => $filesize,
+                        'author' => $owner,
+                        'datemodified' => $modified,
+                        'datecreated' => $created,
+                        'source'=>$child->uuid);
             }
         }
 
@@ -1008,21 +1013,19 @@ class repository_elis_files extends repository {
                 $file['dimensions'] = get_string('imagesize', 'repository', (object)$a);
             }
             // Map date fields
-            foreach (array('date'     => 'date',
-                           'modified' => 'datemodified',
-                           'created'  => 'datecreated'
-                     ) as $key => $value) {
+            foreach (array('datemodified',
+                           'datecreated'
+                     ) as $key) {
                 if (!isset($file[$key]) && isset($file['date'])) {
-                    $file[$value] = $file['date'];
+                    $file[$key] = userdate($file['date']);
                 }
                 if (isset($file[$key])) {
-                    $file[$value] = $file[$key];
-                    $file[$value.'_f'] = $file[$key];
-                    $file[$value.'_f_s'] = $file[$key];
+                    $file[$key.'_f'] = userdate($file[$key], get_string('strftimedatetime', 'langconfig'));
+                    $file[$key.'_f_s'] = userdate($file[$key], get_string('strftimedatetimeshort', 'langconfig'));
                 }
             }
             // Map other fields
-            foreach (array('owner' => 'author',
+            foreach (array('author' => 'author',
                            'path'  => 'filepath' // TBD
                      ) as $key => $value) {
                 if (isset($file[$key])) {
