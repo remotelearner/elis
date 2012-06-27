@@ -60,10 +60,12 @@ class elis_user_track_enrolment_test extends elis_database_test {
     static protected function get_ignored_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/curriculumstudent.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('context' => 'moodle',
                      'user' => 'moodle',
+                     curriculumstudent::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program');
     }
 
