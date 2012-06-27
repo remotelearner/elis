@@ -1506,6 +1506,84 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Update a student class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_update_student($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+
+        //TODO: validation
+
+        //obtain the class id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //update the record
+        $id = $DB->get_field(student::TABLE, 'id', array('classid' => $classid,
+                                                         'userid' => $userid));
+        $student = new student($id);
+        //need to call load because saving a student needs the full object for events
+        //and dynamic loading will blow away changes otherwise
+        $student->load();
+
+        //enrolment and completion times
+        if (isset($record->enrolmenttime)) {
+            $student->enrolmenttime = $this->parse_date($record->enrolmenttime);
+        }
+        if (isset($record->completetime)) {
+            $student->completetime = $this->parse_date($record->completetime);
+        }
+
+        $completestatusid = $this->get_completestatusid($record);
+        //set up a completion status, if set
+        if ($completestatusid !== NULL) {
+            $student->completestatusid = $completestatusid;
+        }
+        if (isset($record->grade)) {
+            $student->grade = $record->grade;
+        }
+        if (isset($record->credits)) {
+            $student->credits = $record->credits;
+        }
+        if (isset($record->locked)) {
+            $student->locked = $record->locked;
+        }
+
+        $student->save();
+
+        return true;
+    }
+
+    /**
+     * Update a student or instructor class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_update($record, $filename, $idnumber) {
+        //determine if student or instructor
+        if ($this->record_is_instructor_assignment($record)) {
+            //TODO: run instructor import
+        } else {
+            //run student import
+            return $this->class_enrolment_update_student($record, $filename, $idnumber);
+        }
+    }
+
+    /**
      * Delete a student class instance enrolment
      *
      * @param object $record One record of import data
@@ -1519,13 +1597,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
 
         //TODO: validation
-        //TODO: consider delegating to do some of this work once instuctor enrolment
-        //are supported
 
-        //obtain the cluster / userset id
+        //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
         //obtain the user id
