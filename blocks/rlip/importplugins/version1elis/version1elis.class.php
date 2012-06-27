@@ -65,6 +65,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_course_create = array('context');
     static $import_fields_course_update = array('context');
     static $import_fields_course_delete = array('context');
+    static $course_field_keywords       = array('action', 'context', 'name', 'code', 'idnumber', 'syllabus', 'lengthdescription',
+                                                'length', 'credits', 'completion_grade', 'cost', 'version', 'assignment', 'link');
+
     //TODO: deal with all required fields structures / setup
     /*
     static $import_fields_course_create = array('idnumber', 'name');
@@ -89,7 +92,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_track_delete = array('idnumber');
     static $available_fields_track = array('idnumber', 'name', 'description', 'startdate',
                                           'enddate', 'assignment');
+    static $track_field_keywords = array('action', 'context', 'idnumber', 'name', 'description', 'startdate',
+                                          'enddate', 'assignment');
 
+    static $cluster_field_keywords = array('action', 'context', 'name', 'display', 'parent');
 
     //store mappings for the current entity type
     var $mappings = array();
@@ -133,7 +139,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      *               not in the right format
      */
     function parse_date($date) {
-        //determine which case we are in  
+        //determine which case we are in
         if (strpos($date, '/') !== false) {
             $delimiter = '/';
         } else if (strpos($date, '-') !== false) {
@@ -183,6 +189,75 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //return unix timestamp
         return mktime(0, 0, 0, $month, $day, $year);
+    }
+
+
+    /**
+     * Entry point for processing a single record
+     *
+     * @param string $entity The type of entity
+     * @param object $record One record of import data
+     * @param string $filename Import file name to user for logging
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function process_record($entity, $record, $filename) {
+        global $DB;
+
+        $this->fields = array();
+        $errors = false;
+        $shortnames = array();
+
+        // Custom fields are available only for user and course entities
+        if ($entity == "user" || $entity == "course") {
+            $tmpcustomfields = array();
+            $entitykeywords = array();
+
+            foreach ($record as $field => $value) {
+                if ($entity == "user") {
+                    $entitykeywords = static::$user_field_keywords;
+                } else {
+                    if (isset($record->context)) {
+                        if ($record->context == "curriculum") {
+                            $entitykeywords = static::$program_field_keywords;
+                        } else if ($record->context == "track") {
+                            $entitykeywords = static::$track_field_keywords;
+                        } else if ($record->context == "course") {
+                            $entitykeywords = static::$course_field_keywords;
+                        } else if ($record->context == "cluster") {
+                            $entitykeywords = static::$cluster_field_keywords;
+                        } else {
+                            // invalid contexxt
+                        }
+                    }
+                }
+
+                if (!in_array($field, $entitykeywords)) {
+                    $tmpcustomfields[] = $field;
+                }
+            }
+
+            foreach ($tmpcustomfields as $field) {
+                // Check if valid field
+                if ($result = $DB->get_record('elis_field', array('shortname' => $field))) {
+                    $this->fields[] = $result;
+                } else {
+                    // field is not valid
+                    $shortnames[] = $field;
+                    $errors = true;
+                }
+            }
+        }
+
+        // TODO: error logging
+        /*if ($errors) {
+            $this->fslogger->log_failure("Import file contains the following invalid user profile field(s): " . implode(', ', $shortnames), 0, $filename, $this->linenumber);
+            if (!$this->fslogger->get_logfile_status()) {
+                return false;
+            }
+        }*/
+
+        return parent::process_record($entity, $record, $filename);
     }
 
     /**
@@ -238,14 +313,28 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     function elis_custom_field_save_data($record) {
-        global $DB;
+        global $DB, $CFG;
         $db = null;
 
+        if (empty($this->fields)) {
+            return;
+        }
+
+        // Course entity should have context set
         if (isset($record->context)) {
             if ($record->context == "curriculum") {
                 $context = context_elis_program::instance($DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->idnumber)));
+            } else if ($record->context == "track") {
+                $context = context_elis_track::instance($DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber)));
+            } else if ($record->context == "course") {
+                $context = context_elis_course::instance($DB->get_field('crlm_course', 'id', array('idnumber' => $record->idnumber)));
+            } else if($record->context == "cluster") {
+                $context = context_elis_userset::instance($DB->get_field('crlm_cluster', 'id', array('name' => $record->name)));
+            } else {
+                // invalid context
             }
         } else {
+            // User entity
             $context = context_elis_user::instance($DB->get_field('crlm_user', 'id', array('idnumber' => $record->idnumber)));
         }
 
@@ -259,11 +348,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 $db = field_data_char::TABLE;
             } else if ($field->datatype == "num") {
                 $db = field_data_num::TABLE;
+            } else {
+                // invalid data type
             }
 
             if ($result = $DB->get_record($db, array('fieldid' => $field->id, 'contextid' => $context->id))) {
                 $DB->update_record($db, array('id' => $result->id, 'fieldid' => $field->id, 'contextid' => $context->id,
-                "data" => $record->{$field->shortname}));
+                                  "data" => $record->{$field->shortname}));
             } else {
                 $DB->insert_record($db, array('fieldid' => $field->id, 'contextid' => $context->id, "data" => $record->{$field->shortname}));
             }
@@ -889,6 +980,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $cluster = new userset($record);
         $cluster->save();
 
+        $this->elis_custom_field_save_data($record);
+
         return true;
     }
 
@@ -916,6 +1009,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data = new userset($record);
         $data->id = $id;
         $data->save();
+
+        $this->elis_custom_field_save_data($record);
 
         return true;
     }
@@ -1002,6 +1097,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $course = new course($data);
         $course->save();
 
+        $this->elis_custom_field_save_data($record);
+
         //associate this course description to a Moodle course, if necessary
         $this->associate_course_to_moodle_course($record, $course->id);
 
@@ -1051,6 +1148,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $course = new course($data);
         $course->save();
 
+        $this->elis_custom_field_save_data($record);
+
         //associate this course description to a Moodle course, if necessary
         $this->associate_course_to_moodle_course($record, $course->id);
 
@@ -1060,7 +1159,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function track_create($record, $filename) {
         global $DB, $CFG;
 
-        $record = $this->remove_invalid_track_fields($record);
+        //$record = $this->remove_invalid_track_fields($record);
 
         // TODO: validation
         $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment));
@@ -1070,6 +1169,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $track = new track($record);
         $track->save();
 
+        $this->elis_custom_field_save_data($record);
+
         return true;
     }
 
@@ -1078,20 +1179,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         // TODO: Validaiton
 
-        $record = $this->remove_invalid_track_fields($record);
+      //  $record = $this->remove_invalid_track_fields($record);
 
-       // $data = new object();
+        // $data = new object();
         $id = $DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber));
         $record->id = $id;
-      //  $data->name = $record->name;
-      //  $data->description = $record->description;
-      //  $data->startdate = $record->startdate;
-      //  $data->enddate = $record->enddate;
         $record->timemodified = time();
-       // $data->idnumber = $record->idnumber;
 
         $track = new track($record);
         $track->save();
+
+        $this->elis_custom_field_save_data($record);
 
         return true;
     }
@@ -1537,69 +1635,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $student->delete();
 
         return true;
-    }
-
-    /**
-     * Hook run after a file header is read
-     *
-     * @param string $entity The type of entity
-     * @param array $header The header record
-     */
-    function header_read_hook($entity, $header, $filename) {
-        global $DB;
-
-        // Enrolment has no custom fields
-        if ($entity == 'enrolment') {
-            return;
-        }
-
-        $this->fields = array();
-        $tmpcustomfields = array();
-        $shortnames = array();
-        $entitykeywords = array();
-        $errors = false;
-
-        foreach ($header as $column) {
-            //determine the "real" fieldname, taking mappings into account
-            /*$realcolumn = $column;
-            foreach ($this->mappings as $standardfieldname => $customfieldname) {
-                if ($column == $customfieldname) {
-                    $realcolumn = $standardfieldname;
-                    break;
-                }
-            }*/
-
-            if ($entity == "user") {
-                $entitykeywords = static::$user_field_keywords;
-            } else if ($entity == "curriculum") {
-                $entitykeywords = static::$program_field_keywords;
-            }
-
-            if (!in_array($column, $entitykeywords)) {
-                $tmpcustomfields[] = $column;
-            }
-
-        }
-
-        foreach ($tmpcustomfields as $field) {
-            // Check if valid field
-            if ($result = $DB->get_record('elis_field', array('shortname' => $field))) {
-                $this->fields[] = $result;
-            } else {
-                // field is not valid
-                $shortnames[] = $column;
-                $errors = true;
-            }
-        }
-
-        // TODO: error logging
-
-        /*if ($errors) {
-            $this->fslogger->log_failure("Import file contains the following invalid user profile field(s): " . implode(', ', $shortnames), 0, $filename, $this->linenumber);
-            if (!$this->fslogger->get_logfile_status()) {
-                return false;
-            }
-        }*/
     }
 
     /**
