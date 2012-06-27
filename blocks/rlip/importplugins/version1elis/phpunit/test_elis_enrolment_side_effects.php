@@ -43,15 +43,24 @@ class elis_enrolment_side_effects_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/curriculumcourse.class.php'));
         require_once(elispm::lib('data/curriculumstudent.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        return array(curriculum::TABLE => 'elis_program',
+        return array(course::TABLE => 'elis_program',
+                     curriculum::TABLE => 'elis_program',
+                     curriculumcourse::TABLE => 'elis_program',
                      curriculumstudent::TABLE => 'elis_program',
+                     pmclass::TABLE => 'elis_program',
+                     student::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
+                     trackassignment::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
                      usertrack::TABLE => 'elis_program');
     }
@@ -62,11 +71,13 @@ class elis_enrolment_side_effects_test extends elis_database_test {
     static protected function get_ignored_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('context' => 'moodle',
                      'user' => 'moodle',
-                     usermoodle::TABLE => 'moodle');
+                     coursetemplate::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program');
     }
 
     /**
@@ -110,4 +121,74 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         $this->assertTrue($DB->record_exists(curriculumstudent::TABLE, array('userid' => $user->id,
                                                                              'curriculumid' => $program->id)));
     }
+
+    /**
+     * Validate that enrolling a user into a track via IP auto-enrolls them in
+     * appropriate associated classes
+     */
+    public function test_track_enrolment_creates_class_enrolment() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/curriculumcourse.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //set up data
+
+        //test user
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'test@useremail.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        //test program and track
+        $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
+        $program->save();
+
+        $track = new track(array('curid' => $program->id,
+                                 'idnumber' => 'testtrackidnumber'));
+        $track->save();
+
+        //test course and class
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclass1idnumber'));
+        $class->save();
+
+        //associate course to the program
+        $curriculumcourse = new curriculumcourse(array('curriculumid' => $program->id,
+                                                       'courseid' => $course->id));
+        $curriculumcourse->save();
+
+        //associate track to both classes
+        $trackassignment = new trackassignment(array('trackid' => $track->id,
+                                                     'classid' => $class->id,
+                                                     'autoenrol' => 1));
+        $trackassignment->save();
+
+        //run the enrolment create action
+        $record = new stdClass;
+        $record->context = 'track_testtrackidnumber';
+        $record->user_username = 'testuserusername';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
+
+        //validation
+        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
+                                                                   'classid' => $class->id)));
+    }
+
 }
