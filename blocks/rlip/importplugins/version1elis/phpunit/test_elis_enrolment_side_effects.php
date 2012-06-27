@@ -43,6 +43,7 @@ class elis_enrolment_side_effects_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/clustertrack.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -55,7 +56,8 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        return array(clustertrack::TABLE => 'elis_program',
+        return array(clusterassignment::TABLE => 'elis_program',
+                     clustertrack::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',
                      curriculum::TABLE => 'elis_program',
                      curriculumcourse::TABLE => 'elis_program',
@@ -265,14 +267,22 @@ class elis_enrolment_side_effects_test extends elis_database_test {
                                                      'autoenrol' => 1));
         $trackassignment->save();
 
+        //run the assignment create action
+        $record = new stdClass;
+        $record->context = 'userset_testusersetname';
+        $record->user_username = 'testuserusername';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->cluster_enrolment_create($record, 'bogus', 'testusersetname');
+
         //validation
 
         //userset assignment should trigger track assignment
         $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id,
                                                                      'trackid' => $track->id)));
         //track assignment should trigger program assignment
-        $this->assertTrue($DB->record_exists(curriculumassignment::TABLE, array('userid' => $user->id,
-                                                                                'curriculumid' => $program->id)));
+        $this->assertTrue($DB->record_exists(curriculumstudent::TABLE, array('userid' => $user->id,
+                                                                             'curriculumid' => $program->id)));
         //track assignment should create a class enrolment
         $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
                                                                    'classid' => $class->id)));
