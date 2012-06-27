@@ -210,23 +210,26 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->lastname = $record->lastname;
         $data->email = $record->email;
         $data->country = $record->country;
-        /*$data->mi = $record->mi;
-        $data->email2 = $record->email2;
+
+        //TODO: allow for all fields to be set
+
+//        $data->mi = $record->mi;
+//        $data->email2 = $record->email2;
         $data->address = $record->address;
-        $data->address2 = $record->address2;
+//        $data->address2 = $record->address2;
         $data->city = $record->city;
-        $data->state = $record->state;
-        $data->postalcode = $record->postalcode;
-        $data->phone = $record->phone;
-        $data->phone2 = $record->phone2;
-        $data->fax = $record->fax;
-        $data->birthdate = $record->birthdate;
-        $data->gender = $record->gender;
-        $data->language = $record->language;
-        $data->transfercredits = $record->transfercredits;
-        $data->comments = $record->comments;
-        $data->notes = $record->notes;
-        $data->inactive = $record->inactive;*/
+//        $data->state = $record->state;
+//        $data->postalcode = $record->postalcode;
+//        $data->phone = $record->phone;
+//        $data->phone2 = $record->phone2;
+//        $data->fax = $record->fax;
+//        $data->birthdate = $record->birthdate;
+//        $data->gender = $record->gender;
+//        $data->language = $record->language;
+//        $data->transfercredits = $record->transfercredits;
+//        $data->comments = $record->comments;
+//        $data->notes = $record->notes;
+//        $data->inactive = $record->inactive;
 
         // TODO: validation
         $user = new user($data);
