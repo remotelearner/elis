@@ -27,6 +27,7 @@
  */
 
 require_once dirname(__FILE__). '/ELIS_files.php';
+require_once dirname(__FILE__). '/../ELIS_files_factory.class.php';
 require_once dirname(dirname(dirname(dirname(__FILE__)))). '/elis/core/lib/setup.php';
 require_once dirname(__FILE__) . '/cmis-php/cmis_repository_wrapper.php';
 
