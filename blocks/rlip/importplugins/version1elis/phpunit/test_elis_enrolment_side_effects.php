@@ -43,6 +43,8 @@ class elis_enrolment_side_effects_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/clustertrack.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/curriculumcourse.class.php'));
@@ -51,9 +53,12 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        return array(course::TABLE => 'elis_program',
+        return array(clusterassignment::TABLE => 'elis_program',
+                     clustertrack::TABLE => 'elis_program',
+                     course::TABLE => 'elis_program',
                      curriculum::TABLE => 'elis_program',
                      curriculumcourse::TABLE => 'elis_program',
                      curriculumstudent::TABLE => 'elis_program',
@@ -62,6 +67,7 @@ class elis_enrolment_side_effects_test extends elis_database_test {
                      track::TABLE => 'elis_program',
                      trackassignment::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
+                     userset::TABLE => 'elis_program',
                      usertrack::TABLE => 'elis_program');
     }
 
@@ -172,7 +178,7 @@ class elis_enrolment_side_effects_test extends elis_database_test {
                                                        'courseid' => $course->id));
         $curriculumcourse->save();
 
-        //associate track to both classes
+        //associate track to the test class
         $trackassignment = new trackassignment(array('trackid' => $track->id,
                                                      'classid' => $class->id,
                                                      'autoenrol' => 1));
@@ -187,6 +193,97 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
 
         //validation
+        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
+                                                                   'classid' => $class->id)));
+    }
+
+    /**
+     * Validate that enrolling a user into a user set via IP auto-enrolls them in
+     * an associated track, and any associated programs or class instances
+     */
+    public function test_userset_enrolment_creates_track_enrolment() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/clustertrack.class.php'));
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/curriculumcourse.class.php'));
+        require_once(elispm::lib('data/curriculumstudent.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
+
+        //set up data
+
+        //test user
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'test@useremail.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        //test user set
+        $userset = new userset(array('name' => 'testusersetname'));
+        $userset->save();
+
+        //test program and track
+        $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
+        $program->save();
+
+        $track = new track(array('curid' => $program->id,
+                                 'idnumber' => 'testtrackidnumber'));
+        $track->save();
+
+        //associate the userset to the track
+        $clustertrack = new clustertrack(array('clusterid' => $userset->id,
+                                               'trackid' => $track->id,
+                                               'autoenrol' => 1));
+        $clustertrack->save();
+
+        //test course and class
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclass1idnumber'));
+        $class->save();
+
+        //associate course to the program
+        $curriculumcourse = new curriculumcourse(array('curriculumid' => $program->id,
+                                                       'courseid' => $course->id));
+        $curriculumcourse->save();
+
+        //associate track to the test class
+        $trackassignment = new trackassignment(array('trackid' => $track->id,
+                                                     'classid' => $class->id,
+                                                     'autoenrol' => 1));
+        $trackassignment->save();
+
+        //run the assignment create action
+        $record = new stdClass;
+        $record->context = 'userset_testusersetname';
+        $record->user_username = 'testuserusername';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->cluster_enrolment_create($record, 'bogus', 'testusersetname');
+
+        //validation
+
+        //userset assignment should trigger track assignment
+        $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id,
+                                                                     'trackid' => $track->id)));
+        //track assignment should trigger program assignment
+        $this->assertTrue($DB->record_exists(curriculumstudent::TABLE, array('userid' => $user->id,
+                                                                             'curriculumid' => $program->id)));
+        //track assignment should create a class enrolment
         $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
                                                                    'classid' => $class->id)));
     }
