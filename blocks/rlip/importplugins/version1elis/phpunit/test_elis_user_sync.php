@@ -62,6 +62,9 @@ class elis_user_sync_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
+        //TODO: may need to actuallu set up language pack later on when
+        //validation is implemented
+
         //run the user create action
         $record = new stdClass;
         $record->idnumber = 'testuseridnumber';
@@ -72,7 +75,7 @@ class elis_user_sync_test extends elis_database_test {
         $record->address = 'testuseraddress';
         $record->city = 'testusercity';
         $record->country = 'CA';
-        $record->language = 'en';
+        $record->language = 'fr';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->user_create($record, 'bogus');
@@ -107,7 +110,7 @@ class elis_user_sync_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
 
-        //TODO: may need to actuall set up language pack later on when
+        //TODO: may need to actuallu set up language pack later on when
         //validation is implemented
 
         //create our "existing" user
@@ -118,7 +121,7 @@ class elis_user_sync_test extends elis_database_test {
                                'email' => 'initial@initial.com',
                                'city' => 'initial',
                                'country' => 'CA',
-                               'language' => 'en'));
+                               'language' => 'fr'));
         $user->save();
 
         //run the user update action
