@@ -274,6 +274,201 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
     }
 
     /**
+     * Data provider for a minimum update
+     *
+     * @return array Data needed for the appropriate unit test
+     */
+    function minimal_update_field_provider() {
+        //we are being sneaky and testing specific date and completion status format
+        //cases here as well
+        return array(array('assigntime', 'Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('assigntime', '01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('assigntime', '03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('assigntime', '2012.01.03', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('completetime', 'Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('completetime', '01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('completetime', '03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
+                     array('completetime', '2012.01.03', mktime(0, 0, 0, 1, 3, 2012)));
+    }
+
+    /**
+     * Validate that an "instructor" assignment can be updated with a minimal set of fields specified
+     *
+     * @param string $fieldname The name of the one import field we are setting
+     * @param string $value The value to set for that import field
+     * @param string $dbvalue The equivalent back-end database value
+     * @dataProvider minimal_update_field_provider
+     */
+    public function test_update_elis_user_instructor_enrolment_with_minimal_fields($fieldname, $value, $dbvalue) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        $instructor = new instructor(array('userid' => $user->id,
+                                           'classid' => $class->id));
+        $instructor->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id)));
+
+        //run the instructor assignment update action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        $record->user_username = 'testuserusername';
+        $record->$fieldname = $value;
+        $record->role = 'instructor';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id,
+                                                                      $fieldname => $dbvalue)));
+    }
+
+    /**
+     * Validate that an "instructor" assignment can be updated, setting all available fields
+     *
+     * @param string $username A sample user's username, or NULL if not used in the import
+     * @param string $email A sample user's email, or NULL if not used in the import
+     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @dataProvider user_identifier_provider
+     */
+    public function test_update_elis_user_instructor_enrolment_with_all_fields($username, $email, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        $instructor = new instructor(array('userid' => $user->id,
+                                           'classid' => $class->id));
+        $instructor->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id)));
+
+        //run the instructor assignment update action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        if ($username != NULL) {
+            $record->user_username = $user->username;
+        }
+        if ($email != NULL) {
+            $record->user_email = $user->email;
+        }
+        if ($idnumber != NULL) {
+            $record->user_idnumber = $user->idnumber;
+        }
+        $record->assigntime = 'Jan/01/2012';
+        $record->completetime = 'Feb/01/2012';
+        $record->role = 'instructor';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id,
+                                                                      'assigntime' => mktime(0, 0, 0, 1, 1, 2012),
+                                                                      'completetime' => mktime(0, 0, 0, 2, 1, 2012))));
+    }
+
+    /**
+     * Validate that the role field is handled as needed during updates
+     *
+     * @param string $role The input value for the role field
+     * @dataProvider role_provider
+     */
+    public function test_update_elis_user_instructor_enrolment_handles_role($role) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        $instructor = new instructor(array('userid' => $user->id,
+                                           'classid' => $class->id));
+        $instructor->save();
+
+        //validate setup
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id)));
+
+        //run the instructor assignment update action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        $record->user_username = 'testuserusername';
+        $record->role = $role;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
+                                                                      'classid' => $class->id)));
+    }
+
+    /**
      * Validate that users can be enrolled from class instances (when assigned as an instructor)
      *
      * @param string $username A sample user's username, or NULL if not used in the import

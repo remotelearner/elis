@@ -1565,6 +1565,47 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Update an instructor class instance assignment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_update_instructor($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+
+        //TODO: validation
+
+        //obtain the class id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //update the record
+        $id = $DB->get_field(instructor::TABLE, 'id', array('classid' => $classid,
+                                                            'userid' => $userid));
+        $instructor = new instructor($id);
+
+        //enrolment and completion times
+        if (isset($record->assigntime)) {
+            $instructor->assigntime = $this->parse_date($record->assigntime);
+        }
+        if (isset($record->completetime)) {
+            $instructor->completetime = $this->parse_date($record->completetime);
+        }
+
+        $instructor->save();
+
+        return true;        
+    }
+
+    /**
      * Update a student or instructor class instance enrolment
      *
      * @param object $record One record of import data
@@ -1576,7 +1617,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function class_enrolment_update($record, $filename, $idnumber) {
         //determine if student or instructor
         if ($this->record_is_instructor_assignment($record)) {
-            //TODO: run instructor import
+            //run instructor import
+            return $this->class_enrolment_update_instructor($record, $filename, $idnumber);
         } else {
             //run student import
             return $this->class_enrolment_update_student($record, $filename, $idnumber);
