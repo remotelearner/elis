@@ -402,7 +402,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
                                                                    'classid' => $class->id)));
 
-        //run the stidemt enrolment delete action
+        //run the student enrolment delete action
         $record = new stdClass;
         $record->context = 'class_testclassidnumber';
         if ($username != NULL) {

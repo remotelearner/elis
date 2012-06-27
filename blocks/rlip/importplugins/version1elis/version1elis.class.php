@@ -51,6 +51,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                            'country');
 
     static $import_fields_user_delete = array(array('username', 'email', 'idnumber'));
+    static $available_fields_user = array('username', 'password', 'idnumber', 'firstname',
+                                          'lastname', 'mi', 'email', 'email2', 'address','address2',
+                                          'city', 'state', 'postalcode', 'country', 'phone', 'phone2',
+                                          'fax', 'birthdate', 'gender', 'language', 'transfercredits',
+                                          'comments', 'notes', 'inactive');
+    static $user_field_keywords = array('action', 'context', 'username', 'password', 'idnumber', 'firstname',
+                                        'lastname', 'mi', 'email', 'email2', 'address','address2',
+                                        'city', 'state', 'postalcode', 'country', 'phone', 'phone2',
+                                        'fax', 'birthdate', 'gender', 'language', 'transfercredits',
+                                        'comments', 'notes', 'inactive');
 
     static $import_fields_course_create = array('context');
     static $import_fields_course_update = array('context');
@@ -65,6 +75,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_program_create = array('idnumber', 'name');
     static $import_fields_program_update = array('idnumber');
     static $import_fields_program_delete = array('idnumber');
+    static $program_field_keywords = array('action', 'context', 'idnumber', 'name', 'description', 'reqcredits', 'timetocomplete', 'frequency', 'priority');
 
     static $import_fields_class_create = array('idnumber','assignment');
     static $import_fields_class_update = array('idnumber');
@@ -186,6 +197,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
 
         // TODO: validation
+
+        // Custom fields validation
+        /*if (!$this->validate_user_profile_data($record, $filename)) {
+            return false;
+        }*/
+
         $data = new object();
         $data->idnumber = $record->idnumber;
         $data->username = $record->username;
@@ -213,9 +230,45 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         // TODO: validation
         $user = new user($data);
-
         $user->save();
+
+        $this->elis_custom_field_save_data($record);
+
         return true;
+    }
+
+    function elis_custom_field_save_data($record) {
+        global $DB;
+        $db = null;
+
+        if (isset($record->context)) {
+            if ($record->context == "curriculum") {
+                $context = context_elis_program::instance($DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->idnumber)));
+            }
+        } else {
+            $context = context_elis_user::instance($DB->get_field('crlm_user', 'id', array('idnumber' => $record->idnumber)));
+        }
+
+        //  TODO:validation
+        foreach ($this->fields as $field) {
+            if ($field->datatype == "int" || $field->datatype == "bool") {
+                $db = field_data_int::TABLE;
+            } else if ($field->datatype == "text") {
+                $db = field_data_text::TABLE;
+            } else if ($field->datatype == "char") {
+                $db = field_data_char::TABLE;
+            } else if ($field->datatype == "num") {
+                $db = field_data_num::TABLE;
+            }
+
+            if ($result = $DB->get_record($db, array('fieldid' => $field->id, 'contextid' => $context->id))) {
+                $DB->update_record($db, array('id' => $result->id, 'fieldid' => $field->id, 'contextid' => $context->id,
+                "data" => $record->{$field->shortname}));
+            } else {
+                $DB->insert_record($db, array('fieldid' => $field->id, 'contextid' => $context->id, "data" => $record->{$field->shortname}));
+            }
+        }
+
     }
 
     /**
@@ -239,6 +292,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $user = new user($record);
         $user->save();
+
+        $this->elis_custom_field_save_data($record);
 
         return true;
     }
@@ -764,6 +819,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $cur = new curriculum($data);
         $cur->save();
 
+        $this->elis_custom_field_save_data($record);
+
         return true;
     }
 
@@ -784,6 +841,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $cur = new curriculum($data);
         $cur->save();
+
+        $this->elis_custom_field_save_data($record);
 
         return true;
     }
@@ -1300,6 +1359,24 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Validates whether the specified class-context enrolment record is an
+     * instructor enrolment
+     *
+     * @param $record The current class-context enrolment import record
+     * @return boolean Return true if instructor enrolment, or false if student
+     */
+    function record_is_instructor_assignment($record) {
+        if (isset($record->role)) {
+            $role = strtolower($record->role);
+            $is_instructor = $role == 'teacher' || $role == 'instructor';
+        } else {
+            $is_instructor = false;
+        }
+
+        return $is_instructor;
+    }
+
+    /**
      * Create a student class instance enrolment
      *
      * @param object $record One record of import data
@@ -1419,14 +1496,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function class_enrolment_create($record, $filename, $idnumber) {
         //determine if student or instructor
-        if (isset($record->role)) {
-            $role = strtolower($record->role);
-            $is_instructor = $role == 'teacher' || $role == 'instructor';
-        } else {
-            $is_instructor = false;
-        }
-
-        if ($is_instructor) {
+        if ($this->record_is_instructor_assignment($record)) {
             //run instructor import
             return $this->class_enrolment_create_instructor($record, $filename, $idnumber);
         } else {
@@ -1436,7 +1506,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
-     * Delete a student or instructor class instance enrolment
+     * Delete a student class instance enrolment
      *
      * @param object $record One record of import data
      * @param string $filename The import file name, used for logging
@@ -1444,7 +1514,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      *
      * @return boolean true on success, otherwise false
      */
-    function class_enrolment_delete($record, $filename, $idnumber) {
+    function class_enrolment_delete_student($record, $filename, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
@@ -1459,17 +1529,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
         //obtain the user id
-        $params = array();
-        if (isset($record->user_username)) {
-            $params['username'] = $record->user_username;
-        }
-        if (isset($record->user_email)) {
-            $params['email'] = $record->user_email;
-        }
-        if (isset($record->user_idnumber)) {
-            $params['idnumber'] = $record->user_idnumber;
-        }
-        $userid = $DB->get_field(user::TABLE, 'id', $params);
+        $userid = $this->get_userid_from_record($record, $filename);
 
         //delete the association
         $studentid = $DB->get_field(student::TABLE, 'id', array('userid' => $userid,
@@ -1481,6 +1541,61 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Delete an instructor class instance assignment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_delete_instructor($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //TODO: validation
+        //TODO: consider delegating to do some of this work once instuctor enrolment
+        //are supported
+
+        //obtain the cluster / userset id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //delete the association
+        $studentid = $DB->get_field(instructor::TABLE, 'id', array('userid' => $userid,
+                                                                   'classid' => $classid));
+        $instructor = new instructor($studentid);
+        $instructor->delete();
+
+        return true;
+    }
+
+    /**
+     * Delete a student or instructor class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_delete($record, $filename, $idnumber) {
+        //determine if student or instructor
+        if ($this->record_is_instructor_assignment($record)) {
+            //run instructor import
+            return $this->class_enrolment_delete_instructor($record, $filename, $idnumber);
+        } else {
+            //run student import
+            return $this->class_enrolment_delete_student($record, $filename, $idnumber);
+        }
+    }
+
+    /**
      * Hook run after a file header is read
      *
      * @param string $entity The type of entity
@@ -1489,35 +1604,51 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function header_read_hook($entity, $header, $filename) {
         global $DB;
 
-        if ($entity !== 'user') {
+        // Enrolment has no custom fields
+        if ($entity == 'enrolment') {
             return;
         }
 
         $this->fields = array();
+        $tmpcustomfields = array();
         $shortnames = array();
+        $entitykeywords = array();
         $errors = false;
 
         foreach ($header as $column) {
             //determine the "real" fieldname, taking mappings into account
-            $realcolumn = $column;
+            /*$realcolumn = $column;
             foreach ($this->mappings as $standardfieldname => $customfieldname) {
                 if ($column == $customfieldname) {
                     $realcolumn = $standardfieldname;
                     break;
                 }
+            }*/
+
+            if ($entity == "user") {
+                $entitykeywords = static::$user_field_keywords;
+            } else if ($entity == "curriculum") {
+                $entitykeywords = static::$program_field_keywords;
             }
 
-            //attempt to fetch the field
-            /*if (strpos($realcolumn, 'profile_field_') === 0) {
-                $shortname = substr($realcolumn, strlen('profile_field_'));
-                if ($result = $DB->get_record('user_info_field', array('shortname' => $shortname))) {
-                    $this->fields[$shortname] = $result;
-                } else {
-                    $shortnames[] = "${shortname}";
-                    $errors = true;
-                }
-            }*/
+            if (!in_array($column, $entitykeywords)) {
+                $tmpcustomfields[] = $column;
+            }
+
         }
+
+        foreach ($tmpcustomfields as $field) {
+            // Check if valid field
+            if ($result = $DB->get_record('elis_field', array('shortname' => $field))) {
+                $this->fields[] = $result;
+            } else {
+                // field is not valid
+                $shortnames[] = $column;
+                $errors = true;
+            }
+        }
+
+        // TODO: error logging
 
         /*if ($errors) {
             $this->fslogger->log_failure("Import file contains the following invalid user profile field(s): " . implode(', ', $shortnames), 0, $filename, $this->linenumber);
