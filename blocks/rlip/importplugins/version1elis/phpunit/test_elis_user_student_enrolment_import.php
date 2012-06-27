@@ -388,6 +388,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
                      array('completestatusid', student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
                      array('completestatusid', "Passed", student::STUSTATUS_PASSED),
                      array('grade', 50, 50),
+                     array('credits', 1, 1),
                      array('locked', 1, 1));
     }
 
