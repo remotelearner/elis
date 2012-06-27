@@ -285,23 +285,28 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->lastname = $record->lastname;
         $data->email = $record->email;
         $data->country = $record->country;
-        /*$data->mi = $record->mi;
-        $data->email2 = $record->email2;
+
+        //TODO: allow for all fields to be set
+
+//        $data->mi = $record->mi;
+//        $data->email2 = $record->email2;
         $data->address = $record->address;
-        $data->address2 = $record->address2;
+//        $data->address2 = $record->address2;
         $data->city = $record->city;
-        $data->state = $record->state;
-        $data->postalcode = $record->postalcode;
-        $data->phone = $record->phone;
-        $data->phone2 = $record->phone2;
-        $data->fax = $record->fax;
-        $data->birthdate = $record->birthdate;
-        $data->gender = $record->gender;
-        $data->language = $record->language;
-        $data->transfercredits = $record->transfercredits;
-        $data->comments = $record->comments;
-        $data->notes = $record->notes;
-        $data->inactive = $record->inactive;*/
+//        $data->state = $record->state;
+//        $data->postalcode = $record->postalcode;
+//        $data->phone = $record->phone;
+//        $data->phone2 = $record->phone2;
+//        $data->fax = $record->fax;
+//        $data->birthdate = $record->birthdate;
+//        $data->gender = $record->gender;
+        if (isset($record->language)) {
+            $data->language = $record->language;
+        }
+//        $data->transfercredits = $record->transfercredits;
+//        $data->comments = $record->comments;
+//        $data->notes = $record->notes;
+//        $data->inactive = $record->inactive;
 
         // TODO: validation
         $user = new user($data);
@@ -1317,9 +1322,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $userid = $this->get_userid_from_record($record, $filename);
 
         //create the association
-        $usertrack = new usertrack(array('userid' => $userid,
-                                         'trackid' => $trackid));
-        $usertrack->save();
+        usertrack::enrol($userid, $trackid);
 
         return true;
     }
@@ -1457,6 +1460,24 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Validates whether the specified class-context enrolment record is an
+     * instructor enrolment
+     *
+     * @param $record The current class-context enrolment import record
+     * @return boolean Return true if instructor enrolment, or false if student
+     */
+    function record_is_instructor_assignment($record) {
+        if (isset($record->role)) {
+            $role = strtolower($record->role);
+            $is_instructor = $role == 'teacher' || $role == 'instructor';
+        } else {
+            $is_instructor = false;
+        }
+
+        return $is_instructor;
+    }
+
+    /**
      * Create a student class instance enrolment
      *
      * @param object $record One record of import data
@@ -1576,20 +1597,200 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function class_enrolment_create($record, $filename, $idnumber) {
         //determine if student or instructor
-        if (isset($record->role)) {
-            $role = strtolower($record->role);
-            $is_instructor = $role == 'teacher' || $role == 'instructor';
-        } else {
-            $is_instructor = false;
-        }
-
-        if ($is_instructor) {
+        if ($this->record_is_instructor_assignment($record)) {
             //run instructor import
             return $this->class_enrolment_create_instructor($record, $filename, $idnumber);
         } else {
             //run student import
             return $this->class_enrolment_create_student($record, $filename, $idnumber);
         }
+    }
+
+    /**
+     * Update a student class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_update_student($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+
+        //TODO: validation
+
+        //obtain the class id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //update the record
+        $id = $DB->get_field(student::TABLE, 'id', array('classid' => $classid,
+                                                         'userid' => $userid));
+        $student = new student($id);
+        //need to call load because saving a student needs the full object for events
+        //and dynamic loading will blow away changes otherwise
+        $student->load();
+
+        //enrolment and completion times
+        if (isset($record->enrolmenttime)) {
+            $student->enrolmenttime = $this->parse_date($record->enrolmenttime);
+        }
+        if (isset($record->completetime)) {
+            $student->completetime = $this->parse_date($record->completetime);
+        }
+
+        $completestatusid = $this->get_completestatusid($record);
+        //set up a completion status, if set
+        if ($completestatusid !== NULL) {
+            $student->completestatusid = $completestatusid;
+        }
+        if (isset($record->grade)) {
+            $student->grade = $record->grade;
+        }
+        if (isset($record->credits)) {
+            $student->credits = $record->credits;
+        }
+        if (isset($record->locked)) {
+            $student->locked = $record->locked;
+        }
+
+        $student->save();
+
+        return true;
+    }
+
+    /**
+     * Update an instructor class instance assignment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_update_instructor($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+
+        //TODO: validation
+
+        //obtain the class id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //update the record
+        $id = $DB->get_field(instructor::TABLE, 'id', array('classid' => $classid,
+                                                            'userid' => $userid));
+        $instructor = new instructor($id);
+
+        //enrolment and completion times
+        if (isset($record->assigntime)) {
+            $instructor->assigntime = $this->parse_date($record->assigntime);
+        }
+        if (isset($record->completetime)) {
+            $instructor->completetime = $this->parse_date($record->completetime);
+        }
+
+        $instructor->save();
+
+        return true;        
+    }
+
+    /**
+     * Update a student or instructor class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_update($record, $filename, $idnumber) {
+        //determine if student or instructor
+        if ($this->record_is_instructor_assignment($record)) {
+            //run instructor import
+            return $this->class_enrolment_update_instructor($record, $filename, $idnumber);
+        } else {
+            //run student import
+            return $this->class_enrolment_update_student($record, $filename, $idnumber);
+        }
+    }
+
+    /**
+     * Delete a student class instance enrolment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_delete_student($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+
+        //TODO: validation
+
+        //obtain the class id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //delete the association
+        $studentid = $DB->get_field(student::TABLE, 'id', array('userid' => $userid,
+                                                                'classid' => $classid));
+        $student = new student($studentid);
+        $student->delete();
+
+        return true;
+    }
+
+    /**
+     * Delete an instructor class instance assignment
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param string $idnumber The idnumber of the class instance
+     *
+     * @return boolean true on success, otherwise false
+     */
+    function class_enrolment_delete_instructor($record, $filename, $idnumber) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //TODO: validation
+        //TODO: consider delegating to do some of this work once instuctor enrolment
+        //are supported
+
+        //obtain the cluster / userset id
+        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
+
+        //obtain the user id
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        //delete the association
+        $studentid = $DB->get_field(instructor::TABLE, 'id', array('userid' => $userid,
+                                                                   'classid' => $classid));
+        $instructor = new instructor($studentid);
+        $instructor->delete();
+
+        return true;
     }
 
     /**
@@ -1602,39 +1803,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return boolean true on success, otherwise false
      */
     function class_enrolment_delete($record, $filename, $idnumber) {
-        global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/pmclass.class.php'));
-        require_once(elispm::lib('data/student.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-
-        //TODO: validation
-        //TODO: consider delegating to do some of this work once instuctor enrolment
-        //are supported
-
-        //obtain the cluster / userset id
-        $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
-
-        //obtain the user id
-        $params = array();
-        if (isset($record->user_username)) {
-            $params['username'] = $record->user_username;
+        //determine if student or instructor
+        if ($this->record_is_instructor_assignment($record)) {
+            //run instructor import
+            return $this->class_enrolment_delete_instructor($record, $filename, $idnumber);
+        } else {
+            //run student import
+            return $this->class_enrolment_delete_student($record, $filename, $idnumber);
         }
-        if (isset($record->user_email)) {
-            $params['email'] = $record->user_email;
-        }
-        if (isset($record->user_idnumber)) {
-            $params['idnumber'] = $record->user_idnumber;
-        }
-        $userid = $DB->get_field(user::TABLE, 'id', $params);
-
-        //delete the association
-        $studentid = $DB->get_field(student::TABLE, 'id', array('userid' => $userid,
-                                                                'classid' => $classid));
-        $student = new student($studentid);
-        $student->delete();
-
-        return true;
     }
 
     /**
