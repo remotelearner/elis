@@ -1224,9 +1224,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $userid = $this->get_userid_from_record($record, $filename);
 
         //create the association
-        $usertrack = new usertrack(array('userid' => $userid,
-                                         'trackid' => $trackid));
-        $usertrack->save();
+        usertrack::enrol($userid, $trackid);
 
         return true;
     }
