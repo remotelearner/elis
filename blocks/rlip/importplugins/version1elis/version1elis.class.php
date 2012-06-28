@@ -86,6 +86,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $available_fields_class = array('idnumber', 'startdate', 'enddate', 'starttimehour',
                                           'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
                                           'enrol_from_waitlist', 'assignment', 'track', 'autoenrol', 'link');
+    static $class_field_keywords = array('action', 'context', 'idnumber', 'name', 'startdate', 'enddate', 'starttimehour',
+                                          'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
+                                          'enrol_from_waitlist', 'assignment', 'track', 'autoenrol', 'link');
 
     static $import_fields_track_create = array('idnumber', 'assignment');
     static $import_fields_track_update = array('idnumber');
@@ -226,6 +229,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                             $entitykeywords = static::$course_field_keywords;
                         } else if ($record->context == "cluster") {
                             $entitykeywords = static::$cluster_field_keywords;
+                        } else if ($record->context == "class") {
+                            $entitykeywords = static::$class_field_keywords;
                         } else {
                             // invalid contexxt
                         }
@@ -333,8 +338,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 $context = context_elis_track::instance($DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber)));
             } else if ($record->context == "course") {
                 $context = context_elis_course::instance($DB->get_field('crlm_course', 'id', array('idnumber' => $record->idnumber)));
-            } else if($record->context == "cluster") {
+            } else if ($record->context == "cluster") {
                 $context = context_elis_userset::instance($DB->get_field('crlm_cluster', 'id', array('name' => $record->name)));
+            } else if ($record->context == "class") {
+                $context = context_elis_class::instance($DB->get_field('crlm_class', 'id', array('idnumber' => $record->idnumber)));
             } else {
                 // invalid context
             }
@@ -711,12 +718,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/pmclass.class.php'));
 
         // TODO: validation
-        $record = $this->remove_invalid_class_fields($record);
+        //$record = $this->remove_invalid_class_fields($record);
 
-        $lengthcheck = $this->check_class_field_lengths($record, $filename);
-        if (!$lengthcheck) {
-            return false;
-        }
+        //$lengthcheck = $this->check_class_field_lengths($record, $filename);
+        //if (!$lengthcheck) {
+            //return false;
+        //}
 
         /*if (!$this->validate_core_class_data('create', $record, $filename)) {
             return false;
@@ -738,6 +745,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         */
         $pmclass = new pmclass($data);
         $pmclass->save();
+
+        $this->elis_custom_field_save_data($record);
 
         //associate this class instance to a track, if necessary
         $this->associate_class_to_track($record, $pmclass->id);
@@ -860,12 +869,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/pmclass.class.php'));
 
         // TODO: validation
-        $record = $this->remove_invalid_class_fields($record);
+        //$record = $this->remove_invalid_class_fields($record);
 
-        $lengthcheck = $this->check_class_field_lengths($record, $filename);
-        if (!$lengthcheck) {
-            return false;
-        }
+        //$lengthcheck = $this->check_class_field_lengths($record, $filename);
+        //if (!$lengthcheck) {
+            //return false;
+        //}
 
         /*if (!$this->validate_core_class_data('update', $record, $filename)) {
             return false;
@@ -878,6 +887,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->maxstudents = $record->maxstudents;
         $pmclass = new pmclass($data);
         $pmclass->save();
+
+        $this->elis_custom_field_save_data($record);
 
         //associate this class instance to a track, if necessary
         $this->associate_class_to_track($record, $pmclass->id);
@@ -1703,7 +1714,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $instructor->save();
 
-        return true;        
+        return true;
     }
 
     /**
