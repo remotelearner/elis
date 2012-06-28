@@ -35,6 +35,8 @@ require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 
 /**
  * Class for validating side effects of PM enrolments
+ *
+ * NOTE: Notifications are being testing in test_elis_notifications.php
  */
 class elis_enrolment_side_effects_test extends elis_database_test {
     /**
