@@ -181,6 +181,7 @@ class elis_userset_import_test extends elis_database_test {
         $data['parent'] = 0;
         $data['depth'] = 1;
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
+        $this->assertEquals(1, $DB->count_records(userset::TABLE));
     }
 
     /**
