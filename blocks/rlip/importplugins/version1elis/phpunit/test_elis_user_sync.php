@@ -35,7 +35,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
 /**
  * Class for validating that ELIS / PM user actions propagate the appropriate
- * over to Moodle
+ * users over to Moodle
  */
 class elis_user_sync_test extends elis_database_test {
     /**
