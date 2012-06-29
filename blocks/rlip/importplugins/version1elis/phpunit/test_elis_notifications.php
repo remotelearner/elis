@@ -129,4 +129,171 @@ class elis_notifications_test extends elis_database_test {
         $this->assertTrue($DB->record_exists_select('message', $select, array('userid' => $mdluserid,
                                                                               'message' => "{$expected_message}%")));
     }
+
+    /**
+     * Data provider for testing the class completed notification on enrolment create
+     *
+     * @return array Parameter data, as expected by the testing method
+     */
+    function enrolment_completion_on_create_provider() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+
+        return array(array(student::STUSTATUS_NOTCOMPLETE, false),
+                     array(student::STUSTATUS_FAILED, false),
+                     array(student::STUSTATUS_PASSED, true)); 
+    }
+
+    /**
+     * Validating that enrolling a user in a class instance with a passed status triggers the class
+     * completed notification
+     *
+     * @param int $completestatus The completion status to enrol the user with
+     * @param boolean $expect_message Whether we expect the notification message to be sent
+     * @dataProvider enrolment_completion_on_create_provider
+     */
+    public function test_class_completion_sends_class_completed_notification_on_enrolment_create($completestatus, $expect_message) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //configuration
+        set_config('notify_classcompleted_user', 1, 'elis_program');
+        $message = '%%userenrolname%% has completed the class instance %%classname%%.';
+        set_config('notify_classcompleted_message', $message, 'elis_program');
+        set_config('noemailever', 1);
+
+        //setup
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'test@user.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        //run the enrolment create action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        $record->user_username = 'testuserusername';
+        $record->completestatusid = $completestatus;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
+        $expected_message = "{$user->firstname} {$user->lastname} has completed the class instance {$class->idnumber}.";
+
+        $like = $DB->sql_like('fullmessagehtml', ':message');
+        $select = "useridto = :userid
+                   AND {$like}";
+
+        if ($expect_message) {
+            $this->assertTrue($DB->record_exists_select('message', $select, array('userid' => $mdluserid,
+                                                                                  'message' => "{$expected_message}%")));
+        } else {
+            $this->assertFalse($DB->record_exists_select('message', $select, array('userid' => $mdluserid,
+                                                                                   'message' => "{$expected_message}%")));
+        }
+    }
+
+    /**
+     * Data provider for testing the class completed notification on enrolment update
+     *
+     * @return array Parameter data, as expected by the testing method
+     */
+    function enrolment_completion_on_update_provider() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+
+        return array(array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE, false),
+                     array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_FAILED, false),
+                     array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_PASSED, true),
+                     array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED, false)); 
+    }
+
+    /**
+     * Validating that updating a user's enrolment in a class instance triggers the enrolment
+     * notification if the status is set to passed
+     *
+     * @param int $oldcompletestatus The completion status to enrol the user with initially
+     * @param int $newcompletestatus The completion status to set during enrolment update
+     * @param boolean $expect_message Whether we expect the notification message to be sent
+     * @dataProvider enrolment_completion_on_update_provider
+     */
+    public function test_class_completion_sends_class_completed_notification_on_enrolment_update($oldcompletestatus, $newcompletestatus,
+                                                                                                 $expect_message) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //configuration
+        set_config('notify_classcompleted_user', 1, 'elis_program');
+        $message = '%%userenrolname%% has completed the class instance %%classname%%.';
+        set_config('notify_classcompleted_message', $message, 'elis_program');
+        set_config('noemailever', 1);
+
+        //setup
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'test@user.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber',
+                                   'syllabus' => ''));
+        $course->save();
+
+        $class = new pmclass(array('courseid' => $course->id,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        //we need an "existing" enrolment record set up
+        $student = new student(array('userid' => $user->id,
+                                     'classid' => $class->id,
+                                     'completestatusid' => $oldcompletestatus));
+        $student->save();
+
+        //run the enrolment update action
+        $record = new stdClass;
+        $record->context = 'class_testclassidnumber';
+        $record->user_username = 'testuserusername';
+        $record->completestatusid = $newcompletestatus;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+
+        //validation
+        $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
+        $expected_message = "{$user->firstname} {$user->lastname} has completed the class instance {$class->idnumber}.";
+
+        $like = $DB->sql_like('fullmessagehtml', ':message');
+        $select = "useridto = :userid
+                   AND {$like}";
+
+        if ($expect_message) {
+            $this->assertTrue($DB->record_exists_select('message', $select, array('userid' => $mdluserid,
+                                                                                  'message' => "{$expected_message}%")));
+        } else {
+            $this->assertFalse($DB->record_exists_select('message', $select, array('userid' => $mdluserid,
+                                                                                  'message' => "{$expected_message}%")));
+        }
+    }
 }
