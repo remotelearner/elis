@@ -49,6 +49,7 @@ class elis_notifications_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('config' => 'moodle',
                      'config_plugins' => 'moodle',
@@ -60,7 +61,8 @@ class elis_notifications_test extends elis_database_test {
                      course::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program');
+                     user::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program');
     }
 
     /**
@@ -70,10 +72,8 @@ class elis_notifications_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/coursetemplate.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
 
-        return array(coursetemplate::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+        return array(coursetemplate::TABLE => 'elis_program');
     }
 
     /**
@@ -164,6 +164,7 @@ class elis_notifications_test extends elis_database_test {
         $message = '%%userenrolname%% has completed the class instance %%classname%%.';
         set_config('notify_classcompleted_message', $message, 'elis_program');
         set_config('noemailever', 1);
+        elis::$config = new elis_config();
 
         //setup
         $user = new user(array('idnumber' => 'testuseridnumber',
@@ -194,7 +195,7 @@ class elis_notifications_test extends elis_database_test {
 
         //validation
         $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
-        $expected_message = "{$user->firstname} {$user->lastname} has completed the class instance {$class->idnumber}.";
+        $expected_message = "{$user->firstname} {$user->lastname} has completed the class instance {$course->name}.";
 
         $like = $DB->sql_like('fullmessagehtml', ':message');
         $select = "useridto = :userid
@@ -278,11 +279,11 @@ class elis_notifications_test extends elis_database_test {
         $record->completestatusid = $newcompletestatus;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+        $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
         //validation
         $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
-        $expected_message = "{$user->firstname} {$user->lastname} has completed the class instance {$class->idnumber}.";
+        $expected_message = "{$user->firstname} {$user->lastname} has completed the class instance {$course->name}.";
 
         $like = $DB->sql_like('fullmessagehtml', ':message');
         $select = "useridto = :userid

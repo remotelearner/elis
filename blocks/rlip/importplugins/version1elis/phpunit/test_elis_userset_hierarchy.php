@@ -293,7 +293,6 @@ class elis_userset_hierarchy_test extends elis_database_test {
      * Validate hierarchy structure resulting from changing the parent of a
      * non-top-level user set from one user set to another
      */
-    /*
     function test_changed_parent_userset_hierarchy_on_update() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
@@ -315,7 +314,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
 
         //create the child userset
         $child = new userset(array('name' => 'childname',
-                                   'parent' => $initialparent));
+                                   'parent' => $initialparent->id));
         $child->save();
 
         //run the user set update action
@@ -337,11 +336,10 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $context = $DB->get_record('context', array('id' => 4));
         $this->assertNotEquals(false, $context);
         $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
-        $this->assertEquals(2, $context->instanceid);
+        $this->assertEquals(3, $context->instanceid);
         $this->assertEquals('/1/3/4', $context->path);
         $this->assertEquals(3, $context->depth);
     }
-    */
 
     /**
      * Validate hierarchy structure resulting from deletion of a top-level
