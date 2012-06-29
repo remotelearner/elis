@@ -1563,6 +1563,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $student->save();
 
+        //TODO: consider refactoring once ELIS-6546 is resolved
+        if (isset($student->completestatusid) && $student->completestatusid == STUSTATUS_PASSED) {
+            $student->complete();
+        } else {
+            $student->save();
+        }
+
         return true;
     }
 
@@ -1686,7 +1693,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $student->locked = $record->locked;
         }
 
-        $student->save();
+        //TODO: consider refactoring once ELIS-6546 is resolved
+        if (isset($student->completestatusid) && $student->completestatusid == STUSTATUS_PASSED &&
+            $DB->get_field(student::TABLE, 'completestatusid', array('id' => $student->id)) != STUSTATUS_PASSED) {
+            $student->complete();
+        } else {
+            $student->save();
+        }
 
         return true;
     }

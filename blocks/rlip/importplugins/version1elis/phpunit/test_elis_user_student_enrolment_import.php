@@ -49,7 +49,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
-        return array(course::TABLE => 'elis_program',
+        return array('config' => 'moodle',
+                     course::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
                      student_grade::TABLE => 'elis_program',
@@ -66,6 +67,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('context' => 'moodle',
+                     'message' => 'moodle',
                      'user' => 'moodle',
                      coursetemplate::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program');
@@ -97,6 +99,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+
+        set_config('noemailever', true);
 
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
@@ -159,6 +163,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+
+        set_config('noemailever', true);
 
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
@@ -248,6 +254,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
+        set_config('noemailever', true);
+
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
                                'firstname' => 'testuserfirstname',
@@ -324,6 +332,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
+        set_config('noemailever', true);
+
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
                                'firstname' => 'testuserfirstname',
@@ -371,6 +381,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
 
+        set_config('noemailever', true);
+
         //we are being sneaky and testing specific date and completion status format
         //cases here as well
         return array(array('enrolmenttime', 'Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
@@ -407,6 +419,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+
+        set_config('noemailever', true);
 
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
@@ -463,6 +477,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+
+        set_config('noemailever', true);
 
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
@@ -537,6 +553,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+
+        set_config('noemailever', true);
 
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
