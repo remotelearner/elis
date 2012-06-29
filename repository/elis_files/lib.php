@@ -205,7 +205,7 @@ class repository_elis_files extends repository {
                         'cid'=>(int)$cid,
                         'uid'=>(int)$uid);
         $encodedpath = base64_encode(serialize($params));
-        $ret['path'][] = array('name'=>$this->current_node->title,
+        $ret['path'][] = array('name'=>isset($this->current_node->title)?$this->current_node->title:'',
                                'path'=>$encodedpath);
 
         // Unserialized array of path/shared/oid
@@ -232,13 +232,21 @@ class repository_elis_files extends repository {
                                 'cid'=>(int)$cid,
                                 'uid'=>(int)$uid);
                 $encodedpath = base64_encode(serialize($params));
-                $info = $this->elis_files->get_info($child->uuid);
+                if (isset($child->uuid)) {
+                    $info = $this->elis_files->get_info($child->uuid);
+                } else {
+                    $info = '';
+                }
+                $created = isset($info->created) ? $info->created : '';
+                $modified = isset($info->modified) ? $info->modified : '';
                 $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>$encodedpath, //$child->uuid,
                         'name'=>$child->title,
                         'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
                         'author' => $owner,
+                        'datemodified' => $modified,
+                        'datecreated' => $created,
                         'children'=>array());
             }
         }
@@ -257,7 +265,11 @@ class repository_elis_files extends repository {
                                 'cid'=>(int)$cid,
                                 'uid'=>(int)$uid);
                 $encodedpath = base64_encode(serialize($params));
-                $info = $this->elis_files->get_info($child->uuid);
+                if (isset($child->uuid)) {
+                    $info = $this->elis_files->get_info($child->uuid);
+                } else {
+                    $info = '';
+                }
                 $filesize = isset($info->filesize) ? $info->filesize : '';
                 $created = isset($info->created) ? $info->created : '';
                 $modified = isset($info->modified) ? $info->modified : '';

@@ -186,7 +186,7 @@ function toggle_msgdetails() {
 }
 
 function RLsimpleXMLelement($resp, $displayerrors = false) {
-//echo "RLsimpleXMLelement() => resp = {$resp}";
+    //echo "RLsimpleXMLelement() => resp = {$resp}";
 
     $details = $resp;
     if (($preend = strpos($resp, '<title><!DOCTYPE')) !== false &&
@@ -1514,6 +1514,10 @@ function elis_files_process_node_new($node, &$type) {
         $contentNode->filemimetype = $node->properties['cmis:contentStreamMimeType'];
     }
 
+    if (isset($node->properties['cmis:objectId'])) {
+        $contentNode->noderef = $node->properties['cmis:objectId'];
+    }
+
     // We have to recontextualize the date & time values given to us into
     // a standard UNIX timestamp value that Moodle uses.
     $created = $node->properties['cmis:creationDate'];
@@ -1677,36 +1681,28 @@ function elis_files_process_node($dom, $node, &$type) {
                             $contentNode->links['self'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
-                        case 'cmis-allowableactions':
+                        case 'allowableactions':
                             $contentNode->links['permissions'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
-                        case 'cmis-relationships':
+                        case 'relationships':
                             $contentNode->links['associations'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
-                        case 'cmis-parent':
+                        case 'parents':
                             $contentNode->links['parent'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
-                        case 'cmis-folderparent':
-                            $contentNode->links['folderparent'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
-                            break;
-
-                        case 'cmis-children':
+                        case 'children':
                             $contentNode->links['children'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
-                        case 'cmis-descendants':
+                        case 'descendants':
                             $contentNode->links['descendants'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
-                        case 'cmis-type':
+                        case 'type':
                             $contentNode->links['type'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
-                            break;
-
-                        case 'cmis-repository':
-                            $contentNode->links['repository'] = str_replace(elis_files_base_url(), '', $cnode->getAttribute('href'));
                             break;
 
                         default:
@@ -1720,11 +1716,12 @@ function elis_files_process_node($dom, $node, &$type) {
             }
 
         }
+    } else {
+        // There were no child nodes
+        return false;
     }
 
     $entries    = $xpath->query('.//cmis:properties/*', $node);
-//    $isfolder   = false;
-//    $isdocument = false;
     $j          = 0;
 
     while ($prop = $entries->item($j++)) {
@@ -2819,8 +2816,8 @@ function elis_files_node_path($uuid, $path = '') {
     // Get the parents for the given node
     $response = elis_files_request('/cmis/i/'.$uuid.'/parents');
 
-    // Fix this TODO with XML fixes
-//    if (!empty($response)) {
+
+    if (!empty($response)) {
         $dom = new DOMDocument();
         $dom->preserveWhiteSpace = false;
         $dom->loadXML($response);
@@ -2837,8 +2834,8 @@ function elis_files_node_path($uuid, $path = '') {
             // This node has no parents, we're at the root so prepend a slash and return everything
             return '/'.$path;
         }
-//    } else {
-//        // This node has no parents, we're at the root so prepend a slash and return everything
-//            return '/'.$path;
-//    }
+    } else {
+        // This node has no parents, we're at the root so prepend a slash and return everything
+            return '/'.$path;
+    }
 }

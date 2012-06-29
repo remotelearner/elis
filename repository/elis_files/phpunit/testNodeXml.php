@@ -50,7 +50,8 @@ class filenodeXMLTest extends elis_database_test {
             'cmis:name' => "Company Home",
             'cmis:baseTypeId' => "cmis:folder",
             'cmis:creationDate' => "2011-12-16T14:51:06.933-05:00",
-            'cmis:lastModificationDate' => "2012-05-15T10:29:48.205-04:00"
+            'cmis:lastModificationDate' => "2012-05-15T10:29:48.205-04:00",
+            'cmis:objectId' => "workspace://SpacesStore/fab64d29-99a2-4ab2-b9ef-f231bf7e2559"
         );
         $node->links = array(
             'self' => "http://localhost:8080/alfresco/s/cmis/s/workspace:SpacesStore/i/e54d46e5-f047-4c6c-a39e-258d1370671c",
@@ -238,6 +239,30 @@ class filenodeXMLTest extends elis_database_test {
         }
     }
 
+    public function nodeNewPropertiesProvider() {
+        return array(
+            array('cmis:objectId','workspace://SpacesStore/fab64d29-99a2-4ab2-b9ef-f231bf7e2559')
+        );
+    }
+
+    /**
+     * Test the elis_files_process_node_new function with objectid property.
+     * @dataProvider nodeNewPropertiesProvider
+     */
+    public function testProcessNodeNewNoderef($field,$data) {
+
+        $node = $this->setupNode();
+        // test the 3 different owners
+        $node->properties[$field] = $data;
+
+        $contentNode = elis_files_process_node_new($node, &$type);
+
+        $expectedContentNode = $this->setupExpectedContent($node);
+
+        $this->assertEquals($data,$contentNode->noderef);
+
+    }
+
     public function loadfolderDOMfromXML() {
         global $CFG;
 
@@ -399,14 +424,12 @@ class filenodeXMLTest extends elis_database_test {
     public function nodeLinkFieldsProvider() {
         return array(
             array('self','self'),
-            array('cmis-allowableactions','permissions'),
-            array('cmis-relationships','associations'),
-            array('cmis-parent','parent'),
-            array('cmis-folderparent','folderparent'),
-            array('cmis-children','children'),
-            array('cmis-descendants','descendants'),
-            array('cmis-type','type'),
-            array('cmis-repository','repository')
+            array('allowableactions','permissions'),
+            array('relationships','associations'),
+            array('parents','parent'),
+            array('children','children'),
+            array('descendants','descendants'),
+            array('type','type')
         );
     }
 
@@ -518,7 +541,7 @@ class filenodeXMLTest extends elis_database_test {
 
     public function nodeFolderPropertiesProvider() {
         return array(
-            array('ObjectId','noderef','cmis:propertyId')
+            array('ObjectId','noderef')
         );
     }
 
@@ -526,7 +549,7 @@ class filenodeXMLTest extends elis_database_test {
      * Test the elis_files_process_node function with folder properties.
      * @dataProvider nodeFolderPropertiesProvider
      */
-    public function testProcessNodeFolderProperties($field1,$field2,$entity) {
+    public function testProcessNodeFolderProperties($field1,$field2) {
 
         $dom = $this->loadfolderDOMfromXML();
 
