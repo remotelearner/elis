@@ -1022,6 +1022,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             //TODO: log an error and return false
         }
 
+        if (isset($record->parent)) {
+            if ($record->parent == 'top') {
+                $record->parent = 0;
+            } else if ($parentid = $DB->get_field(userset::TABLE, 'id', array('name' => $record->parent))) {
+                $record->parent = $parentid; 
+            } else {
+                //invalid parent specification
+                //TODO: log error and return false
+            }
+        }
+
         $data = new userset($record);
         $data->id = $id;
         $data->save();
@@ -1053,6 +1064,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         $data = new userset($id);
+        //handle recursive delete, if necessary
+        if (!empty($record->recursive)) {
+            $data->deletesubs = true;
+        }
         $data->delete();
 
         return true;
