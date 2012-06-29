@@ -186,7 +186,8 @@ function toggle_msgdetails() {
 }
 
 function RLsimpleXMLelement($resp, $displayerrors = false) {
-    //echo "RLsimpleXMLelement() => resp = {$resp}";
+//echo "RLsimpleXMLelement() => resp = {$resp}";
+
     $details = $resp;
     if (($preend = strpos($resp, '<title><!DOCTYPE')) !== false &&
         ($lastentry = strrpos($resp, "<entry>")) !== false) {
@@ -617,7 +618,6 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
     // Ensure that we set the configured admin user to be the owner of the deleted file before deleting.
     // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
     // ELIS-1102
-
     elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
     if (ELIS_files::is_version('3.2')) {
@@ -787,6 +787,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     } else {
         return false;
     }
+
     if (!$repo = repository_factory::factory('elis_files')) {
         return false;
     }
@@ -795,7 +796,6 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         return false;
     }
     //error_log("elis_files_upload_file('$upload', '$path', '$uuid', $useadmin): version = ". ELIS_files::$version);
-
     if (empty($uuid)) {
         $uuid = $repo->get_root()->uuid;
     }
@@ -1075,9 +1075,18 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
     $repo_path = elis_files_node_path($uuid);
 
     // The FTP server represents "Company Home" as "Alfresco" so we need to change that now:
-    $repo_path = str_replace("/Company Home", "Alfresco", $repo_path);
+    $repo_path = str_replace("/Company Home", "Alfresco", $repo_path, $count);
+    if ($count === 0) {
+        // /Company Home not found, so prepend Alfresco onto the repo path
+        $repo_path = 'Alfresco'.$repo_path;
+    }
+    // explode the path and chdir for each folder
+    $path_array = explode('/',$repo_path);
+    foreach ($path_array as $path) {
+        $chdir = ftp_chdir($ftp,$path);
+    }
 
-    $res = ftp_put($ftp, $repo_path.'/'.$filename, $filepath, FTP_BINARY);
+    $res = ftp_put($ftp, $filename, $filepath, FTP_BINARY);
 
     if ($res != FTP_FINISHED) {
         error_log('Could not upload file '.$filepath.' to Alfresco: '.$repo_path.'/'.$filename);
@@ -1580,6 +1589,7 @@ function elis_files_process_node_new($node, &$type) {
  * @return object The node properties in an object format.
  */
 function elis_files_process_node($dom, $node, &$type) {
+
     $xpath = new DOMXPath($dom);
 
     if ($node->hasChildNodes()) {
@@ -1957,7 +1967,7 @@ function elis_files_has_permission($uuid, $username = '', $edit = false) {
 
     $username = elis_files_transform_username($username);
 
-    $response = elis_files_request('/moodle/getpermissions/' . $uuid . '?username=' . $username);
+    $response = elis_files_request('/moodle/getpermissions/' . $uuid . (!empty($username) ? '?username=' . $username : ''));
 
     $sxml = RLsimpleXMLelement($response);
     if (empty($sxml)) {
@@ -2014,9 +2024,14 @@ function elis_files_get_permissions($uuid, $username = '') {
     global $CFG, $USER;
 
     // If no username was specified, make sure that there is a user currently logged in and use that username.
-    if (!empty($username)) {
-        $username = elis_files_transform_username($username);
+    if (empty($username)) {
+        if (!isloggedin()) {
+            return false;
+        }
+
+        $username = $USER->username;
     }
+    $username = elis_files_transform_username($username);
 
     $permissions = array();
 
@@ -2576,6 +2591,7 @@ function elis_files_utils_get_url($url) {
  */
 function elis_files_utils_get_wc_url($url, $op = 'norefresh', $username = '') {
 
+
     $endpoint = elis_files_base_url();
     $ticket   = elis_files_utils_get_ticket($op, $username);
 
@@ -2803,20 +2819,26 @@ function elis_files_node_path($uuid, $path = '') {
     // Get the parents for the given node
     $response = elis_files_request('/cmis/i/'.$uuid.'/parents');
 
-    $dom = new DOMDocument();
-    $dom->preserveWhiteSpace = false;
-    $dom->loadXML($response);
+    // Fix this TODO with XML fixes
+//    if (!empty($response)) {
+        $dom = new DOMDocument();
+        $dom->preserveWhiteSpace = false;
+        $dom->loadXML($response);
 
-    $nodes = $dom->getElementsByTagName('entry');
+        $nodes = $dom->getElementsByTagName('entry');
 
-    if ($nodes->length > 0) {
-        // This node has parents so add this node title to the path and recurse on the parent node
-        $type = '';
-        $node = elis_files_process_node($dom, $nodes->item(0), $type);
-        $path = $node->title.(!empty($path) ? '/'.$path : '');
-        return elis_files_node_path($node->uuid, $path);
-    } else {
-        // This node has no parents, we're at the root so prepend a slash and return everything
-        return '/'.$path;
-    }
+        if ($nodes->length > 0) {
+            // This node has parents so add this node title to the path and recurse on the parent node
+            $type = '';
+            $node = elis_files_process_node($dom, $nodes->item(0), $type);
+            $path = $node->title.(!empty($path) ? '/'.$path : '');
+            return elis_files_node_path($node->uuid, $path);
+        } else {
+            // This node has no parents, we're at the root so prepend a slash and return everything
+            return '/'.$path;
+        }
+//    } else {
+//        // This node has no parents, we're at the root so prepend a slash and return everything
+//            return '/'.$path;
+//    }
 }

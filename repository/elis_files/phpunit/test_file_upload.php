@@ -26,6 +26,7 @@
  *
  */
 
+define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
@@ -141,6 +142,8 @@ class file_uploadTest extends elis_database_test {
      * @dataProvider fileSizeProvider
      */
     public function testUploadIncrementalFileSizes($mb) {
+        $this->markTestSkipped('Not necessary to test incremental file sizes at this time.');
+
         // Check if Alfresco is enabled, configured and running first
         if (!$repo = repository_factory::factory('elis_files')) {
             $this->markTestSkipped();

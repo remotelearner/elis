@@ -34,8 +34,39 @@ require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
 
-define('ELIS_FILES_TEST_FILE', 'elis_files_test_file_response.txt');
-define('ELIS_FILES_TEST_STRING', 'This is a test text file.');
+define('ONE_MB_BYTES', 1048576);
+define('ELIS_FILES_PREFIX', 'elis_files_test_file_upload_');
+
+/**
+ *
+ * @param integer $mbs The file size (in MB) to generate.
+ */
+function generate_temp_file($mbs) {
+    global $CFG;
+
+    $fname = tempnam($CFG->dataroot.'/temp/', ELIS_FILES_PREFIX);
+
+    if (!$fh = fopen($fname, 'w+')) {
+        error('Could not open temporary file');
+    }
+
+    $maxbytes = $mbs * ONE_MB_BYTES;
+    $data     = '';
+    $fsize    = 0;
+
+    for ($i = 0; $i < $mbs; $i++) {
+        while ((strlen($data) < ONE_MB_BYTES) && ((strlen($data) + $fsize) < $maxbytes)) {
+            $data .= 'a';
+        }
+
+        fwrite($fh, $data);
+        $fsize += strlen($data);
+    }
+
+    fclose($fh);
+
+    return $fname;
+}
 
 class fileresponseTest extends elis_database_test {
 
@@ -62,21 +93,39 @@ class fileresponseTest extends elis_database_test {
     }
 
     protected function tearDown() {
-        if ($dir = elis_files_read_dir()) {
-            foreach ($dir->files as $file) {
-                if (strpos($file->title, ELIS_FILES_TEST_FILE) === 0) {
-                    elis_files_delete($file->uuid);
-                }
-            }
-        }
+//        if ($dir = elis_files_read_dir()) {
+//            foreach ($dir->files as $file) {
+//                if (strpos($file->title, ELIS_FILES_PREFIX) === 0) {
+//                    elis_files_delete($file->uuid);
+//                }
+//            }
+//        }
+        $this->cleanupfiles();
 
         parent::tearDown();
     }
 
+    public function cleanupfiles($uuid='') {
+        if ($dir = elis_files_read_dir($uuid)) {
+            foreach ($dir->files as $file) {
+                if (strpos($file->title, ELIS_FILES_PREFIX) === 0) {
+                    elis_files_delete($file->uuid);
+                }
+            }
+        }
+    }
+
+    public function fileSizeProvider() {
+        return array(
+            array(32)
+        );
+    }
+
     /**
      * Test that uploading a file generates a valid response
+     * * @dataProvider fileSizeProvider
      */
-    public function testUploadAndGetResponse() {
+    public function testUploadAndGetResponse($mb) {
         global $CFG;
 
         // Check if Alfresco is enabled, configured and running first
@@ -88,10 +137,13 @@ class fileresponseTest extends elis_database_test {
             $this->markTestSkipped('Repository not configured or enabled');
         }
 
-        $filename = ELIS_FILES_TEST_FILE;
-        $path = $CFG->dirroot.'/repository/elis_files/phpunit/';
+        // Used data provider to just generate one file
+        $filesize = $mb * ONE_MB_BYTES;
+        $filename = generate_temp_file($mb);
 
-        $uploadresponse = elis_files_upload_file('', $path.$filename);
+        $uploadresponse = elis_files_upload_file('',$filename);
+
+        unlink($filename);
 
         // Verify that we get a valid response
         $this->assertNotEquals(false, $uploadresponse);
@@ -107,8 +159,58 @@ class fileresponseTest extends elis_database_test {
         $this->assertEquals(ELIS_files::$type_document, $response->type);
         // Verify that title is set
         $this->assertObjectHasAttribute('title', $response);
-        // Verify that title the same as the file name
-        $this->assertEquals(ELIS_FILES_TEST_FILE, $response->title);
+        // Verify that created is set
+        $this->assertObjectHasAttribute('created', $response);
+        // Verify that modified is set
+        $this->assertObjectHasAttribute('modified', $response);
+        // Verify that summary is set
+        $this->assertObjectHasAttribute('summary', $response);
+        // Verify that Owner is set
+        $this->assertObjectHasAttribute('owner', $response);
+    }
+
+/**
+     * Test that uploading a file to a specific folder generates a valid response
+     * * @dataProvider fileSizeProvider
+     */
+    public function testUploadToFolderAndGetResponse($mb) {
+        global $CFG;
+
+        // Check if Alfresco is enabled, configured and running first
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped();
+        }
+
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('Repository not configured or enabled');
+        }
+
+        // Used data provider to just generate one file
+        $filesize = $mb * ONE_MB_BYTES;
+        $filename = generate_temp_file($mb);
+
+        // Upload to a folder
+        $uploadresponse = elis_files_upload_file('',$filename,$repo->muuid);
+
+        unlink($filename);
+
+        // Verify that we get a valid response
+        $this->assertNotEquals(false, $uploadresponse);
+        // Verify that response has a uuid
+        $this->assertObjectHasAttribute('uuid', $uploadresponse);
+
+        // Get info on the uploaded file's uuid...
+        $response = $repo->get_info($uploadresponse->uuid);
+
+        // Cleanup the uploaded file
+        $this->cleanupfiles($repo->muuid);
+
+        // Verify that response has a type
+        $this->assertObjectHasAttribute('type', $response);
+        // Verify that type is folder
+        $this->assertEquals(ELIS_files::$type_document, $response->type);
+        // Verify that title is set
+        $this->assertObjectHasAttribute('title', $response);
         // Verify that created is set
         $this->assertObjectHasAttribute('created', $response);
         // Verify that modified is set
