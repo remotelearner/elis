@@ -293,7 +293,6 @@ class elis_userset_hierarchy_test extends elis_database_test {
      * Validate hierarchy structure resulting from changing the parent of a
      * non-top-level user set from one user set to another
      */
-    /*
     function test_changed_parent_userset_hierarchy_on_update() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
@@ -315,7 +314,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
 
         //create the child userset
         $child = new userset(array('name' => 'childname',
-                                   'parent' => $initialparent));
+                                   'parent' => $initialparent->id));
         $child->save();
 
         //run the user set update action
@@ -337,11 +336,10 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $context = $DB->get_record('context', array('id' => 4));
         $this->assertNotEquals(false, $context);
         $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
-        $this->assertEquals(2, $context->instanceid);
+        $this->assertEquals(3, $context->instanceid);
         $this->assertEquals('/1/3/4', $context->path);
         $this->assertEquals(3, $context->depth);
     }
-    */
 
     /**
      * Validate hierarchy structure resulting from deletion of a top-level
@@ -365,7 +363,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
 
         //run the user set delete action
         $record = new stdClass;
-        $record->name = 'childname';
+        $record->name = 'usersetname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->cluster_delete($record, 'bogus');
@@ -580,7 +578,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
         $this->assertEquals(1, $context->instanceid);
         $this->assertEquals('/1/2', $context->path);
-        $this->assertEquals(1, $context->depth);
+        $this->assertEquals(2, $context->depth);
     }
 
     /**
@@ -626,8 +624,8 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $userset = $DB->get_record(userset::TABLE, array('id' => 3));
         $this->assertNotEquals(false, $userset);
         $this->assertEquals('childname', $userset->name);
-        $this->assertEquals(1, $userset->parent);
-        $this->assertEquals(2, $userset->depth);
+        $this->assertEquals(0, $userset->parent);
+        $this->assertEquals(1, $userset->depth);
 
         //validate the deletion of the "parent" context
         $this->assertEquals(3, $DB->count_records('context'));
@@ -636,7 +634,149 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $this->assertNotEquals(false, $context);
         $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
         $this->assertEquals(3, $context->instanceid);
-        $this->assertEquals('/1/2/4', $context->path);
+        $this->assertEquals('/1/4', $context->path);
+        $this->assertEquals(2, $context->depth);
+    }
+
+    /**
+     * Validate hierarchy structure resulting from recursive deletion of a
+     * non-top-level user set with grandchildren
+     *
+     * @param string $recursive The recursive field value
+     * @dataProvider recursive_provider
+     */
+    function test_userset_hierarchy_on_grandparent_non_top_level_userset_recursive_delete($recursive) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+        require_once(elispm::file('accesslib.php'));
+
+        //create the system context
+        $this->create_system_context();
+
+        //clear context cache
+        $this->clear_context_cache();
+
+        //create the great grandparent userset
+        $greatgrandparent = new userset(array('name' => 'greatgrandparentname'));
+        $greatgrandparent->save();
+
+        //create the grandparent userset
+        $grandparent = new userset(array('name' => 'grandparentname',
+                                         'parent' => $greatgrandparent->id));
+        $grandparent->save();
+
+        //create the parent userset
+        $parent = new userset(array('name' => 'parentname',
+                                    'parent' => $grandparent->id));
+        $parent->save();
+
+        //create the child userset
+        $child = new userset(array('name' => 'childname',
+                                   'parent' => $parent->id));
+        $child->save();
+
+        //run the user set delete action
+        $record = new stdClass;
+        $record->name = 'grandparentname';
+        $record->recursive = $recursive;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->cluster_delete($record, 'bogus');
+
+        //validate deletion of three userset records
+        $this->assertEquals(1, $DB->count_records(userset::TABLE));
+        //validate that the "great grandparent" userset is the one left intact
+        $userset = $DB->get_record(userset::TABLE, array('id' => 1));
+        $this->assertNotEquals(false, $userset);
+        $this->assertEquals('greatgrandparentname', $userset->name);
+        $this->assertEquals(0, $userset->parent);
+        $this->assertEquals(1, $userset->depth);
+
+        //validate deletion of three context records
+        $this->assertEquals(2, $DB->count_records('context'));
+        //validate that the "great grandparent" context is the one left intact
+        $context = $DB->get_record('context', array('id' => 2));
+        $this->assertNotEquals(false, $context);
+        $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
+        $this->assertEquals(1, $context->instanceid);
+        $this->assertEquals('/1/2', $context->path);
+        $this->assertEquals(2, $context->depth);
+    }
+
+    /**
+     * Validate hierarchy structure resulting from deletion and child user set
+     * promotion of a non-top-level user set with grandchildren
+     */
+    function test_userset_hierarchy_on_grandparent_non_top_level_userset_delete_and_promote() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/userset.class.php'));
+        require_once(elispm::file('accesslib.php'));
+
+        //create the system context
+        $this->create_system_context();
+
+        //clear context cache
+        $this->clear_context_cache();
+
+        //create the great grandparent userset
+        $greatgrandparent = new userset(array('name' => 'greatgrandparentname'));
+        $greatgrandparent->save();
+
+        //create the grandparent userset
+        $grandparent = new userset(array('name' => 'grandparentname',
+                                         'parent' => $greatgrandparent->id));
+        $grandparent->save();
+
+        //create the parent userset
+        $parent = new userset(array('name' => 'parentname',
+                                    'parent' => $grandparent->id));
+        $parent->save();
+
+        //create the child userset
+        $child = new userset(array('name' => 'childname',
+                                   'parent' => $parent->id));
+        $child->save();
+
+        //run the user set delete action
+        $record = new stdClass;
+        $record->name = 'grandparentname';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->cluster_delete($record, 'bogus');
+
+        //validate the deletion of the "grandparent" userset
+        $this->assertEquals(3, $DB->count_records(userset::TABLE));
+        //validate the promotion of the "parent" userset
+        $userset = $DB->get_record(userset::TABLE, array('id' => 3));
+        $this->assertNotEquals(false, $userset);
+        $this->assertEquals('parentname', $userset->name);
+        $this->assertEquals(0, $userset->parent);
+        $this->assertEquals(1, $userset->depth);
+        //validate the position of the "child" userset below "parent"
+        $userset = $DB->get_record(userset::TABLE, array('id' => 4));
+        $this->assertNotEquals(false, $userset);
+        $this->assertEquals('childname', $userset->name);
+        $this->assertEquals(3, $userset->parent);
+        //re-add this check once ELIS-6540 is resolved
+        //$this->assertEquals(2, $userset->depth);
+
+        //validate the deletion of the "grandparent" context
+        $this->assertEquals(4, $DB->count_records('context'));
+        //validate the promotion of the "parent" context
+        $context = $DB->get_record('context', array('id' => 4));
+        $this->assertNotEquals(false, $context);
+        $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
+        $this->assertEquals(3, $context->instanceid);
+        $this->assertEquals('/1/4', $context->path);
+        $this->assertEquals(2, $context->depth);
+        //validate the position of the "child" context below "parent"
+        $context = $DB->get_record('context', array('id' => 5));
+        $this->assertNotEquals(false, $context);
+        $this->assertEquals(CONTEXT_ELIS_USERSET, $context->contextlevel);
+        $this->assertEquals(4, $context->instanceid);
+        $this->assertEquals('/1/4/5', $context->path);
         $this->assertEquals(3, $context->depth);
     }
 }
