@@ -1201,6 +1201,29 @@ class repository_elis_files extends repository {
     /// FILE FUNCTIONS //////////////////////////////////////////////////////
 
     /**
+     * Does this repository used to browse moodle files?
+     *
+     * @return bool
+     */
+    public function has_moodle_files() {
+        return false;
+    }
+
+    /**
+     * Return human readable reference information
+     * {@link stored_file::get_reference()}
+     *
+     * @param string $reference
+     * @param int $filestatus status of the file, 0 - ok, 666 - source missing
+     * @return string
+     */
+    public function get_reference_details($reference, $filestatus = 0) {
+        //error_log("repository/elis_files/lib.php::get_reference_details({$reference}, {$filestatus})");
+        return $this->get_link($reference);
+    }
+
+
+    /**
      * Recursively generate list of files to be deleted
      *
      * @param   array   $file_array initial list of files

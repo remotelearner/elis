@@ -725,9 +725,10 @@ class ELIS_files {
  * @param string $localfile A full system path (with filename) to download the contents locally.
  * @param bool   $return    Set to true to just return the file content (optional).
  * @param bool   $process   Whether to process text-based content for relative URLs for converting.
+ * @param bool   $attachment true if desired as attachment, false(default) for file
  * @return mixed|bool Returns the file to the browser (with appropriate MIME headers) or False on failure.
  */
-    function read_file($uuid, $localfile = '', $return = false, $process = true) {
+    function read_file($uuid, $localfile = '', $return = false, $process = true, $attachment = false) {
         global $CFG, $USER;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('read_file(' . $uuid . ')');
@@ -800,7 +801,11 @@ class ELIS_files {
                 header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $age) . ' GMT');
                 header('Pragma: ');
 
-                header('Content-Disposition: filename="' . $node->filename . '"');
+                $cd_header = 'Content-Disposition: ';
+                if ($attachment) {
+                    $cd_header .= 'attachment; ';
+                }
+                header($cd_header .'filename="'. $node->filename .'"');
             }
 
             /// Close session - not needed anymore.
@@ -902,7 +907,11 @@ class ELIS_files {
         header('Expires: '. gmdate('D, d M Y H:i:s', time() + $age) .' GMT');
         header('Pragma: ');
 
-        header('Content-Disposition: filename="' . $node->filename . '"');
+        $cd_header = 'Content-Disposition: ';
+        if ($attachment) {
+            $cd_header .= 'attachment; ';
+        }
+        header($cd_header .'filename="'. $node->filename .'"');
 
     /// Close session - not needed anymore.
         @session_write_close();
@@ -1777,6 +1786,7 @@ class ELIS_files {
             }
         } else {
             if (!($username = $DB->get_field('user', 'username', array('id'=> $uid)))) {
+                //error_log("ELIS_files::get_user_store({$uid}) => NO username => false!");
                 return false;
             }
 
@@ -1785,13 +1795,16 @@ class ELIS_files {
             if (($uuid = $this->has_old_user_store($uid)) !== false) {
                 $fixed_username = $this->fix_username($username);
                 if (!$this->migrate_user($fixed_username)) {
+                    //error_log("ELIS_files::get_user_store({$uid}) => NO migrate_user => false!");
                     return false;
                 }
             }
 
             if (empty($this->uuuid)) {
                 $this->uuuid = $this->elis_files_userdir($username);
+                //error_log("ELIS_files::get_user_store({$uid}) => WAS empty => {$this->uuuid}");
             }
+            //error_log("ELIS_files::get_user_store({$uid}) => {$this->uuuid}");
             return $this->uuuid;
         }
 
@@ -2556,6 +2569,7 @@ class ELIS_files {
         // Build the option for browsing from the repository personal / user files.
         if ($capabilities['repository/elis_files:viewowncontent']) {
             if (!$createonly || ($createonly && ($capabilities['repository/elis_files:createowncontent'] == true))) {
+                //error_log("ELIS_files::file_browse_options(): this->get_user_store({$USER->id}) = ". $this->get_user_store($USER->id));
                 $params = array('path'=>$this->get_user_store($USER->id),
                                 'shared'=>(boolean)0,
                                 'oid'=>(int)0,
@@ -2921,8 +2935,10 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('elis_files_userdir(' . $username . ')');
 
         if (($uuid = elis_files_get_home_directory($username)) === false) {
+            //error_log("ELIS_files::elis_files_userdir({$username}): elis_files_get_home_directory() === false!");
             return false;
         }
+        //error_log("ELIS_files::elis_files_userdir({$username}): elis_files_get_home_directory() => {$uuid}");
 
         return $uuid;
     }
