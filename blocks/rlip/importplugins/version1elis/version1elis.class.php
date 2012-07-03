@@ -336,7 +336,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         if (isset($record->email2)) {
             if (!validate_email($record->email2)) {
-                $this->fslogger->log_failure("email value of \"{$record->email2}\" is not a valid email address.", 0, $filename, $this->linenumber, $record, "user");
+                $this->fslogger->log_failure("email2 value of \"{$record->email2}\" is not a valid email address.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
         }
@@ -361,7 +361,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->gender)) {
-            if (in_array(strtolower($this->gender), array('m', 'f', 'male', 'female'))) {
+            if (!in_array(strtolower($record->gender), array('m', 'f', 'male', 'female'))) {
                 $this->fslogger->log_failure("gender value of \"{$record->gender}\" is not one of the available options (M, male, F, female).",
                                              0, $filename, $this->linenumber, $record, "user");
                 return false;
@@ -492,7 +492,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $error = false;
 
         if (isset($record->username)) {
-            if ($DB->record_exists('crlm_user', array('username' => $record->username))) {
+            if (!$DB->record_exists('crlm_user', array('username' => $record->username))) {
                 // TODO : mappings
                 $errors[] = "username value of \"{$record->username}\"";
                 $error = true;
@@ -500,14 +500,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->email)) {
-            if ($DB->record_exists('crlm_user', array('email' => $record->email))) {
+            if (!$DB->record_exists('crlm_user', array('email' => $record->email))) {
                 $errors[] = "email value of \"{$record->email}\"";
                 $error = true;
             }
         }
 
         if (isset($record->idnumber)) {
-            if ($DB->record_exists('crlm_user', array('idnumber' => $record->idnumber))) {
+            if (!$DB->record_exists('crlm_user', array('idnumber' => $record->idnumber))) {
                 $errors[] = "idnumber value of \"{$record->idnumber}\"";
                 $error = true;
             }
@@ -522,7 +522,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        if (!$this->validate_core_user_data('create', $record, $filename)) {
+        if (!$this->validate_core_user_data('update', $record, $filename)) {
             return false;
         }
 
