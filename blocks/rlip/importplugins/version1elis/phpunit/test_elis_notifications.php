@@ -46,10 +46,14 @@ class elis_notifications_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
         require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/curriculumstudent.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
 
         return array('config' => 'moodle',
                      'config_plugins' => 'moodle',
@@ -59,10 +63,14 @@ class elis_notifications_test extends elis_database_test {
                      //to prevent accidental association
                      classmoodlecourse::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',
+                     curriculum::TABLE => 'elis_program',
+                     curriculumstudent::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
+                     track::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+                     usermoodle::TABLE => 'elis_program',
+                     usertrack::TABLE => 'elis_program');
     }
 
     /**
@@ -92,6 +100,8 @@ class elis_notifications_test extends elis_database_test {
         $message = '%%userenrolname%% has been enrolled in the class instance %%classname%%.';
         set_config('notify_classenrol_message', $message, 'elis_program');
         set_config('noemailever', 1);
+        //force refreshing of configuration
+        elis::$config = new elis_config();
 
         //setup
         $user = new user(array('idnumber' => 'testuseridnumber',
@@ -164,6 +174,7 @@ class elis_notifications_test extends elis_database_test {
         $message = '%%userenrolname%% has completed the class instance %%classname%%.';
         set_config('notify_classcompleted_message', $message, 'elis_program');
         set_config('noemailever', 1);
+        //force refreshing of configuration
         elis::$config = new elis_config();
 
         //setup
@@ -241,6 +252,8 @@ class elis_notifications_test extends elis_database_test {
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        //force refreshing of configuration
+        elis::$config = new elis_config();
 
         //configuration
         set_config('notify_classcompleted_user', 1, 'elis_program');
@@ -296,5 +309,60 @@ class elis_notifications_test extends elis_database_test {
             $this->assertFalse($DB->record_exists_select('message', $select, array('userid' => $mdluserid,
                                                                                   'message' => "{$expected_message}%")));
         }
+    }
+
+    /**
+     * Validating that enrolling a user in a track instance triggers the enrolment
+     * notification
+     */
+    public function test_track_enrolment_sends_class_enrolment_notification() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //configuration
+        set_config('notify_trackenrol_user', 1, 'elis_program');
+        $message = '%%userenrolname%% has been enrolled in the track %%trackname%%.';
+        set_config('notify_trackenrol_message', $message, 'elis_program');
+        set_config('noemailever', 1);
+        //force refreshing of configuration
+        elis::$config = new elis_config();
+
+        //setup
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'test@user.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
+        $program->save();
+
+        $track = new track(array('curid' => $program->id,
+                                 'idnumber' => 'testtrackidnumber',
+                                 'name' => 'testtrackname'));
+        $track->save();
+
+        //run the enrolment create action
+        $record = new stdClass;
+        $record->context = 'track_testtrackidnumber';
+        $record->user_username = 'testuserusername';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
+
+        //validation
+        $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
+        $expected_message = "{$user->firstname} {$user->lastname} has been enrolled in the track {$track->name}.";
+
+        $like = $DB->sql_like('fullmessagehtml', ':message');
+        $select = "useridto = :userid
+                   AND {$like}";
+        $this->assertTrue($DB->record_exists_select('message', $select, array('userid' => $mdluserid,
+                                                                              'message' => "{$expected_message}%")));
     }
 }

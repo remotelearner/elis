@@ -59,11 +59,13 @@ abstract class rlip_test extends elis_database_test {
         //set the log file location
         $filepath = $CFG->dataroot;
         $farray = "existing_{$fext}files";
-        foreach(glob_recursive("{$filepath}/*.{$fext}") as $file) {
-            //echo "Checking whether to clean-up {$file}\n";
-            if (!in_array($file, self::$$farray)) {
-                //echo "deleting {$file}\n";
-                unlink($file);
+        if (is_array($farray)) {
+            foreach(glob_recursive("{$filepath}/*.{$fext}") as $file) {
+                //echo "Checking whether to clean-up {$file}\n";
+                if (!in_array($file, self::$$farray)) {
+                    //echo "deleting {$file}\n";
+                    unlink($file);
+                }
             }
         }
     }
@@ -79,8 +81,10 @@ abstract class rlip_test extends elis_database_test {
         $filepath = $CFG->dataroot;
         $farray = "existing_{$fext}files";
         self::$$farray = array();
-        foreach(glob_recursive("{$filepath}/*.{$fext}") as $file) {
-            self::${$farray}[] = $file;
+        if (is_array($farray)) {
+            foreach(glob_recursive("{$filepath}/*.{$fext}") as $file) {
+                self::${$farray}[] = $file;
+            }
         }
     }
 
@@ -137,9 +141,12 @@ abstract class rlip_test extends elis_database_test {
         $filename_prefix = explode('.', $filename);
         $newest_file = $filename;
         $versions = array();
-        foreach (glob("{$CFG->dataroot}/{$filename_prefix[0]}*.log") as $fn) {
-            if ($fn == $filename || !in_array($fn, self::$existing_logfiles)) {
-                $versions[$fn] = filemtime($fn);
+        $file = glob($CFG->dataroot ."/".$filename_prefix[0]."*.log");
+        if (is_array($file)) {
+            foreach ($file as $fn) {
+                if ($fn == $filename || !in_array($fn, self::$existing_logfiles)) {
+                    $versions[$fn] = filemtime($fn);
+                }
             }
         }
 
@@ -241,9 +248,11 @@ if (!function_exists('glob_recursive'))
     function glob_recursive($pattern, $flags = 0)
     {
         $files = glob($pattern, $flags);
-        foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir)
-        {
-            $files = array_merge($files, glob_recursive($dir.'/'.basename($pattern), $flags));
+        if (is_array($files)) {
+            foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir)
+            {
+                $files = array_merge($files, glob_recursive($dir.'/'.basename($pattern), $flags));
+            }
         }
         return $files;
     }
