@@ -276,48 +276,152 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function user_create($record, $filename) {
         global $CFG, $DB;
 
-        // TODO: validation
-
         // Custom fields validation
         /*if (!$this->validate_user_profile_data($record, $filename)) {
             return false;
         }*/
 
-        $data = new object();
-        $data->idnumber = $record->idnumber;
-        $data->username = $record->username;
-        $data->firstname = $record->firstname;
-        $data->lastname = $record->lastname;
-        $data->email = $record->email;
-        $data->country = $record->country;
-
-        //TODO: allow for all fields to be set
-
-//        $data->mi = $record->mi;
-//        $data->email2 = $record->email2;
-        $data->address = $record->address;
-//        $data->address2 = $record->address2;
-        $data->city = $record->city;
-//        $data->state = $record->state;
-//        $data->postalcode = $record->postalcode;
-//        $data->phone = $record->phone;
-//        $data->phone2 = $record->phone2;
-//        $data->fax = $record->fax;
-//        $data->birthdate = $record->birthdate;
-//        $data->gender = $record->gender;
-        if (isset($record->language)) {
-            $data->language = $record->language;
+        if (isset($record->username)) {
+            if ($DB->record_exists('crlm_user', array('username' => $record->username))) {
+                // TODO : mappings
+                $this->fslogger->log_failure("username value of \"{$record->username}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
         }
-//        $data->transfercredits = $record->transfercredits;
-//        $data->comments = $record->comments;
-//        $data->notes = $record->notes;
-//        $data->inactive = $record->inactive;
+
+        if (isset($record->email)) {
+            if ($DB->record_exists('crlm_user', array('email' => $record->email))) {
+             $this->fslogger->log_failure("email value of \"{$record->email}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
+             return false;
+            }
+        }
+
+        if (isset($record->idnumber)) {
+            if ($DB->record_exists('crlm_user', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        if (!$this->validate_core_user_data('create', $record, $filename)) {
+            return false;
+        }
 
         // TODO: validation
-        $user = new user($data);
+        $user = new user($record);
         $user->save();
 
         $this->elis_custom_field_save_data($record);
+
+        return true;
+    }
+
+    /**
+     * Validates that core user fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_core_user_data($action, $record, $filename) {
+
+        if (isset($record->email)) {
+            if (!validate_email($record->email)) {
+                $this->fslogger->log_failure("email value of \"{$record->email}\" is not a valid email address.", 0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        if (isset($record->email2)) {
+            if (!validate_email($record->email2)) {
+                $this->fslogger->log_failure("email value of \"{$record->email2}\" is not a valid email address.", 0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        if (isset($record->country)) {
+            //make sure country refers to a valid country code
+            $countries = get_string_manager()->get_list_of_countries();
+            if (!$this->validate_fixed_list($record, 'country', array_keys($countries), array_flip($countries))) {
+                $this->fslogger->log_failure("country value of \"{$record->country}\" is not a valid country or country code.",
+                                             0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        if (isset($record->birthdate)) {
+            $value = $this->parse_date($record->birthdate);
+            if ($value === false) {
+                $this->fslogger->log_failure("birthdate value of \"{$record->birthdate}\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.",
+                                             0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        if (isset($record->gender)) {
+            if (in_array(strtolower($this->gender), array('m', 'f', 'male', 'female'))) {
+                $this->fslogger->log_failure("gender value of \"{$record->gender}\" is not one of the available options (M, male, F, female).",
+                                             0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        if (isset($record->lang)) {
+            $languages = get_string_manager()->get_list_of_translations();
+            if (!$this->validate_fixed_list($record, 'lang', array_keys($languages))) {
+                $this->fslogger->log_failure("language value of \"{$record->lang}\" is not a valid language code.",
+                                             0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        if (isset($record->transfercredits)) {
+            if ($record->transfercredits < 0) {
+                $this->fslogger->log_failure("transfercredits value of \"{$record->transfercredits}\" is not a non-negative integer.",
+                                             0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        if (isset($record->inactive)) {
+            if ($record->inactive != 0 || $record->inactive != 1) {
+                $this->fslogger->log_failure("inactive value of \"{$record->inactive}\" is not one of the available options (0, 1).",
+                                             0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks a field's data is one of the specified values
+     * @todo: consider moving this because it's fairly generalized
+     *
+     * @param object $record The record containing the data to validate,
+                             and possibly modify if $stringvalues used.
+     * @param string $property The field / property to check
+     * @param array $list The valid possible values
+     * @param array $stringvalues associative array of strings to map back to
+     *                            $list value. Eg. array('no' => 0, 'yes' => 1)
+     */
+    function validate_fixed_list(&$record, $property, $list, $stringvalues = null) {
+        //note: do not worry about missing fields here
+        if (isset($record->$property)) {
+            if (is_array($stringvalues) && isset($stringvalues[$record->$property])) {
+                $record->$property = (string)$stringvalues[$record->$property];
+            }
+            // CANNOT use in_array() 'cause types don't match ...
+            // AND PHP::in_array('yes', array(0, 1)) == true ???
+            foreach ($list as $entry) {
+                if ((string)$record->$property == (string)$entry) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         return true;
     }
@@ -384,6 +488,44 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function user_update($record, $filename) {
         global $CFG, $DB;
 
+        $errors = array();
+        $error = false;
+
+        if (isset($record->username)) {
+            if ($DB->record_exists('crlm_user', array('username' => $record->username))) {
+                // TODO : mappings
+                $errors[] = "username value of \"{$record->username}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->email)) {
+            if ($DB->record_exists('crlm_user', array('email' => $record->email))) {
+                $errors[] = "email value of \"{$record->email}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->idnumber)) {
+            if ($DB->record_exists('crlm_user', array('idnumber' => $record->idnumber))) {
+                $errors[] = "idnumber value of \"{$record->idnumber}\"";
+                $error = true;
+            }
+        }
+
+        if ($error) {
+            if (count($errors) == 1) {
+                $this->fslogger->log_failure(implode($errors, ", ") . " does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
+            } else {
+                $this->fslogger->log_failure(implode($errors, ", ") . " do not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
+            }
+            return false;
+        }
+
+        if (!$this->validate_core_user_data('create', $record, $filename)) {
+            return false;
+        }
+
         // TODO: validation
         $params = array('username'  => $record->username,
                         'email'     => $record->email,
@@ -411,6 +553,40 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function user_delete($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
+
+        $errors = array();
+        $error = false;
+
+        if (isset($record->username)) {
+            if ($DB->record_exists('crlm_user', array('username' => $record->username))) {
+                // TODO : mappings
+                $errors[] = "username value of \"{$recrod->username}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->email)) {
+            if ($DB->record_exists('crlm_user', array('email' => $record->email))) {
+                $errors[] = "email value of \"{$record->email}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->idnumber)) {
+            if ($DB->record_exists('crlm_user', array('idnumber' => $record->idnumber))) {
+                $errors[] = "idnumber value of \"{$record->idnumber}\"";
+                $error = true;
+            }
+        }
+
+        if ($error) {
+            if (count($errors) == 1) {
+                $this->fslogger->log_failure(implode($errors, ", ") . " does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
+            } else {
+                $this->fslogger->log_failure(implode($errors, ", ") . " do not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
+            }
+            return false;
+        }
 
         // TODO: validation
         $params = array('username'  => $record->username,
@@ -1825,6 +2001,19 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Obtain the file-system logger for this plugin
+     *
+     * @param object $fileplugin The file plugin used for IO in the logger
+     * @param boolean $manual True on a manual run, false on a scheduled run
+     * @return object The appropriate logging object
+     */
+    static function get_fs_logger($fileplugin, $manual) {
+        require_once(dirname(__FILE__).'/rlip_import_version1elis_fslogger.class.php');
+
+        return new rlip_import_version1elis_fslogger($fileplugin, $manual);
+    }
+
+    /**
      * Mainline for running the import
      *
      * @param int $targetstarttime The timestamp representing the theoretical
@@ -1870,6 +2059,47 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //add it to the tree
         $adminroot->add($parentname, $page);
+    }
+
+    /**
+     * Calculates a string that specifies which fields can be used to identify
+     * a user record based on the import record provided
+     *
+     * Can be called statically if $value_syntax is false
+     *
+     * @param object $record
+     * @param boolean $value_syntax true if we want to use "field" value of
+     *                              "value" syntax, otherwise use field "value"
+     *                              syntax
+     * @return string The description of identifying fields, as a
+     *                comma-separated string
+     * [field1] "value1", ...
+     */
+    function get_user_descriptor($record, $value_syntax = false) {
+        $fragments = array();
+
+        //the fields we care to check
+        $possible_fields = array('username',
+                                 'email',
+                                 'idnumber');
+
+        foreach ($possible_fields as $field) {
+            if (isset($record->$field) && $record->$field !== '') {
+                //data for that field
+                $value = $record->$field;
+
+                //calculate syntax fragment
+                if ($value_syntax) {
+                    $identifier = $this->mappings[$field];
+                    $fragments[] = "{$identifier} value of \"{$value}\"";
+                } else {
+                    $fragments[] = "{$field} \"{$value}\"";
+                }
+            }
+        }
+
+        //combine into string
+        return implode(', ', $fragments);
     }
 
 }
