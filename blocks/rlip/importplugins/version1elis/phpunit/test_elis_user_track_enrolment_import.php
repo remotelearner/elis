@@ -48,7 +48,9 @@ class elis_user_track_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        return array(curriculum::TABLE => 'elis_program',
+        return array('config' => 'moodle',
+                     'message' => 'moodle',
+                     curriculum::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
                      usertrack::TABLE => 'elis_program');
@@ -95,6 +97,9 @@ class elis_user_track_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
+
+        //never send out notification as an email, just in case
+        set_config('noemailever', true);
 
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',

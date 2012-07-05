@@ -65,9 +65,11 @@ class elis_class_associate_track_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/coursetemplate.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
 
         return array('context' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program');
+                     coursetemplate::TABLE => 'elis_program',
+                     student::TABLE => 'elis_program');
     }
 
     /**

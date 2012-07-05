@@ -159,7 +159,7 @@ class elis_program_import_test extends elis_database_test {
         global $DB;
         $this->run_core_program_import(array(), true);
 
-        $data = array('action' => 'update', 'context' => 'curriculum', 'idnumber' => 'testcourseid', 'name' => 'testprogrampdated');
+        $data = array('action' => 'update', 'context' => 'curriculum', 'idnumber' => 'testprogramid', 'name' => 'testprogrampdated');
         $this->run_core_program_import($data, false);
 
         unset($data['action'],$data['context']);
