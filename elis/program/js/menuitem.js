@@ -114,12 +114,10 @@ function render_curr_admin_tree(tree_object) {
 		};
 
         var curr_admin_tree = new YAHOO.widget.TreeView("block_curr_admin_tree", tree_object.children);
-	
+
 	    //set up dynamic loading
 	    curr_admin_tree.setDynamicLoad(loadNodeData);
-	
+
 	    curr_admin_tree.render();
     });
 }
-
-
