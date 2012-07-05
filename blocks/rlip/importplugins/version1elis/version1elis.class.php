@@ -558,22 +558,22 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $error = false;
 
         if (isset($record->username)) {
-            if ($DB->record_exists('crlm_user', array('username' => $record->username))) {
+            if (!$DB->record_exists('crlm_user', array('username' => $record->username))) {
                 // TODO : mappings
-                $errors[] = "username value of \"{$recrod->username}\"";
+                $errors[] = "username value of \"{$record->username}\"";
                 $error = true;
             }
         }
 
         if (isset($record->email)) {
-            if ($DB->record_exists('crlm_user', array('email' => $record->email))) {
+            if (!$DB->record_exists('crlm_user', array('email' => $record->email))) {
                 $errors[] = "email value of \"{$record->email}\"";
                 $error = true;
             }
         }
 
         if (isset($record->idnumber)) {
-            if ($DB->record_exists('crlm_user', array('idnumber' => $record->idnumber))) {
+            if (!$DB->record_exists('crlm_user', array('idnumber' => $record->idnumber))) {
                 $errors[] = "idnumber value of \"{$record->idnumber}\"";
                 $error = true;
             }
@@ -1086,20 +1086,81 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return true;
     }
 
+    /**
+     * Validates that program fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_program_data($action, $record, $filename) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/elis/program/lib/datedelta.class.php');
+
+        if (isset($record->reqcredits)) {
+            $digits = strlen(substr($record->reqcredits, 0, strpos($record->reqcredits, '.')));
+            $decdigits = strlen(substr(strrchr($record->reqcredits, '.'), 1));
+
+            if (!is_numeric($record->reqcredits) || $decdigits > 2 || $digits > 8) {
+                $this->fslogger->log_failure("reqcredits value of \"{$record->reqcredits}\" is not a number with at most ten total digits and two decimal digits.",
+                                          0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->timetocomplete)) {
+            $datedelta = new datedelta($record->timetocomplete);
+            if (!$datedelta->getDateString()) {
+                $this->fslogger->log_failure("timetocomplete value of \"{$record->timetocomplete}\" is not a valid time delta in *h, *d, *w, *m, *y format.",
+                                          0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->frequency)) {
+            $enabled = (bool) get_config('elis_program', 'enable_curriculum_expiration');
+            if ($enabled) {
+                $datedelta = new datedelta($record->frequency);
+                if (!$datedelta->getDateString()) {
+                    $this->fslogger->log_failure("frequency value of \"{$record->frequency}\" is not a valid time delta in *h, *d, *w, *m, *y format.",
+                                                 0, $filename, $this->linenumber, $record, "course");
+                    return false;
+                }
+            } else {
+                $this->fslogger->log_failure("Program frequency / expiration cannot be set because program expiration is globally disabled.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->priority)) {
+            if ($record->priority < 0 || $record->priority > 10) {
+                $this->fslogger->log_failure("priority value of \"{$record->priority}\" is not one of the available options (0 .. 10).", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function curriculum_create($record, $filename) {
         global $DB, $CFG;
 
-        // TODO: validation
-        $data = new object();
-        $data->idnumber = $record->idnumber;
-        $data->name = $record->name;
-        /*$data->description = $record->description;
-        $data->reqcredits = $record->reqcredits;
-        $data->timetocomplete = $record->timetocomplete;
-        $data->frequency = $record->frequency;
-        $data->priority = $record->priority;*/
 
-        $cur = new curriculum($data);
+        if (isset($record->idnumber)) {
+            if ($DB->record_exists('crlm_curriculum', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a program that already exists.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (!$this->validate_program_data('create', $record, $filename)) {
+            return false;
+        }
+
+        $cur = new curriculum($record);
         $cur->save();
 
         $this->elis_custom_field_save_data($record);
@@ -1110,19 +1171,25 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function curriculum_update($record, $filename) {
         global $CFG, $DB;
 
-        // TODO: validation
-        $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber'  => $record->idnumber));
-        $data = new object();
-        $data->id = $id;
-        $data->idnumber = $record->idnumber;
-        $data->name = $record->name;
-        /*$data->description = $record->description;
-        $data->reqcredits = $record->reqcredits;
-        $data->timetocomplete = $record->timetocomplete;
-        $data->frequency = $record->frequency;
-        $data->priority = $record->priority;*/
+        if (isset($record->idnumber)) {
+            if (!$DB->record_exists('crlm_curriculum', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" does not refer to a valid program.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
 
-        $cur = new curriculum($data);
+        if (!$this->validate_program_data('update', $record, $filename)) {
+            return false;
+        }
+
+        $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->idnumber));
+        $record->id = $id;
+
+        if (!$this->validate_program_data('update', $record, $filename)) {
+            return false;
+        }
+
+        $cur = new curriculum($record);
         $cur->save();
 
         $this->elis_custom_field_save_data($record);
@@ -1133,7 +1200,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function curriculum_delete($record, $filename) {
         global $DB, $CFG;
 
-        // TODO: validation
+        if (isset($record->idnumber)) {
+            if (!$DB->record_exists('crlm_curriculum', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" does not refer to a valid program.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
         if ($cur = $DB->get_record('crlm_curriculum', array('idnumber' => $record->idnumber))) {
             $cur = new curriculum($cur);
             $cur->delete();
@@ -1202,7 +1275,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             if ($record->parent == 'top') {
                 $record->parent = 0;
             } else if ($parentid = $DB->get_field(userset::TABLE, 'id', array('name' => $record->parent))) {
-                $record->parent = $parentid; 
+                $record->parent = $parentid;
             } else {
                 //invalid parent specification
                 //TODO: log error and return false
