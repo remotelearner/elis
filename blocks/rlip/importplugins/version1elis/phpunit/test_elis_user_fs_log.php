@@ -352,7 +352,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
 
         $filename = self::get_current_logfile($testfilename);
         if (!file_exists($filename)) {
-            echo "\n can'ttt find logfile: $filename for \n$testfilename";
+            echo "\n can't find logfile: $filename for \n$testfilename";
         }
         $this->assertTrue(file_exists($filename));
 

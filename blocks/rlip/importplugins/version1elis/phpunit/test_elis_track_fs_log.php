@@ -60,7 +60,7 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock 
     }
 }
 
-class version1ELISProgramFSLogTest extends rlip_test {
+class version1ELISTrackFSLogTest extends rlip_test {
 
     protected $backupGlobalsBlacklist = array('DB');
 
@@ -73,6 +73,7 @@ class version1ELISProgramFSLogTest extends rlip_test {
         $tables = array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'crlm_curriculum' => 'elis_program',
+                     'crlm_track' => 'elis_program',
                      'config_plugins' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
@@ -254,289 +255,116 @@ class version1ELISProgramFSLogTest extends rlip_test {
     }
 
     /**
-     * Validate that required credits validation works on program create
+     * Validate that start date validation works on track create
      */
-    public function testELISProgramInvalidReqCreditsFormatCreate() {
+    public function testELISTrackInvalidStartDateCreate() {
         $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprorgamidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10.000');
+                      'context' => 'track',
+                      'idnumber' => 'testtrackid',
+                      'name' => 'testtrack',
+                      'startdate' => '1340138101');
 
-        $expected_error = "[course.csv line 2] Course could not be created. reqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[course.csv line 2] Course could not be created. startdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     /**
-     * Validate that required credits validation works on program update
+     * Validate that start date validation works on track update
      */
-    public function testELISProgramInvalidReqCreditsFormatUpdate() {
+    public function testELISTrackInvalidStartDateUpdate() {
         $this->load_csv_data();
 
         $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10.000');
+                      'context' => 'track',
+                      'idnumber' => 'testtrackid',
+                      'name' => 'testtrack',
+                      'startdate' => '1340138101');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. reqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[course.csv line 2] Course could not be updated. startdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     /**
-     * Validate that required credits validation works on program create
+     * Validate that end date validation works on track create
      */
-    public function testELISProgramInvalidReqCreditsFormat2Create() {
+    public function testELISTrackInvalidEndDateCreate() {
         $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10.0.0');
+                      'context' => 'track',
+                      'idnumber' => 'testtrackid',
+                      'name' => 'testtrack',
+                      'startdate' => '01/02/2012',
+                      'enddate' => '1340138101');
 
-        $expected_error = "[course.csv line 2] Course could not be created. reqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[course.csv line 2] Course could not be created. enddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     /**
-     * Validate that required credits validation works on program update
+     * Validate that end date validation works on track update
      */
-    public function testELISProgramInvalidReqCreditsFormat2Update() {
+    public function testELISTrackInvalidEndDateUpdate() {
         $this->load_csv_data();
 
         $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10.0.0');
+                      'context' => 'track',
+                      'idnumber' => 'testtrackid',
+                      'name' => 'testtrack',
+                      'startdate' => '01/02/2012',
+                      'enddate' => '1340138101');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. reqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[course.csv line 2] Course could not be updated. enddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     /**
-     * Validate that required credits validation works on program create
+     * Validate that autocreate validation works on track create
      */
-    public function testELISProgramInvalidReqCreditsFormat3Create() {
+    public function testELISTrackInvalidAutocreateCreate() {
         $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprorgam',
-                      'reqcredits' => '100000000000.00');
+                      'context' => 'track',
+                      'idnumber' => 'testtrackid',
+                      'name' => 'testtrack',
+                      'startdate' => '01/02/2012',
+                      'enddate' => '01-02-2012',
+                      'autocreate' => -1);
 
-        $expected_error = "[course.csv line 2] Course could not be created. reqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[course.csv line 2] Course could not be created. autocreate value of \"-1\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     /**
-     * Validate that required credits validation works on program update
+     * Validate that autocreate validation works on track update
      */
-    public function testELISProgramInvalidReqCreditsFormat3Update() {
+    public function testELISTrackInvalidAutocreateUpdate() {
         $this->load_csv_data();
 
         $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprorgam',
-                      'reqcredits' => '100000000000.00');
+                      'context' => 'track',
+                      'idnumber' => 'testtrackid',
+                      'name' => 'testtrack',
+                      'startdate' => '01/02/2012',
+                      'enddate' => '01-02-2012',
+                      'autocreate' => -1);
 
-        $expected_error = "[course.csv line 2] Course could not be updated. reqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[course.csv line 2] Course could not be updated. autocreate value of \"-1\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     /**
-     * Validate that time to complete validation works on program create
+     * Validate that idnumber validation works on track deletion
      */
-    public function testELISProgramInvalidTimetoCompleteFormat1Create() {
-        $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1x');
-
-        $expected_error = "[course.csv line 2] Course could not be created. timetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that time to complete validation works on program update
-     */
-    public function testELISProgramInvalidTimetoCompleteFormat1Update() {
-        $this->load_csv_data();
-
-        $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1x');
-
-        $expected_error = "[course.csv line 2] Course could not be updated. timetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that time to complete validation works on program create
-     */
-    public function testELISProgramInvalidTimetoCompleteFormat2Create() {
-        $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprorgam',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1');
-
-        $expected_error = "[course.csv line 2] Course could not be created. timetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that time to complete validation works on program update
-     */
-    public function testELISProgramInvalidTimetoCompleteFormat2Update() {
-        $this->load_csv_data();
-
-        $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1');
-
-        $expected_error = "[course.csv line 2] Course could not be updated. timetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that frequency validation works on program create
-     */
-    public function testELISProgramFrequencyConfigNotSetCreate() {
-        $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1d',
-                      'frequency' => '1d');
-
-        $expected_error = "[course.csv line 2] Course could not be created. Program frequency / expiration cannot be set because program expiration is globally disabled.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that frequency validation works on program update
-     */
-    public function testELISProgramFrequencyConfigNotSetUpdate() {
-        $this->load_csv_data();
-
-        $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1d',
-                      'frequency' => '1d');
-
-        $expected_error = "[course.csv line 2] Course could not be updated. Program frequency / expiration cannot be set because program expiration is globally disabled.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-
-    /**
-     * Validate that frequency validation works on program create
-     */
-    public function testELISProgramInvalidFrequencyCreate() {
-        set_config('enable_curriculum_expiration', 1, 'elis_program');
-
-        $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1d',
-                      'frequency' => '1x');
-
-        $expected_error = "[course.csv line 2] Course could not be created. frequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that frequency validation works on program updatee
-     */
-    public function testELISProgramInvalidFrequencyUpdate() {
-        set_config('enable_curriculum_expiration', 1, 'elis_program');
-
-        $this->load_csv_data();
-
-        $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1d',
-                      'frequency' => '1x');
-
-        $expected_error = "[course.csv line 2] Course could not be updated. frequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that priority validation works on program create
-     */
-    public function testELISProgramInvalidPriorityCreate() {
-        set_config('enable_curriculum_expiration', 1, 'elis_program');
-
-        $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1d',
-                      'frequency' => '1d',
-                      'priority' => 11);
-
-        $expected_error = "[course.csv line 2] Course could not be created. priority value of \"11\" is not one of the available options (0 .. 10).\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that priority validation works on program update
-     */
-    public function testELISProgramInvalidPriorityUpdate() {
-        set_config('enable_curriculum_expiration', 1, 'elis_program');
-
-        $this->load_csv_data();
-
-        $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'name' => 'testprogram',
-                      'reqcredits' => '10',
-                      'timetocomplete' => '1d',
-                      'frequency' => '1d',
-                      'priority' => 11);
-
-        $expected_error = "[course.csv line 2] Course could not be updated. priority value of \"11\" is not one of the available options (0 .. 10).\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that validation works on program delete
-     */
-    public function testELISProgramInvalidProgramIdDelete() {
-        $this->load_csv_data();
-
+    public function testELISTrackInvalidIdnumberDelete() {
         $data = array('action' => 'delete',
-                      'context' => 'curriculum',
-                      'idnumber' => 'invalidtestprogramidnumber');
+                      'context' => 'track',
+                      'idnumber' => 'invalidtesttrackid');
 
-        $expected_error = "[course.csv line 2] Course could not be deleted. idnumber value of \"invalidtestprogramidnumber\" does not refer to a valid program.\n";
+        $expected_error = "[course.csv line 2] Course could not be deleted. idnumber value of \"invalidtesttrackid\" does not refer to a valid track.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('crlm_curriculum', dirname(__FILE__).'/programtable.csv');
+        $dataset->addTable('crlm_track', dirname(__FILE__).'/tracktable.csv');
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }

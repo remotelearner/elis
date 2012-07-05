@@ -94,9 +94,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_track_update = array('idnumber');
     static $import_fields_track_delete = array('idnumber');
     static $available_fields_track = array('idnumber', 'name', 'description', 'startdate',
-                                          'enddate', 'assignment');
+                                           'enddate', 'assignment', 'autocreate');
     static $track_field_keywords = array('action', 'context', 'idnumber', 'name', 'description', 'startdate',
-                                          'enddate', 'assignment');
+                                         'enddate', 'assignment', 'autocreate');
 
     static $cluster_field_keywords = array('action', 'context', 'name', 'display', 'parent');
 
@@ -1436,13 +1436,72 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return true;
     }
 
+    /**
+     * Validates that track fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_track_data($action, $record, $filename) {
+        global $CFG, $DB;
+
+        if (isset($record->startdate)) {
+            $value = $this->parse_date($record->startdate);
+            if ($value === false) {
+                $this->fslogger->log_failure("startdate value of \"{$record->startdate}\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            } else {
+                $record->startdate = $value;
+            }
+        }
+
+        if (isset($record->enddate)) {
+            $value = $this->parse_date($record->enddate);
+            if ($value === false) {
+                $this->fslogger->log_failure("enddate value of \"{$record->enddate}\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            } else {
+                $record->enddate = $value;
+            }
+        }
+
+        if (isset($record->autocreate)) {
+            if ($record->autocreate != "0" && $record->autocreate != "1") {
+                $this->fslogger->log_failure("autocreate value of \"{$record->autocreate}\" is not one of the available options (0, 1).", 0, $filename,  $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function track_create($record, $filename) {
         global $DB, $CFG;
 
-        //$record = $this->remove_invalid_track_fields($record);
+        if (isset($record->idnumber)) {
+            if ($DB->record_exists('crlm_track', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a track that already exists.", 0, $filename,  $this->linenumber, $record, "course");
+                return false;
+            }
+        }
 
-        // TODO: validation
-        $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment));
+        if (isset($record->assignment)) {
+            $id = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment));
+            if (!$id) {
+                $this->fslogger->log_failure("assignment value of \"{$record->assignment}\" does not refer to a valid program.", 0, $filename,  $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (!$this->validate_track_data('create', $record, $filename)) {
+            return false;
+        }
+
         $record->curid = $id;
         $record->timecreated = time();
 
@@ -1456,13 +1515,23 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     function track_update($record, $filename) {
         global $DB, $CFG;
+        $message = "";
 
-        // TODO: Validaiton
+        if (isset($record->idnumber)) {
+            if (isset($record->assignment)) {
+                $message = "track with idnumber \"{$record->idnumber}\" was not re-assigned to program with idnumber \"{$record->assignmnet}\" because moving tracks between programs is not supported.";
+            }
 
-      //  $record = $this->remove_invalid_track_fields($record);
+            if (!$id = $DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" does not refer to a valid track.", 0, $filename,  $this->linenumber, $record, "course");
+                return false;
+            }
+        }
 
-        // $data = new object();
-        $id = $DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber));
+        if (!$this->validate_track_data('update', $record, $filename)) {
+            return false;
+        }
+
         $record->id = $id;
         $record->timemodified = time();
 
@@ -1471,17 +1540,23 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $this->elis_custom_field_save_data($record);
 
+        $this->fslogger->log_success($message);
+
         return true;
     }
 
     function track_delete($record, $filename) {
         global $DB, $CFG;
 
-        // TODO: validation
-        if ($track = $DB->get_record('crlm_track', array('idnumber' => $record->idnumber))) {
-            $track = new track($track);
-            $track->delete();
+        if (isset($record->idnumber)) {
+            if (!$track = $DB->get_record('crlm_track', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" does not refer to a valid track.", 0, $filename,  $this->linenumber, $record, "course");
+                return false;
+            }
         }
+
+        $track = new track($track);
+        $track->delete();
 
         return true;
     }
