@@ -387,7 +387,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
 
         $data = array('action' => 'create',
                       'username' => 'testusername',
-                      'idnumber' => 'testusername',
+                      'idnumber' => 'testidnumber',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
                       'lastname' => 'rliplastname',
@@ -395,7 +395,454 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'city' => 'Waterloo',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testusername\" could not be created. username value of \"testusername\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be created. username value of \"testusername\" refers to a user that already exists.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that email validation works on user create
+     */
+    public function testELISInvalidUserEmailCreate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'com.mail@user',
+                      'city' => 'Waterloo',
+                      'birhtdate' => 'JAN/01/2012',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"com.mail@user\", idnumber \"validtestidnumber\" could not be created. email value of \"com.mail@user\" is not a valid email address.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that email2 validation works on user create
+     */
+    public function testELISInvalidUserEmail2Create() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'user@validmail.com',
+                      'email2' => 'com.mail@user',
+                      'city' => 'Waterloo',
+                      'birthdate' => '2012.01.02',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. email2 value of \"com.mail@user\" is not a valid email address.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that email2 validation works on user update
+     */
+    public function testELISInvalidUserEmail2Update() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'email2' => 'com.mail@user',
+                      'city' => 'Waterloo',
+                      'birthdate' => '2012.01.02',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. email2 value of \"com.mail@user\" is not a valid email address.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that country validation works on user create
+     */
+    public function testELISInvalidUserCountryCreate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'user@validmail.com',
+                      'city' => 'Waterloo',
+                      'birthdate' => '01/02/2012',
+                      'country' => 'invalidCA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. country value of \"invalidCA\" is not a valid country or country code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that country validation works on user update
+     */
+    public function testELISInvalidUserCountryUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'birthdate' => '01/02/2012',
+                      'country' => 'invalidCA');
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. country value of \"invalidCA\" is not a valid country or country code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that birthdate validation works on user create
+     */
+    public function testELISInvalidUserBirthdateCreate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'user@validmail.com',
+                      'city' => 'Waterloo',
+                      'birthdate' => '01/02',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. birthdate value of \"01/02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that birthdate validation works on user update
+     */
+    public function testELISInvalidUserBirthdateUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'birthdate' => '01/02',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. birthdate value of \"01/02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that gender validation works on user create
+     */
+    public function testELISInvalidUserGenderCreate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'user@validmail.com',
+                      'city' => 'Waterloo',
+                      'lang' => 'en',
+                      'gender' => 'invalidgender',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. gender value of \"invalidgender\" is not one of the available options (M, male, F, female).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that gender validation works on user update
+     */
+    public function testELISInvalidUserGenderUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'lang' => 'en',
+                      'gender' => 'invalidgender',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. gender value of \"invalidgender\" is not one of the available options (M, male, F, female).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that lang validation works on user create
+     */
+    public function testELISInvalidUserLangCreate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'user@validmail.com',
+                      'city' => 'Waterloo',
+                      'lang' => 'en',
+                      'gender' => 'F',
+                      'lang' => 'invalidlang',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. language value of \"invalidlang\" is not a valid language code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that lang validation works on user update
+     */
+    public function testELISInvalidUserLangUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'lang' => 'en',
+                      'gender' => 'F',
+                      'lang' => 'invalidlang',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. language value of \"invalidlang\" is not a valid language code.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that transfer credits validation works on user create
+     */
+    public function testELISInvalidUserTransferCreditsCreate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'user@validmail.com',
+                      'city' => 'Waterloo',
+                      'lang' => 'en',
+                      'gender' => 'F',
+                      'lang' => 'en',
+                      'transfercredits' => -1,
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. transfercredits value of \"-1\" is not a non-negative integer.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that transfer credits validation works on user update
+     */
+    public function testELISInvalidUserTransferCreditsUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'lang' => 'en',
+                      'gender' => 'F',
+                      'lang' => 'en',
+                      'transfercredits' => -1,
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. transfercredits value of \"-1\" is not a non-negative integer.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that inactive validation works on user create
+     */
+    public function testELISUserInvalidInactiveCreate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@validmail.com',
+                      'city' => 'Waterloo',
+                      'inactive' => 2,
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"test@validmail.com\", idnumber \"validtestidnumber\" could not be created. inactive value of \"2\" is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+   }
+
+    /**
+     * Validate that inactive validation works on user create
+     */
+    public function testELISUserInvalidInactiveUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'inactive' => 2,
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. inactive value of \"2\" is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+   }
+
+    /**
+     * Validate that idnumber validation works on user create
+     */
+    public function testELISUserIdnumberCreate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'validtest@user.com',
+                      'city' => 'Waterloo',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"validtest@user.com\", idnumber \"testidnumber\" could not be created. idnumber value of \"testidnumber\" refers to a user that already exists.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that username validation works on user update
+     */
+    public function testELISUserUsernameUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'invalidtestusername',
+                      'idnumber' => 'testidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"invalidtestusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. username value of \"invalidtestusername\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that email validation works on user update
+     */
+    public function testELISUserIdnumberUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'testusername',
+                      'idnumber' => 'invalidtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"invalidtestidnumber\" could not be updated. idnumber value of \"invalidtestidnumber\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate multiple invalid fields on user update
+     */
+    public function testELISUserMultipleInvalidFieldUpdate() {
+        global $CFG, $DB;
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'update',
+                      'username' => 'invalidtestusername',
+                      'idnumber' => 'invalidtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'invalidtest@user.com',
+                      'city' => 'Waterloo',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"invalidtestusername\", email \"invalidtest@user.com\", idnumber \"invalidtestidnumber\" could not be updated. username value of \"invalidtestusername\", email value of \"invalidtest@user.com\", idnumber value of \"invalidtestidnumber\" do not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 

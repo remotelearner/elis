@@ -59,13 +59,11 @@ abstract class rlip_test extends elis_database_test {
         //set the log file location
         $filepath = $CFG->dataroot;
         $farray = "existing_{$fext}files";
-        if (is_array($farray)) {
-            foreach(glob_recursive("{$filepath}/*.{$fext}") as $file) {
-                //echo "Checking whether to clean-up {$file}\n";
-                if (!in_array($file, self::$$farray)) {
-                    //echo "deleting {$file}\n";
-                    unlink($file);
-                }
+        foreach(glob_recursive("{$filepath}/*.{$fext}") as $file) {
+            //echo "Checking whether to clean-up {$file}\n";
+            if (!in_array($file, self::$$farray)) {
+                //echo "deleting {$file}\n";
+                unlink($file);
             }
         }
     }
@@ -81,10 +79,8 @@ abstract class rlip_test extends elis_database_test {
         $filepath = $CFG->dataroot;
         $farray = "existing_{$fext}files";
         self::$$farray = array();
-        if (is_array($farray)) {
-            foreach(glob_recursive("{$filepath}/*.{$fext}") as $file) {
-                self::${$farray}[] = $file;
-            }
+        foreach(glob_recursive("{$filepath}/*.{$fext}") as $file) {
+            self::${$farray}[] = $file;
         }
     }
 
