@@ -98,6 +98,7 @@ $string['couldnotmoveroot'] = 'Could not move root folder contents to new locati
 $string['couldnotopenlocalfileforwriting'] = 'Could not open local file for writing: {$a}';
 $string['couldnotrenamenode'] = 'Error: Could not rename node to \'{$a}\'';
 $string['couldnotupdatedir'] = 'Error: Could not update directory.';
+$string['couldnotupdatefile'] = 'Error: Could not update file.';
 $string['couldnotwritelocalfile'] = 'Could not write local file';
 $string['course'] = 'Course';
 $string['createfolder'] = 'Create folder';
