@@ -164,15 +164,6 @@ class repository_elis_files extends repository {
         }
 
         $ret = array();
-        // Return an array of optional columns from file list to include in the details view
-        // Icon and filename are always displayed
-        $ret['detailcols'] = array(array('field'=>'created',
-                                         'title'=>get_string('datecreated','repository_elis_files')),
-                                   array('field'=>'modified',
-                                         'title'=>get_string('datemodified','repository_elis_files')),
-                                   array('field'=>'owner',
-                                         'title'=>get_string('modifiedby','repository_elis_files'))
-                             );
 
         // Set permissible browsing locations
         $ret['locations'] = array();
@@ -239,12 +230,10 @@ class repository_elis_files extends repository {
                 }
                 $created = isset($info->created) ? $info->created : '';
                 $modified = isset($info->modified) ? $info->modified : '';
-                $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>$encodedpath, //$child->uuid,
                         'name'=>$child->title,
                         'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
-                        'author' => $owner,
                         'datemodified' => $modified,
                         'datecreated' => $created,
                         'children'=>array());
@@ -273,12 +262,10 @@ class repository_elis_files extends repository {
                 $filesize = isset($info->filesize) ? $info->filesize : '';
                 $created = isset($info->created) ? $info->created : '';
                 $modified = isset($info->modified) ? $info->modified : '';
-                $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>$encodedpath,
                         'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 32))->out(false),
                         'size' => $filesize,
-                        'author' => $owner,
                         'datemodified' => $modified,
                         'datecreated' => $created,
                         'source'=>$child->uuid);
@@ -604,13 +591,6 @@ class repository_elis_files extends repository {
 
         $ret['canedit'] = $canedit;
 
-        $ret['detailcols'] = array(array('field'=>'created',
-                                         'title'=>get_string('datecreated','repository_elis_files')),
-                                   array('field'=>'modified',
-                                         'title'=>get_string('datemodified','repository_elis_files')),
-                                   array('field'=>'owner',
-                                         'title'=>get_string('modifiedby','repository_elis_files'))
-                             );
         $ret['dynload'] = true;
         $ret['nologin'] = true;
         $ret['showselectedactions'] = true;
