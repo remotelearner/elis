@@ -71,7 +71,7 @@ class elis_user_sync_test extends elis_database_test {
         $record->username = 'testuserusername';
         $record->firstname = 'testuserfirstname';
         $record->lastname = 'testuserlastname';
-        $record->email = 'testuseremail';
+        $record->email = 'testuser@email.com';
         $record->address = 'testuseraddress';
         $record->city = 'testusercity';
         $record->country = 'CA';

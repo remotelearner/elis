@@ -58,7 +58,8 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        return array(clusterassignment::TABLE => 'elis_program',
+        return array('config' => 'moodle',
+                     clusterassignment::TABLE => 'elis_program',
                      clustertrack::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',
                      curriculum::TABLE => 'elis_program',
@@ -83,6 +84,7 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('context' => 'moodle',
+                     'message' => 'moodle',
                      'user' => 'moodle',
                      coursetemplate::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program');
@@ -99,6 +101,9 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         require_once(elispm::lib('data/curriculumstudent.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+
+        //make sure no emails are sent
+        set_config('noemailever', true);
 
         //set up data
         $user = new user(array('idnumber' => 'testuseridnumber',
@@ -144,6 +149,9 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+
+        //make sure no emails are sent
+        set_config('noemailever', true);
 
         //set up data
 
@@ -217,6 +225,9 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
+
+        //make sure no emails are sent
+        set_config('noemailever', true);
 
         //set up data
 

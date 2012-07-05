@@ -137,7 +137,10 @@ class elis_user_custom_fields_test extends elis_database_test {
 
     // Create and update cluster custom fields
     function test_elis_cluster_custom_field_import() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('accesslib.php'));
 
         $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldclustercategory'));
 
@@ -146,6 +149,14 @@ class elis_user_custom_fields_test extends elis_database_test {
         $idshort = $DB->insert_record('elis_field', array('shortname' => 'testclustershortshortname', 'name' => 'testclustershortname', 'datatype' => 'char', 'categoryid' => $id));
         $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testclustertextareashortname', 'name' => 'testclustertextareaname', 'datatype' => 'text', 'categoryid' => $id));
         $idtext = $DB->insert_record('elis_field', array('shortname' => 'testclustertextshortname', 'name' => 'testclustertextname', 'datatype' => 'num', 'categoryid' => $id));
+
+        //associate fields to context levels
+        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
+        foreach ($fieldids as $fieldid) {
+            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
+                                                               'contextlevel' => CONTEXT_ELIS_USERSET));
+            $field_contextlevel->save();
+        }
 
         $record = new stdClass;
         $record->action = 'create';
@@ -197,7 +208,10 @@ class elis_user_custom_fields_test extends elis_database_test {
 
     // Create and update class custom fields
     function test_elis_class_custom_field_import() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('accesslib.php'));
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
 
@@ -215,6 +229,14 @@ class elis_user_custom_fields_test extends elis_database_test {
         $idshort = $DB->insert_record('elis_field', array('shortname' => 'testclassshortshortname', 'name' => 'testtrackshortname', 'datatype' => 'char', 'categoryid' => $id));
         $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testclasstextareashortname', 'name' => 'testtracktextareaname', 'datatype' => 'text', 'categoryid' => $id));
         $idtext = $DB->insert_record('elis_field', array('shortname' => 'testclasstextshortname', 'name' => 'testtracktextname', 'datatype' => 'num', 'categoryid' => $id));
+
+        //associate fields to context levels
+        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
+        foreach ($fieldids as $fieldid) {
+            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
+                                                               'contextlevel' => CONTEXT_ELIS_CLASS));
+            $field_contextlevel->save();
+        }
 
         $record = new stdClass;
         $record->action = 'create';
@@ -266,7 +288,11 @@ class elis_user_custom_fields_test extends elis_database_test {
 
     // Create and update course custom fields
     function test_elis_course_custom_field_import() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::file('accesslib.php'));
 
         $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldcoursecategory'));
 
@@ -275,6 +301,14 @@ class elis_user_custom_fields_test extends elis_database_test {
         $idshort = $DB->insert_record('elis_field', array('shortname' => 'testcourseshortshortname', 'name' => 'testtrackshortname', 'datatype' => 'char', 'categoryid' => $id));
         $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testcoursetextareashortname', 'name' => 'testtracktextareaname', 'datatype' => 'text', 'categoryid' => $id));
         $idtext = $DB->insert_record('elis_field', array('shortname' => 'testcoursetextshortname', 'name' => 'testtracktextname', 'datatype' => 'num', 'categoryid' => $id));
+
+        //associate fields to context levels
+        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
+        foreach ($fieldids as $fieldid) {
+            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
+                                                               'contextlevel' => CONTEXT_ELIS_COURSE));
+            $field_contextlevel->save();
+        }
 
         $record = new stdClass;
         $record->action = 'create';
@@ -286,6 +320,10 @@ class elis_user_custom_fields_test extends elis_database_test {
         $record->testcourseshortshortname = 'A';
         $record->testcoursetextareashortname = 'textareadata';
         $record->testcoursetextshortname = '2.0';
+
+        //prevent caching of the customfield list
+        $course = new course();
+        $course->reset_custom_field_list();
 
         $this->run_elis_course_import($record, false);
 
@@ -327,7 +365,10 @@ class elis_user_custom_fields_test extends elis_database_test {
 
     // Create and update track custom fields
     function test_elis_track_custom_field_import() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('accesslib.php'));
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
 
@@ -345,6 +386,14 @@ class elis_user_custom_fields_test extends elis_database_test {
         $idshort = $DB->insert_record('elis_field', array('shortname' => 'testtrackshortshortname', 'name' => 'testtrackshortname', 'datatype' => 'char', 'categoryid' => $id));
         $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testtracktextareashortname', 'name' => 'testtracktextareaname', 'datatype' => 'text', 'categoryid' => $id));
         $idtext = $DB->insert_record('elis_field', array('shortname' => 'testtracktextshortname', 'name' => 'testtracktextname', 'datatype' => 'num', 'categoryid' => $id));
+
+        //associate fields to context levels
+        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
+        foreach ($fieldids as $fieldid) {
+            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
+                                                               'contextlevel' => CONTEXT_ELIS_TRACK));
+            $field_contextlevel->save();
+        }
 
         $record = new stdClass;
         $record->action = 'create';
@@ -397,7 +446,11 @@ class elis_user_custom_fields_test extends elis_database_test {
 
     // Create and update program custom fields
     function test_elis_program_custom_field_import() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::file('accesslib.php'));
 
         $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldprogramcategory'));
 
@@ -406,6 +459,14 @@ class elis_user_custom_fields_test extends elis_database_test {
         $idshort = $DB->insert_record('elis_field', array('shortname' => 'testprogramshortshortname', 'name' => 'testprogramshortname', 'datatype' => 'char', 'categoryid' => $id));
         $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testprogramtextareashortname', 'name' => 'testprogramtextareaname', 'datatype' => 'text', 'categoryid' => $id));
         $idtext = $DB->insert_record('elis_field', array('shortname' => 'testprogramtextshortname', 'name' => 'testprogramtextname', 'datatype' => 'num', 'categoryid' => $id));
+
+        //associate fields to context levels
+        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
+        foreach ($fieldids as $fieldid) {
+            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
+                                                               'contextlevel' => CONTEXT_ELIS_PROGRAM));
+            $field_contextlevel->save();
+        }
 
         $record = new stdClass;
         $record->action = 'create';
@@ -417,6 +478,10 @@ class elis_user_custom_fields_test extends elis_database_test {
         $record->testprogramshortshortname = 'A';
         $record->testprogramtextareashortname = 'textareadata';
         $record->testprogramtextshortname = '2.0';
+
+        //prevent caching of the customfield list
+        $curriculum = new curriculum();
+        $curriculum->reset_custom_field_list();
 
         $this->run_elis_course_import($record, false);
 
@@ -459,7 +524,10 @@ class elis_user_custom_fields_test extends elis_database_test {
 
     // Create and update user custom fields
     function test_elis_user_custom_field_import() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('accesslib.php'));
 
         $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldcategory'));
 
@@ -469,6 +537,14 @@ class elis_user_custom_fields_test extends elis_database_test {
         $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testtextareashortname', 'name' => 'testtextareaname', 'datatype' => 'text', 'categoryid' => $id));
         $idtext = $DB->insert_record('elis_field', array('shortname' => 'testtextshortname', 'name' => 'testtextname', 'datatype' => 'num', 'categoryid' => $id));
         $idint = $DB->insert_record('elis_field', array('shortname' => 'testintshortname', 'name' => 'testintname', 'datatype' => 'int', 'categoryid' => $id));
+
+        //associate fields to context levels
+        $fieldids = array($idchkbox, $iddatetime, $idmenu, $idtextarea, $idtext, $idint);
+        foreach ($fieldids as $fieldid) {
+            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
+                                                               'contextlevel' => CONTEXT_ELIS_USER));
+            $field_contextlevel->save();
+        }
 
         $record = new stdClass;
         $record->action = 'create';
