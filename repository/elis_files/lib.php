@@ -97,6 +97,25 @@ class repository_elis_files extends repository {
     }
 
     /**
+     * Static method to build encoded path from components
+     *
+     * @param string $uuid   ELIS files path
+     * @param int    $uid    user id (default: 0)
+     * @param int    $cid    course id (default: 0)
+     * @param int    $oid    userset id (default: 0)
+     * @param bool   $shared shared flag (default: false)
+     * @return string the encodedpath
+     */
+    public static function build_encodedpath($uuid, $uid = 0, $cid = 0, $oid = 0, $shared = false) {
+        $params = array('path'   => $uuid,
+                        'shared' => (boolean)$shared,
+                        'oid'    => (int)$oid,
+                        'cid'    => (int)$cid,
+                        'uid'    => (int)$uid);
+        return base64_encode(serialize($params));
+    }
+
+    /**
      * Get a file list from alfresco
      *
      * @param string $encodedpath base64 encoded and serialized arry of path(uuid), shared(shared flag), oid(userset id), cid(course id) and uid(user id)
@@ -182,11 +201,12 @@ class repository_elis_files extends repository {
         $return_path = array();
 
         // Get parent path/breadcrumb
-        self::get_parent_path($uuid, $return_path, $cid, $uid, $shared, $oid);
+        $this->get_parent_path($uuid, $return_path, $cid, $uid, $shared, $oid);
         $return_path[]= array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>'');
         $ret['path'] = array_reverse($return_path);
 
         $this->current_node = $this->elis_files->get_info($uuid);
+        $ret['parent'] = $this->current_node; // elis_files_get_parent($uuid);
 
         // Add current node to the return path
         // Include shared and oid parameters
@@ -887,36 +907,52 @@ class repository_elis_files extends repository {
     }
 
     /**
+     * Prepares folder tree structure for JSON encoding to FileManager
+     *
+     * @param  array &$output     The output array
+     * @param  array $folderentry The input folder structure
+     */
+    protected static function folder_tree_to_fm(&$output, $folderentry) {
+        foreach ($folderentry as $folder) {
+            $entry = array();
+            $entry['filepath'] = repository_elis_files::build_encodedpath($folder['uuid']);
+            $entry['textpath'] = $folder['name'];
+            $entry['fullname'] = $folder['name'];
+            $entry['id'] = $folder['uuid']; // TBD
+            $entry['sortorder'] = 0; // TBD
+            $entry['children'] = array();
+            if (!empty($folder['children'])) {
+                repository_elis_files::folder_tree_to_fm($entry['children'],
+                                                         $folder['children']);
+            }
+            $output[] = $entry;
+        }
+    }
+
+    /**
      * Prepares list of files before passing it to AJAX, makes sure data is in the correct
      * format and stores formatted values.
      *
      * @param array|stdClass $listing result of get_listing() or search() or file_get_drafarea_files()
+     * @param string         $parent  encoded path of parent folder
      * @uses   $CFG
      * @uses   $OUTPUT
      * @return list((array)listing, count)
      */
-    public function prepare_fm_listing($listing) {
+    public function prepare_fm_listing($listing, $parent = '') {
         global $CFG, $OUTPUT;
 
-        $topchildren = array();
-        $children = &$topchildren;
         $locations = null;
         if (is_array($listing) && !empty($listing['locations'])) {
             $locations = &$listing['locations'];
         } else if (is_object($listing) && !empty($listing->locations)) {
             $locations = &$listing->locations;
         }
-        if (!empty($locations)) {
-            foreach ($locations as $location) {
-                $subdir = new stdClass;
-                $subdir->id = $location['path']; // TBD
-                $subdir->filepath = $location['path'];
-                $subdir->textpath = $location['name'];
-                $subdir->fullname = $location['name'];
-                $subdir->sortorder = 0; // TBD
-                $subdir->children = array();
-                $children[] = $subdir;
-            }
+
+        if (is_array($listing) && !empty($listing['parent']) && !empty($listing['parent']->uuid)) {
+            $parent = repository_elis_files::build_encodedpath($listing['parent']->uuid);
+        } else if (is_object($listing) && !empty($listing->parent) && !empty($listing->parent->uuid)) {
+            $parent = repository_elis_files::build_encodedpath($listing->parent->uuid);
         }
 
         $defaultfoldericon = $OUTPUT->pix_url(file_folder_icon(24))->out(false);
@@ -926,6 +962,8 @@ class repository_elis_files extends repository {
         } else if (is_object($listing) && isset($listing->path) && is_array($listing->path)) {
             $path = &$listing->path;
         }
+        $elisfilesfolder = array();
+        $companyhomefolder = array();
         $textpath = '';
         $lastpathvalue = 0;
         if (isset($path)) {
@@ -954,21 +992,21 @@ class repository_elis_files extends repository {
                         $pathvalue = $path[$i]->path;
                     }
                 }
-                if ($pathname && $pathvalue && $lastpathvalue != $pathvalue) {
-                    $lastpathvalue = $pathvalue;
-                    if (!empty($textpath)) { // TBD
-                        $textpath .= '/';
-                    }
-                    $textpath .= $pathname;
-                    $subdir = new stdClass;
-                    $subdir->id = $pathvalue; // TBD
-                    $subdir->filepath = $pathvalue;
-                    $subdir->textpath = $pathname;
-                    $subdir->fullname = $pathname;
-                    $subdir->sortorder = i; // TBD
-                    $subdir->children = array();
-                    $children[] = $subdir;
-                    $children = &$subdir->children;
+                if ($pathname == 'ELIS Files') {
+                    $elisfilesfolder['filepath'] = $pathvalue;
+                    $elisfilesfolder['textpath'] = $pathname;
+                    $elisfilesfolder['fullname'] = $pathname;
+                    $elisfilesfolder['id'] = $pathvalue; // TBD
+                    $elisfilesfolder['sortorder'] = 0; // TBD
+                    $elisfilesfolder['children'] = array();
+                }
+                if ($pathname == 'Company Home') {
+                    $companyhomefolder['filepath'] = $pathvalue;
+                    $companyhomefolder['textpath'] = $pathname;
+                    $companyhomefolder['fullname'] = $pathname;
+                    $companyhomefolder['id'] = $pathvalue; // TBD
+                    $companyhomefolder['sortorder'] = 0; // TBD
+                    $companyhomefolder['children'] = array();
                 }
             }
         }
@@ -991,6 +1029,9 @@ class repository_elis_files extends repository {
             } else {
                 $file = & $files[$i];
                 $converttoobject = false;
+            }
+            if (!empty($parent)) {
+                $file['parent'] = $parent;
             }
             if (isset($file['size'])) { // TBD
                 $file['size'] = (int)$file['size'];
@@ -1030,16 +1071,6 @@ class repository_elis_files extends repository {
             if (!isset($file['type'])) {
                 $file['type'] = $isfolder ? 'folder' : 'file';
             }
-            if ($isfolder) {
-                $subdir = new stdClass;
-                $subdir->id = $file['filepath']; // TBD
-                $subdir->filepath = $file['path'];
-                $subdir->textpath = $file['title'];
-                $subdir->fullname = $subdir->textpath;
-                $subdir->sortorder = 0; // TBD
-                $subdir->children = array();
-                $children[] = $subdir;
-            }
             $filename = null;
             if (isset($file['title'])) {
                 $filename = $file['title'];
@@ -1070,13 +1101,44 @@ class repository_elis_files extends repository {
                 $files[$i] = (object)$file;
             }
         }
+
+        // Now build the entire folder tree ...
+        $folders = elis_files_folder_structure();
+        $foldertree = array();
+        repository_elis_files::folder_tree_to_fm($foldertree, $folders);
+
+        // Must add missing 'ELIS Files' & 'Company Home' locations to tree
+        if (!empty($companyhomefolder)) {
+            $companyhomefolder['children'] = $foldertree;
+            $foldertree = array($companyhomefolder);
+        }
+        // NOTE: 'ELIS Files' currently has NO valid path (false)
+        //if (!empty($elisfilesfolder)) {
+        //    $elisfilesfolder['children'] = $foldertree;
+        //    $foldertree = array($elisfilesfolder);
+        //}
+
+        if (ELIS_FILES_DEBUG_TRACE) {
+            ob_start();
+            var_dump($folders);
+            $tmp = ob_get_contents();
+            ob_end_clean();
+            error_log("/repository/elis_files/lib.php::prepare_fm_listing(): folders = {$tmp}");
+            ob_start();
+            var_dump($foldertree);
+            $tmp = ob_get_contents();
+            ob_end_clean();
+            error_log("/repository/elis_files/lib.php::prepare_fm_listing(): foldertree = {$tmp}");
+        }
+
         if (is_array($listing)) {
-            $listing['tree'] = array('children' => $topchildren);
+            $listing['tree'] = array('children' => $foldertree);
         } else {
             $treeelm = new stdClass;
-            $treeelm->children = $topchildren;
+            $treeelm->children = $foldertree;
             $listing->tree = $treeelm;
         }
+
         return array($listing, $len);
     }
 
