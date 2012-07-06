@@ -1207,7 +1207,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                     $record->$new_key = $this->get_custom_field_values($record->$old_key);;
                 } else if ($field->multivalued) {
                     //any other multivalued setup
-                    $record->$new_key = array($record->$old_key); 
+                    $record->$new_key = array($record->$old_key);
                 } else {
                     //single value
                     $record->$new_key = $record->$old_key;
@@ -1442,6 +1442,42 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Validates that course fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_course_data($action, $record, $filename) {
+        global $CFG, $DB;
+
+        if (isset($record->credits)) {
+            if ($record->credits < 0) {
+                $this->fslogger->log_failure("transfercredits value of \"{$record->credits}\" is not a non-negative number.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->completion_grade)) {
+            if ($record->completion_grade < 0 || $record->completion_grade > 100) {
+                $this->fslogger->log_failure("completion_grade value of \"{$record->completion_grade}\" is not one of the available options (0 .. 100).", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->link)) {
+            if (!$DB->record_exists('course', array('shortname' => $record->link))) {
+                $this->fslogger->log_failure("link value of \"{$record->link}\" does not refer to a valid Moodle course.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Create a course
      * @todo: consider factoring this some more once other actions exist
      *
@@ -1453,13 +1489,38 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
-        // TODO: validation
+        if (isset($record->idnumber)) {
+            if ($DB->record_exists('crlm_course', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a course description that already exists.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (!$this->validate_course_data('create', $record, $filename)) {
+            return false;
+        }
+
         $record = $this->initialize_course_fields($record);
 
         $record = $this->add_custom_field_prefixes($record);
         $course = new course();
         $course->set_from_data($record);
         $course->save();
+
+        if (isset($record->assignment)) {
+            if (!$currid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment))) {
+                $this->fslogger->log_failure("assignment value of \"{$record->assignment}\" does not refer to a valid program.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+
+            $currcrs = new curriculumcourse();
+            $currcrsrec = new stdClass;
+            $currcrsrec->curriculumid = $currid;
+            $currcrsrec->courseid = $course->id;
+
+            $currcrs->set_from_data($currcrsrec);
+            $currcrs->save();
+        }
 
         //associate this course description to a Moodle course, if necessary
         $this->associate_course_to_moodle_course($record, $course->id);
@@ -1479,7 +1540,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
-        // TODO: validation
+        if (isset($record->idnumber)) {
+            if (!$DB->record_exists('crlm_course', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" does not refer to a valid course description.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (!$this->validate_course_data('delete', $record, $filename)) {
+            return false;
+        }
+
         if ($course = $DB->get_record('crlm_course', array('idnumber' => $record->idnumber))) {
             $course = new course($course);
             $course->delete();
@@ -1499,20 +1570,51 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function course_update($record, $filename) {
         global $CFG, $DB;
         require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        $message = "";
 
-        // TODO: validation
+        if (isset($record->idnumber)) {
+            if (!$crsid = $DB->get_field('crlm_course', 'id', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" does not refer to a valid course description.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->assignment)) {
+            if (!$currid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment))) {
+                $this->fslogger->log_failure("assignment value of \"{$record->assignment}\" does not refer to a valid program.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            } else {
+                if ($DB->record_exists('crlm_curriculum_course', array('curriculumid' => $currid, 'courseid' => $crsid))) {
+                    $message = "Course description with idnumber \"{$record->idnumber}\" already assigned to program with idnumber \"{$record->assignment}\".";
+                }
+            }
+        }
+
+        if (!$this->validate_course_data('update', $record, $filename)) {
+            return false;
+        }
+
         $record = $this->initialize_course_fields($record);
 
-        $record->id = $DB->get_field('crlm_course', 'id', array('idnumber' => $record->idnumber));
-
+        $record->id = $crsid;
         $record = $this->add_custom_field_prefixes($record);
 
         $course = new course();
         $course->set_from_data($record);
         $course->save();
 
+        $currcrs = new curriculumcourse();
+        $record = new stdClass;
+        $record->curriculumid = $currid;
+        $record->courseid = $course->id;
+
+        $currcrs->set_from_data($record);
+        $currcrs->save();
+
         //associate this course description to a Moodle course, if necessary
         $this->associate_course_to_moodle_course($record, $course->id);
+
+        $this->fslogger->log_success($message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -1623,7 +1725,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $track->set_from_data($record);
         $track->save();
 
-        $this->fslogger->log_success($message);
+        $this->fslogger->log_success($message, 0, $filename, $this->linenumber);
 
         return true;
     }
