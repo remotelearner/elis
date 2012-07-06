@@ -126,7 +126,7 @@ class repository_elis_files extends repository {
         global $CFG, $COURSE, $DB, $SESSION, $OUTPUT, $USER;
 
          // Verify that we have the repo!
-        if (!$this->elis_files->get_defaults()) {
+        if (!$this->elis_files || !$this->elis_files->get_defaults()) {
             return false;
         }
 
@@ -1422,88 +1422,6 @@ class repository_elis_files extends repository {
             $path[] = array('name'=>$parent_node->title,'path'=>$encodedpath);
             self::get_parent_path($parent_node->uuid,$path, $cid, $uid, $shared, $oid);
         }
-    }
-
-    /**
-     * Get the applicable location parent of the given uuid
-     *
-     * @param   string  $uuid   given uuid
-     * @param   int     $cid    related course id
-     * @param   int     $uid    related user id
-     * @param   int     $shared related shared flag
-     * @param   int     $oid    related user set id
-     * @return  string  $parent location parent of the given uuid (e.g. course/shared/user/site files)
-     **/
-    function get_location_parent($uuid, $cid, $uid, $shared, $oid) {
-        global $COURSE, $USER;
-
-         // Get encoded path for uuid
-        $params = array('path'=>$uuid,
-                        'shared'=>(boolean)$shared,
-                        'oid'=>(int)$oid,
-                        'cid'=>(int)$cid,
-                        'uid'=>(int)$uid);
-        $encodedpath = base64_encode(serialize($params));
-
-        // Set permissible browsing locations
-        $locations = array();
-        $createonly = true;
-        $this->elis_files->file_browse_options($cid, $uid, $shared, $oid, $locations, $createonly);
-        $parent_path = array();
-        // Get encoded parent path
-        $result = self::get_parent_path($uuid, $parent_path, $cid, $uid, $shared, $oid);
-        array_reverse($parent_path);
-
-
-        // Check if current path IS the parent! // ELIS Site Files
-        if ($result === true && empty($parent_path)) {
-            // Parent was same as uuid sent... need to get name of uuid...
-            $node = $this->elis_files->get_info($uuid);
-            $parent = array('name'=> $node->title,
-                            'path'=> $encodedpath);
-        } else if (empty($parent_path)) {
-           // Parent not found, return site files as parent
-            $params = array('path'=>$this->elis_files->get_root(),
-                            'shared'=>(boolean)0,
-                            'oid'=>0,
-                            'cid'=>(int)SITEID,
-                            'uid'=>0);
-            $encodedpath = base64_encode(serialize($params));
-            $parent = array('name'=> get_string('repositorysitefiles','repository_elis_files'),
-                            'path'=> $encodedpath);
-        } else {
-            // first check if the uuid passed in is a location
-            $parent_found = self::search_array($locations, 'path', $encodedpath);
-            if (empty($parent_found)) {
-                // find the closest location of the locations...
-                foreach ($parent_path as $parent) {
-                    $parent_found = self::search_array($locations, 'path', $parent['path']);
-                    if (!empty($parent_found)) {
-                        $parent = $parent_found[0];
-                        break;
-                    }
-                }
-            } else {
-                $parent = $parent_found[0];
-            }
-        }
-        return $parent;
-    }
-
-    function search_array($array, $key, $value) {
-        $results = array();
-
-        if (is_array($array)) {
-            if (isset($array[$key]) && $array[$key] == $value) {
-                $results[] = $array;
-            }
-
-            foreach ($array as $subarray) {
-                $results = array_merge($results, self::search_array($subarray, $key, $value));
-            }
-        }
-
-        return $results;
     }
 
     function category_tree() {
