@@ -210,7 +210,7 @@ class repository_elis_files extends repository {
         $return_path = array();
 
         // Get parent path/breadcrumb
-        $this->get_parent_path($uuid, $return_path, $cid, $uid, $shared, $oid);
+        $this->get_parent_path($uuid, $return_path, 0, 0, 0, 0 /*, $cid, $uid, $shared, $oid */);
         $return_path[]= array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>'');
         $ret['path'] = array_reverse($return_path);
 
