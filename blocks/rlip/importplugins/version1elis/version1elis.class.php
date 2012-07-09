@@ -82,7 +82,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     static $import_fields_class_create = array('idnumber','assignment');
     static $import_fields_class_update = array('idnumber');
-    static $import_fields_class_creat = array('idnumber');
+    static $import_fields_class_delete = array('idnumber');
     static $available_fields_class = array('idnumber', 'startdate', 'enddate', 'starttimehour',
                                           'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
                                           'enrol_from_waitlist', 'assignment', 'track', 'autoenrol', 'link');
@@ -865,25 +865,121 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //TODO: return a status, add error handling
     }
 
+    /**
+     * Validates that class fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_class_data($action, $record, $filename) {
+        global $CFG, $DB;
+
+        if (isset($record->startdate)) {
+            $value = $this->parse_date($record->startdate);
+            if ($value === false) {
+                $this->fslogger->log_failure("startdate value of \"{$record->startdate}\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            } else {
+                $record->startdate = $value;
+            }
+        }
+
+        if (isset($record->enddate)) {
+            $value = $this->parse_date($record->enddate);
+            if ($value === false) {
+                $this->fslogger->log_failure("enddate value of \"{$record->enddate}\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            } else {
+                $record->enddate = $value;
+            }
+        }
+
+        if (isset($record->starttimeminute)) {
+            if (((int)$record->starttimeminute % 5) !== 0) {
+                $this->fslogger->log_failure("starttimeminute value of \"{$record->starttimeminute}\" is not on a five-minute boundary.",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->endtimeminute)) {
+            if (((int)$record->endtimeminute % 5) !== 0) {
+                $this->fslogger->log_failure("endtimeminute value of \"{$record->endtimeminute}\" is not on a five-minute boundary.",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->maxstudents)) {
+            if ($record->maxstudents < 0) {
+                $this->fslogger->log_failure("maxstudents value of \"{$record->maxstudents}\" is not a non-negative integer.",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->enrol_from_waitlist)) {
+            if (!in_array(strtolower($record->enrol_from_waitlist), array('0', '1', 'yes', 'no'))) {
+                $this->fslogger->log_failure("enrol_from_waitlist value of \"{$record->enrol_from_waitlist}\" is not one of the available options (0, 1).",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->track)) {
+            if (!$DB->record_exists('crlm_track', array('idnumber' => $record->track))) {
+                $this->fslogger->log_failure("assignment value of \"{$record->track}\" does not refer to a valid track.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->autoenrol)) {
+            if ($record->autoenrol != 0 && $record->autoenrol != 1) {
+                $this->fslogger->log_failure("autoenrol value of \"{$record->autoenrol}\" is not one of the available options (0, 1).",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        if (isset($record->link)) {
+            if (!$DB->record_exists('course', array('shortname' => $record->link))) {
+                $this->fslogger->log_failure("link value of \"{$record->link}\" does not refer to a valid Moodle course.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function class_create($record, $filename) {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
 
-        // TODO: validation
-        //$record = $this->remove_invalid_class_fields($record);
+        if (isset($record->idnumber)) {
+            if ($DB->record_exists('crlm_class', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a class instance that already exists.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
 
-        //$lengthcheck = $this->check_class_field_lengths($record, $filename);
-        //if (!$lengthcheck) {
-            //return false;
-        //}
+        if (isset($record->assignment)) {
+            if (!$crsid = $DB->get_field('crlm_course', 'id', array('idnumber' => $record->assignment))) {
+                $this->fslogger->log_failure("assignment value of \"{$record->assignment}\" does not refer to a valid course description.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
 
-        /*if (!$this->validate_core_class_data('create', $record, $filename)) {
+        if (!$this->validate_class_data('create', $record, $filename)) {
             return false;
-        }*/
+        }
 
-        $record->courseid = $DB->get_field('crlm_course', 'id', array('idnumber' => $record->assignment));
-
+        $record->courseid = $crsid;
         $record = $this->add_custom_field_prefixes($record);
 
         $pmclass = new pmclass();
@@ -1010,20 +1106,24 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
 
-        // TODO: validation
-        //$record = $this->remove_invalid_class_fields($record);
+        $message = "";
 
-        //$lengthcheck = $this->check_class_field_lengths($record, $filename);
-        //if (!$lengthcheck) {
-            //return false;
-        //}
+        if (isset($record->idnumber)) {
+            if (!$clsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" does not refer to a valid class instance.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
 
-        /*if (!$this->validate_core_class_data('update', $record, $filename)) {
+            if (isset($record->assignment)) {
+                $message = "Class instance with idnumber \"{$record->idnumber}\" was not re-assigned to course description with name \"{$record->assignment}\" because moving class instances between course descriptions is not supported.";
+            }
+        }
+
+        if (!$this->validate_class_data('update', $record, $filename)) {
             return false;
-        }*/
+        }
 
-        $record->id = $DB->get_field('crlm_class', 'id', array('idnumber' => $record->idnumber));
-
+        $record->id = $clsid;
         $record = $this->add_custom_field_prefixes($record);
 
         $pmclass = new pmclass();
@@ -1035,13 +1135,21 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //associate this class instance to a Moodle course, if necessary
         $this->associate_class_to_moodle_course($record, $pmclass->id);
 
+        $this->fslogger->log_success($message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
     function class_delete($record, $filename) {
         global $DB, $CFG;
 
-        // TODO: validation
+        if (isset($record->idnumber)) {
+            if (!$DB->record_exists('crlm_class', array('idnumber' => $record->idnumber))) {
+                $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" does not refer to a valid class instance.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
         if ($course = $DB->get_record('crlm_class', array('idnumber' => $record->idnumber))) {
             $course = new pmclass($course);
             $course->delete();
