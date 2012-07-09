@@ -47,9 +47,12 @@ class elis_user_userset_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array(clusterassignment::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program');
+        return array(
+            clusterassignment::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program',
+            'user_info_data' => 'moodle'
+        );
     }
 
     /**
