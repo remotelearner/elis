@@ -309,10 +309,13 @@ class clusterassignment extends elis_data_object {
                 $assignments = $DB->get_recordset(clusterassignment::TABLE, array('userid' => $userid));
 
                 foreach ($assignments as $assignment) {
-                    //update group assignments
+                    //update site-level group assignments
                     userset_groups_update_site_course($assignment->clusterid, true, $mdluserid);
                 }
             }
+
+            //update course-level group assignment
+            userset_groups_update_groups(array('mdlusr.cuserid' =>  $userid));
         }
     }
 }
