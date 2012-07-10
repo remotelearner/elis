@@ -1409,17 +1409,26 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return boolean true on success, otherwise false
      */
     function cluster_create($record, $filename) {
-        global $CFG, $DB;
+        global $DB, $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
-        //TODO: remove unavailable fields from the record
+        if (isset($record->name)) {
+            if ($DB->record_exists('crlm_cluster', array('name' => $record->name))) {
+                $this->fslogger->log_failure("name value of \"{$record->name}\" refers to a user set that already exists.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
+
         if (!isset($record->parent) || $record->parent == 'top') {
             $record->parent = 0;
-        } else if ($parentid = $DB->get_field(userset::TABLE, 'id', array('name' => $record->parent))) {
+        }
+
+        if ($parentid = $DB->get_field(userset::TABLE, 'id', array('name' => $record->parent))) {
             $record->parent = $parentid;
         } else {
-            //invalid parent specification
-            //TODO: log error and return false
+           $this->fslogger->log_failure("parent value of \"{$record->parent}\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.",
+                                        0, $filename, $this->linenumber, $record, "course");
+            return false;
         }
 
         if (!isset($record->display)) {
@@ -1448,13 +1457,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
-        //TODO: remove unspported fields here
-
-        $id = $DB->get_field(userset::TABLE, 'id', array('name'  => $record->name));
-
-        if (!$id) {
-            //invalid name specification
-            //TODO: log an error and return false
+        if (isset($record->name)) {
+            $id = $DB->get_field(userset::TABLE, 'id', array('name'  => $record->name));
+            if (!$id) {
+                $this->fslogger->log_failure("name value of \"{$record->name}\" does not refer to a valid user set.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
         }
 
         if (isset($record->parent)) {
@@ -1463,8 +1471,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             } else if ($parentid = $DB->get_field(userset::TABLE, 'id', array('name' => $record->parent))) {
                 $record->parent = $parentid;
             } else {
-                //invalid parent specification
-                //TODO: log error and return false
+                $this->fslogger->log_failure("parent value of \"{$record->parent}\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.",
+                                             0, $filename, $this->linenumber, $record, "course");
+                return false;
+
             }
         }
 
@@ -1491,13 +1501,19 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
-        //TODO: remove unspported fields here
+        if (isset($record->name)) {
+            $id = $DB->get_field(userset::TABLE, 'id', array('name'  => $record->name));
+            if (!$id) {
+                $this->fslogger->log_failure("name value of \"{$record->name}\" does not refer to a valid user set.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        }
 
-        $id = $DB->get_field(userset::TABLE, 'id', array('name'  => $record->name));
-
-        if (!$id) {
-            //invalid name specification
-            //TODO: log an error and return false
+        if (isset($record->recursive)) {
+            if ($record->recursive != 0 && $record->recursive != 1) {
+                $this->fslogger->log_failure("recursive value of \"{$record->recursive}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
         }
 
         $data = new userset($id);
