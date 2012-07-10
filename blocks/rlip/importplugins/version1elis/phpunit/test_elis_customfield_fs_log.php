@@ -1,0 +1,637 @@
+<?php
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    elis
+ * @subpackage core
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
+if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+    define('CLI_SCRIPT', true);
+}
+
+require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+global $CFG;
+require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/rlip_mock_provider.class.php');
+
+/**
+ * Class that fetches import files for the user import
+ */
+class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock {
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'course') {
+            return false;
+        }
+        return parent::get_import_file($entity, 'course.csv');
+    }
+}
+
+/**
+ * Class that fetches import files for the user import
+ */
+class rlip_importprovider_fsloguser extends rlip_importprovider_withname_mock {
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'user') {
+            return false;
+        }
+        return parent::get_import_file($entity, 'user.csv');
+    }
+}
+
+/**
+ * Class for testing ELIS custom field validation messages
+ */
+class elis_customfield_fs_log_test extends rlip_test {
+    /**
+     * Return the list of tables that should be overlayed.
+     */
+    static protected function get_overlay_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
+        require_once(elispm::lib('data/userset.class.php'));
+
+        return array(RLIP_LOG_TABLE => 'block_rlip',
+                     course::TABLE => 'elis_program',
+                     curriculum::TABLE => 'elis_program',
+                     field::TABLE => 'elis_core',
+                     field_contextlevel::TABLE => 'elis_core',
+                     field_category::TABLE => 'elis_core',
+                     field_owner::TABLE => 'elis_core',
+                     pmclass::TABLE => 'elis_program',
+                     track::TABLE => 'elis_program',
+                     user::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program',
+                     userset::TABLE => 'elis_program');
+    }
+
+    /**
+     * Return the list of tables that should be ignored for writes.
+     */
+    static protected function get_ignored_tables() {
+        return array('user' => 'moodle');
+    }
+
+    /**
+     * Validates that the supplied data produces the expected error
+     *
+     * @param array $data The import data to process
+     * @param string $expected_error The error we are expecting (message only)
+     * @param user $entitytype One of 'user', 'course', 'enrolment'
+     */
+    protected function assert_data_produces_error($data, $expected_error, $entitytype) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+
+        //set the log file location
+        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
+        self::cleanup_log_files();
+
+        //run the import
+        $classname = "rlip_importprovider_fslog{$entitytype}";
+        $provider = new $classname($data);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, true);
+        //suppress output for now
+        ob_start();
+        $instance->run();
+        ob_end_clean();
+
+        //validate that a log file was created
+        $manual = true;
+        //get first summary record - at times, multiple summary records are created and this handles that problem
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
+        foreach ($records as $record) {
+            $starttime = $record->starttime;
+            break;
+        }
+
+        //get logfile name
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1elis';
+        $format = get_string('logfile_timestamp','block_rlip');
+        $testfilename = $filepath.'/'.$plugin_type.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
+        //get most recent logfile
+
+        $filename = self::get_current_logfile($testfilename);
+        if (!file_exists($filename)) {
+            echo "\n can't find logfile: $filename for \n$testfilename";
+        }
+        $this->assertTrue(file_exists($filename));
+
+        //fetch log line
+        $pointer = fopen($filename, 'r');
+
+        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+
+        while (!feof($pointer)) {
+            $error = fgets($pointer);
+            if (!empty($error)) { // could be an empty new line
+                if (is_array($expected_error)) {
+                    $actual_error[] = substr($error, $prefix_length);
+                } else {
+                    $actual_error = substr($error, $prefix_length);
+                }
+            }
+        }
+
+        fclose($pointer);
+
+        $this->assertEquals($expected_error, $actual_error);
+    }
+
+    /**
+     * Helper method for creating a custom field
+     *
+     * @param int $contextlevel The context level for which to create the field
+     * @param string $uitype The input control / UI type
+     * @param array $otherparams Other parameters to give to the field owner
+     */
+    private function create_custom_field($contextlevel, $uitype, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+
+        //category
+        $field_category = new field_category(array('name' => 'testcategoryname'));
+        $field_category->save();
+
+        //field
+        $field = new field(array('categoryid' => $field_category->id,
+                                 'shortname' => 'testfieldshortname',
+                                 'name' => 'testfieldname',
+                                 'datatype' => 'text'));
+        $field->save();
+
+        //field-contextlevel
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
+                                                           'contextlevel' => $contextlevel));
+        $field_contextlevel->save();
+
+        //owner
+        $owner_params = array_merge(array('control' => $uitype), $otherparams);
+        field_owner::ensure_field_owner_exists($field, 'moodle_profile', $owner_params);
+    }
+
+    /**
+     * Helper method for creating a test program
+     *
+     * @return int The id of the created program
+     */
+    function create_test_program() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+
+        $program = new curriculum(array('name' => 'testprogramname',
+                                        'idnumber' => 'testprogramidnumber'));
+        $program->save();
+        return $program->id;
+    }
+
+    /**
+     * Helper method for creating a test course description
+     *
+     * @return int The id of the created course description
+     */
+    function create_test_course() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber'));
+        $course->save();
+        return $course->id;
+    }
+
+    /**
+     * Data provider containing data for the different input control types and
+     * their associated validation messages
+     *
+     * @return array Test method parameter data, int the expected format
+     */
+    public function type_error_provider() {
+        return array(array('checkbox',
+                           'nonboolean',
+                           '"nonboolean" is not one of the available options for checkbox custom field "testfieldshortname" (0, 1).',
+                           array()),
+                     array('menu',
+                           'unavailable',
+                           '"unavailable" is not one of the available options for menu of choices custom field "testfieldshortname".',
+                           array('options' => "1\n2\n3")),
+                     array('text',
+                           str_repeat('a', 41),
+                           'Text input custom field "testfieldshortname" value of "'.str_repeat('a', 41).' exceeds the maximum field length of 40.',
+                           array('maxlength' => 40)),
+                     array('password',
+                           str_repeat('a', 41),
+                           'Password custom field "testfieldshortname" value of "'.str_repeat('a', 41).' exceeds the maximum field length of 40.',
+                           array('maxlength' => 40)),
+                     array('datetime',
+                           'nondate',
+                           '"nondate" is not valid date in MMM/DD/YYYY format for date custom field "testfieldshortname".',
+                           array('inctime' => 0)),
+                     array('datetime',
+                           'nondate',
+                           '"nondate" is not valid date in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date/time custom field "testfieldshortname".',
+                           array('inctime' => 1)));
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on user create
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_user_create_customfield_messages($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_USER, $uitype, $otherparams);
+
+        $data = array('action' => 'create',
+                      'username' => 'testuserusername',
+                      'email' => 'test@useremail.com',
+                      'idnumber' => 'testuseridnumber',
+                      'firstname' => 'testuserfirstname',
+                      'lastname' => 'testuserlastname',
+                      'country' => 'CA',
+                      'testfieldshortname' => $value);
+
+        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", '.
+                   'idnumber "testuseridnumber" could not be created. '.$message;
+        $this->assert_data_produces_error($data, $message, 'user');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on user update
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner 
+     * @dataProvider type_error_provider
+     */
+    public function test_user_update_customfield_message($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_USER, $uitype, $otherparams);
+
+        $user = new user(array('username' => 'testuserusername',
+                               'email' => 'test@useremail.com',
+                               'idnumber' => 'testuseridnumber',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'country' => 'CA'));
+        $user->save();
+
+        $data = array('action' => 'update',
+                      'username' => 'testuserusername',
+                      'email' => 'test@useremail.com',
+                      'idnumber' => 'testuseridnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", '.
+                   'idnumber "testuseridnumber" could not be updated. '.$message;
+        $this->assert_data_produces_error($data, $message, 'user');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on program create
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_program_create_customfield_messages($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_PROGRAM, $uitype, $otherparams);
+
+        $data = array('action' => 'create',
+                      'context' => 'curriculum',
+                      'name' => 'testprogramname',
+                      'idnumber' => 'testprogramidnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[course.csv line 2] Program with idnumber "testprogramidnumber" could not be created. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on program update
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_program_update_customfield_message($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_PROGRAM, $uitype, $otherparams);
+
+        $program = new curriculum(array('name' => 'testprogramname',
+                                        'idnumber' => 'testprogramidnumber'));
+        $program->save();
+
+        $data = array('action' => 'update',
+                      'context' => 'curriculum',
+                      'idnumber' => 'testprogramidnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[user.csv line 2] Program with idnumber "testprogramidnumber" could not be updated. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on track create
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_track_create_customfield_messages($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_TRACK, $uitype, $otherparams);
+
+        $this->create_test_program();
+
+        $data = array('action' => 'create',
+                      'context' => 'track',
+                      'assignment' => 'testprogramidnumber',
+                      'name' => 'testtrackname',
+                      'idnumber' => 'testtrackidnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[course.csv line 2] Track with idnumber "testtrackidnumber" could not be created. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on track update
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_track_update_customfield_message($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_TRACK, $uitype, $otherparams);
+
+        $programid = $this->create_test_program();
+
+        $track = new track(array('curid' => $programid,
+                                 'name' => 'testtrackname',
+                                 'idnumber' => 'testtrackidnumber'));
+        $track->save();
+
+        $data = array('action' => 'update',
+                      'context' => 'track',
+                      'idnumber' => 'testtrackidnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[user.csv line 2] Track with idnumber "testtrackidnumber" could not be updated. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on course description create
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_course_create_customfield_messages($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_COURSE, $uitype, $otherparams);
+
+        $data = array('action' => 'create',
+                      'context' => 'course',
+                      'name' => 'testcoursename',
+                      'idnumber' => 'testcourseidnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[course.csv line 2] Course description with idnumber "testcourseidnumber" could not be created. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on course description update
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_course_update_customfield_message($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_COURSE, $uitype, $otherparams);
+
+        $course = new course(array('name' => 'testcoursename',
+                                   'idnumber' => 'testcourseidnumber'));
+        $course->save();
+
+        $data = array('action' => 'update',
+                      'context' => 'course',
+                      'idnumber' => 'testcourseidnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[user.csv line 2] Course with idnumber "testcourseidnumber" could not be updated. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+        
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on class instance create
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_class_create_customfield_messages($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_CLASS, $uitype, $otherparams);
+
+        $this->create_test_course();
+
+        $data = array('action' => 'create',
+                      'context' => 'class',
+                      'assignment' => 'testcoursename',
+                      'name' => 'testcoursename',
+                      'idnumber' => 'testcourseidnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[course.csv line 2] Class instance with idnumber "testcourseidnumber" could not be created. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on class instance update
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_class_update_customfield_message($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_CLASS, $uitype, $otherparams);
+
+        $courseid = $this->create_test_course();
+
+        $class = new pmclass(array('courseid' => $courseid,
+                                   'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        $data = array('action' => 'update',
+                      'context' => 'class',
+                      'idnumber' => 'testclassidnumber',
+                      'testfieldshortname' => $value);
+
+        $message = '[user.csv line 2] Class with idnumber "testclassidnumber" could not be updated. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on userset create
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_userset_create_customfield_messages($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_USERSET, $uitype, $otherparams);
+
+        $data = array('action' => 'create',
+                      'context' => 'cluster',
+                      'name' => 'testusersetname',
+                      'testfieldshortname' => $value);
+
+        $message = '[course.csv line 2] User set with name "testusersetname" could not be created. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that the provided custom field type and value produce the
+     * specified error message on user set update
+     *
+     * @param string $uitype The input control / UI type
+     * @param string $value The value to use for the custom field
+     * @param string $message The expected error message
+     * @param array $otherparams Other parameters to give to the field owner
+     * @dataProvider type_error_provider
+     */
+    public function test_userset_update_customfield_message($uitype, $value, $message, $otherparams) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_USERSET, $uitype, $otherparams);
+
+        $userset = new userset(array('name' => 'testusersetname'));
+        $userset->save();
+
+        $data = array('action' => 'update',
+                      'context' => 'cluster',
+                      'name' => 'testusersetname',
+                      'testfieldshortname' => $value);
+
+        $message = '[user.csv line 2] Userset with name "testusersetname" could not be updated. '.$message;
+        $this->assert_data_produces_error($data, $message, 'course');
+    }
+}

@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Class for testing course description-moodle template course association
@@ -98,6 +99,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
         $record->link = $templatecourse->shortname;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         //validation
@@ -146,6 +148,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
         $record->link = $templatecourse->shortname;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_update($record, 'bogus');
 
         //validation

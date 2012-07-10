@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Class for testing track-class association creation during class instance
@@ -44,6 +45,7 @@ class elis_class_associate_track_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/curriculumcourse.class.php'));
@@ -53,6 +55,7 @@ class elis_class_associate_track_test extends elis_database_test {
         return array(course::TABLE => 'elis_program',
                      curriculum::TABLE => 'elis_program',
                      curriculumcourse::TABLE => 'elis_program',
+                     field::TABLE => 'elis_core',
                      pmclass::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
                      trackassignment::TABLE => 'elis_program');
@@ -130,6 +133,7 @@ class elis_class_associate_track_test extends elis_database_test {
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_create($record, 'bogus');
 
         //validation
@@ -191,6 +195,7 @@ class elis_class_associate_track_test extends elis_database_test {
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_update($record, 'bogus');
 
         //validation

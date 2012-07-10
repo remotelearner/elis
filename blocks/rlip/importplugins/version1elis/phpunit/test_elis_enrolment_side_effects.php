@@ -45,6 +45,7 @@ class elis_enrolment_side_effects_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/clustertrack.class.php'));
         require_once(elispm::lib('data/course.class.php'));
@@ -55,6 +56,7 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
@@ -65,11 +67,13 @@ class elis_enrolment_side_effects_test extends elis_database_test {
                      curriculum::TABLE => 'elis_program',
                      curriculumcourse::TABLE => 'elis_program',
                      curriculumstudent::TABLE => 'elis_program',
+                     field::TABLE => 'elis_core',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
                      trackassignment::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program',
                      userset::TABLE => 'elis_program',
                      usertrack::TABLE => 'elis_program');
     }
@@ -81,13 +85,11 @@ class elis_enrolment_side_effects_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/coursetemplate.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('context' => 'moodle',
                      'message' => 'moodle',
                      'user' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+                     coursetemplate::TABLE => 'elis_program');
     }
 
     /**

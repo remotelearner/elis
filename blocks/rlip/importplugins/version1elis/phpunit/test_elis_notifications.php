@@ -44,6 +44,7 @@ class elis_notifications_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -65,6 +66,7 @@ class elis_notifications_test extends elis_database_test {
                      course::TABLE => 'elis_program',
                      curriculum::TABLE => 'elis_program',
                      curriculumstudent::TABLE => 'elis_program',
+                     field::TABLE => 'elis_core',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',

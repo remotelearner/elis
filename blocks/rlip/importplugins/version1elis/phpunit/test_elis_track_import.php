@@ -157,9 +157,12 @@ class elis_track_import_test extends elis_database_test {
 
         $data = $this->get_core_track_data();
         $data['description'] = 'testdescription';
-        $data['startdate'] = time();
-        $data['enddate'] = time();
+        $data['startdate'] = 'Jan/01/2012';
+        $data['enddate'] = 'Jan/01/2012';
         $this->run_core_track_import($data, false);
+
+        $data['startdate'] = mktime(0, 0, 0, 1, 1, 2012);
+        $data['enddate'] = mktime(0, 0, 0, 1, 1, 2012);
 
         unset($data['action'],$data['context'],$data['assignment'],$data['description']);
         $this->assertTrue($DB->record_exists('crlm_track', $data));
@@ -167,6 +170,9 @@ class elis_track_import_test extends elis_database_test {
 
     function test_delete_elis_track_import() {
         global $DB;
+
+        $this->run_core_program_import(array(), true);
+        $this->assertTrue($DB->record_exists('crlm_curriculum', array('idnumber' => 'testprogramid')));
 
         $this->run_core_track_import(array(), true);
         $this->assertTrue($DB->record_exists('crlm_track', array('idnumber' => 'testtrackid')));
@@ -188,10 +194,13 @@ class elis_track_import_test extends elis_database_test {
 
         $data = array('action' => 'update', 'context' => 'track', 'idnumber' => 'testtrackid',
                       'name' => 'testtrackpdated', 'description' => 'testdescriptionupdated',
-                      'startdate' => time(), 'enddate' => time());
+                      'startdate' => 'Jan/01/2012', 'enddate' => 'Jan/01/2012');
         $this->run_core_track_import($data, false);
 
         unset($data['action'], $data['context'], $data['description']);
+        $data['startdate'] = mktime(0, 0, 0, 1, 1, 2012);
+        $data['enddate'] = mktime(0, 0, 0, 1, 1, 2012);
+
         $this->assertTrue($DB->record_exists('crlm_track', $data));
     }
 

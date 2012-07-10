@@ -48,13 +48,15 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('config' => 'moodle',
                      course::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
                      student_grade::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program');
+                     user::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program');
     }
 
     /**
@@ -64,13 +66,11 @@ class elis_user_student_enrolment_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/coursetemplate.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('context' => 'moodle',
                      'message' => 'moodle',
                      'user' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+                     coursetemplate::TABLE => 'elis_program');
     }
 
     /**
