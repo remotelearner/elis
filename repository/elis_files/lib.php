@@ -201,9 +201,6 @@ class repository_elis_files extends repository {
         $ret['showselectedactions'] = true;
         $ret['showcurrentactions'] = true;
 
-        // Only use for current node
-        $ret['path'] = array(array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>''));
-
         // Get editing privileges - set canedit flag...
         $canedit = self::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
         $ret['canedit'] = $canedit;
@@ -211,7 +208,9 @@ class repository_elis_files extends repository {
 
         // Get parent path/breadcrumb
         $this->get_parent_path($uuid, $return_path, 0, 0, 0, 0 /*, $cid, $uid, $shared, $oid */);
-        $return_path[]= array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>'');
+        // NOTE: do NOT put 'ELIS Files' in path anymore, 'Company Home' will be
+        // ... replaced with 'ELIS Files' in this->prepare_fm_listing()
+        //$return_path[]= array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>'');
         $ret['path'] = array_reverse($return_path);
 
         $this->current_node = $this->elis_files->get_info($uuid);
@@ -931,19 +930,21 @@ class repository_elis_files extends repository {
      *
      * @param  array &$output     The output array
      * @param  array $folderentry The input folder structure
+     * @param string $path        Top-level path folder name (i.e. 'Company Home' or 'ELIS Files')
      */
-    protected static function folder_tree_to_fm(&$output, $folderentry) {
+    protected static function folder_tree_to_fm(&$output, $folderentry, $path = '') {
         foreach ($folderentry as $folder) {
             $entry = array();
             $entry['filepath'] = repository_elis_files::build_encodedpath($folder['uuid']);
-            $entry['textpath'] = $folder['name'];
+            $entry['textpath'] = $path .'/'. $folder['name'];
             $entry['fullname'] = $folder['name'];
             $entry['id'] = $folder['uuid']; // TBD
             $entry['sortorder'] = 0; // TBD
             $entry['children'] = array();
             if (!empty($folder['children'])) {
                 repository_elis_files::folder_tree_to_fm($entry['children'],
-                                                         $folder['children']);
+                                                         $folder['children'],
+                                                         $entry['textpath']);
             }
             $output[] = $entry;
         }
@@ -1012,15 +1013,13 @@ class repository_elis_files extends repository {
                         $pathvalue = $path[$i]->path;
                     }
                 }
-                if ($pathname == 'ELIS Files') {
-                    $elisfilesfolder['filepath'] = $pathvalue;
-                    $elisfilesfolder['textpath'] = $pathname;
-                    $elisfilesfolder['fullname'] = $pathname;
-                    $elisfilesfolder['id'] = $pathvalue; // TBD
-                    $elisfilesfolder['sortorder'] = 0; // TBD
-                    $elisfilesfolder['children'] = array();
-                }
                 if ($pathname == 'Company Home') {
+                    $pathname = get_string('repository', 'repository_elis_files');
+                    if (is_array($path[$i])) {
+                        $path[$i]['name'] = $pathname;
+                    } else {
+                        $path[$i]->name = $pathname;
+                    }
                     $companyhomefolder['filepath'] = $pathvalue;
                     $companyhomefolder['textpath'] = $pathname;
                     $companyhomefolder['fullname'] = $pathname;
@@ -1125,18 +1124,13 @@ class repository_elis_files extends repository {
         // Now build the entire folder tree ...
         $folders = elis_files_folder_structure();
         $foldertree = array();
-        repository_elis_files::folder_tree_to_fm($foldertree, $folders);
-
+        repository_elis_files::folder_tree_to_fm($foldertree, $folders,
+                                                 $companyhomefolder['textpath']);
         // Must add missing 'ELIS Files' & 'Company Home' locations to tree
         if (!empty($companyhomefolder)) {
             $companyhomefolder['children'] = $foldertree;
             $foldertree = array($companyhomefolder);
         }
-        // NOTE: 'ELIS Files' currently has NO valid path (false)
-        //if (!empty($elisfilesfolder)) {
-        //    $elisfilesfolder['children'] = $foldertree;
-        //    $foldertree = array($elisfilesfolder);
-        //}
 
         if (ELIS_FILES_DEBUG_TRACE) {
             ob_start();
