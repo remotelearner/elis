@@ -2071,7 +2071,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 $classid = $DB->get_field('crlm_class', 'id', array('idnumber' => $instance));
 
                 if (!empty($userid) && !empty($classid)) {
-                    if (isset($record->role) && ($record->role == 'student' || $record->role == 'instructor')) {
+                    if (isset($record->role) && ($record->role == 'teacher' || $record->role == 'instructor')) {
                         //instructor enrolment
                         $table = instructor::TABLE;
                     } else {
