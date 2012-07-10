@@ -44,12 +44,20 @@ class elis_user_sync_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
-        return array(user::TABLE => 'elis_program',
+        return array(field::TABLE => 'elis_core',
+                     field_contextlevel::TABLE => 'elis_core',
+                     field_owner::TABLE => 'elis_core',
+                     field_category::TABLE => 'elis_core',
+                     field_data_int::TABLE => 'elis_core',
+                     user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program',
-                     'user' => 'moodle');
+                     'user' => 'moodle',
+                     'user_info_field' => 'moodle',
+                     'user_info_data' => 'moodle');
     }
 
     /**
@@ -102,6 +110,81 @@ class elis_user_sync_test extends elis_database_test {
     }
 
     /**
+     * Validate that custom user fields are synched over to Moodle when PM user is created
+     * during an import
+     */
+    public function test_user_custom_field_sync_on_user_create() {
+        //NOTE: not testing all cases because ELIS handles the details and this
+        //seems to already work
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('accesslib.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once($CFG->dirroot.'/user/profile/lib.php');
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+        require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
+
+        //field category
+        $field_category = new field_category(array('name' => 'testcategoryname'));
+        $field_category->save();
+
+        //custom field
+        $field = new field(array('categoryid' => $field_category->id,
+                                 'shortname' => 'testfieldshortname',
+                                 'name' => 'testfieldname',
+                                 'datatype' => 'bool'));
+        $field->save();
+
+        //field owner
+        field_owner::ensure_field_owner_exists($field, 'moodle_profile');
+        $DB->execute("UPDATE {".field_owner::TABLE."}
+                      SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
+
+        //field context level assocation
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
+                                                           'contextlevel' => CONTEXT_ELIS_USER));
+        $field_contextlevel->save();
+
+        //the associated Moodle user profile field
+        $profile_define_checkbox = new profile_define_checkbox();
+        $data = new stdClass;
+        $data->datatype = 'checkbox';
+        $data->categoryid = 99999;
+        $data->shortname = 'testfieldshortname';
+        $data->name = 'testfieldname';
+        $profile_define_checkbox->define_save($data);
+
+        //reset cached custom fields
+        $user = new user();
+        $user->reset_custom_field_list();
+
+        //run the user create action
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->idnumber = 'testuseridnumber';
+        $record->username = 'testuserusername';
+        $record->firstname = 'testuserfirstname';
+        $record->lastname = 'testuserlastname';
+        $record->email = 'testuser@email.com';
+        $record->address = 'testuseraddress';
+        $record->city = 'testusercity';
+        $record->country = 'CA';
+        $record->language = 'fr';
+        $record->testfieldshortname = 1;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->process_record('user', $record, 'bogus');
+
+        //validation
+        $user = new stdClass;
+        $user->id = 1;
+        profile_load_data($user);
+
+        $this->assertEquals(1, $user->profile_field_testfieldshortname);
+    }
+
+    /**
      * Validate that appropriate fields are synched over to Moodle when PM user is updated
      * during an import
      */
@@ -148,5 +231,83 @@ class elis_user_sync_test extends elis_database_test {
                                                            'city' => $record->city,
                                                            'country' => 'FR',
                                                            'lang' => 'en_us')));
+    }
+
+    /**
+     * Validate that custom user fields are synched over to Moodle when PM user is updated
+     * during an import
+     */
+    public function test_user_custom_field_sync_on_user_update() {
+        //NOTE: not testing all cases because ELIS handles the details and this
+        //seems to already work
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('accesslib.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once($CFG->dirroot.'/user/profile/lib.php');
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+        require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
+
+        //set up the user
+        $user = new user(array('idnumber' => 'testuseridnumber',
+                               'username' => 'testuserusername',
+                               'firstname' => 'testuserfirstname',
+                               'lastname' => 'testuserlastname',
+                               'email' => 'testuser@email.com',
+                               'country' => 'CA'));
+        $user->save();
+
+        //field category
+        $field_category = new field_category(array('name' => 'testcategoryname'));
+        $field_category->save();
+
+        //custom field
+        $field = new field(array('categoryid' => $field_category->id,
+                                 'shortname' => 'testfieldshortname',
+                                 'name' => 'testfieldname',
+                                 'datatype' => 'bool'));
+        $field->save();
+
+        //field owner
+        field_owner::ensure_field_owner_exists($field, 'moodle_profile');
+        $DB->execute("UPDATE {".field_owner::TABLE."}
+                      SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
+
+        //field context level assocation
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
+                                                           'contextlevel' => CONTEXT_ELIS_USER));
+        $field_contextlevel->save();
+
+        //the associated Moodle user profile field
+        $profile_define_checkbox = new profile_define_checkbox();
+        $data = new stdClass;
+        $data->datatype = 'checkbox';
+        $data->categoryid = 99999;
+        $data->shortname = 'testfieldshortname';
+        $data->name = 'testfieldname';
+        $profile_define_checkbox->define_save($data);
+
+        //reset cached custom fields
+        $user = new user();
+        $user->reset_custom_field_list();
+
+        //run the user create action
+        $record = new stdClass;
+        $record->action = 'update';
+        $record->idnumber = 'testuseridnumber';
+        $record->username = 'testuserusername';
+        $record->email = 'testuser@email.com';
+        $record->testfieldshortname = 1;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->process_record('user', $record, 'bogus');
+
+        //validation
+        $user = new stdClass;
+        $user->id = 1;
+        profile_load_data($user);
+
+        $this->assertEquals(1, $user->profile_field_testfieldshortname);
     }
 }
