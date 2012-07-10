@@ -582,6 +582,57 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return true;
     }
 
+
+    /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting for users
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_user_createorupdate($record, $action) {
+        global $CFG, $DB;
+        require_once(elispm::lib('data/user.class.php'));
+
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
+
+        if (!empty($createorupdate)) {
+            //determine if any identifying fields are set
+            $username_set = isset($record->username) && $record->username !== '';
+            $email_set = isset($record->email) && $record->email !== '';
+            $idnumber_set = isset($record->idnumber) && $record->idnumber !== '';
+
+            //make sure at least one identifying field is set
+            if ($username_set || $email_set || $idnumber_set) {
+                //identify the user
+                $params = array();
+                if ($username_set) {
+                    $params['username'] = $record->username;
+                }
+                if ($email_set) {
+                    $params['email'] = $record->email;
+                }
+                if ($idnumber_set) {
+                    $params['idnumber'] = $record->idnumber;
+                }
+
+                if ($DB->record_exists(user::TABLE, $params)) {
+                    //user exists, so the action is an update
+                    $action = 'update';
+                } else {
+                    //user does not exist, so the action is a create
+                    $action = 'create';
+                }
+            } else {
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
     /**
      * Delegate processing of an import line for entity type "user"
      *
@@ -644,56 +695,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
-     * Performs any necessary conversion of the action value based on the
-     * "createorupdate" setting
-     *
-     * @param object $record One record of import data
-     * @param string $action The supplied action
-     * @return string The action to use in the import
-     */
-    function handle_user_createorupdate($record, $action) {
-        global $CFG, $DB;
-
-        //check config setting
-        $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
-
-        if (!empty($createorupdate)) {
-            //determine if any identifying fields are set
-            $username_set = isset($record->username) && $record->username !== '';
-            $email_set = isset($record->email) && $record->email !== '';
-            $idnumber_set = isset($record->idnumber) && $record->idnumber !== '';
-
-            //make sure at least one identifying field is set
-            if ($username_set || $email_set || $idnumber_set) {
-                //identify the user
-                $params = array();
-                if ($username_set) {
-                    $params['username'] = $record->username;
-                    $params['mnethostid'] = $CFG->mnet_localhost_id;
-                }
-                if ($email_set) {
-                    $params['email'] = $record->email;
-                }
-                if ($idnumber_set) {
-                    $params['idnumber'] = $record->idnumber;
-                }
-
-                if ($DB->record_exists('user', $params)) {
-                    //user exists, so the action is an update
-                    $action = 'update';
-                } else {
-                    //user does not exist, so the action is a create
-                    $action = 'create';
-                }
-            } else {
-                $action = 'create';
-            }
-        }
-
-        return $action;
-    }
-
-    /**
      * Validates whether the "action" field is correctly set on a record,
      * logging error to the file system, if necessary - call from child class
      * when needed
@@ -728,7 +729,41 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     /**
      * Performs any necessary conversion of the action value based on the
-     * "createorupdate" setting
+     * "createorupdate" setting for class instances
+     * TODO: consider refactoring all similar methods?
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_class_createorupdate($record, $action) {
+        global $DB;
+        require_once(elispm::lib('data/pmclass.class.php'));
+
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
+
+        if (!empty($createorupdate)) {
+            if (isset($record->idnumber) && $record->idnumber !== '') {
+                //identify the course
+                if ($DB->record_exists(pmclass::TABLE, array('idnumber' => $record->idnumber))) {
+                    //course exists, so the action is an update
+                    $action = 'update';
+                } else {
+                    //course does not exist, so the action is a create
+                    $action = 'create';
+                }
+            } else {
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
+    /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting for course descriptions
      *
      * @param object $record One record of import data
      * @param string $action The supplied action
@@ -736,13 +771,114 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function handle_course_createorupdate($record, $action) {
         global $DB;
+        require_once(elispm::lib('data/course.class.php'));
+
         //check config setting
         $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
 
         if (!empty($createorupdate)) {
             if (isset($record->idnumber) && $record->idnumber !== '') {
                 //identify the course
-                if ($DB->record_exists('crlm_course', array('idnumber' => $record->idnumber))) {
+                if ($DB->record_exists(course::TABLE, array('idnumber' => $record->idnumber))) {
+                    //course exists, so the action is an update
+                    $action = 'update';
+                } else {
+                    //course does not exist, so the action is a create
+                    $action = 'create';
+                }
+            } else {
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
+    /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting for programs
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_program_createorupdate($record, $action) {
+        global $DB;
+        require_once(elispm::lib('data/curriculum.class.php'));
+
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
+
+        if (!empty($createorupdate)) {
+            if (isset($record->idnumber) && $record->idnumber !== '') {
+                //identify the course
+                if ($DB->record_exists(curriculum::TABLE, array('idnumber' => $record->idnumber))) {
+                    //course exists, so the action is an update
+                    $action = 'update';
+                } else {
+                    //course does not exist, so the action is a create
+                    $action = 'create';
+                }
+            } else {
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
+    /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting for tracks
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_track_createorupdate($record, $action) {
+        global $DB;
+        require_once(elispm::lib('data/track.class.php'));
+
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
+
+        if (!empty($createorupdate)) {
+            if (isset($record->idnumber) && $record->idnumber !== '') {
+                //identify the course
+                if ($DB->record_exists(track::TABLE, array('idnumber' => $record->idnumber))) {
+                    //course exists, so the action is an update
+                    $action = 'update';
+                } else {
+                    //course does not exist, so the action is a create
+                    $action = 'create';
+                }
+            } else {
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
+    /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting for user sets
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_userset_createorupdate($record, $action) {
+        global $DB;
+        require_once(elispm::lib('data/userset.class.php'));
+
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
+
+        if (!empty($createorupdate)) {
+            if (isset($record->name) && $record->name !== '') {
+                //identify the course
+                if ($DB->record_exists(userset::TABLE, array('name' => $record->name))) {
                     //course exists, so the action is an update
                     $action = 'update';
                 } else {
@@ -781,9 +917,18 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         switch ($context) {
             // TODO
             case 'class':
-
+                //apply "createorupdate" flag, if necessary
+                if ($action == 'create') {
+                    $action = $this->handle_class_createorupdate($record, $action);
+                }
+                $record->action = $action;
             break;
             case 'curriculum':
+                //apply "createorupdate" flag, if necessary
+                if ($action == 'create') {
+                    $action = $this->handle_program_createorupdate($record, $action);
+                }
+                $record->action = $action;
 
             break;
             case 'course':
@@ -803,6 +948,24 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                     return false;
                 }
             break;
+
+            case 'track':
+                //apply "createorupdate" flag, if necessary
+                if ($action == 'create') {
+                    $action = $this->handle_track_createorupdate($record, $action);
+                }
+                $record->action = $action;
+
+                break;
+
+            case 'cluster':
+                //apply "createorupdate" flag, if necessary
+                if ($action == 'create') {
+                    $action = $this->handle_userset_createorupdate($record, $action);
+                }
+                $record->action = $action;
+
+                break;
         }
 
         //remove empty fields
@@ -946,7 +1109,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
         }
 
-        if (isset($record->link)) {
+        if (isset($record->link) && $record->link != 'auto') {
             if (!$DB->record_exists('course', array('shortname' => $record->link))) {
                 $this->fslogger->log_failure("link value of \"{$record->link}\" does not refer to a valid Moodle course.", 0, $filename, $this->linenumber, $record, "course");
                 return false;
@@ -1425,7 +1588,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         if ($parentid = $DB->get_field(userset::TABLE, 'id', array('name' => $record->parent))) {
             $record->parent = $parentid;
-        } else {
+        } else if ($record->parent !== 0) {
            $this->fslogger->log_failure("parent value of \"{$record->parent}\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.",
                                         0, $filename, $this->linenumber, $record, "course");
             return false;
@@ -1703,6 +1866,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
         }
 
+        $currid = 0;
+
         if (isset($record->assignment)) {
             if (!$currid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $record->assignment))) {
                 $this->fslogger->log_failure("assignment value of \"{$record->assignment}\" does not refer to a valid program.", 0, $filename, $this->linenumber, $record, "course");
@@ -1727,13 +1892,15 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $course->set_from_data($record);
         $course->save();
 
-        $currcrs = new curriculumcourse();
-        $record = new stdClass;
-        $record->curriculumid = $currid;
-        $record->courseid = $course->id;
-
-        $currcrs->set_from_data($record);
-        $currcrs->save();
+        if ($currid != 0) {
+            $currcrs = new curriculumcourse();
+            $record = new stdClass;
+            $record->curriculumid = $currid;
+            $record->courseid = $course->id;
+    
+            $currcrs->set_from_data($record);
+            $currcrs->save();
+        }
 
         //associate this course description to a Moodle course, if necessary
         $this->associate_course_to_moodle_course($record, $course->id);
@@ -1827,7 +1994,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         if (isset($record->idnumber)) {
             if (isset($record->assignment)) {
-                $message = "track with idnumber \"{$record->idnumber}\" was not re-assigned to program with idnumber \"{$record->assignmnet}\" because moving tracks between programs is not supported.";
+                $message = "track with idnumber \"{$record->idnumber}\" was not re-assigned to program with idnumber \"{$record->assignment}\" because moving tracks between programs is not supported.";
             }
 
             if (!$id = $DB->get_field('crlm_track', 'id', array('idnumber' => $record->idnumber))) {
@@ -1871,6 +2038,66 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting for enrolments
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_enrolment_createorupdate($record, $action) {
+        global $DB;
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+
+        //check config setting
+        $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
+
+        //split "context" into level and instance
+        list($context, $instance) = explode('_', $record->context);
+
+        //user-related fields
+        $username_set = isset($record->user_username) && $record->user_username != '';
+        $email_set = isset($record->user_email) && $record->user_email != '';
+        $idnumber_set = isset($record->user_idnumber) && $record->user_idnumber != '';
+
+        $required_user_field_set = $username_set || $email_set || $idnumber_set;
+
+        if (!empty($createorupdate)) {
+            //determine if we have the necessary fields set
+            if ($instance != '' && $required_user_field_set) {
+                //determine enrolment validitiy
+                $userid = $this->get_userid_from_record($record, 'bogus');
+                $classid = $DB->get_field('crlm_class', 'id', array('idnumber' => $instance));
+
+                if (!empty($userid) && !empty($classid)) {
+                    if (isset($record->role) && ($record->role == 'student' || $record->role == 'instructor')) {
+                        //instructor enrolment
+                        $table = instructor::TABLE;
+                    } else {
+                        //student enrolment
+                        $table = student::TABLE;
+                    }
+
+                    //identify the course
+                    if ($DB->record_exists($table, array('userid' => $userid,
+                                                         'classid' => $classid))) {
+                        //course exists, so the action is an update
+                        $action = 'update';
+                    } else {
+                        //course does not exist, so the action is a create
+                        $action = 'create';
+                    }
+                }
+            } else {
+                $action = 'create';
+            }
+        }
+
+        return $action;
+    }
+
+    /**
      * Delegate processing of an import line for entity type "enrolment"
      *
      * @param object $record One record of import data
@@ -1884,6 +2111,26 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         if ($action === '') {
             //set from param
             $action = isset($record->action) ? $record->action : '';
+        }
+
+        $context = '';
+        if (isset($record->context)) {
+            $parts = explode('_', $record->context);
+            if (count($parts) == 2) {
+                $context = reset($parts);
+            }
+        }
+
+        switch ($context) {
+            case 'class':
+                //apply "createorupdate" flag, if necessary
+                if ($action == 'create' || $action == 'enrol' || $action == 'enroll') {
+                    $action = $this->handle_enrolment_createorupdate($record, $action);
+                }
+                $record->action = $action;
+
+                break;
+
         }
 
         // TODO: more validation

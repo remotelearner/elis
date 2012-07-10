@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Class for validating that ELIS / PM user and entity actions support setting of
@@ -50,6 +51,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
         return array(course::TABLE => 'elis_program',
@@ -66,6 +68,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
                      pmclass::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program',
                      userset::TABLE => 'elis_program');
     }
 
@@ -274,6 +277,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
 
         //run the entity create action
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
         //validation
@@ -318,6 +322,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
 
         //run the entity update action
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
         //validation
@@ -362,6 +367,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
 
         //run the entity update action
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
         //validation
@@ -418,6 +424,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
 
         //run the entity update action
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
         //validation
@@ -463,6 +470,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
 
         //run the entity create action
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
         //validation
@@ -522,6 +530,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
                         'country' => 'CA',
                         'testfieldshortname' => $data);
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
         //validation
@@ -582,6 +591,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
                         'country' => 'CA',
                         'testfieldshortname' => $data);
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
         //validation
@@ -616,6 +626,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
                         'country' => 'CA',
                         'testfieldshortname' => 'Jan/01/2012/Feb/02/2012');
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
         //validation

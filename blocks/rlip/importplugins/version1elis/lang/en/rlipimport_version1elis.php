@@ -26,14 +26,14 @@
 
 $string['configfieldstreelink'] = 'Field mapping';
 $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 ELIS Import Fields';
-//TODO: remove this string when no longer needed
-$string['configplaceholdersetting'] = 'Replace with real settings';
+$string['configcreateorupdate'] = 'If enabled, all create or update actions on users and courses are converted to create
+actions if the entity does not already exist, or update actions if the entity exists.';
 $string['coursefile'] = 'Course file';
 $string['coursetab'] = 'Course fields';
+$string['createorupdate'] = 'Create or update';
+$string['datahandling'] = 'Data handling';
 $string['enrolmentfile'] = 'Enrolment file';
 $string['enrolmenttab'] = 'Enrolment fields';
-//TODO: remove this string when no longer needed
-$string['placeholdersetting'] = 'Placeholder for settings';
 $string['pluginname'] = 'Version 1 ELIS import';
 $string['userfile'] = 'User file';
 $string['usertab'] = 'User fields';

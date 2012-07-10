@@ -43,16 +43,20 @@ class elis_user_track_enrolment_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
         return array('config' => 'moodle',
                      'message' => 'moodle',
                      curriculum::TABLE => 'elis_program',
+                     field::TABLE => 'elis_core',
                      track::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
+                     usermoodle::TABLE => 'elis_program',
                      usertrack::TABLE => 'elis_program');
     }
 
@@ -63,12 +67,10 @@ class elis_user_track_enrolment_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/curriculumstudent.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('context' => 'moodle',
                      'user' => 'moodle',
-                     curriculumstudent::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+                     curriculumstudent::TABLE => 'elis_program');
     }
 
     /**

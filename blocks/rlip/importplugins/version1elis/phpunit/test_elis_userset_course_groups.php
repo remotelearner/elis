@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Validate that IP actions trigger the appropriate userset course groups functionality
@@ -323,6 +324,7 @@ class elis_userset_course_groups_test extends elis_database_test {
         $record->user_username = 'testuserusername';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_enrolment_create($record, 'bogus', 'testusersetname');
 
         $this->validate_end_result();
@@ -342,6 +344,7 @@ class elis_userset_course_groups_test extends elis_database_test {
         $record->link = 'testcourseshortname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_update($record, 'bogus');
 
         $this->validate_end_result();
@@ -362,6 +365,7 @@ class elis_userset_course_groups_test extends elis_database_test {
         $record->autoenrol = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_update($record, 'bogus');
 
         $this->validate_end_result();
@@ -396,6 +400,7 @@ class elis_userset_course_groups_test extends elis_database_test {
         $temp->reset_custom_field_list();
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', $record, 'bogus');
 
         $this->validate_end_result();
@@ -417,6 +422,7 @@ class elis_userset_course_groups_test extends elis_database_test {
         $record->userset_groupings = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('course', $record, 'bogus');
 
         $this->validate_end_result();
