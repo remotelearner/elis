@@ -1897,7 +1897,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $record = new stdClass;
             $record->curriculumid = $currid;
             $record->courseid = $course->id;
-    
+
             $currcrs->set_from_data($record);
             $currcrs->save();
         }
@@ -2177,14 +2177,94 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return $DB->get_field(user::TABLE, 'id', $params);
     }
 
+    /**
+     * Validates that enrolment fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_program_enrolment_data($action, $record, $filename) {
+        global $CFG, $DB;
+
+        $errors = array();
+        $error = false;
+
+        if (isset($record->user_username)) {
+            if (!$DB->record_exists('user', array('username' => $record->user_username))) {
+                $errors[] = "username value of \"{$record->user_username}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->user_email)) {
+            if (!$DB->record_exists('user', array('email' => $record->user_email))) {
+                $errors[] = "email value of \"{$record->user_email}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->user_idnumber)) {
+            if (!$DB->record_exists('user', array('idnumber' => $record->user_idnumber))) {
+                $errors[] = "idnumber value of \"{$record->user_idnumber}\"";
+                $error = true;
+            }
+        }
+
+        if ($error) {
+            if (count($errors) == 1) {
+                $this->fslogger->log_failure(implode($errors, ", ") . " does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "enrolment");
+            } else {
+                $this->fslogger->log_failure(implode($errors, ", ") . " do not refer to a valid user.", 0, $filename, $this->linenumber, $record, "enrolment");
+            }
+            return false;
+        }
+
+        if (isset($record->credits)) {
+            $digits = strlen(substr($record->credits, 0, strpos($record->credits, '.')));
+            $decdigits = strlen(substr(strrchr($record->credits, '.'), 1));
+
+            if (!is_numeric($record->credits) || $decdigits > 2 || $digits > 10) {
+                $this->fslogger->log_failure("credits value of \"{$record->credits}\" is not a number with at most ten total digits and two decimal digits.",
+                                             0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        if (isset($record->locked)) {
+            if ($record->locked != 0 && $record->locked != 1) {
+                $this->fslogger->log_failure("locked value of \"{$record->locked}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     function curriculum_enrolment_create($record, $filename, $idnumber) {
         global $DB, $CFG;
 
-        // TODO: validation
-        $curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $idnumber));
+        if (!$curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a program context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
         $userid = $this->get_userid_from_record($record, $filename);
 
-        $stucur = new curriculumstudent(array('userid' => $userid, 'curriculumid' => $curid));
+        if ($DB->record_exists('crlm_curriculum_assignment', array('curriculumid' => $curid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is already enrolled in program \"{$idnumber}\".", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_program_enrolment_data('create', $record, $filename)) {
+            return false;
+        }
+
+        $record->userid = $userid;
+        $record->curriculumid = $curid;
+        $stucur = new curriculumstudent($record);
         $stucur->save();
 
         return true;
@@ -2193,8 +2273,15 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function curriculum_enrolment_delete($record, $filename, $idnumber) {
         global $DB, $CFG;
 
-        // TODO: validation
-        $curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $idnumber));
+        if (!$curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a program context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_program_enrolment_data('delete', $record, $filename)) {
+            return false;
+        }
+
         $userid = $this->get_userid_from_record($record, $filename);
         $associd = $DB->get_field('crlm_curriculum_assignment', 'id', array('userid' => $userid, 'curriculumid' => $curid));
 
