@@ -1365,6 +1365,7 @@ class ELIS_files {
  */
     function download_dir($path, $uuid, $recurse = true) {
         global $CFG;
+        static $within = false;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('download_dir(' . $path . ', ' . $uuid . ', ' . $recurse . ')');
         if (ELIS_FILES_DEBUG_TIME) $start = microtime(true);
@@ -1386,10 +1387,13 @@ class ELIS_files {
         $filelist = array();
 
         $path .= ($path[strlen($path) - 1] != '/' ? '/' : '');
-        $npath = $path . $node->title . '/';
-
-        if (!is_dir($npath)) {
-            mkdir($npath, $CFG->directorypermissions, true);
+        $npath = $path;
+        if (!$within) {
+            $within = true;
+            $npath .= $node->title . '/';
+            if (!is_dir($npath)) {
+                mkdir($npath, $CFG->directorypermissions, true);
+            }
         }
 
         if ($data = $this->read_dir($uuid)) {
