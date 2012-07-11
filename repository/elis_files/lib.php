@@ -46,7 +46,6 @@ defined('ELIS_FILES_ALFRESCO_34') or define('ELIS_FILES_ALFRESCO_34',   '3.4');
 defined('ELIS_FILES_XFER_WS') || define('ELIS_FILES_XFER_WS', 'webservices');
 defined('ELIS_FILES_XFER_FTP') || define('ELIS_FILES_XFER_FTP', 'ftp');
 
-
 class repository_elis_files extends repository {
     private $ticket = null;
     private $user_session = null; // probably don't need this
@@ -208,10 +207,11 @@ class repository_elis_files extends repository {
 
         // Get parent path/breadcrumb
         $this->get_parent_path($uuid, $return_path, 0, 0, 0, 0 /*, $cid, $uid, $shared, $oid */);
+
         // NOTE: do NOT put 'ELIS Files' in path anymore, 'Company Home' will be
         // ... replaced with 'ELIS Files' in this->prepare_fm_listing()
         //$return_path[]= array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>'');
-        $ret['path'] = array_reverse($return_path);
+        $ret['path'] = $return_path;
 
         $this->current_node = $this->elis_files->get_info($uuid);
         $ret['parent'] = $this->current_node; // elis_files_get_parent($uuid);
@@ -230,10 +230,11 @@ class repository_elis_files extends repository {
         // Unserialized array of path/shared/oid
         $ret['thisuuid'] = $params;
         $ret['thisuuid']['encodedpath'] = $encodedpath;
-
+//print_object($ret['thisuuid']);
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
-
+//echo "user repo: ";
+//print_object($USER->elis_files_repository_location);
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
 
@@ -245,12 +246,12 @@ class repository_elis_files extends repository {
                 }
 
                 // Include shared and oid parameters
-                $params = array('path'=>$child->uuid,
-                                'shared'=>(boolean)$shared,
-                                'oid'=>(int)$oid,
-                                'cid'=>(int)$cid,
-                                'uid'=>(int)$uid);
-                $encodedpath = base64_encode(serialize($params));
+//                $params = array('path'=>$child->uuid,
+//                                'shared'=>(boolean)$shared,
+//                                'oid'=>(int)$oid,
+//                                'cid'=>(int)$cid,
+//                                'uid'=>(int)$uid);
+//                $encodedpath = base64_encode(serialize($params));
                 if (isset($child->uuid)) {
                     $info = $this->elis_files->get_info($child->uuid);
                 } else {
@@ -260,7 +261,7 @@ class repository_elis_files extends repository {
                 $modified = isset($info->modified) ? $info->modified : '';
                 $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
-                        'path'=>$encodedpath, //$child->uuid,
+                        'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
                         'name'=>$child->title,
                         'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
                         'author' => $owner,
@@ -278,12 +279,12 @@ class repository_elis_files extends repository {
                     continue;
                 }
 
-                $params = array('path'=>$child->uuid,
-                                'shared'=>(boolean)$shared,
-                                'oid'=>(int)$oid,
-                                'cid'=>(int)$cid,
-                                'uid'=>(int)$uid);
-                $encodedpath = base64_encode(serialize($params));
+//                $params = array('path'=>$child->uuid,
+//                                'shared'=>(boolean)$shared,
+//                                'oid'=>(int)$oid,
+//                                'cid'=>(int)$cid,
+//                                'uid'=>(int)$uid);
+//                $encodedpath = base64_encode(serialize($params));
                 if (isset($child->uuid)) {
                     $info = $this->elis_files->get_info($child->uuid);
                 } else {
@@ -294,7 +295,7 @@ class repository_elis_files extends repository {
                 $modified = isset($info->modified) ? $info->modified : '';
                 $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
-                        'path'=>$encodedpath,
+                        'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
                         'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 32))->out(false),
                         'size' => $filesize,
                         'author' => $owner,
@@ -420,14 +421,14 @@ class repository_elis_files extends repository {
             if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
                 continue;
             }
-            $params = array('path'=>$child->uuid,
-                             'shared'=>(boolean)$shared,
-                             'oid'=>(int)$oid,
-                             'cid'=>(int)$cid,
-                             'uid'=>(int)$uid);
-            $encodedpath = base64_encode(serialize($params));
+//            $params = array('path'=>$child->uuid,
+//                             'shared'=>(boolean)$shared,
+//                             'oid'=>(int)$oid,
+//                             'cid'=>(int)$cid,
+//                             'uid'=>(int)$uid);
+//            $encodedpath = base64_encode(serialize($params));
             $return[] = array('title'=>$child->title,
-                    'path'=>$encodedpath,
+                    'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
                     'name'=>$child->title,
                     'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
                     'created'=>'',
@@ -644,7 +645,6 @@ class repository_elis_files extends repository {
         $ret['locations'] = array();
         $this->elis_files->file_browse_options($cid, $uid, $shared, $oid, $ret['locations']);
         $ret['list'] = array();
-
 
         if (!empty($search_text)) {
             $search_result = elis_files_search($search_text);
@@ -1013,7 +1013,7 @@ class repository_elis_files extends repository {
                         $pathvalue = $path[$i]->path;
                     }
                 }
-                if ($pathname == 'Company Home') {
+                if ($pathname == $this->elis_files->get_root()->title) {
                     $pathname = get_string('repository', 'repository_elis_files');
                     if (is_array($path[$i])) {
                         $path[$i]['name'] = $pathname;
@@ -1390,8 +1390,38 @@ class repository_elis_files extends repository {
         return $canedit;
     }
 
+    /*
+     * Calculate the 'top' of the breadcrumb and then call the requested get_parent_path method
+     * @param   string  uuid    node uuid
+     * @param   array   path    breadcrumb path to node uuid
+     * @param   int     cid     course id related to node uuid
+     * @param   int     uid     user id related to node uuid
+     * @param   int     shared  shared flag related to node uuid
+     * @param   int     oid     user set id related to node uuid
+     * @param   string  type    type of parent path retrieval - either tree or parent
+     * @return  boolean         Return true if uuid is at root = e.g. end = uuid
+     */
+    function get_parent_path($uuid, &$path, $cid, $uid, $shared, $oid, $type = 'parent') {
+        if (ELIS_FILES_DEBUG_TRACE) mtrace("\n".'get_alt_parent_path ' . $uuid . ', ' . $cid . ', ' . $uid . ', ' . $shared . ', ' . $oid . ')');
+
+        // Call the appropriate get_parent_path method
+        if ($type == 'tree') {
+            $foldertree = elis_files_folder_structure();
+            self::get_parent_path_from_tree($uuid, $foldertree, $path, $cid, $uid, $shared, $oid);
+
+            // add Company Home to the top of the array that has been returned, as elis files folder structure does not return Company Home
+            $encodedpath = self::build_encodedpath($this->elis_files->get_root()->uuid, $uid, $cid, $oid, $shared);
+            $folderparent = array('name'=> $this->elis_files->get_root()->title,'path'=>$encodedpath);
+            array_unshift($path,$folderparent);
+        } elseif ($type == 'parent') {
+            self::get_parent_path_from_parent($uuid, $path, $cid, $uid, $shared, $oid);
+            $path = array_reverse($path);
+        }
+    }
+
     /**
-     * Calculate parent path for this uuid
+     * Calculate parent path from parent for this uuid
+     * This method calls get_parent for the current uuid until the end is found
      *
      * @param   string  uuid    node uuid
      * @param   array   path    breadcrumb path to node uuid
@@ -1401,41 +1431,68 @@ class repository_elis_files extends repository {
      * @param   int     oid     user set id related to node uuid
      * @return  boolean         Return true if uuid is at root = e.g. end = uuid
      */
-    function get_parent_path($uuid, &$path = array(), $cid, $uid, $shared, $oid) {
-        if (ELIS_FILES_DEBUG_TRACE) mtrace("\n".'get_parent_path ' . $uuid . ', ' . $cid . ', ' . $uid . ', ' . $shared . ', ' . $oid . ')');
-    /// Get the "ending" UUID for the 'root' of navigation.
-        if ((empty($cid) || $cid == SITEID) && empty($uid) && empty($shared) && empty($oid)) {
-            $end   = $this->elis_files->get_root()->uuid;
-        } else if (empty($uid) && $shared == true) {
-            $end = $this->elis_files->suuid;
-        } else if (empty($uid) && empty($oid) && empty($shared) && !empty($cid) && $cid != SITEID) {
-            $end = $this->elis_files->get_course_store($cid);
-        } else if (!empty($uid)) {
-            $end = $this->elis_files->get_user_store($uid);
-        } else if (empty($uid) && !empty($oid)) {
-            $end = $this->elis_files->get_userset_store($oid);
-        }
+    function get_parent_path_from_parent($uuid, &$path, $cid, $uid, $shared, $oid) {
 
-        // Need to incorporate 'end' testing into here somehow... :)
-        if ($uuid == $end) {
+        if ($uuid == $this->elis_files->get_root()->uuid) {
             return true;
         }
 
-        if (!$parent_node = $this->elis_files->get_parent($uuid)) {
+        if (!($parent_node = $this->elis_files->get_parent($uuid))) {
             return false;
         }
 
-        if ($parent_node) {
-            // Include shared and oid parameters
-            $params = array('path'=>$parent_node->uuid,
-                            'shared'=>(boolean)$shared,
-                            'oid'=>(int)$oid,
-                            'cid'=>(int)$cid,
-                            'uid'=>(int)$uid);
-            $encodedpath = base64_encode(serialize($params));
-            $path[] = array('name'=>$parent_node->title,'path'=>$encodedpath);
-            self::get_parent_path($parent_node->uuid,$path, $cid, $uid, $shared, $oid);
+        //we want to find the path via elis_files_folder_structure
+        $encodedpath = self::build_encodedpath($parent_node->uuid, $uid, $cid, $oid, $shared);
+        $path[] = array('name'=>$parent_node->title,'path'=>$encodedpath);
+        self::get_parent_path_from_parent($parent_node->uuid,$path, $cid, $uid, $shared, $oid);
+    }
+
+    /**
+     * Calculate parent path from parent for this uuid
+     * This method recursively goes through the elis_files folder structure until the uuid is found
+     * and then walks back up again to get the path
+     * This was written in the hope that it would be more efficient, however, according to the
+     * associated unit test, it's no much quicker - but will be kept in the code  for now
+     *
+     * @param   string  uuid    node uuid
+     * @param   array   foldertree  array of folders in alfresco - gets updated recursively
+     * @param   array   path    breadcrumb path to node uuid
+     * @param   int     cid     course id related to node uuid
+     * @param   int     uid     user id related to node uuid
+     * @param   int     shared  shared flag related to node uuid
+     * @param   int     oid     user set id related to node uuid
+     * @param   string  end     contextual end of path, e.g. course, user folder - uuid
+     * @return  boolean         Return true if uuid is at root = e.g. end = uuid
+     */
+    public function get_parent_path_from_tree($uuid, $foldertree, &$resultpath, $cid, $uid, $shared, $oid) {
+        static $found_parent = 0;
+        if (!$found_parent) {
+            $found_parent = 1;
+            $info = $this->elis_files->get_info($uuid);
+            if ($info->type != ELIS_files::$type_folder) {
+                $uuid = $this->elis_files->get_parent($uuid);
+                $found_parent = 2;
+            }
         }
+
+        // Find matching
+        foreach ($foldertree as $folder) {
+            $encodedpath = self::build_encodedpath($folder['uuid'], $uid, $cid, $oid, $shared);
+            $resultpath[] = array('name'=>$folder['name'],'path'=>$encodedpath);
+            if ($uuid == $folder['uuid']) {
+                if ($found_parent == 1) {
+                    $removed = array_pop($resultpath);
+                }
+                return true;
+            }
+            if (!empty($folder['children'])) {
+                if (self::get_parent_path_from_tree($uuid, $folder['children'], $resultpath, $cid, $uid, $shared, $oid)) {
+                    return true;
+                }
+            }
+            $removed = array_pop($resultpath);
+        }
+        return false;
     }
 
     function category_tree() {
