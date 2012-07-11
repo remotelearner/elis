@@ -24,6 +24,9 @@
  *
  */
 
+//database table constants
+define('RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE', 'rlipimport_version1elis_mapping');
+
 /**
  * Performs page setup work needed on the page for configuring field mapping
  * for the import
