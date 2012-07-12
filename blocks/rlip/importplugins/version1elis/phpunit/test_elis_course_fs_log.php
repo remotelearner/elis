@@ -276,7 +276,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'name' => 'testcourse',
                       'link' => 'invalidmoodlecourse');
 
-        $expected_error = "[course.csv line 2] Course could not be created. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -291,7 +291,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'idnumber' => 'testcourseid',
                       'link' => 'invalidmoodlecourse');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -305,7 +305,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'name' => 'testcourse',
                       'assignment' => 'invalidprogram');
 
-        $expected_error = "[course.csv line 2] Course could not be created. assignment value of \"invalidprogram\" does not refer to a valid program.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. assignment value of \"invalidprogram\" does not refer to a valid program.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -321,7 +321,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'name' => 'testcourse',
                       'assignment' => 'invalidprogram');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. assignment value of \"invalidprogram\" does not refer to a valid program.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. assignment value of \"invalidprogram\" does not refer to a valid program.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -335,7 +335,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'name' => 'testcourse',
                       'credits' => '-1');
 
-        $expected_error = "[course.csv line 2] Course could not be created. transfercredits value of \"-1\" is not a non-negative number.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. transfercredits value of \"-1\" is not a non-negative number.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -350,7 +350,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'idnumber' => 'testcourseid',
                       'credits' => '-1');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. transfercredits value of \"-1\" is not a non-negative number.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. transfercredits value of \"-1\" is not a non-negative number.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -365,7 +365,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'credits' => '1',
                       'completion_grade' => '-1');
 
-        $expected_error = "[course.csv line 2] Course could not be created. completion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. completion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -381,7 +381,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'credits' => '1',
                       'completion_grade' => '-1');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. completion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. completion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -395,7 +395,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'context' => 'course',
                       'idnumber' => 'invalidtestcourseid');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. idnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"invalidtestcourseid\" could not be updated. idnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -409,7 +409,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                       'context' => 'course',
                       'idnumber' => 'invalidtestcourseid');
 
-        $expected_error = "[course.csv line 2] Course could not be deleted. idnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"invalidtestcourseid\" could not be deleted. idnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 

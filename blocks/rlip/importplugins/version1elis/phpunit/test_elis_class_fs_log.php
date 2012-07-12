@@ -56,7 +56,7 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock 
         if ($entity != 'course') {
             return false;
         }
-        return parent::get_import_file($entity, 'course.csv');
+        return parent::get_import_file($entity, 'class.csv');
     }
 }
 
@@ -287,7 +287,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'name' => 'testclassname',
                       'startdate' => '01-02');
 
-        $expected_error = "[course.csv line 2] Course could not be created. startdate value of \"01-02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. startdate value of \"01-02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -311,7 +311,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'name' => 'testclassname',
                       'startdate' => '01-02');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. startdate value of \"01-02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. startdate value of \"01-02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -334,7 +334,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'startdate' => '01-02-2012',
                       'enddate' => '01.02');
 
-        $expected_error = "[course.csv line 2] Course could not be created. enddate value of \"01.02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. enddate value of \"01.02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -359,7 +359,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'startdate' => '01-02-2012',
                       'enddate' => '01.02');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. enddate value of \"01.02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. enddate value of \"01.02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -383,7 +383,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enddate' => '2012.01.02',
                       'starttimeminute' => 7);
 
-        $expected_error = "[course.csv line 2] Course could not be created. starttimeminute value of \"7\" is not on a five-minute boundary.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. starttimeminute value of \"7\" is not on a five-minute boundary.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -409,7 +409,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enddate' => '2012.01.02',
                       'starttimeminute' => 7);
 
-        $expected_error = "[course.csv line 2] Course could not be updated. starttimeminute value of \"7\" is not on a five-minute boundary.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. starttimeminute value of \"7\" is not on a five-minute boundary.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -434,7 +434,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'starttimehour' => 5,
                       'endtimeminute' => 6);
 
-        $expected_error = "[course.csv line 2] Course could not be created. endtimeminute value of \"6\" is not on a five-minute boundary.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. endtimeminute value of \"6\" is not on a five-minute boundary.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -461,7 +461,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'starttimehour' => 5,
                       'endtimeminute' => 6);
 
-        $expected_error = "[course.csv line 2] Course could not be updated. endtimeminute value of \"6\" is not on a five-minute boundary.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. endtimeminute value of \"6\" is not on a five-minute boundary.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -487,7 +487,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'endtimeminute' => 5,
                       'maxstudents' => -1);
 
-        $expected_error = "[course.csv line 2] Course could not be created. maxstudents value of \"-1\" is not a non-negative integer.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. maxstudents value of \"-1\" is not a non-negative integer.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -515,7 +515,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'endtimeminute' => 5,
                       'maxstudents' => -1);
 
-        $expected_error = "[course.csv line 2] Course could not be updated. maxstudents value of \"-1\" is not a non-negative integer.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. maxstudents value of \"-1\" is not a non-negative integer.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -542,7 +542,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'maxstudents' => 30,
                       'enrol_from_waitlist' => 'invalidflag');
 
-        $expected_error = "[course.csv line 2] Course could not be created. enrol_from_waitlist value of \"invalidflag\" is not one of the available options (0, 1).\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. enrol_from_waitlist value of \"invalidflag\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -571,7 +571,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'maxstudents' => 30,
                       'enrol_from_waitlist' => 'invalidflag');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. enrol_from_waitlist value of \"invalidflag\" is not one of the available options (0, 1).\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. enrol_from_waitlist value of \"invalidflag\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -600,7 +600,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enrol_from_waitlist' => 1,
                       'track' => 'invalidtrack');
 
-        $expected_error = "[course.csv line 2] Course could not be created. assignment value of \"invalidtrack\" does not refer to a valid track.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. assignment value of \"invalidtrack\" does not refer to a valid track.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -630,7 +630,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enrol_from_waitlist' => 1,
                       'track' => 'invalidtrack');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. assignment value of \"invalidtrack\" does not refer to a valid track.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. assignment value of \"invalidtrack\" does not refer to a valid track.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -657,7 +657,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'maxstudents' => 30,
                       'enrol_from_waitlist' => 3);
 
-        $expected_error = "[course.csv line 2] Course could not be created. enrol_from_waitlist value of \"3\" is not one of the available options (0, 1).\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. enrol_from_waitlist value of \"3\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -686,7 +686,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'maxstudents' => 30,
                       'enrol_from_waitlist' => 3);
 
-        $expected_error = "[course.csv line 2] Course could not be updated. enrol_from_waitlist value of \"3\" is not one of the available options (0, 1).\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. enrol_from_waitlist value of \"3\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -714,7 +714,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enrol_from_waitlist' => 1,
                       'link' => 'invalidmoodlecourse');
 
-        $expected_error = "[course.csv line 2] Course could not be created. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -744,7 +744,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enrol_from_waitlist' => 1,
                       'link' => 'invalidmoodlecourse');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -756,7 +756,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'context' => 'class',
                       'idnumber' => 'testclassid');
 
-        $expected_error = "[course.csv line 2] Course could not be deleted. idnumber value of \"testclassid\" does not refer to a valid class instance.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be deleted. idnumber value of \"testclassid\" does not refer to a valid class instance.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 

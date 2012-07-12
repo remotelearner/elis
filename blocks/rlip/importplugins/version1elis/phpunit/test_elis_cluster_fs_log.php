@@ -56,7 +56,7 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock 
         if ($entity != 'course') {
             return false;
         }
-        return parent::get_import_file($entity, 'course.csv');
+        return parent::get_import_file($entity, 'userset.csv');
     }
 }
 
@@ -264,7 +264,7 @@ class version1ELISClusterFSLogTest extends rlip_test {
                       'context' => 'cluster',
                       'name' => 'testcluster');
 
-        $expected_error = "[course.csv line 2] Course could not be created. name value of \"testcluster\" refers to a user set that already exists.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be created. name value of \"testcluster\" refers to a user set that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -276,7 +276,7 @@ class version1ELISClusterFSLogTest extends rlip_test {
                       'context' => 'cluster',
                       'name' => 'invalidtestcluster');
 
-        $expected_error = "[course.csv line 2] Course could not be deleted. name value of \"invalidtestcluster\" does not refer to a valid user set.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"invalidtestcluster\" could not be deleted. name value of \"invalidtestcluster\" does not refer to a valid user set.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -288,7 +288,7 @@ class version1ELISClusterFSLogTest extends rlip_test {
                       'context' => 'cluster',
                       'name' => 'invalidtestcluster');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. name value of \"invalidtestcluster\" does not refer to a valid user set.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"invalidtestcluster\" could not be updated. name value of \"invalidtestcluster\" does not refer to a valid user set.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -303,7 +303,7 @@ class version1ELISClusterFSLogTest extends rlip_test {
                       'name' => 'testcluster',
                       'recursive' => 2);
 
-        $expected_error = "[course.csv line 2] Course could not be deleted. recursive value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be deleted. recursive value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -316,7 +316,7 @@ class version1ELISClusterFSLogTest extends rlip_test {
                       'name' => 'testcluster',
                       'parent' => 'invalidparent');
 
-        $expected_error = "[course.csv line 2] Course could not be created. parent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be created. parent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -331,7 +331,7 @@ class version1ELISClusterFSLogTest extends rlip_test {
                       'name' => 'testcluster',
                       'parent' => 'invalidparent');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. parent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be updated. parent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
