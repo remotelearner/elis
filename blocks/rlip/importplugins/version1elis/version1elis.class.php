@@ -114,8 +114,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $import_fields_enrolment_delete = array('action', 'context', 'user_idnumber', 'user_username', 'user_email');
 
     //fields that are available during the enrolment import
-    static $available_fields_enrolment = array('action', 'context', 'user_idnumber', 'user_username', 'user_email',
-                                               'enrolmenttime', 'assigntime', 'completetime', 'completetime', 'completestatusid',
+    static $available_fields_enrolment = array('context', 'user_idnumber', 'user_username', 'user_email',
+                                               'enrolmenttime', 'assigntime', 'completetime', 'completestatusid',
                                                'grade', 'credits', 'locked', 'role');
 
     //store mappings for the current entity type
@@ -1301,8 +1301,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
 
-        // TODO: Add plugin support for "class" type?
-        //if ($this->plugin_supports($entitytype) !== false) {
+        if ($this->plugin_supports($entitytype) !== false) {
             $attribute = 'available_fields_'.$entitytype;
 
             $result = array_merge(array('action'), static::$$attribute);
@@ -1315,9 +1314,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
 
             return $result;
-        //} else {
-            //return false;
-        //}
+        } else {
+            return false;
+        }
     }
 
     function class_update($record, $filename) {

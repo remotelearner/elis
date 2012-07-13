@@ -34,6 +34,7 @@ $string['createorupdate'] = 'Create or update';
 $string['datahandling'] = 'Data handling';
 $string['enrolmentfile'] = 'Enrolment file';
 $string['enrolmenttab'] = 'Enrolment fields';
+$string['mappingssaved'] = 'Field mappings successfully saved';
 $string['pluginname'] = 'Version 1 ELIS import';
 $string['userfile'] = 'User file';
 $string['usertab'] = 'User fields';
