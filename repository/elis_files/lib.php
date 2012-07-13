@@ -1024,9 +1024,13 @@ class repository_elis_files extends repository {
             $context = get_context_instance(CONTEXT_COURSE, $id);
         }
         // Get the non context based permissions
-        $capabilities = array('repository/elis_files:createowncontent'=> false,
-                              'repository/elis_files:createsharedcontent'=> false);
-        $this->elis_files->get_other_capabilities($USER, $capabilities);
+        $capabilities = array(
+            'repository/elis_files:createowncontent'=> false,
+            'repository/elis_files:createsharedcontent'=> false
+        );
+
+        $this->elis_files->get_other_capabilities($capabilities);
+
         $canedit = false;
 
         if (empty($userid) && empty($shared) && empty($oid)) {

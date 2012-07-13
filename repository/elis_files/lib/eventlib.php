@@ -161,12 +161,12 @@ function elis_files_role_unassigned($ra) {
                     AND rc.permission = :perm';
 
             $params = array(
-                'userid'     => $ra->userid,
-                'capability' => 'repository/elis_files:viewsitecontent',
-                'perm'       => CAP_ALLOW
+                'userid' => $ra->userid,
+                'cap'    => 'repository/elis_files:viewsitecontent',
+                'perm'   => CAP_ALLOW
             );
 
-            if (!$DB->record_exists_sql($sql, array('userid' => $ra->userid))) {
+            if (!$DB->record_exists_sql($sql, $params)) {
                 if ($permissions = elis_files_get_permissions($root->uuid, $username)) {
                     foreach ($permissions as $permission) {
                         elis_files_set_permission($username, $root->uuid, $permission, ELIS_FILES_CAPABILITY_DENIED);
