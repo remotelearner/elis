@@ -24,6 +24,9 @@
  *
  */
 
+//database table constants
+define('RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE', 'rlipimport_version1elis_mapping');
+
 /**
  * Performs page setup work needed on the page for configuring field mapping
  * for the import
@@ -73,6 +76,88 @@ function rlipimport_version1elis_get_tabs($baseurl) {
  * @return array The appropriate mapping
  */
 function rlipimport_version1elis_get_mapping($entitytype) {
-    //todo: implement
-    return array();
+    global $CFG, $DB;
+    require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+    $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+    require_once($file);
+
+    //obtain the list of supported fields
+    $plugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+    $fields = $plugin->get_available_fields($entitytype);
+
+    if ($fields == false) {
+        //invalid entitytype was supplied
+        return false;
+    }
+
+    //by default, map each field to itself
+    $result = array();
+    foreach ($fields as $field) {
+        $result[$field] = $field;
+    }
+
+    //apply mapping info from the database
+    $params = array('entitytype' => $entitytype);
+    if ($mappings = $DB->get_recordset(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $params)) {
+        foreach ($mappings as $mapping) {
+            $result[$mapping->standardfieldname] = $mapping->customfieldname;
+        }
+    }
+
+    return $result;
+}
+
+/**
+ * Saves field mappings to the database
+ *
+ * @param string $entitytype The type of entity was are saving mappings for
+ * @param array $options The list of available fields that are supported
+ * @param array $data The data submitted by the form
+ */
+function rlipimport_version1elis_save_mapping($entitytype, $options, $formdata) {
+    global $CFG, $DB;
+
+    //need to collect data from our defaults and form data
+    $data = array();
+
+    //defaults
+    foreach ($options as $option) {
+        $data[$option] = $option;
+    }
+
+    //form data
+    foreach ($formdata as $key => $value) {
+        if (in_array($key, $options)) {
+            $data[$key] = $value;
+        }
+    }
+
+    //clear out previous values
+    $params = array('entitytype' => $entitytype);
+    $DB->delete_records(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $params);
+
+    //write to database
+    foreach ($data as $key => $value) {
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $key;
+        $record->customfieldname = $value;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
+    }
+}
+
+/**
+ * Resets field mappings to their default state
+ *
+ * @param string $entitytype The type of entity we are resetting mappings for
+ */
+function rlipimport_version1elis_reset_mappings($entitytype) {
+    global $CFG, $DB;
+    $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+    require_once($file);
+
+    $sql = "UPDATE {".RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE."}
+            SET customfieldname = standardfieldname
+            WHERE entitytype = ?";
+    $DB->execute($sql, array($entitytype));
 }

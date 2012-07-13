@@ -84,27 +84,18 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
         //need the plugin class for some utility functions
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
-
-        // "action" is not always provided. In that case, return only the specific message
-        if (empty($record->action)) {
-            //missing action, general message will be fairly generic
-            $type_display = ucfirst($type);
-            return "{$type_display} could not be processed. {$message}";
-            return $message;
-        }
-
         $msg = "";
 
         if ($type == "enrolment") {
             if ($record->action != 'create' && $record->action != 'delete') {
                 //invalid action
-                return 'Enrolment could not be processed. '.$message;
+                return "Enrolment in \"{$record->context}\" could not be processed. ".$message;
             }
 
             if (!$this->track_role_actions && !$this->track_enrolment_actions) {
                 //error without sufficient information to properly provide details
                 if ($record->action == 'create') {
-                    return 'Enrolment could not be created. '.$message;
+                   return 'Enrolment could not be created. '.$message;
                 } else if($record->action == 'delete') {
                     return 'Enrolment could not be deleted. '.$message;
                 }
@@ -118,8 +109,6 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                 $user_identifier_set = !empty($record->username) || !empty($record->email) || !empty($record->idnumber);
                 //determine if all required fields were set
                 $required_fields_set = !empty($record->role) && $user_identifier_set && !empty($record->context);
-                //list of contexts at which role assignments are allowed for specific instances
-                $valid_contexts = array('coursecat', 'course', 'user');
 
                 //descriptive string for user and context
                 $user_descriptor = rlip_importplugin_version1elis::get_user_descriptor($record);
@@ -199,24 +188,24 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             $type = ucfirst($type);
             switch ($record->action) {
                 case "create":
-                    if (empty($record->shortname)) {
-                        $msg = "Course could not be created. " . $message;
+                    if (empty($record->context) || empty($record->idnumber) || empty($record->name)) {
+                        $msg = "Course description could not be created. " . $message;
                     } else {
-                        $msg =  "{$type} with shortname \"{$record->shortname}\" could not be created. " . $message;
+                        $msg =  "{$type} description with idnumber \"{$record->idnumber}\" could not be created. " . $message;
                     }
                     break;
                 case "update":
-                    if (empty($record->shortname)) {
-                        $msg = "Course could not be updated. " . $message;
+                    if (empty($record->context) || empty($record->idnumber)) {
+                        $msg = "Course description could not be updated. " . $message;
                     } else {
-                        $msg = "{$type} with shortname \"{$record->shortname}\" could not be updated. " . $message;
+                        $msg = "{$type} description with idnumber \"{$record->idnumber}\" could not be updated. " . $message;
                     }
                     break;
                 case "delete":
-                    if (empty($record->shortname)) {
-                        $msg = "Course could not be deleted. " . $message;
+                    if (empty($record->context) || empty($record->idnumber)) {
+                        $msg = "Course description could not be deleted. " . $message;
                     } else {
-                        $msg = "{$type} with shortname \"{$record->shortname}\" could not be deleted. " . $message;
+                        $msg = "{$type} description with idnumber \"{$record->idnumber}\" could not be deleted. " . $message;
                     }
                     break;
                 default:
@@ -231,7 +220,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             switch ($record->action) {
                 case "create":
                     //make sure all required fields are specified
-                    if (empty($record->username) || empty($record->email)) {
+                    if (empty($record->idnumber) || empty($record->username) || empty($record->email) || empty($record->firstname) || empty($record->lastname) || empty($record->country)) {
                         $msg = "User could not be created. " . $message;
                     } else {
                         $user_descriptor = rlip_importplugin_version1elis::get_user_descriptor($record);
@@ -263,12 +252,148 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             }
         }
 
+        if ($type == "track") {
+            $type = ucfirst($type);
+            switch ($record->action) {
+                case "create":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->assignment) || empty($record->idnumber) || empty($record->name)) {
+                        $msg = "Track could not be created. " . $message;
+                    } else {
+                        $msg =  "{$type} with idnumber \"{$record->idnumber}\" could not be created. " . $message;
+                    }
+                    break;
+                case "update":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->idnumber)) {
+                        $msg = "Track could not be updated. " . $message;
+                    } else {
+                        $msg = "{$type} with idnumber \"{$record->idnumber}\" could not be updated. " . $message;
+                    }
+                    break;
+                case "delete":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->idnumber)) {
+                        $msg = "Track could not be deleted. " . $message;
+                    } else {
+                        $msg = "{$type} with idnumber \"{$record->idnumber}\" could not be deleted. " . $message;
+                    }
+                    break;
+                default:
+                    //invalid action
+                    $msg = 'Track could not be processed. '.$message;
+                    break;
+            }
+        }
+
+        if ($type == "cluster") {
+            $type = ucfirst($type);
+            switch ($record->action) {
+                case "create":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->name)) {
+                        $msg = "User set could not be created. " . $message;
+                    } else {
+                        $msg = "User set with name \"{$record->name}\" could not be created. " . $message;
+                    }
+                    break;
+                case "update":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->name)) {
+                        $msg = "User set could not be updated. " . $message;
+                    } else {
+                        $msg = "User set with name \"{$record->name}\" could not be updated. " . $message;
+                    }
+                    break;
+                case "delete":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->name)) {
+                        $msg = "User set could not be deleted. " . $message;
+                    } else {
+                        $msg = "User set with name \"{$record->name}\" could not be deleted. " . $message;
+                    }
+                    break;
+                default:
+                    //invalid action
+                    $msg = 'User set could not be processed. '.$message;
+                    break;
+            }
+        }
+
+        if ($type == "curriculum") {
+            $type = ucfirst($type);
+            switch ($record->action) {
+                case "create":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->idnumber) || empty($record->name)) {
+                        $msg = "Program could not be created. " . $message;
+                    } else {
+                        $msg = "Program with idnumber \"{$record->idnumber}\" could not be created. " . $message;
+                    }
+                    break;
+                case "update":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->idnumber)) {
+                        $msg = "Program could not be updated. " . $message;
+                    } else {
+                        $msg = "Program with idnumber \"{$record->idnumber}\" could not be updated. " . $message;
+                    }
+                    break;
+                case "delete":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->idnumber)) {
+                        $msg = "Program could not be deleted. " . $message;
+                    } else {
+                        $msg = "Program with idnumber \"{$record->idnumber}\" could not be deleted. " . $message;
+                    }
+                    break;
+                default:
+                    //invalid action
+                    $msg = 'Program could not be processed. '.$message;
+                    break;
+            }
+        }
+
+        if ($type == "class") {
+            $type = ucfirst($type);
+            switch ($record->action) {
+                case "create":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->idnumber) || empty($record->assignment)) {
+                        $msg = "Class instance could not be created. " . $message;
+                    } else {
+                        $msg = "Class instance with idnumber \"{$record->idnumber}\" could not be created. " . $message;
+                    }
+                    break;
+                case "update":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->idnumber)) {
+                        $msg = "Class instance could not be updated. " . $message;
+                    } else {
+                        $msg = "Class instance with idnumber \"{$record->idnumber}\" could not be updated. " . $message;
+                    }
+                    break;
+                case "delete":
+                    //make sure all required fields are specified
+                    if (empty($record->context) || empty($record->idnumber)) {
+                        $msg = "Class instance could not be deleted. " . $message;
+                    } else {
+                        $msg = "Class instance with idnumber \"{$record->idnumber}\" could not be deleted. " . $message;
+                    }
+                    break;
+                default:
+                    //invalid action
+                    $msg = 'Class instance could not be processed. '.$message;
+                    break;
+            }
+        }
+
         return $msg;
     }
 
     // Validate the provided type
     private function type_validation($type) {
-        $types = array('course','user','roleassignment','group','enrolment');
+        $types = array('course', 'user', 'roleassignment', 'group', 'enrolment', 'curriculum', 'track', 'class', 'cluster');
         if (!in_array($type, $types)) {
             throw new Exception("\"$type\" in an invalid type. The available types are " . implode(', ', $types));
         }

@@ -56,7 +56,7 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock 
         if ($entity != 'course') {
             return false;
         }
-        return parent::get_import_file($entity, 'course.csv');
+        return parent::get_import_file($entity, 'track.csv');
     }
 }
 
@@ -258,13 +258,17 @@ class version1ELISTrackFSLogTest extends rlip_test {
      * Validate that start date validation works on track create
      */
     public function testELISTrackInvalidStartDateCreate() {
+        $this->load_program();
+
         $data = array('action' => 'create',
                       'context' => 'track',
                       'idnumber' => 'testtrackid',
+                      'assignment' => 'testprogramidnumber',
                       'name' => 'testtrack',
                       'startdate' => '1340138101');
 
-        $expected_error = "[course.csv line 2] Course could not be created. startdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be created. " .
+                          "startdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -280,7 +284,8 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'name' => 'testtrack',
                       'startdate' => '1340138101');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. startdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be updated. " .
+                          "startdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -288,14 +293,18 @@ class version1ELISTrackFSLogTest extends rlip_test {
      * Validate that end date validation works on track create
      */
     public function testELISTrackInvalidEndDateCreate() {
+        $this->load_program();
+
         $data = array('action' => 'create',
                       'context' => 'track',
                       'idnumber' => 'testtrackid',
                       'name' => 'testtrack',
+                      'assignment' => 'testprogramidnumber',
                       'startdate' => '01/02/2012',
                       'enddate' => '1340138101');
 
-        $expected_error = "[course.csv line 2] Course could not be created. enddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be created. " .
+                          "enddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -312,7 +321,8 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'startdate' => '01/02/2012',
                       'enddate' => '1340138101');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. enddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be updated. " .
+                          "enddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -320,15 +330,19 @@ class version1ELISTrackFSLogTest extends rlip_test {
      * Validate that autocreate validation works on track create
      */
     public function testELISTrackInvalidAutocreateCreate() {
+        $this->load_program();
+
         $data = array('action' => 'create',
                       'context' => 'track',
                       'idnumber' => 'testtrackid',
                       'name' => 'testtrack',
+                      'assignment' => 'testprogramidnumber',
                       'startdate' => '01/02/2012',
                       'enddate' => '01-02-2012',
                       'autocreate' => -1);
 
-        $expected_error = "[course.csv line 2] Course could not be created. autocreate value of \"-1\" is not one of the available options (0, 1).\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be created. " .
+                          "autocreate value of \"-1\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -346,7 +360,8 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'enddate' => '01-02-2012',
                       'autocreate' => -1);
 
-        $expected_error = "[course.csv line 2] Course could not be updated. autocreate value of \"-1\" is not one of the available options (0, 1).\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be updated. " .
+                          "autocreate value of \"-1\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -358,15 +373,26 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'context' => 'track',
                       'idnumber' => 'invalidtesttrackid');
 
-        $expected_error = "[course.csv line 2] Course could not be deleted. idnumber value of \"invalidtesttrackid\" does not refer to a valid track.\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"invalidtesttrackid\" could not be deleted. " .
+                          "idnumber value of \"invalidtesttrackid\" does not refer to a valid track.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('crlm_track', dirname(__FILE__).'/tracktable.csv');
+        $dataset->addTable('crlm_curriculum', dirname(__FILE__).'/programtable.csv');
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
+
+    protected function load_program() {
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('crlm_curriculum', dirname(__FILE__).'/programtable.csv');
+        $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
+    }
+
+
 
 }

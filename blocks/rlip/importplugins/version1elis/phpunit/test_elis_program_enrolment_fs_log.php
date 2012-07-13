@@ -43,7 +43,7 @@ require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 /**
  * Class that fetches import files for the user import
  */
-class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock {
+class rlip_importprovider_fslogenrolment extends rlip_importprovider_withname_mock {
 
     /**
      * Hook for providing a file plugin for a particular
@@ -53,14 +53,14 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock 
      * @return object The file plugin instance, or false if not applicable
      */
     function get_import_file($entity) {
-        if ($entity != 'course') {
+        if ($entity != 'enrolment') {
             return false;
         }
-        return parent::get_import_file($entity, 'course.csv');
+        return parent::get_import_file($entity, 'enrolment.csv');
     }
 }
 
-class version1ELISCourseFSLogTest extends rlip_test {
+class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
 
     protected $backupGlobalsBlacklist = array('DB');
 
@@ -73,10 +73,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
         $tables = array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'crlm_curriculum' => 'elis_program',
-                     'crlm_coursetemplate' => 'elis_program',
-                     'crlm_course' => 'elis_program',
-                     'crlm_curriculum_course' => 'elis_program',
-                     'crlm_track' => 'elis_program',
+                     'crlm_curriculum_assignment' => 'elis_program',
                      'config_plugins' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
@@ -111,16 +108,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
                      'role_capabilities' => 'moodle',
                      'message_working' => 'moodle',
                      'crlm_user' => 'elis_program',
-                     'crlm_user_moodle' => 'elis_program',
-                     'elis_field_categories' => 'elis_core',
-                     'elis_field_category_contexts' => 'elis_core',
-                     'elis_field_contextlevels' => 'elis_core',
-                     'elis_field_data_char' => 'elis_core',
-                     'elis_field' => 'elis_core',
-                     'elis_field_data_int' => 'elis_core',
-                     'elis_field_data_num' => 'elis_core',
-                     'elis_field_data_text' => 'elis_core',
-                     'elis_field_owner' => 'elis_core');
+                     'crlm_user_moodle' => 'elis_program');
 
         return $tables;
     }
@@ -266,156 +254,120 @@ class version1ELISCourseFSLogTest extends rlip_test {
         $this->assertEquals($expected_error, $actual_error);
     }
 
-    /**
-     * Validate that link validation works on course create
-     */
-    public function testELISCourseInvalidLinkCreate() {
+    // Validate that program validation works on enrolment create
+    public function testELISProgramEnrolmentValidationCreate() {
+        $this->load_csv_data();
+
         $data = array('action' => 'create',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'name' => 'testcourse',
-                      'link' => 'invalidmoodlecourse');
+                      'context' => 'curriculum_invalidtestprogramid',
+                      'user_idnumber' => 'testidnumber',
+                      'user_username' => 'testusername',
+                      'user_email' => 'test@user.com');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be created. instance value of \"invalidtestprogramid\" does not refer to a valid instance of a program context.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
-    /**
-     * Validate that link validation works on course update
-     */
-    public function testELISCourseInvalidLinkUpdate() {
+    // Validate that user validation works on program create
+    public function testELISProgramEnrolmentUserCreate() {
         $this->load_csv_data();
 
-        $data = array('action' => 'update',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'link' => 'invalidmoodlecourse');
-
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that link validation works on course create
-     */
-    public function testELISCourseInvalidAssignmentCreate() {
         $data = array('action' => 'create',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'name' => 'testcourse',
-                      'assignment' => 'invalidprogram');
+                      'context' => 'curriculum_testprogramidnumber',
+                      'user_idnumber' => 'invalidtestuserid',
+                      'user_username' => 'invaludtestuser',
+                      'user_email' => 'invalidtestuser@mail.com');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. assignment value of \"invalidprogram\" does not refer to a valid program.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be created. username value of \"invaludtestuser\", email value of \"invalidtestuser@mail.com\", idnumber value of \"invalidtestuserid\" do not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
-    /**
-     * Validate that assignment validation works on course update
-     */
-    public function testELISCourseInvalidAssignmentUpdate() {
+    // Validate credits validation works on enrolment create
+    public function testELISProgramEnrolmentCreditsCreate() {
         $this->load_csv_data();
 
-        $data = array('action' => 'update',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'name' => 'testcourse',
-                      'assignment' => 'invalidprogram');
-
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. assignment value of \"invalidprogram\" does not refer to a valid program.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that credit validation works on course creation
-     */
-    public function testELISCourseInvalidCreditCreate() {
         $data = array('action' => 'create',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'name' => 'testcourse',
-                      'credits' => '-1');
+                      'context' => 'curriculum_testprogramidnumber',
+                      'user_idnumber' => 'testidnumber',
+                      'user_username' => 'testusername',
+                      'user_email' => 'test@user.com',
+                      'credits' => '10.000000');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. transfercredits value of \"-1\" is not a non-negative number.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be created. credits value of \"10.000000\" is not a number with at most ten total digits and two decimal digits.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
-    /**
-     * Validate that credit validation works on course update
-     */
-    public function testELISCourseInvalidCreditUpdate() {
+    // Validate locked validation works on enrolment create
+    public function testELISProgramEnrolmentLockedCreate() {
         $this->load_csv_data();
 
-        $data = array('action' => 'update',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'credits' => '-1');
-
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. transfercredits value of \"-1\" is not a non-negative number.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate that completion grade validation works on course create
-     */
-    public function testELISCourseInvalidCompletionGradeCreate() {
         $data = array('action' => 'create',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'name' => 'testcourse',
-                      'credits' => '1',
-                      'completion_grade' => '-1');
+                      'context' => 'curriculum_testprogramidnumber',
+                      'user_idnumber' => 'testidnumber',
+                      'user_username' => 'testusername',
+                      'user_email' => 'test@user.com',
+                      'credits' => '10.00',
+                      'locked' => -1);
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. completion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be created. locked value of \"-1\" is not one of the available options (0, 1).\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
-    /**
-     * Validate that completion grade validation works on course update
-     */
-    public function testELISCourseInvalidCompletionGradeUpdate() {
-        $this->load_csv_data();
+    // Validate that program validation works on enrolment deletion
+    public function testELISProgramEnrolmentValidationDelete() {
+        $data = array('action' => 'delete',
+                      'context' => 'curriculum_invalidtestprogramid',
+                      'user_idnumber' => 'testidnumber',
+                      'user_username' => 'testusername',
+                      'user_email' => 'test@user.com');
 
-        $data = array('action' => 'update',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseid',
-                      'credits' => '1',
-                      'completion_grade' => '-1');
-
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. completion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be deleted. instance value of \"invalidtestprogramid\" does not refer to a valid instance of a program context.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
-    /**
-     * Validate idnumber validation works on course update
-     */
-    public function testELISCourseInvalidIdnumberUpdate() {
-        $this->load_csv_data();
-
-        $data = array('action' => 'update',
-                      'context' => 'course',
-                      'idnumber' => 'invalidtestcourseid');
-
-        $expected_error = "[course.csv line 2] Course description with idnumber \"invalidtestcourseid\" could not be updated. idnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-    }
-
-    /**
-     * Validate idnumber validation works on course delete
-     */
-    public function testELISCourseInvalidIdnumberDelete() {
+    // Validate user validation works on enrolment deletion
+    public function testELISProgramEnrolmentUserDelete() {
         $this->load_csv_data();
 
         $data = array('action' => 'delete',
-                      'context' => 'course',
-                      'idnumber' => 'invalidtestcourseid');
+                      'context' => 'curriculum_testprogramidnumber',
+                      'user_idnumber' => 'invalidtestuserid',
+                      'user_username' => 'invaludtestuser',
+                      'user_email' => 'invalidtestuser@mail.com');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"invalidtestcourseid\" could not be deleted. idnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be deleted. username value of \"invaludtestuser\", email value of \"invalidtestuser@mail.com\", idnumber value of \"invalidtestuserid\" do not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+    }
+
+    // Validate that enrolment already exists on create
+    public function testELISProgramEnrolmentExistsCreate() {
+        global $DB;
+
+        $this->load_csv_data();
+
+        $record = new stdClass;
+        $record->curriculumid = 1;
+        $record->userid = 3;
+
+        $DB->insert_record('crlm_curriculum_assignment', $record);
+
+        $idnumber = $DB->get_field('user', 'idnumber', array('id' => 3));
+
+        $data = array('action' => 'create',
+                      'context' => 'curriculum_testprogramidnumber',
+                      'user_idnumber' => 'testidnumber',
+                      'user_username' => 'testusername',
+                      'user_email' => 'test@user.com');
+
+        $expected_error = "[enrolment.csv line 2] Enrolment could not be created. User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" is already enrolled in program \"testprogramidnumber\".\n";
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('crlm_course', dirname(__FILE__).'/coursetable.csv');
+        $dataset->addTable('crlm_curriculum', dirname(__FILE__).'/programtable.csv');
+        $dataset->addTable('user', dirname(__FILE__).'/usertable.csv');
+        $dataset->addTable('crlm_user', dirname(__FILE__).'/usertable.csv');
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
