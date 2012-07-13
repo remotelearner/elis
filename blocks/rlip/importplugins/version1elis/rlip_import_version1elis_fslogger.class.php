@@ -89,7 +89,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
         if ($type == "enrolment") {
             if ($record->action != 'create' && $record->action != 'delete') {
                 //invalid action
-                return 'Enrolment in \"{$record->context}\" could not be processed. '.$message;
+                return "Enrolment in \"{$record->context}\" could not be processed. ".$message;
             }
 
             if (!$this->track_role_actions && !$this->track_enrolment_actions) {
