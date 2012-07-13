@@ -32,6 +32,28 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+//TODO: move to a more general location
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/rlip_mock_provider.class.php');
+
+/**
+ * Class that fetches import files for the user import
+ */
+class rlip_importprovider_mockuser extends rlip_importprovider_mock {
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'user') {
+            return false;
+        }
+
+        return parent::get_import_file($entity);
+    }
+}
 
 /**
  * Class for validating that field mappings work correctly during the ELIS
@@ -78,10 +100,13 @@ class elis_user_field_mappings_test extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('context' => 'moodle',
+                     //prevent events functionality
+                     'events_handlers' => 'moodle',
                      RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      field::TABLE => 'elis_core',
                      field_category::TABLE => 'elis_core',
                      field_contextlevel::TABLE => 'elis_core',
+                     field_data_int::TABLE => 'elis_core',
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program');
     }
@@ -90,7 +115,38 @@ class elis_user_field_mappings_test extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('user' => 'moodle');
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/curriculumstudent.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
+        require_once(elispm::lib('data/waitlist.class.php'));
+
+        return array('cohort_members' => 'moodle',
+                     'external_services_users' => 'moodle',
+                     'external_tokens' => 'moodle',
+                     'groups_members' => 'moodle',
+                     'log' => 'moodle',
+                     'sessions' => 'moodle',
+                     'user' => 'moodle',
+                     'user_enrolments' => 'moodle',
+                     'user_info_data' => 'moodle',
+                     'user_lastaccess' => 'moodle',
+                     'user_preferences' => 'moodle',
+                     RLIP_LOG_TABLE => 'block_rlip',
+                     clusterassignment::TABLE => 'elis_program',
+                     curriculumstudent::TABLE => 'elis_program',
+                     field_data_char::TABLE => 'elis_core',
+                     field_data_num::TABLE => 'elis_core',
+                     field_data_text::TABLE => 'elis_core',
+                     instructor::TABLE => 'elis_program',
+                     student_grade::TABLE => 'elis_program',
+                     usertrack::TABLE => 'elis_program',
+                     waitlist::TABLE => 'elis_program');
     }
 
     /**
@@ -140,11 +196,28 @@ class elis_user_field_mappings_test extends elis_database_test {
     }
 
     /**
+     * Helper function that runs the user import for a sample user
+     *
+     * @param array $data Import data to use
+     */
+    private function run_user_import($data, $use_default_data = true) {
+        global $CFG;
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        require_once($file);
+
+        $provider = new rlip_importprovider_mockuser($data);
+
+        $importplugin = new rlip_importplugin_version1elis($provider);
+        $importplugin->run();
+    }
+
+    /**
      * Validate that mappings are applied during the user create action
      */
     public function test_mapping_applied_during_user_create() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
         $this->init_mapping();
@@ -158,7 +231,7 @@ class elis_user_field_mappings_test extends elis_database_test {
         $record->custompassword = 'Testpassword!0';
         $record->customidnumber = 'testuseridnumber';
         $record->customfirstname = 'testuserfirstname';        
-        $record->customlastname = 'testuserfirstname';
+        $record->customlastname = 'testuserlastname';
         $record->custommi = 'testusermi';
         $record->customemail = 'testuser@email.com';
         $record->customemail2 = 'testuser@email2.com';
@@ -171,21 +244,20 @@ class elis_user_field_mappings_test extends elis_database_test {
         $record->customphone = 'testuserphone';
         $record->customphone2 = 'testuserphone2';
         $record->customfax = 'testuserfax';
-        $record->custombirthdate = 'testuserbirthdate';
-        $record->customgender = 'testusergender';
+        $record->custombirthdate = 'Jan/01/2012';
+        $record->customgender = 'M';
         $record->customlanguage = 'en';
         $record->customtransfercredits = '1';
         $record->customcomments = 'testusercomments';
         $record->customnotes = 'testusernotes';
         $record->custominactive = '0';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('user', $record, 'bogus');
+        $this->run_user_import((array)$record);
 
         //validation
         $data = array('username' => 'testuserusername',
-                      'password' => 'Testpassword!0',
+                      'password' => hash_internal_user_password('Testpassword!0'),
                       'idnumber' => 'testuseridnumber',
                       'firstname' => 'testuserfirstname',
                       'lastname' => 'testuserlastname',
@@ -201,8 +273,8 @@ class elis_user_field_mappings_test extends elis_database_test {
                       'phone' => 'testuserphone',
                       'phone2' => 'testuserphone2',
                       'fax' => 'testuserfax',
-                      'birthdate' => 'testuserbirthdate',
-                      'gender' => 'testusergender',
+                      'birthdate' => '2012/01/01',
+                      'gender' => 'M',
                       'language' => 'en',
                       'transfercredits' => 1,
                       'inactive' => 0);
@@ -212,8 +284,10 @@ class elis_user_field_mappings_test extends elis_database_test {
         $this->assertEquals('testusercomments', $record->comments);
         $this->assertEquals('testusernotes', $record->notes);
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => $record->id,
+        $instance = context_elis_user::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -226,6 +300,8 @@ class elis_user_field_mappings_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
         $this->init_mapping();
+
+        $customfieldid = $this->create_custom_field();
 
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
@@ -242,7 +318,7 @@ class elis_user_field_mappings_test extends elis_database_test {
         $record->custompassword = 'updatedTestpassword!0';
         $record->customidnumber = 'testuseridnumber';
         $record->customfirstname = 'updatedtestuserfirstname';        
-        $record->customlastname = 'updatedtestuserfirstname';
+        $record->customlastname = 'updatedtestuserlastname';
         $record->custommi = 'updatedtestusermi';
         $record->customemail = 'testuser@email.com';
         $record->customemail2 = 'updatedtestuser@email2.com';
@@ -255,21 +331,20 @@ class elis_user_field_mappings_test extends elis_database_test {
         $record->customphone = 'updatedtestuserphone';
         $record->customphone2 = 'updatedtestuserphone2';
         $record->customfax = 'updatedtestuserfax';
-        $record->custombirthdate = 'updatedtestuserbirthdate';
-        $record->customgender = 'updatedtestusergender';
+        $record->custombirthdate = 'Jan/02/2012';
+        $record->customgender = 'F';
         $record->customlanguage = 'fr';
         $record->customtransfercredits = '2';
         $record->customcomments = 'updatedtestusercomments';
         $record->customnotes = 'updatedtestusernotes';
         $record->custominactive = '1';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('user', $record, 'bogus');
+        $this->run_user_import((array)$record);
 
         //validation
         $data = array('username' => 'testuserusername',
-                      'password' => 'updatedTestpassword!0',
+                      'password' => hash_internal_user_password('updatedTestpassword!0'),
                       'idnumber' => 'testuseridnumber',
                       'firstname' => 'updatedtestuserfirstname',
                       'lastname' => 'updatedtestuserlastname',
@@ -285,8 +360,8 @@ class elis_user_field_mappings_test extends elis_database_test {
                       'phone' => 'updatedtestuserphone',
                       'phone2' => 'updatedtestuserphone2',
                       'fax' => 'updatedtestuserfax',
-                      'birthdate' => 'updatedtestuserbirthdate',
-                      'gender' => 'updatedtestusergender',
+                      'birthdate' => '2012/01/02',
+                      'gender' => 'F',
                       'language' => 'fr',
                       'transfercredits' => 2,
                       'inactive' => 1);
@@ -296,8 +371,10 @@ class elis_user_field_mappings_test extends elis_database_test {
         $this->assertEquals('updatedtestusercomments', $record->comments);
         $this->assertEquals('updatedtestusernotes', $record->notes);
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => $record->id,
+        $instance = context_elis_user::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -325,8 +402,7 @@ class elis_user_field_mappings_test extends elis_database_test {
         $record->customidnumber = 'testuseridnumber';
         $record->customemail = 'testuser@email.com';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('user', $record, 'bogus');
+        $this->run_user_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(user::TABLE));

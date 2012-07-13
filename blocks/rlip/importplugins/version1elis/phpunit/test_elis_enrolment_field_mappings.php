@@ -32,6 +32,28 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+//TODO: move to a more general location
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/rlip_mock_provider.class.php');
+
+/**
+ * Class that fetches import files for the enrolment import
+ */
+class rlip_importprovider_mockenrolment extends rlip_importprovider_mock {
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'enrolment') {
+            return false;
+        }
+
+        return parent::get_import_file($entity);
+    }
+}
 
 /**
  * Class for validating that field mappings work correctly during the ELIS
@@ -58,6 +80,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
@@ -75,6 +98,8 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         return array('context' => 'moodle',
                      'role' => 'moodle',
                      'role_assignments' => 'moodle',
+                     'user' => 'moodle',
+                     RLIP_LOG_TABLE => 'block_rlip',
                      RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      clusterassignment::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',
@@ -98,10 +123,11 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/coursetemplate.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
 
         return array('cache_flags' => 'moodle',
-                     'user' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program');
+                     coursetemplate::TABLE => 'elis_program',
+                     student_grade::TABLE => 'elis_program');
     }
 
     /**
@@ -113,7 +139,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         foreach ($this->mapping as $standardfieldname => $customfieldname) {
             $mapping = new stdClass;
-            $mapping->entitytype = 'user';
+            $mapping->entitytype = 'enrolment';
             $mapping->standardfieldname = $standardfieldname;
             $mapping->customfieldname = $customfieldname;
 
@@ -142,6 +168,22 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
     }
 
     /**
+     * Helper function that runs the user import for a sample enrolment
+     *
+     * @param array $data Import data to use
+     */
+    private function run_enrolment_import($data) {
+        global $CFG;
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        require_once($file);
+
+        $provider = new rlip_importprovider_mockenrolment($data);
+
+        $importplugin = new rlip_importplugin_version1elis($provider);
+        $importplugin->run();
+    }
+
+    /**
      * Validate that mappings are applied during the program enrolment create action
      */
     public function test_mapping_applied_during_program_enrolment_create() {
@@ -160,12 +202,11 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'curriculum_testprogramidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertTrue($DB->record_exists(curriculumstudent::TABLE, array('curriculumid' => $program->id,
@@ -195,12 +236,11 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'curriculum_testprogramidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(curriculumstudent::TABLE));
@@ -229,12 +269,11 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'track_testtrackidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertTrue($DB->record_exists(usertrack::TABLE, array('trackid' => $track->id,
@@ -268,12 +307,11 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'track_testtrackidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(usertrack::TABLE));
@@ -298,12 +336,11 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'cluster_testusersetname';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('clusterid' => $userset->id,
@@ -334,12 +371,11 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'cluster_testusersetname';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(clusterassignment::TABLE));
@@ -371,8 +407,8 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'class_testclassidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
         $record->customenrolmenttime = 'Jan/01/2012';
         $record->customcompletetime = 'Jan/01/2012';
@@ -382,8 +418,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record->customlocked = '1';
         $record->customrole = 'student';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertTrue($DB->record_exists(student::TABLE, array('classid' => $pmclass->id,
@@ -426,8 +461,8 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'update';
         $record->customcontext = 'class_testclassidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
         $record->customenrolmenttime = 'Jan/02/2012';
         $record->customcompletetime = 'Jan/02/2012';
@@ -437,8 +472,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record->customlocked = '1';
         $record->customrole = 'student';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertTrue($DB->record_exists(student::TABLE, array('classid' => $pmclass->id,
@@ -481,13 +515,12 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'class_testclassidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
         $record->customrole = 'student';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(student::TABLE));
@@ -519,15 +552,14 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'class_testclassidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
         $record->customassigntime = 'Jan/01/2012';
         $record->customcompletetime = 'Jan/01/2012';
         $record->customrole = 'instructor';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertTrue($DB->record_exists(instructor::TABLE, array('classid' => $pmclass->id,
@@ -558,23 +590,22 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
                                      'idnumber' => 'testclassidnumber'));
         $pmclass->save();
 
-        $student = new student(array('classid' => $pmclass->id,
-                                     'userid' => $userid));
-        $student->save();
+        $instructor = new instructor(array('classid' => $pmclass->id,
+                                           'userid' => $userid));
+        $instructor->save();
 
         //run the instructor enrolment update action
         $record = new stdClass;
         $record->customaction = 'update';
         $record->customcontext = 'class_testclassidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
         $record->customassigntime = 'Jan/02/2012';
         $record->customcompletetime = 'Jan/02/2012';
         $record->customrole = 'instructor';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertTrue($DB->record_exists(instructor::TABLE, array('classid' => $pmclass->id,
@@ -613,13 +644,12 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'class_testclassidnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
-        $record->customrole = 'student';
+        $record->customrole = 'instructor';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(instructor::TABLE));
@@ -642,16 +672,15 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'user_testuseridnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
         $record->customrole = 'testroleshortname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
-        $instance = context_elis_user::instance($userid);
+        $instance = context_user::instance(1);
 
         $this->assertTrue($DB->record_exists('role_assignments', array('roleid' => $roleid,
                                                                        'contextid' => $instance->id,
@@ -671,20 +700,19 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $roleid = create_role('testrolename', 'testroleshortname', 'testroledescription');
 
-        $instance = context_elis_user::instance($userid);
+        $instance = context_user::instance(1);
         role_assign($roleid, 1, $instance->id);
 
         //run the user enrolment delete actions
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'user_testuseridnumber';
-        $record->customuser_username = 'testuseridnumber';
-        $record->customuser_email = 'testuser@email.com';
+        $record->customuser_username = 'testuserusername';
+        $record->customuser_email = 'test@useremail.com';
         $record->customuser_idnumber = 'testuseridnumber';
         $record->customrole = 'testroleshortname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('enrolment', $record, 'bogus');
+        $this->run_enrolment_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records('role_assignments'));
