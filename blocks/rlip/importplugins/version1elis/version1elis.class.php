@@ -2130,6 +2130,35 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
         }
 
+        //remove empty fields
+        $record = $this->remove_empty_fields($record);
+
+        $pos = strpos($record->context, "_");
+        $entity = substr($record->context, 0, $pos);
+        $idnumber = substr($record->context, $pos + 1);
+
+        $record->context = $entity;
+
+        $valid_contexts = array('course', 'curriculum', 'cluster', 'track', 'class');
+        $valid_actions = array('create', 'update', 'delete');
+
+        if (!in_array($context, $valid_contexts)) {
+            if (in_array($action, $valid_actions)) {
+                $message = "Enrolment could not be {$record->action}d.";
+            } else {
+                $message = "Enrolment could not be processed.";
+            }
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, '');
+            return false;
+        }
+
+        if (!in_array($action, $valid_actions)) {
+            $message = "Action of \"{$action}\" is not supported.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'enrolment');
+            return false;
+        }
+
+
         switch ($context) {
             case 'class':
                 //apply "createorupdate" flag, if necessary
@@ -2139,13 +2168,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 $record->action = $action;
                 break;
         }
-
-        //remove empty fields
-        $record = $this->remove_empty_fields($record);
-
-        $pos = strpos($record->context, "_");
-        $entity = substr($record->context, 0, $pos);
-        $idnumber = substr($record->context, $pos + 1);
 
         $method = "{$entity}_enrolment_{$action}";
         if (method_exists($this, $method)) {
@@ -2297,6 +2319,54 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Validates that track fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_track_enrolment_data($action, $record, $filename) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/elis/program/lib/datedelta.class.php');
+
+        $errors = array();
+        $error = false;
+
+        if (isset($record->user_username)) {
+            if (!$DB->record_exists('user', array('username' => $record->user_username))) {
+                $errors[] = "username value of \"{$record->user_username}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->user_email)) {
+            if (!$DB->record_exists('user', array('email' => $record->user_email))) {
+                $errors[] = "email value of \"{$record->user_email}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->user_idnumber)) {
+            if (!$DB->record_exists('user', array('idnumber' => $record->user_idnumber))) {
+                $errors[] = "idnumber value of \"{$record->user_idnumber}\"";
+                $error = true;
+            }
+        }
+
+        if ($error) {
+            if (count($errors) == 1) {
+                $this->fslogger->log_failure(implode($errors, ", ") . " does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "enrolment");
+            } else {
+                $this->fslogger->log_failure(implode($errors, ", ") . " do not refer to a valid user.", 0, $filename, $this->linenumber, $record, "enrolment");
+            }
+            return false;
+        }
+    }
+
+    /**
      * Create a track enrolment
      *
      * @param object $record One record of import data
@@ -2311,7 +2381,21 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        //TODO: validation
+        if (!$trackid = $DB->get_field('crlm_track', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a track context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        if ($DB->record_exists('crlm_user_track', array('trackid' => $trackid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is already enrolled in track \"{$idnumber}\".", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_track_enrolment_data('create', $record, $filename)) {
+            return false;
+        }
 
         //obtain the track id
         $trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $idnumber));
@@ -2339,7 +2423,21 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        //TODO: validation
+        if (!$trackid = $DB->get_field('crlm_track', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a track context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        if (!$DB->record_exists('crlm_user_track', array('trackid' => $trackid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in track \"{$idnumber}\".", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_track_enrolment_data('delete', $record, $filename)) {
+            return false;
+        }
 
         //obtain the track id
         $trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $idnumber));
@@ -2357,6 +2455,54 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Validates that cluster fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_cluster_enrolment_data($action, $record, $filename) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/elis/program/lib/datedelta.class.php');
+
+        $errors = array();
+        $error = false;
+
+        if (isset($record->user_username)) {
+            if (!$DB->record_exists('user', array('username' => $record->user_username))) {
+                $errors[] = "username value of \"{$record->user_username}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->user_email)) {
+            if (!$DB->record_exists('user', array('email' => $record->user_email))) {
+                $errors[] = "email value of \"{$record->user_email}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->user_idnumber)) {
+            if (!$DB->record_exists('user', array('idnumber' => $record->user_idnumber))) {
+                $errors[] = "idnumber value of \"{$record->user_idnumber}\"";
+                $error = true;
+            }
+        }
+
+        if ($error) {
+            if (count($errors) == 1) {
+                $this->fslogger->log_failure(implode($errors, ", ") . " does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "enrolment");
+            } else {
+                $this->fslogger->log_failure(implode($errors, ", ") . " do not refer to a valid user.", 0, $filename, $this->linenumber, $record, "enrolment");
+            }
+            return false;
+        }
+    }
+
+    /**
      * Create a cluster (user set) enrolment
      *
      * @param object $record One record of import data
@@ -2371,7 +2517,21 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        //TODO: validation
+        if (!$clusterid = $DB->get_field('crlm_cluster', 'id', array('name' => $name))) {
+            $this->fslogger->log_failure("instance value of \"{$name}\" does not refer to a valid instance of a user set context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        if ($DB->record_exists('crlm_cluster_assignments', array('clusterid' => $clusterid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is already enrolled in user set \"{$name}\".", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_cluster_enrolment_data('create', $record, $filename)) {
+            return false;
+        }
 
         //obtain the cluster / userset id
         $clusterid = $DB->get_field(userset::TABLE, 'id', array('name' => $name));
@@ -2404,7 +2564,21 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        //TODO: validation
+        if (!$clusterid = $DB->get_field('crlm_cluster', 'id', array('name' => $name))) {
+            $this->fslogger->log_failure("instance value of \"{$name}\" does not refer to a valid instance of a user set context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        if (!$DB->record_exists('crlm_cluster_assignments', array('trackid' => $clusterid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in user set \"{$name}\".", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_cluster_enrolment_data('delete', $record, $filename)) {
+            return false;
+        }
 
         //obtain the cluster / userset id
         $clusterid = $DB->get_field(userset::TABLE, 'id', array('name' => $name));
@@ -2476,6 +2650,109 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Validates that class fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_class_enrolment_data($action, $record, $filename) {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/elis/program/lib/datedelta.class.php');
+
+        $errors = array();
+        $error = false;
+
+        if (isset($record->user_username)) {
+            if (!$DB->record_exists('user', array('username' => $record->user_username))) {
+                $errors[] = "username value of \"{$record->user_username}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->user_email)) {
+            if (!$DB->record_exists('user', array('email' => $record->user_email))) {
+                $errors[] = "email value of \"{$record->user_email}\"";
+                $error = true;
+            }
+        }
+
+        if (isset($record->user_idnumber)) {
+            if (!$DB->record_exists('user', array('idnumber' => $record->user_idnumber))) {
+                $errors[] = "idnumber value of \"{$record->user_idnumber}\"";
+                $error = true;
+            }
+        }
+
+        if ($error) {
+            if (count($errors) == 1) {
+                $this->fslogger->log_failure(implode($errors, ", ") . " does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "enrolment");
+            } else {
+                $this->fslogger->log_failure(implode($errors, ", ") . " do not refer to a valid user.", 0, $filename, $this->linenumber, $record, "enrolment");
+            }
+            return false;
+        }
+
+        if (isset($record->enrolmenttime)) {
+            $datedelta = new datedelta($record->enrolmenttime);
+            if (!$datedelta->getDateString()) {
+                $this->fslogger->log_failure("enrolmenttime value of \"{$record->enrolmenttime}\" is not a valid time delta in *h, *d, *w, *m, *y format.",
+                                              0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        if (isset($record->completetime)) {
+            $datedelta = new datedelta($record->completetime);
+            if (!$datedelta->getDateString()) {
+                $this->fslogger->log_failure("completetime value of \"{$record->completetime}\" is not a valid time delta in *h, *d, *w, *m, *y format.",
+                                              0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        if (isset($record->completestatusid)) {
+            if (!in_array(strtolower($record->completestatusid), array('0', '1', '2'))) {
+                $this->fslogger->log_failure("completestatusid value of \"{$record->completestatusid}\" is not one of the available options (0, 1, 2).", 0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        if (isset($record->grade)) {
+            $digits = strlen(substr($record->grade, 0, strpos($record->grade, '.')));
+            $decdigits = strlen(substr(strrchr($record->grade, '.'), 1));
+
+            if (!is_numeric($record->grade) || $decdigits > 5 || $digits > 10) {
+                $this->fslogger->log_failure("reqcredits value of \"{$record->grade}\" is not a number with at most ten total digits and five decimal digits.",
+                                          0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        if (isset($record->credits)) {
+            $digits = strlen(substr($record->credits, 0, strpos($record->credits, '.')));
+            $decdigits = strlen(substr(strrchr($record->credits, '.'), 1));
+
+            if (!is_numeric($record->credits) || $decdigits > 2 || $digits > 10) {
+                $this->fslogger->log_failure("credits value of \"{$record->credits}\" is not a number with at most ten total digits and two decimal digits.",
+                                          0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        if (isset($record->locked)) {
+            if ($record->locked != 0 && $record->locked != 1) {
+                $this->fslogger->log_failure("locked value of \"{$record->locked}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        return true;
+    }
+    /**
      * Create a student class instance enrolment
      *
      * @param object $record One record of import data
@@ -2490,7 +2767,21 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
-        //TODO: validation
+        if (!$crsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a class context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is already enrolled in class \"{$idnumber}\".", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_class_enrolment_data('create', $record, $filename)) {
+            return false;
+        }
 
         //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
@@ -2560,7 +2851,22 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/instructor.class.php'));
 
-        //TODO: validation
+        if (!$crsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a class context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is already enrolled in " .
+                                         "class instance \"{$idnumber}\".", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_class_enrolment_data('create', $record, $filename)) {
+            return false;
+        }
 
         //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
@@ -2626,7 +2932,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
-        //TODO: validation
+        if (!$crsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a class context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_class_enrolment_data('update', $record, $filename)) {
+            return false;
+        }
 
         //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
@@ -2691,7 +3004,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/instructor.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
 
-        //TODO: validation
+        if (!$crsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a class context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_class_enrolment_data('update', $record, $filename)) {
+            return false;
+        }
 
         //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
@@ -2752,7 +3072,22 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
-        //TODO: validation
+        if (!$crsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a class context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in " .
+                                         "class instance \"{$idnumber}\" as student.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_class_enrolment_data('delete', $record, $filename)) {
+            return false;
+        }
 
         //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
@@ -2785,9 +3120,22 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/instructor.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
-        //TODO: validation
-        //TODO: consider delegating to do some of this work once instuctor enrolment
-        //are supported
+        if (!$crsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $idnumber))) {
+            $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a class context.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        $userid = $this->get_userid_from_record($record, $filename);
+
+        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in " .
+                                         "class instance \"{$idnumber}\" as instructor.", 0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
+        }
+
+        if (!$this->validate_class_enrolment_data('delete', $record, $filename)) {
+            return false;
+        }
 
         //obtain the cluster / userset id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
