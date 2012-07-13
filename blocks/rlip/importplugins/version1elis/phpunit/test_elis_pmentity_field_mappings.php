@@ -32,6 +32,28 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+//TODO: move to a more general location
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/rlip_mock_provider.class.php');
+
+/**
+ * Class that fetches import files for the course (PM entity) import
+ */
+class rlip_importprovider_mockcourse extends rlip_importprovider_mock {
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'course') {
+            return false;
+        }
+
+        return parent::get_import_file($entity);
+    }
+}
 
 /**
  * Class for validating that field mappings work correctly during the ELIS
@@ -40,8 +62,16 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 class elis_pmentity_field_mappings_test extends elis_database_test {
     private $mapping = array('action' => 'customaction',
                              'context' => 'customcontext',
-                             'idnumber' => 'customidnumber',
                              'name' => 'customname',
+                             'code' => 'customcode',
+                             'idnumber' => 'customidnumber',
+                             'syllabus' => 'customsyllabus',
+                             'lengthdescription' => 'customlengthdescription',
+                             'length' => 'customlength',
+                             'credits' => 'customcredits',
+                             'completion_grade' => 'customcompletion_grade',
+                             'cost' => 'customcost',
+                             'version' => 'customversion',
                              'description' => 'customdescription',
                              'reqcredits' => 'customreqcredits',
                              'timetocomplete' => 'customtimetocomplete',
@@ -73,25 +103,33 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
         require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/classmoodlecourse.class.php'));
         require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/curriculumcourse.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array('cache_flags' => 'moodle',
-                     'config' => 'moodle',
+        return array('config' => 'moodle',
+                     'config_plugins' => 'moodle',
                      'context' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
                      RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+                     classmoodlecourse::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',
+                     coursetemplate::TABLE => 'elis_program',
                      curriculum::TABLE => 'elis_program',
                      curriculumcourse::TABLE => 'elis_program',
                      field::TABLE => 'elis_core',
+                     field_category::TABLE => 'elis_core',
+                     field_contextlevel::TABLE => 'elis_core',
+                     field_data_int::TABLE => 'elis_core',
                      pmclass::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
+                     trackassignment::TABLE => 'elis_program',
                      userset::TABLE => 'elis_program');
     }
 
@@ -100,14 +138,47 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
      */
     static protected function get_ignored_tables() {
         global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/coursetemplate.class.php'));
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+        require_once(elispm::lib('data/clusterassignment.class.php'));
+        require_once(elispm::lib('data/clustercurriculum.class.php'));
+        require_once(elispm::lib('data/clustertrack.class.php'));
+        require_once(elispm::lib('data/curriculumstudent.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/usertrack.class.php'));
+        require_once(elispm::lib('data/waitlist.class.php'));
 
         return array('block_instances' => 'moodle',
+                     'block_positions' => 'moodle',
+                     'cache_flags' => 'moodle',
+                     'comments' => 'moodle',
                      'course_sections' => 'moodle',
                      'enrol' => 'moodle',
+                     'files' => 'moodle',
+                     'filter_active' => 'moodle',
+                     'filter_config' => 'moodle',
                      'log' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program');
+                     'rating' => 'moodle',
+                     'role_assignments' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'user_preferences' => 'moodle',
+                     RLIP_LOG_TABLE => 'block_rlip',
+                     clusterassignment::TABLE => 'elis_program',
+                     clustercurriculum::TABLE => 'elis_program',
+                     clustertrack::TABLE => 'elis_program',
+                     curriculumstudent::TABLE => 'elis_program',
+                     field_data_char::TABLE => 'elis_core',
+                     field_data_num::TABLE => 'elis_core',
+                     field_data_text::TABLE => 'elis_core',
+                     instructor::TABLE => 'elis_program',
+                     student_grade::TABLE => 'elis_program',
+                     userset_profile::TABLE => 'elis_program',
+                     usertrack::TABLE => 'elis_program',
+                     waitlist::TABLE => 'elis_program');
     }
 
     /**
@@ -119,7 +190,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
 
         foreach ($this->mapping as $standardfieldname => $customfieldname) {
             $mapping = new stdClass;
-            $mapping->entitytype = 'user';
+            $mapping->entitytype = 'course';
             $mapping->standardfieldname = $standardfieldname;
             $mapping->customfieldname = $customfieldname;
 
@@ -158,6 +229,22 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
     }
 
     /**
+     * Helper function that runs the user import for a sample PM entity
+     *
+     * @param array $data Import data to use
+     */
+    private function run_pmentity_import($data) {
+        global $CFG;
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        require_once($file);
+
+        $provider = new rlip_importprovider_mockcourse($data);
+
+        $importplugin = new rlip_importplugin_version1elis($provider);
+        $importplugin->run();
+    }
+
+    /**
      * Validate that mappings are applied during the program create action
      */
     public function test_mapping_applied_during_program_create() {
@@ -170,6 +257,8 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
 
         $customfieldid = $this->create_custom_field(CONTEXT_ELIS_PROGRAM);
 
+        set_config('enable_curriculum_expiration', 1, 'elis_program');
+
         //run the program create action
         $record = new stdClass;
         $record->customaction = 'create';
@@ -181,24 +270,26 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customtimetocomplete = '1d';
         $record->customfrequency = '1d';
         $record->custompriority = 0;
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('idnumber' => 'testprogramidnumber',
                       'name' => 'testprogramname',
                       'reqcredits' => 0,
-                      'frequency' => DAYSECS,
+                      'timetocomplete' => '1d',
+                      'frequency' => '1d',
                       'priority' => 0);
         $this->assertTrue($DB->record_exists(curriculum::TABLE, $data));
 
         $record = $DB->get_record(curriculum::TABLE, array('idnumber' => 'testprogramidnumber'));
         $this->assertEquals('testprogramdescription', $record->description);
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_program::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -215,6 +306,8 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
 
         $customfieldid = $this->create_custom_field(CONTEXT_ELIS_PROGRAM);
 
+        set_config('enable_curriculum_expiration', 1, 'elis_program');
+
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
 
@@ -229,25 +322,26 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customtimetocomplete = '2d';
         $record->customfrequency = '2d';
         $record->custompriority = 1;
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('idnumber' => 'testprogramidnumber',
                       'name' => 'updatedtestprogramname',
-                      'reqcredits' => 2,
-                      'timetocomplete' => 2 * DAYSECS,
-                      'frequency' => 2 * DAYSECS,
+                      'reqcredits' => 1,
+                      'timetocomplete' => '2d',
+                      'frequency' => '2d',
                       'priority' => 1);
         $this->assertTrue($DB->record_exists(curriculum::TABLE, $data));
 
         $record = $DB->get_record(curriculum::TABLE, array('idnumber' => 'testprogramidnumber'));
         $this->assertEquals('updatedtestprogramdescription', $record->description);
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_program::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -269,8 +363,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customcontext = 'curriculum';
         $record->customidnumber = 'testprogramidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(curriculum::TABLE));
@@ -315,10 +408,10 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customstartdate = 'Jan/01/2012';
         $record->customenddate = 'Jan/01/2012';
         $record->customautocreate = 1;
-        $record->customtestcustomfieldshortname = '1';
+        $record->customassignment = 'testprogramidnumber';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('idnumber' => 'testtrackidnumber',
@@ -327,13 +420,15 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                       'enddate' => mktime(0, 0, 0, 1, 1, 2012));
         $this->assertTrue($DB->record_exists(track::TABLE, $data));
 
-        $record = $DB->get_record(curriculum::TABLE, array('idnumber' => 'testtrackidnumber'));
+        $record = $DB->get_record(track::TABLE, array('idnumber' => 'testtrackidnumber'));
         $this->assertEquals('testtrackdescription', $record->description);
 
         $this->assertEquals(1, $DB->count_records(pmclass::TABLE));
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_track::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -367,10 +462,9 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customdescription = 'updatedtesttrackdescription';
         $record->customstartdate = 'Jan/02/2012';
         $record->customenddate = 'Jan/02/2012';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('idnumber' => 'testtrackidnumber',
@@ -379,11 +473,13 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                       'enddate' => mktime(0, 0, 0, 1, 2, 2012));
         $this->assertTrue($DB->record_exists(track::TABLE, $data));
 
-        $record = $DB->get_record(curriculum::TABLE, array('idnumber' => 'testtrackidnumber'));
+        $record = $DB->get_record(track::TABLE, array('idnumber' => 'testtrackidnumber'));
         $this->assertEquals('updatedtesttrackdescription', $record->description);
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_track::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -410,8 +506,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customcontext = 'track';
         $record->customidnumber = 'testtrackidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(track::TABLE));
@@ -472,16 +567,18 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customversion = '1';
         $record->customassignment = 'testprogramidnumber';
         $record->customlink = 'testcourseshortname';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $pmcourse = new course();
+        $pmcourse->reset_custom_field_list();
+
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('name' => 'testcoursename',
                       'code' => 'testcoursecode',
                       'idnumber' => 'testcourseidnumber',
-                      'lengthdescription' => 'testlengthdescription',
+                      'lengthdescription' => 'testcourselengthdescription',
                       'length' => 1,
                       'credits' => 1,
                       'completion_grade' => 50,
@@ -489,7 +586,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                       'version' => '1');
         $this->assertTrue($DB->record_exists(course::TABLE, $data));
 
-        $record = $DB->get_record(curriculum::TABLE, array('idnumber' => 'testcourseidnumber'));
+        $record = $DB->get_record(course::TABLE, array('idnumber' => 'testcourseidnumber'));
         $this->assertEquals('testcoursesyllabus', $record->syllabus);
 
         $this->assertTrue($DB->record_exists(curriculumcourse::TABLE, array('curriculumid' => $program->id,
@@ -497,8 +594,10 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $this->assertTrue($DB->record_exists(coursetemplate::TABLE, array('courseid' => $record->id,
                                                                           'location' => $course->id)));
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_course::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -562,16 +661,15 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customversion = '2';
         $record->customassignment = 'testprogramidnumber';
         $record->customlink = 'testcourseshortname';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('name' => 'updatedtestcoursename',
                       'code' => 'updatedtestcoursecode',
                       'idnumber' => 'testcourseidnumber',
-                      'lengthdescription' => 'updatedtestlengthdescription',
+                      'lengthdescription' => 'updatedtestcourselengthdescription',
                       'length' => 2,
                       'credits' => 2,
                       'completion_grade' => 100,
@@ -579,7 +677,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                       'version' => '2');
         $this->assertTrue($DB->record_exists(course::TABLE, $data));
 
-        $record = $DB->get_record(curriculum::TABLE, array('idnumber' => 'testcourseidnumber'));
+        $record = $DB->get_record(course::TABLE, array('idnumber' => 'testcourseidnumber'));
         $this->assertEquals('updatedtestcoursesyllabus', $record->syllabus);
 
         $this->assertTrue($DB->record_exists(curriculumcourse::TABLE, array('curriculumid' => $program->id,
@@ -587,8 +685,10 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $this->assertTrue($DB->record_exists(coursetemplate::TABLE, array('courseid' => $record->id,
                                                                           'location' => $course->id)));
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_course::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -612,8 +712,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customcontext = 'course';
         $record->customidnumber = 'testcourseidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(course::TABLE));
@@ -678,15 +777,17 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customendtimehour = '1';
         $record->customendtimeminute = '5';
         $record->custommaxstudents = '1';
-        $record->custom_enrol_from_waitlist = '0';
+        $record->customenrol_from_waitlist = '1';
         $record->customassignment = 'testcourseidnumber';
         $record->customtrack = 'testtrackidnumber';
         $record->customautoenrol = '1';
         $record->customlink = 'testcourseshortname';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $class = new pmclass();
+        $class->reset_custom_field_list();
+
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('courseid' => $pmcourse->id,
@@ -698,7 +799,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                       'endtimehour' => 1,
                       'endtimeminute' => 5,
                       'maxstudents' => 1,
-                      'enrol_from_waitlist' => 0);
+                      'enrol_from_waitlist' => 1);
         $this->assertTrue($DB->record_exists(pmclass::TABLE, $data));
 
         $record = $DB->get_record(pmclass::TABLE, array('idnumber' => 'testclassidnumber'));
@@ -708,8 +809,10 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $this->assertTrue($DB->record_exists(classmoodlecourse::TABLE, array('classid' => $record->id,
                                                                              'moodlecourseid' => $course->id)));
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_class::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -767,7 +870,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         //run the class create update
         $record = new stdClass;
         $record->customaction = 'update';
-        $record->context = 'class';
+        $record->customcontext = 'class';
         $record->customidnumber = 'testclassidnumber';
         $record->customstartdate = 'Jan/02/2012';
         $record->customenddate = 'Jan/02/2012';
@@ -776,15 +879,14 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customendtimehour = '2';
         $record->customendtimeminute = '10';
         $record->custommaxstudents = '2';
-        $record->custom_enrol_from_waitlist = '0';
+        $record->customenrol_from_waitlist = '1';
         $record->customassignment = 'testcourseidnumber';
         $record->customtrack = 'testtrackidnumber';
         $record->customautoenrol = '1';
         $record->customlink = 'testcourseshortname';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('courseid' => $pmcourse->id,
@@ -796,7 +898,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                       'endtimehour' => 2,
                       'endtimeminute' => 10,
                       'maxstudents' => 2,
-                      'enrol_from_waitlist' => 0);
+                      'enrol_from_waitlist' => 1);
         $this->assertTrue($DB->record_exists(pmclass::TABLE, $data));
 
         $this->assertTrue($DB->record_exists(trackassignment::TABLE, array('classid' => $pmclass->id,
@@ -805,8 +907,10 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $this->assertTrue($DB->record_exists(classmoodlecourse::TABLE, array('classid' => $pmclass->id,
                                                                              'moodlecourseid' => $course->id)));
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_class::instance(1);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -835,8 +939,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customcontext = 'class';
         $record->customidnumber = 'testclassidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(pmclass::TABLE));
@@ -865,10 +968,9 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customname = 'testusersetname';
         $record->customdisplay = 'testusersetdisplay';
         $record->customparent = 'parentusersetname';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('name' => 'testusersetname',
@@ -876,8 +978,10 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                       'parent' => $parentuserset->id);
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_userset::instance(2);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -907,10 +1011,9 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customname = 'testusersetname';
         $record->customdisplay = 'updatedtestusersetdisplay';
         $record->customparent = 'parentusersetname';
-        $record->customtestcustomfieldshortname = '1';
+        $record->customtestfieldshortname = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $data = array('name' => 'testusersetname',
@@ -918,8 +1021,10 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                       'parent' => $parentuserset->id);
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
 
-        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $fieldid,
-                                                                          'userid' => 1,
+        $instance = context_elis_userset::instance(2);
+
+        $this->assertTrue($DB->record_exists(field_data_int::TABLE, array('fieldid' => $customfieldid,
+                                                                          'contextid' => $instance->id,
                                                                           'data' => 1)));
     }
 
@@ -928,21 +1033,30 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
      */
     public function test_mapping_applied_during_userset_delete() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
         $this->init_mapping();
 
-        $userset = new userset(array('name' => 'testusersetname'));
+        context_helper::reset_caches();
+
+        $parentuserset = new userset(array('name' => 'testparentusersetname'));
+        $parentuserset->save();
+        context_elis_userset::instance($parentuserset->id);
+
+        $userset = new userset(array('parent' => $parentuserset->id,
+                                     'name' => 'testusersetname'));
         $userset->save();
+        context_elis_userset::instance($userset->id);
 
         //run the course delete action
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'cluster';
-        $record->customname = 'testclustername';
+        $record->customname = 'testparentusersetname';
+        $record->customrecursive = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->process_record('course', $record, 'bogus');
+        $this->run_pmentity_import((array)$record);
 
         //validation
         $this->assertEquals(0, $DB->count_records(userset::TABLE));

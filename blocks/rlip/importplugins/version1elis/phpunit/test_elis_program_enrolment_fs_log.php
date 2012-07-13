@@ -256,8 +256,13 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
 
     // Validate that program validation works on enrolment create
     public function testELISProgramEnrolmentValidationCreate() {
+        $this->load_csv_data();
+
         $data = array('action' => 'create',
-                      'context' => 'curriculum_invalidtestprogramid');
+                      'context' => 'curriculum_invalidtestprogramid',
+                      'user_idnumber' => 'testidnumber',
+                      'user_username' => 'testusername',
+                      'user_email' => 'test@user.com');
 
         $expected_error = "[enrolment.csv line 2] Enrolment could not be created. instance value of \"invalidtestprogramid\" does not refer to a valid instance of a program context.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
@@ -311,7 +316,10 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
     // Validate that program validation works on enrolment deletion
     public function testELISProgramEnrolmentValidationDelete() {
         $data = array('action' => 'delete',
-                      'context' => 'curriculum_invalidtestprogramid');
+                      'context' => 'curriculum_invalidtestprogramid',
+                      'user_idnumber' => 'testidnumber',
+                      'user_username' => 'testusername',
+                      'user_email' => 'test@user.com');
 
         $expected_error = "[enrolment.csv line 2] Enrolment could not be deleted. instance value of \"invalidtestprogramid\" does not refer to a valid instance of a program context.\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');

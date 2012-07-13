@@ -76,6 +76,33 @@ function rlipimport_version1elis_get_tabs($baseurl) {
  * @return array The appropriate mapping
  */
 function rlipimport_version1elis_get_mapping($entitytype) {
-    //todo: implement
-    return array();
+    global $CFG, $DB;
+    require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+    $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+    require_once($file);
+
+    //obtain the list of supported fields
+    $plugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+    $fields = $plugin->get_available_fields($entitytype);
+
+    if ($fields == false) {
+        //invalid entitytype was supplied
+        return false;
+    }
+
+    //by default, map each field to itself
+    $result = array();
+    foreach ($fields as $field) {
+        $result[$field] = $field;
+    }
+
+    //apply mapping info from the database
+    $params = array('entitytype' => $entitytype);
+    if ($mappings = $DB->get_recordset(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $params)) {
+        foreach ($mappings as $mapping) {
+            $result[$mapping->standardfieldname] = $mapping->customfieldname;
+        }
+    }
+
+    return $result;
 }
