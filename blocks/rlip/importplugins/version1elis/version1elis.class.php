@@ -159,10 +159,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @todo: consider further generalizing / moving to base class
      *
      * @param string $date Date in MMM/DD/YYYY format
+     * @param boolean $old_formats Only support old (legacy) formats if set to true
      * @return mixed The unix timestamp, or false if date is
      *               not in the right format
      */
-    function parse_date($date) {
+    function parse_date($date, $old_formats = true) {
         //determine which case we are in
         if (strpos($date, '/') !== false) {
             $delimiter = '/';
@@ -197,13 +198,35 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
         } else if ($delimiter == '-') {
             //DD-MM-YYYY format
+            if (!$old_formats) {
+                //not supporting this
+                return false;
+            }
+
             list($day, $month, $year) = $parts;
+            //TODO: consider doing more validation on month being an integer
         } else {
             //YYYY.MM.DD format
+            if (!$old_formats) {
+                //not supporting this
+                return false;
+            }
+
             list($year, $month, $day) = $parts;
+            //TODO: consider doing more validation on month being an integer
         }
 
         //make sure the combination of date components is valid
+        if (!preg_match('/^\d{1,2}$/', $day)) {
+            //invalid day
+            return false;
+        }
+
+        if (!preg_match('/^\d\d\d\d$/', $year)) {
+            //invalid year
+            return false;
+        }
+
         $day = (int)$day;
         $year = (int)$year;
         if (!checkdate($month, $day, $year)) {
@@ -320,6 +343,123 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Validates that custom fields are set to valid values, if they are set
+     * on the import record
+     *
+     * @param string $action One of 'create' or 'update'
+     * @param object $record The import record
+     * @param string $filename The import file name, used for logging
+     *
+     * @return boolean true if the record validates correctly, otherwise false
+     */
+    function validate_custom_field_data($action, $record, $filename, $type) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+
+        foreach ($this->fields as $field) {
+            //obtain the control type
+            $f = new field($field);
+            if (!isset($f->owners['manual'])) {
+                //NOTE: should only really happen during unit tests
+                continue;
+            }
+            $control = $f->owners['manual']->param_control;
+
+            //obtain the submitted value
+            $value = $record->{$field->shortname};
+
+            switch ($control) {
+                case 'checkbox':
+                    if (!$this->validate_fixed_list($record, $field->shortname, array(0, 1))) {
+                        //not a valid checkbox value
+                        $message = '"'.$value.'" is not one of the available options for checkbox custom field "'.$field->shortname.'" (0, 1).';
+                        $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                        return false;
+                    }
+                    break;
+                case 'menu':
+                    $options = explode("\n", $f->owners['manual']->param_options);
+                    if (!$this->validate_fixed_list($record, $field->shortname, $options)) {
+                        //not a valid option
+                        $message = '"'.$value.'" is not one of the available options for menu of choices custom field "'.$field->shortname.'".';
+                        $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                        return false;
+                    }
+                    break;
+                case 'text':
+                    $maxlength = $f->owners['manual']->param_maxlength;
+                    if (strlen($record->{$field->shortname}) > $maxlength) {
+                        //too long
+                        $message = 'Text input custom field "'.$field->shortname.'" value of "'.$value.'" exceeds the maximum field length of '.$maxlength.'.';
+                        $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                        return false;
+                    }
+                    break;
+                case 'password':
+                    $maxlength = $f->owners['manual']->param_maxlength;
+                    if (strlen($record->{$field->shortname}) > $maxlength) {
+                        //too long
+                        $message = 'Password custom field "'.$field->shortname.'" value of "'.$value.'" exceeds the maximum field length of '.$maxlength.'.';
+                        $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                        return false;
+                    }
+                    break;
+                case 'datetime':
+                    //determine whether the field supports the "time" component
+                    $inctime = $f->owners['manual']->param_inctime;
+                    if ($inctime) {
+                        //date and time supported
+                        $parts = explode(':', $value);
+                        $valid = false;
+
+                        if (count($parts) == 1) {
+                            //just date provided
+                            $test = $this->parse_date($value, false);
+                            $valid = $test !== false;
+                        } else if (count($parts) == 3) {
+                            //date and time provided
+                            $test = $this->parse_date($parts[0], false);
+                            if ($test) {
+                                //first pieces is a valid date
+                                $hour_numeric = preg_match('/^\d{1,2}$/', $parts[1]); 
+                                $minute_numeric = preg_match('/^\d{1,2}$/', $parts[2]);
+
+                                if ($hour_numeric && $minute_numeric) {
+                                    //determine if time is valid
+                                    $hour = (int)$parts[1];
+                                    $minute = (int)$parts[2];
+                                    $valid = $hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59;
+                                }
+                            }
+                        }
+
+                        if (!$valid) {
+                            //could not parse date + time
+                            $message = '"'.$value.'" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "'.$field->shortname.'".';
+                            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                            return false;
+                        }
+
+
+                    } else {
+                        //date only supported without time
+                        $test = $this->parse_date($value, false);
+                        if ($test === false) {
+                            //could not parse date
+                            $message = '"'.$value.'" is not a valid date in MMM/DD/YYYY format for date custom field "'.$field->shortname.'".';
+                            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                            return false;
+                        }
+                    }
+                default:
+                    break;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Initialize user fields that are needed but are not required in the data format
      *
      * @param object $record One import record
@@ -378,6 +518,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (!$this->validate_core_user_data('create', $record, $filename)) {
+            return false;
+        }
+
+        //custom field validation
+        if (!$this->validate_custom_field_data('create', $record, $filename, 'user')) {
             return false;
         }
 
@@ -575,6 +720,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $record->id = $DB->get_field('crlm_user', 'id', $params);
         //$record->timemodified = time();
         //$DB->update_record('crlm_user', $record);
+
+        //custom field validation
+        if (!$this->validate_custom_field_data('update', $record, $filename, 'user')) {
+            return false;
+        }
 
         $record = $this->initialize_user_fields($record);
 
@@ -1199,6 +1349,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        //custom field validation
+        if (!$this->validate_custom_field_data('create', $record, $filename, 'class')) {
+            return false;
+        }
+
         $record->courseid = $crsid;
         $record = $this->add_custom_field_prefixes($record);
 
@@ -1338,6 +1493,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (!$this->validate_class_data('update', $record, $filename)) {
+            return false;
+        }
+
+        //custom field validation
+        if (!$this->validate_custom_field_data('update', $record, $filename, 'class')) {
             return false;
         }
 
@@ -1561,6 +1721,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        //custom field validation
+        if (!$this->validate_custom_field_data('create', $record, $filename, 'curriculum')) {
+            return false;
+        }
+
         $record = $this->add_custom_field_prefixes($record);
 
         $cur = new curriculum();
@@ -1581,6 +1746,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (!$this->validate_program_data('update', $record, $filename)) {
+            return false;
+        }
+
+        //custom field validation
+        if (!$this->validate_custom_field_data('update', $record, $filename, 'curriculum')) {
             return false;
         }
 
@@ -1649,6 +1819,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        //custom field validation
+        if (!$this->validate_custom_field_data('create', $record, $filename, 'cluster')) {
+            return false;
+        }
+
         if (!isset($record->display)) {
             //should default to the empty string rather than null
             $record->display = '';
@@ -1694,6 +1869,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 return false;
 
             }
+        }
+
+        //custom field validation
+        if (!$this->validate_custom_field_data('update', $record, $filename, 'cluster')) {
+            return false;
         }
 
         $record->id = $id;
@@ -1877,6 +2057,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        //custom field validation
+        if (!$this->validate_custom_field_data('create', $record, $filename, 'course')) {
+            return false;
+        }
+
         $record = $this->initialize_course_fields($record);
 
         $record = $this->add_custom_field_prefixes($record);
@@ -1973,6 +2158,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        //custom field validation
+        if (!$this->validate_custom_field_data('update', $record, $filename, 'course')) {
+            return false;
+        }
+
         $record = $this->initialize_course_fields($record);
 
         $record->id = $crsid;
@@ -2066,6 +2256,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        //custom field validation
+        if (!$this->validate_custom_field_data('create', $record, $filename, 'track')) {
+            return false;
+        }
+
         $record->curid = $id;
         $record->timecreated = time();
 
@@ -2094,6 +2289,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (!$this->validate_track_data('update', $record, $filename)) {
+            return false;
+        }
+
+        //custom field validation
+        if (!$this->validate_custom_field_data('update', $record, $filename, 'track')) {
             return false;
         }
 
@@ -2437,26 +2637,27 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
 
         require_once($CFG->dirroot.'/elis/program/lib/datedelta.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
         $errors = array();
         $error = false;
 
         if (isset($record->user_username)) {
-            if (!$DB->record_exists('user', array('username' => $record->user_username))) {
+            if (!$DB->record_exists(user::TABLE, array('username' => $record->user_username))) {
                 $errors[] = "username value of \"{$record->user_username}\"";
                 $error = true;
             }
         }
 
         if (isset($record->user_email)) {
-            if (!$DB->record_exists('user', array('email' => $record->user_email))) {
+            if (!$DB->record_exists(user::TABLE, array('email' => $record->user_email))) {
                 $errors[] = "email value of \"{$record->user_email}\"";
                 $error = true;
             }
         }
 
         if (isset($record->user_idnumber)) {
-            if (!$DB->record_exists('user', array('idnumber' => $record->user_idnumber))) {
+            if (!$DB->record_exists(user::TABLE, array('idnumber' => $record->user_idnumber))) {
                 $errors[] = "idnumber value of \"{$record->user_idnumber}\"";
                 $error = true;
             }
@@ -2470,6 +2671,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
             return false;
         }
+
+        return true;
     }
 
     /**
@@ -2573,26 +2776,27 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
 
         require_once($CFG->dirroot.'/elis/program/lib/datedelta.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
         $errors = array();
         $error = false;
 
         if (isset($record->user_username)) {
-            if (!$DB->record_exists('user', array('username' => $record->user_username))) {
+            if (!$DB->record_exists(user::TABLE, array('username' => $record->user_username))) {
                 $errors[] = "username value of \"{$record->user_username}\"";
                 $error = true;
             }
         }
 
         if (isset($record->user_email)) {
-            if (!$DB->record_exists('user', array('email' => $record->user_email))) {
+            if (!$DB->record_exists(user::TABLE, array('email' => $record->user_email))) {
                 $errors[] = "email value of \"{$record->user_email}\"";
                 $error = true;
             }
         }
 
         if (isset($record->user_idnumber)) {
-            if (!$DB->record_exists('user', array('idnumber' => $record->user_idnumber))) {
+            if (!$DB->record_exists(user::TABLE, array('idnumber' => $record->user_idnumber))) {
                 $errors[] = "idnumber value of \"{$record->user_idnumber}\"";
                 $error = true;
             }
@@ -2606,6 +2810,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
             return false;
         }
+
+        return true;
     }
 
     /**
@@ -2768,26 +2974,27 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
 
         require_once($CFG->dirroot.'/elis/program/lib/datedelta.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
         $errors = array();
         $error = false;
 
         if (isset($record->user_username)) {
-            if (!$DB->record_exists('user', array('username' => $record->user_username))) {
+            if (!$DB->record_exists(user::TABLE, array('username' => $record->user_username))) {
                 $errors[] = "username value of \"{$record->user_username}\"";
                 $error = true;
             }
         }
 
         if (isset($record->user_email)) {
-            if (!$DB->record_exists('user', array('email' => $record->user_email))) {
+            if (!$DB->record_exists(user::TABLE, array('email' => $record->user_email))) {
                 $errors[] = "email value of \"{$record->user_email}\"";
                 $error = true;
             }
         }
 
         if (isset($record->user_idnumber)) {
-            if (!$DB->record_exists('user', array('idnumber' => $record->user_idnumber))) {
+            if (!$DB->record_exists(user::TABLE, array('idnumber' => $record->user_idnumber))) {
                 $errors[] = "idnumber value of \"{$record->user_idnumber}\"";
                 $error = true;
             }
