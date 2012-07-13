@@ -56,7 +56,7 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock 
         if ($entity != 'course') {
             return false;
         }
-        return parent::get_import_file($entity, 'course.csv');
+        return parent::get_import_file($entity, 'program.csv');
     }
 }
 
@@ -223,6 +223,7 @@ class version1ELISProgramFSLogTest extends rlip_test {
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1elis';
         $format = get_string('logfile_timestamp','block_rlip');
+
         $testfilename = $filepath.'/'.$plugin_type.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         //get most recent logfile
 
@@ -259,11 +260,12 @@ class version1ELISProgramFSLogTest extends rlip_test {
     public function testELISProgramInvalidReqCreditsFormatCreate() {
         $data = array('action' => 'create',
                       'context' => 'curriculum',
-                      'idnumber' => 'testprorgamidnumber',
+                      'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
                       'reqcredits' => '10.000');
 
-        $expected_error = "[course.csv line 2] Course could not be created. reqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
+                          "reqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -279,7 +281,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'name' => 'testprogram',
                       'reqcredits' => '10.000');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. reqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
+                          "reqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -293,7 +296,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'name' => 'testprogram',
                       'reqcredits' => '10.0.0');
 
-        $expected_error = "[course.csv line 2] Course could not be created. reqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
+                          "reqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -309,7 +313,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'name' => 'testprogram',
                       'reqcredits' => '10.0.0');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. reqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
+                          "reqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -323,7 +328,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'name' => 'testprorgam',
                       'reqcredits' => '100000000000.00');
 
-        $expected_error = "[course.csv line 2] Course could not be created. reqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
+                          "reqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -339,7 +345,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'name' => 'testprorgam',
                       'reqcredits' => '100000000000.00');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. reqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
+                          "reqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -354,7 +361,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'reqcredits' => '10',
                       'timetocomplete' => '1x');
 
-        $expected_error = "[course.csv line 2] Course could not be created. timetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
+                          "timetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -371,7 +379,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'reqcredits' => '10',
                       'timetocomplete' => '1x');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. timetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
+                          "timetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -386,7 +395,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'reqcredits' => '10',
                       'timetocomplete' => '1');
 
-        $expected_error = "[course.csv line 2] Course could not be created. timetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
+                          "timetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -403,7 +413,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'reqcredits' => '10',
                       'timetocomplete' => '1');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. timetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
+                          "timetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -419,7 +430,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'timetocomplete' => '1d',
                       'frequency' => '1d');
 
-        $expected_error = "[course.csv line 2] Course could not be created. Program frequency / expiration cannot be set because program expiration is globally disabled.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
+                          "Program frequency / expiration cannot be set because program expiration is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -437,10 +449,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'timetocomplete' => '1d',
                       'frequency' => '1d');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. Program frequency / expiration cannot be set because program expiration is globally disabled.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
+                          "Program frequency / expiration cannot be set because program expiration is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
-
 
     /**
      * Validate that frequency validation works on program create
@@ -456,7 +468,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'timetocomplete' => '1d',
                       'frequency' => '1x');
 
-        $expected_error = "[course.csv line 2] Course could not be created. frequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
+                          "frequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -476,7 +489,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'timetocomplete' => '1d',
                       'frequency' => '1x');
 
-        $expected_error = "[course.csv line 2] Course could not be updated. frequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
+                          "frequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -495,7 +509,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'frequency' => '1d',
                       'priority' => 11);
 
-        $expected_error = "[course.csv line 2] Course could not be created. priority value of \"11\" is not one of the available options (0 .. 10).\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
+                          "priority value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -516,7 +531,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'frequency' => '1d',
                       'priority' => 11);
 
-        $expected_error = "[course.csv line 2] Course could not be updated. priority value of \"11\" is not one of the available options (0 .. 10).\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
+                          "priority value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -530,7 +546,8 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'context' => 'curriculum',
                       'idnumber' => 'invalidtestprogramidnumber');
 
-        $expected_error = "[course.csv line 2] Course could not be deleted. idnumber value of \"invalidtestprogramidnumber\" does not refer to a valid program.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"invalidtestprogramidnumber\" could not be deleted. " .
+                          "idnumber value of \"invalidtestprogramidnumber\" does not refer to a valid program.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
