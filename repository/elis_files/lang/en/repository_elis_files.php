@@ -81,7 +81,6 @@ $string['configadminusernameconflict'] = 'The username override that you have se
 $string['configadminusernameset'] = 'The username override that you have set for your Moodle <b>admin</b> account: ' .
                                     '<i>{$a}</i> has already been used to create an Alfresco account.';
 $string['configcachetime'] = 'Specify that files from the repository should be cached for this long in the user\'s browser';
-$string['configurecategoryfilter'] = 'Configure category filter';
 $string['configdefaultfilebrowsinglocation'] = 'If you choose a value here it will be the default location that a user ' .
                                                'finds themselves automatically sent to when launching a file browser ' .
                                                'without having a previous location to be sent to.<br /><br /><b>NOTE:</b> ' .
@@ -93,13 +92,20 @@ $string['configdeleteuserdir'] = 'When deleting a Moodle user account, if that u
                                  'Change this option to enable or disable that behaviour.<br /><br /><b>NOTE:</b> ' .
                                  'deleting a user\'s home directory in Alfresco will break any links in Moodle to content ' .
                                  'that was located in that directory.';
+$string['configpasswordlessusersync'] = 'Your site contains users with an authentication plug-in that does not use passwords. '.
+                                        'In order for those users to be able to properly use this plug-in from Moodle, they '.
+                                        'need to have Alfresco accounts created with a generated password. You can do this '.
+                                        'automatically by running the <em>np_user_sync.php</em> script within the '.
+                                        '<pre>repository/elis_files directory</pre>.';
 $string['configuserquota'] = 'Set the default value for how much storage space all Moodle users on Alfresco can use.  ' .
                              '<b>Select Unlimited for unlimited storage space.</b>';
+$string['configurecategoryfilter'] = 'Configure category filter';
 $string['couldnotaccessserviceat'] = 'Could not access Alfresco service at: {$a}';
 $string['couldnotdeletefile'] = '<br />Error: Could not delete: {$a}';
 $string['couldnotgetalfrescouserdirectory'] = 'Could not get Alfresco user directory for user: {$a}';
 $string['couldnotgetfiledataforuuid'] = 'Could not get file data for UUID: {$a}';
 $string['couldnotgetnodeproperties'] = 'Could not get node properties for UUID: {$a}';
+$string['couldnotinitializerepository'] = 'Could not initialize ELIS Files repository';
 $string['couldnotmigrateuser'] = 'Could not migrate user account for: {$a}';
 $string['couldnotmovenode'] = 'Could not move node to new location';
 $string['couldnotmoveroot'] = 'Could not move root folder contents to new location';
@@ -187,7 +193,12 @@ $string['myfilesquota'] = 'My Files - {$a} free';
 $string['move'] = 'Move';
 $string['movefiles'] = 'Move file(s) to:';
 $string['nocategoriesfound'] = 'No categories found';
+$string['np_migratecomplete'] = 'Migrated {$a->ucount} / {$a->utotal} users to Alfresco';
+$string['np_migratefailure'] = '  xxx  Failed migrating user {$a->id}:{$a->username} ".{$a->fullname}';
+$string['np_migratesuccess'] = '  ---  Migrated user ID: {$a->id} username: {$a->username} {$a->fullname}';
+$string['np_startingmigration'] = '  ===  Starting user migration {$a} users to migrate  ===';
 $string['onlyincategories'] = 'Only show results from the following selected categories:';
+$string['passwordlessusersync'] = 'Synchronize users without passwords';
 $string['pleaseenterfoldername'] = 'Please enter a folder name!';
 $string['pleaseselectfilesfirst'] = 'Please select files first!';
 $string['pleaseselectfolder'] = 'Please select a destination folder';
