@@ -96,10 +96,11 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
      * @param string $data_type The string identifier of the data type to use
      * @param string $ui_type The string identifier of the UI / control type to use
      * @param boolean $multivalued Set to true to make field multivalued, otherwise false
-     * @param mixed $option Array of menu options, or NULL for none
+     * @param mixed $options Array of menu options, or NULL for none
+     * @param int $maxlength The maximum data length, or NULL for none
      * @return int The id of the created field
      */
-    private function create_test_field($contextlevelname, $data_type, $ui_type, $multivalued, $options) {
+    private function create_test_field($contextlevelname, $data_type, $ui_type, $multivalued, $options, $maxlength) {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
@@ -137,6 +138,11 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
         if ($options !== NULL) {
             //set options
             $owner_data['options'] = implode("\n", $options);
+        }
+
+        if ($maxlength !== NULL) {
+            //set max length
+            $owner_data['maxlength'] = $maxlength;
         }
 
         field_owner::ensure_field_owner_exists($field, 'manual', $owner_data);
@@ -265,7 +271,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
         //set up the custom field, category, context association, and owner
-        $fieldid = $this->create_test_field($contextlevelname, 'int', 'menu', true, array('1', '2', '3', '4'));
+        $fieldid = $this->create_test_field($contextlevelname, 'int', 'menu', true, array('1', '2', '3', '4'), NULL);
 
         $record['action'] = 'create';
         $record['testfieldshortname'] = '1/2/3';
@@ -306,7 +312,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
         //set up the custom field, category, context association, and owner
-        $fieldid = $this->create_test_field($contextlevelname, 'int', 'menu', true, array('1', '2', '3', '4'));
+        $fieldid = $this->create_test_field($contextlevelname, 'int', 'menu', true, array('1', '2', '3', '4'), NULL);
 
         //create parent entity if needed
         if ($parentid = $this->create_parent_entity($parententitytype, $parentrecord, $parentreffield)) {
@@ -351,7 +357,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
         //set up the custom field, category, context association, and owner
-        $fieldid = $this->create_test_field($contextlevelname, 'int', 'menu', true, array('1', '2', '3', '4'));
+        $fieldid = $this->create_test_field($contextlevelname, 'int', 'menu', true, array('1', '2', '3', '4'), NULL);
 
         //create parent entity if needed
         if ($parentid = $this->create_parent_entity($parententitytype, $parentrecord, $parentreffield)) {
@@ -396,7 +402,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
         //set up the custom field, category, context association, and owner
-        $fieldid = $this->create_test_field($contextlevelname, 'int', 'menu', true, array('1', '2', '3', '4'));
+        $fieldid = $this->create_test_field($contextlevelname, 'int', 'menu', true, array('1', '2', '3', '4'), NULL);
 
         //create parent entity if needed
         if ($parentid = $this->create_parent_entity($parententitytype, $parentrecord, $parentreffield)) {
@@ -454,7 +460,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
         //set up the custom field, category, context association, and owner
-        $fieldid = $this->create_test_field($contextlevelname, 'char', 'menu', false, array('1/2/3\\\\\\/', '4'));
+        $fieldid = $this->create_test_field($contextlevelname, 'char', 'menu', false, array('1/2/3\\\\\\/', '4'), NULL);
 
         $record['action'] = 'create';
         $record['testfieldshortname'] = '1/2/3\\\\\\/';
@@ -483,18 +489,18 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
      * @return array The data, as expected by the testing method
      */
     function ui_type_provider() {
-        return array(array('checkbox', '0', array('0')),
+        return array(array('checkbox', '0', array('0'), NULL),
                      //TODO: re-allow once yes / no values are supported
                      //array('checkbox', 'no', array('0')),
-                     array('checkbox', '1', array('1')),
+                     array('checkbox', '1', array('1'), NULL),
                      //TODO: re-allow once yes / no values are supported
                      //array('checkbox', 'yes', array('1')),
-                     array('text', 'sometext/moretext', array('sometext/moretext')),
-                     array('textarea', 'sometext/moretext', array('sometext/moretext')),
+                     array('text', 'sometext/moretext', array('sometext/moretext'), 100),
+                     array('textarea', 'sometext/moretext', array('sometext/moretext'), NULL),
                      //TODO: re-allow once custom date fields are supported
                      //array('datetime', 'Jan/02/2012', array(mktime(0, 0, 0, 1, 2, 2012))),
                      //array('datetime', 'Jan/02/2012:05:30', array(mktime(5, 30, 0, 1, 2, 2012))),
-                     array('password', 'sometext/moretext', array('sometext/moretext')));
+                     array('password', 'sometext/moretext', array('sometext/moretext'), 100));
     }
 
     /**
@@ -504,15 +510,16 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
      * @param string $ui_type The string value representing a UI type
      * @param string $data The value provided for that field
      * @param string $expected The expected stored value
+     * @param int $maxlength The max length for data input
      */
-    public function test_multivalue_functionality_only_used_for_menu_of_choices($ui_type, $data, $expected) {
+    public function test_multivalue_functionality_only_used_for_menu_of_choices($ui_type, $data, $expected, $maxlength) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
         //set up the custom field, category, context association, and owner
-        $fieldid = $this->create_test_field('user', 'char', $ui_type, true, NULL);
+        $fieldid = $this->create_test_field('user', 'char', $ui_type, true, NULL, $maxlength);
 
         //reset the field list
         $temp = new user();
@@ -573,7 +580,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
 
         //set up the custom field, category, context association, and owner
         //use "expected" as list of available options
-        $fieldid = $this->create_test_field('user', $data_type, 'menu', true, $expected);
+        $fieldid = $this->create_test_field('user', $data_type, 'menu', true, $expected, NULL);
 
         //reset the field list
         $temp = new user();
@@ -605,14 +612,12 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
      * Validate that dates are not supported as multivalue entries
      */
     public function test_multivalue_dates_not_supported() {
-        $this->markTestSkipped();
-
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
 
         //set up a date/time custom field
-        $fieldid = $this->create_test_field('user', 'datetime', 'datetime', true, array());
+        $fieldid = $this->create_test_field('user', 'datetime', 'datetime', true, NULL, NULL);
 
         //run the entity create action
         $record = array('action' => 'create',
