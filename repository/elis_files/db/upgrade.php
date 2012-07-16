@@ -25,7 +25,6 @@
  */
 
 require_once($CFG->dirroot . '/repository/elis_files/ELIS_files_factory.class.php');
-require_once($CFG->dirroot . '/repository/elis_files/lib/eventlib.php');
 require_once($CFG->dirroot . '/repository/elis_files/lib/ELIS_files.php');
 
 function xmldb_repository_elis_files_upgrade($oldversion = 0) {

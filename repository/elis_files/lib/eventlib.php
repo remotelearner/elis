@@ -450,16 +450,6 @@ function elis_files_userset_deassigned($usersetinfo) {
 }
 
 /**
- * Method to return authentication methods that DO NOT use passwords
- *
- * @return array  list of authentications that DO NOT use passwords
- */
-function elis_files_nopasswd_auths() {
-    // TBD: determine from auth plugin which don't support passwords ???
-    return array('openid', 'cas');
-}
-
-/**
  * Handle the event when a user is created in Moodle.
  *
  * @uses $CFG
