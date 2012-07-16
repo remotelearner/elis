@@ -102,6 +102,7 @@ class elis_user_field_mappings_test extends elis_database_test {
         return array('context' => 'moodle',
                      //prevent events functionality
                      'events_handlers' => 'moodle',
+                     'role_assignments' => 'moodle',
                      RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      field::TABLE => 'elis_core',
                      field_category::TABLE => 'elis_core',
