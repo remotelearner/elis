@@ -366,93 +366,104 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $control = $f->owners['manual']->param_control;
 
             //obtain the submitted value
-            $value = $record->{$field->shortname};
+            $v = $record->{'field_'.$field->shortname};
 
-            switch ($control) {
-                case 'checkbox':
-                    if (!$this->validate_fixed_list($record, $field->shortname, array(0, 1))) {
-                        //not a valid checkbox value
-                        $message = '"'.$value.'" is not one of the available options for checkbox custom field "'.$field->shortname.'" (0, 1).';
-                        $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
-                        return false;
-                    }
-                    break;
-                case 'menu':
-                    $options = explode("\n", $f->owners['manual']->param_options);
-                    if (!$this->validate_fixed_list($record, $field->shortname, $options)) {
-                        //not a valid option
-                        $message = '"'.$value.'" is not one of the available options for menu of choices custom field "'.$field->shortname.'".';
-                        $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
-                        return false;
-                    }
-                    break;
-                case 'text':
-                    $maxlength = $f->owners['manual']->param_maxlength;
-                    if (strlen($record->{$field->shortname}) > $maxlength) {
-                        //too long
-                        $message = 'Text input custom field "'.$field->shortname.'" value of "'.$value.'" exceeds the maximum field length of '.$maxlength.'.';
-                        $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
-                        return false;
-                    }
-                    break;
-                case 'password':
-                    $maxlength = $f->owners['manual']->param_maxlength;
-                    if (strlen($record->{$field->shortname}) > $maxlength) {
-                        //too long
-                        $message = 'Password custom field "'.$field->shortname.'" value of "'.$value.'" exceeds the maximum field length of '.$maxlength.'.';
-                        $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
-                        return false;
-                    }
-                    break;
-                case 'datetime':
-                    //determine whether the field supports the "time" component
-                    $inctime = $f->owners['manual']->param_inctime;
-                    if ($inctime) {
-                        //date and time supported
-                        $parts = explode(':', $value);
-                        $valid = false;
+            //handle as an array
+            if (is_array($v)) {
+                $values = $v;
+            } else {
+                $values = array($v);
+            }
 
-                        if (count($parts) == 1) {
-                            //just date provided
-                            $test = $this->parse_date($value, false);
-                            $valid = $test !== false;
-                        } else if (count($parts) == 3) {
-                            //date and time provided
-                            $test = $this->parse_date($parts[0], false);
-                            if ($test) {
-                                //first pieces is a valid date
-                                $hour_numeric = preg_match('/^\d{1,2}$/', $parts[1]); 
-                                $minute_numeric = preg_match('/^\d{1,2}$/', $parts[2]);
-
-                                if ($hour_numeric && $minute_numeric) {
-                                    //determine if time is valid
-                                    $hour = (int)$parts[1];
-                                    $minute = (int)$parts[2];
-                                    $valid = $hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59;
+            foreach ($values as $value) {
+                switch ($control) {
+                    case 'checkbox':
+                        //just in case
+                        $string_value = (string)$value;
+                        if ($string_value != '0' && $string_value != '1') {
+                            //not a valid checkbox value
+                            $message = '"'.$value.'" is not one of the available options for checkbox custom field "'.$field->shortname.'" (0, 1).';
+                            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                            return false;
+                        }
+                        break;
+                    case 'menu':
+                        $options = explode("\n", $f->owners['manual']->param_options);
+                        if (!in_array($value, $options)) {
+                            //not a valid option
+                            $message = '"'.$value.'" is not one of the available options for menu of choices custom field "'.$field->shortname.'".';
+                            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                            return false;
+                        }
+                        break;
+                    case 'text':
+                        $maxlength = $f->owners['manual']->param_maxlength;
+                        if (strlen($value) > $maxlength) {
+                            //too long
+                            $message = 'Text input custom field "'.$field->shortname.'" value of "'.$value.'" exceeds the maximum field length of '.$maxlength.'.';
+                            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                            return false;
+                        }
+                        break;
+                    case 'password':
+                        $maxlength = $f->owners['manual']->param_maxlength;
+                        if (strlen($value) > $maxlength) {
+                            //too long
+                            $message = 'Password custom field "'.$field->shortname.'" value of "'.$value.'" exceeds the maximum field length of '.$maxlength.'.';
+                            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                            return false;
+                        }
+                        break;
+                    case 'datetime':
+                        //determine whether the field supports the "time" component
+                        $inctime = $f->owners['manual']->param_inctime;
+                        if ($inctime) {
+                            //date and time supported
+                            $parts = explode(':', $value);
+                            $valid = false;
+    
+                            if (count($parts) == 1) {
+                                //just date provided
+                                $test = $this->parse_date($value, false);
+                                $valid = $test !== false;
+                            } else if (count($parts) == 3) {
+                                //date and time provided
+                                $test = $this->parse_date($parts[0], false);
+                                if ($test) {
+                                    //first pieces is a valid date
+                                    $hour_numeric = preg_match('/^\d{1,2}$/', $parts[1]); 
+                                    $minute_numeric = preg_match('/^\d{1,2}$/', $parts[2]);
+    
+                                    if ($hour_numeric && $minute_numeric) {
+                                        //determine if time is valid
+                                        $hour = (int)$parts[1];
+                                        $minute = (int)$parts[2];
+                                        $valid = $hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59;
+                                    }
                                 }
                             }
+    
+                            if (!$valid) {
+                                //could not parse date + time
+                                $message = '"'.$value.'" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "'.$field->shortname.'".';
+                                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                                return false;
+                            }
+    
+    
+                        } else {
+                            //date only supported without time
+                            $test = $this->parse_date($value, false);
+                            if ($test === false) {
+                                //could not parse date
+                                $message = '"'.$value.'" is not a valid date in MMM/DD/YYYY format for date custom field "'.$field->shortname.'".';
+                                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
+                                return false;
+                            }
                         }
-
-                        if (!$valid) {
-                            //could not parse date + time
-                            $message = '"'.$value.'" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "'.$field->shortname.'".';
-                            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
-                            return false;
-                        }
-
-
-                    } else {
-                        //date only supported without time
-                        $test = $this->parse_date($value, false);
-                        if ($test === false) {
-                            //could not parse date
-                            $message = '"'.$value.'" is not a valid date in MMM/DD/YYYY format for date custom field "'.$field->shortname.'".';
-                            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
-                            return false;
-                        }
-                    }
-                default:
-                    break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -521,6 +532,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('create', $record, $filename, 'user')) {
             return false;
@@ -543,8 +556,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $record->birthyear = date('Y', $value);
             unset($record->birthdate);
         }
-
-        $record = $this->add_custom_field_prefixes($record);
 
         // TODO: validation
         $user = new user();
@@ -721,6 +732,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //$record->timemodified = time();
         //$DB->update_record('crlm_user', $record);
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('update', $record, $filename, 'user')) {
             return false;
@@ -743,8 +756,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $record->birthyear = date('Y', $value);
             unset($record->birthdate);
         }
-
-        $record = $this->add_custom_field_prefixes($record);
 
         $user = new user();
         $user->set_from_data($record);
@@ -1349,13 +1360,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('create', $record, $filename, 'class')) {
             return false;
         }
 
         $record->courseid = $crsid;
-        $record = $this->add_custom_field_prefixes($record);
 
         $pmclass = new pmclass();
         $pmclass->set_from_data($record);
@@ -1496,13 +1508,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('update', $record, $filename, 'class')) {
             return false;
         }
 
         $record->id = $clsid;
-        $record = $this->add_custom_field_prefixes($record);
 
         $pmclass = new pmclass();
         $pmclass->set_from_data($record);
@@ -1721,12 +1734,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('create', $record, $filename, 'curriculum')) {
             return false;
         }
-
-        $record = $this->add_custom_field_prefixes($record);
 
         $cur = new curriculum();
         $cur->set_from_data($record);
@@ -1749,6 +1762,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('update', $record, $filename, 'curriculum')) {
             return false;
@@ -1760,8 +1775,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         if (!$this->validate_program_data('update', $record, $filename)) {
             return false;
         }
-
-        $record = $this->add_custom_field_prefixes($record);
 
         $cur = new curriculum();
         $cur->set_from_data($record);
@@ -1819,6 +1832,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('create', $record, $filename, 'cluster')) {
             return false;
@@ -1828,8 +1843,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             //should default to the empty string rather than null
             $record->display = '';
         }
-
-        $record = $this->add_custom_field_prefixes($record);
 
         $cluster = new userset();
         $cluster->set_from_data($record);
@@ -1871,14 +1884,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('update', $record, $filename, 'cluster')) {
             return false;
         }
 
         $record->id = $id;
-
-        $record = $this->add_custom_field_prefixes($record);
 
         $data = new userset();
         $data->set_from_data($record);
@@ -2057,6 +2070,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('create', $record, $filename, 'course')) {
             return false;
@@ -2064,7 +2079,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $record = $this->initialize_course_fields($record);
 
-        $record = $this->add_custom_field_prefixes($record);
         $course = new course();
         $course->set_from_data($record);
         $course->save();
@@ -2158,6 +2172,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('update', $record, $filename, 'course')) {
             return false;
@@ -2166,7 +2182,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $record = $this->initialize_course_fields($record);
 
         $record->id = $crsid;
-        $record = $this->add_custom_field_prefixes($record);
 
         $course = new course();
         $course->set_from_data($record);
@@ -2256,6 +2271,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('create', $record, $filename, 'track')) {
             return false;
@@ -2263,8 +2280,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $record->curid = $id;
         $record->timecreated = time();
-
-        $record = $this->add_custom_field_prefixes($record);
 
         $track = new track();
         $track->set_from_data($record);
@@ -2292,6 +2307,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        $record = $this->add_custom_field_prefixes($record);
+
         //custom field validation
         if (!$this->validate_custom_field_data('update', $record, $filename, 'track')) {
             return false;
@@ -2299,8 +2316,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $record->id = $id;
         $record->timemodified = time();
-
-        $record = $this->add_custom_field_prefixes($record);
 
         $track = new track();
         $track->set_from_data($record);

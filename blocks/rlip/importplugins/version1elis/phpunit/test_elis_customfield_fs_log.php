@@ -122,9 +122,11 @@ class elis_customfield_fs_log_test extends rlip_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/coursetemplate.class.php'));
+        require_once(elispm::lib('data/curriculumstudent.class.php'));
 
         return array('user' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program');
+                     coursetemplate::TABLE => 'elis_program',
+                     curriculumstudent::TABLE => 'elis_program');
     }
 
     /**
@@ -741,5 +743,30 @@ class elis_customfield_fs_log_test extends rlip_test {
 
         $message = '[course.csv line 2] User set with name "testusersetname" could not be updated. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
+    }
+
+    /**
+     * Validate that multi-value custom fields report the first error found
+     */
+    public function test_multivalue_field_reports_first_error() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+
+        $this->create_custom_field(CONTEXT_ELIS_USER, 'menu', array('options' => '1'));
+        $DB->execute("UPDATE {".field::TABLE."}
+                     SET multivalued = 1");
+
+        $data = array('action' => 'create',
+                      'username' => 'testuserusername',
+                      'email' => 'test@useremail.com',
+                      'idnumber' => 'testuseridnumber',
+                      'firstname' => 'testuserfirstname',
+                      'lastname' => 'testuserlastname',
+                      'country' => 'CA',
+                      'testfieldshortname' => '1/2/3');
+
+        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", '.
+                   'idnumber "testuseridnumber" could not be created. "2" is not one of the available options for menu of choices custom field "testfieldshortname".'."\n";
+        $this->assert_data_produces_error($data, $message, 'user');
     }
 }
