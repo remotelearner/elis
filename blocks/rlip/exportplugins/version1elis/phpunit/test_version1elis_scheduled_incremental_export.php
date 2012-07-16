@@ -36,7 +36,6 @@ require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
  * Test class for validating basic export data during a scheduled, incremental
  * export
  */
-//class version1elisScheduledIncrementalExportTest extends rlip_test {
 class version1elisScheduledIncrementalExportTest extends rlip_test {
     /**
      * Return the list of tables that should be overlayed.
@@ -147,6 +146,7 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
         $this->load_csv_data();
 
         //set up configuration
+        set_config('export_path', '/rlip/rlipexport_version1elis', 'rlipexport_version1elis');
         set_config('export_file', 'export_version1elis.csv', 'rlipexport_version1elis');
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
@@ -161,7 +161,7 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
         run_ipjob($taskname);
 
         //path to export file
-        $filepath = $CFG->dataroot.'/rlip/rlipexport_version1elis/temp/export_version1elis.csv';
+        $filepath = $CFG->dataroot.'/rlip/rlipexport_version1elis/export_version1elis.csv';
 
         //validate that the file exists
         $handle = fopen($filepath, 'r');
@@ -196,6 +196,7 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
         $this->load_csv_data();
 
         //set up configuration
+        set_config('export_path', '/rlip/rlipexport_version1elis', 'rlipexport_version1elis');
         set_config('export_file', 'export_version1elis.csv', 'rlipexport_version1elis');
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
@@ -216,7 +217,7 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
         run_ipjob($taskname);
 
         //path to export file
-        $filepath = $CFG->dataroot.'/rlip/rlipexport_version1elis/temp/export_version1elis.csv';
+        $filepath = $CFG->dataroot.'/rlip/rlipexport_version1elis/export_version1elis.csv';
 
         //validate that the file exists
         $handle = fopen($filepath, 'r');
