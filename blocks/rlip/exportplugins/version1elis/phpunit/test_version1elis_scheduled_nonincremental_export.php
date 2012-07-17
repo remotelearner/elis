@@ -33,10 +33,10 @@ global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 
 /**
- * Test class for validating basic export data during a scheduled, incremental
+ * Test class for validating basic export data during a scheduled, nonincremental
  * export
  */
-class version1elisScheduledIncrementalExportTest extends rlip_test {
+class version1elisScheduledNonincrementalExportTest extends rlip_test {
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -148,7 +148,7 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
         //set up configuration
         set_config('export_path', '/rlip/rlipexport_version1elis', 'rlipexport_version1elis');
         set_config('export_file', 'export_version1elis.csv', 'rlipexport_version1elis');
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 1, 'rlipexport_version1elis');
 
         //create the job
         $data = array('plugin' => 'rlipexport_version1elis',
@@ -185,10 +185,10 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
     }
 
     /**
-     * Validate that, on subsequent runs, the export contains the header and only
-     * the more recent data row
+     * Validate that, on subsequent runs, the export contains the header and both
+     * rows of data
      */
-    public function testExportContainsAllDataSinceLastRun() {
+    public function testExportContainsAllDataOnSubsequentRun() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
@@ -198,7 +198,7 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
         //set up configuration
         set_config('export_path', '/rlip/rlipexport_version1elis', 'rlipexport_version1elis');
         set_config('export_file', 'export_version1elis.csv', 'rlipexport_version1elis');
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 1, 'rlipexport_version1elis');
 
         //create the job
         $data = array('plugin' => 'rlipexport_version1elis',
@@ -227,7 +227,11 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
         $header = fgetcsv($handle);
         $this->assertEquals($this->get_header(), $header);
 
-        //validate second row (i.e. earlier row skipped)
+        //validate first row
+        $oldrecord = fgetcsv($handle);
+        $this->assertEquals($this->get_first_row(), $oldrecord);
+
+        //validate second row
         $newrecord = fgetcsv($handle);
         $this->assertEquals($this->get_second_row(), $newrecord);
 

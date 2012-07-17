@@ -91,7 +91,11 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                 //add query fragment
                 $time_condition = 'AND stu.completetime >= ?';
             } else {
-                //TODO: implement
+                //scheduled export incremental mode
+
+                //set up the query fragment and parameters
+                $params[] = $lastruntime;
+                $time_condition = 'AND stu.completetime >= ?';
             }
         }
 
@@ -188,6 +192,47 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         //close our current recordset
         $this->recordset->close();
         $this->recordset = NULL;
+    }
+
+    /**
+     * Hook for performing any final actions depending on export result
+     * @param   bool  $result   The state of the export, true => success
+     * @uses    $CFG
+     * @todo    refactor to remove dependency on $CFG and 'export_path'
+     * @return  mixed           State info on failure or null for success.
+     */
+    function finish($result) {
+        global $CFG;
+        $obj = null;
+        if ($result) {
+            if ($this->fileplugin->sendtobrowser) {
+                // nothing to do here ...
+                return null;
+            }
+            // Export successfull, move temp. file (if exists) to export path
+            $tempfile = $this->fileplugin->get_filename(true);
+            if (file_exists($tempfile)) {
+                $exportbase = basename($tempfile);
+                $exportpath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) .
+                              DIRECTORY_SEPARATOR .
+                              trim(get_config($this->plugin, 'export_path'),
+                                   DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+                $outfile = $exportpath . $exportbase;
+                if (!@rename($tempfile, $outfile)) {
+                    error_log("/blocks/rlip/exportplugins/version1elis/version1elis.class.php::finish() - Error renaming: '{$tempfile}' to '{$outfile}'");
+                }
+            }
+           /*
+              else {
+                error_log("/blocks/rlip/exportplugins/version1elis/version1elis.class.php::finish() - Error file: '{$tempfile}' doesn't exist!");
+            }
+           */
+        } else {
+            $obj = new stdClass;
+            $obj->result = $result;
+            // no other state info to save for export
+        }
+        return $obj;
     }
 
     /**
