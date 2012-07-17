@@ -70,10 +70,10 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock 
      * @return object The file plugin instance, or false if not applicable
      */
     function get_import_file($entity) {
-        if ($entity != 'user') {
+        if ($entity != 'course') {
             return false;
         }
-        return parent::get_import_file($entity, 'user.csv');
+        return parent::get_import_file($entity, 'course.csv');
     }
 }
 
@@ -155,6 +155,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->phone2 = str_repeat('a', 100);
         $record->fax = str_repeat('a', 100);
 
+        $expected_password = hash_internal_user_password($record->password);
+
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->user_create($record, 'bogus');
@@ -164,7 +166,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $this->assertEquals($record->firstname, $user->firstname);
         $this->assertEquals($record->lastname, $user->lastname);
         $this->assertEquals($record->email, $user->email);
-        $this->assertEquals(hash_internal_user_password($record->password), $user->password);
+        $this->assertEquals($expected_password, $user->password);
         $this->assertEquals($record->mi, $user->mi);
         $this->assertEquals($record->email2, $user->email2);
         $this->assertEquals($record->address, $user->address);
@@ -212,6 +214,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->phone2 = str_repeat('a', 100);
         $record->fax = str_repeat('a', 100);
 
+        $expected_password = hash_internal_user_password($record->password);
+
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->user_update($record, 'bogus');
@@ -219,7 +223,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $user = $DB->get_record(user::TABLE, array('idnumber' => $record->idnumber));
         $this->assertEquals($record->firstname, $user->firstname);
         $this->assertEquals($record->lastname, $user->lastname);
-        $this->assertEquals(hash_internal_user_password($record->password), $user->password);
+        $this->assertEquals($expected_password, $user->password);
         $this->assertEquals($record->mi, $user->mi);
         $this->assertEquals($record->email2, $user->email2);
         $this->assertEquals($record->address, $user->address);
@@ -541,12 +545,12 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             if (!empty($error)) { // could be an empty new line
                 //only use the "specific" section
 
-                //first dot is in filename
-                $position = strpos($error, '.');
+                //"could not be ..." should appear near the end of the general message
+                $position = strpos($error, 'could not be');
                 $this->assertNotEquals(false, $position);
                 $truncated_error = substr($error, $position + 1);
 
-                //second dot ends the general message
+                //subsequent dot (period) ends the general message
                 $position = strpos($truncated_error, '.');
                 $this->assertNotEquals(false, $position);
                 $truncated_error = substr($truncated_error, $position + 2);
@@ -618,8 +622,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -677,8 +683,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -725,8 +733,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -768,6 +778,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $course->save();
 
         $data = array('action' => 'update',
+                      'context' => 'course',
                       'idnumber' => 'testcourseidnumber');
 
         if ($customvalue !== NULL) {
@@ -775,8 +786,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -819,8 +832,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -857,15 +872,17 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data = array(
             'action'   => 'update',
             'context'  => 'curriculum',
-            'idnumber' => 'testcurriculumidnumber');
+            'idnumber' => 'testprogramidnumber');
 
         if ($customvalue !== NULL) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -912,9 +929,11 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     /**
@@ -959,9 +978,11 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     /**
@@ -988,7 +1009,9 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
 
-        $course = new course(array('idnumber' => 'testcourseidnumber'));
+        $course = new course(array('idnumber' => 'testcourseidnumber',
+                                   'name' => 'testcoursename',
+                                   'syllabus' => ''));
         $course->save();
 
         $data = array(
@@ -1003,9 +1026,11 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     //NOTE: no unit test for class update because only identifying field has a length limit
@@ -1016,8 +1041,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @return array The data needed by the unit test method
      */
     public function usersetCreateFieldProvider() {
-        return array(array('name', 256, NULL),
-                     array('display', 256, NULL));
+        return array(
+            array('name', 256, NULL),
+            array('display', 256, NULL)
+        );
     }
 
     /**
@@ -1045,8 +1072,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -1076,7 +1105,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $userset->save();
 
         $data = array(
-            'action'  => 'create',
+            'action'  => 'update',
             'context' => 'cluster',
             'name'    => 'testusersetname'
         );
@@ -1086,8 +1115,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         } else {
             $value = str_repeat('a', $length);
         }
+        $data[$field] = $value;
 
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$length}.";
+        $maxlength = $length - 1;
+        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 }

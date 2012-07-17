@@ -506,6 +506,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }*/
 
+        //field length checking
+        $lengthcheck = $this->check_user_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
         if (isset($record->username)) {
             if ($DB->record_exists('crlm_user', array('username' => $record->username))) {
                 // TODO : mappings
@@ -685,6 +691,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function user_update($record, $filename) {
         global $CFG, $DB;
 
+        //field length checking
+        $lengthcheck = $this->check_user_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
         $errors = array();
         $error = false;
 
@@ -724,9 +736,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         // TODO: validation
-        $params = array('username'  => $record->username,
-                        'email'     => $record->email,
-                        'idnumber'  => $record->idnumber);
+        $params = array();
+        if (isset($record->username)) {
+            $params['username'] = $record->username;
+        }
+        if (isset($record->email)) {
+            $params['email'] = $record->email;
+        }
+        if (isset($record->idnumber)) {
+            $params['idnumber'] = $record->idnumber;
+        }
 
         $record->id = $DB->get_field('crlm_user', 'id', $params);
         //$record->timemodified = time();
@@ -936,6 +955,146 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $this->mappings = rlipimport_version1elis_get_mapping($entity);
 
         return parent::process_import_file($entity, $maxruntime, $state);
+    }
+
+    /**
+     * Check the lengths of fields based on the supplied maximum lengths
+     *
+     * @param string $entitytype The entity type, as expected by the logger
+     * @param object $record The import record
+     * @param string $filename The name of the import file, excluding path
+     * @param array $lengths Mapping of fields to max lengths
+     */
+    function check_field_lengths($entitytype, $record, $filename, $lengths) {
+        foreach ($lengths as $field => $length) {
+            //note: do not worry about missing fields here
+            if (isset($record->$field)) {
+                $value = $record->$field;
+                if (strlen($value) > $length) {
+                    $identifier = $this->mappings[$field];
+                    $this->fslogger->log_failure("{$identifier} value of \"{$value}\" exceeds ".
+                                                 "the maximum field length of {$length}.",
+                                                 0, $filename, $this->linenumber, $record, $entitytype);
+                    return false;
+                }
+            }
+        }
+
+        //no problems found
+        return true;
+    }
+
+    /**
+     * Check the lengths of fields from a user record
+     * @todo: consider generalizing
+     *
+     * @param object $record The user record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_user_field_lengths($record, $filename) {
+        $lengths = array(
+            'username' => 100,
+            'password' => 25,
+            'idnumber' => 255,
+            'firstname' => 100,
+            'lastname' => 100,
+            'mi' => 100,
+            'email' => 100,
+            'email2' => 100,
+            'address' => 100,
+            'address2' => 100,
+            'city' => 100,
+            'postalcode' => 32,
+            'phone' => 100,
+            'phone2' => 100,
+            'fax' => 100
+        );
+
+        return $this->check_field_lengths('user', $record, $filename, $lengths);
+    }
+
+    /**
+     * Check the lengths of fields from a class record
+     * @todo: consider generalizing
+     *
+     * @param object $record The class record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_class_field_lengths($record, $filename) {
+        $lengths = array('idnumber' => 100);
+
+        return $this->check_field_lengths('class', $record, $filename, $lengths);
+    }
+
+    /**
+     * Check the lengths of fields from a course description record
+     * @todo: consider generalizing
+     *
+     * @param object $record The course description record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_course_field_lengths($record, $filename) {
+        $lengths = array(
+            'idnumber' => 100,
+            'name' => 255,
+            'code' => 100,
+            'lengthdescription' => 100,
+            'credits' => 10,
+            'cost' => 10,
+            'version' => 100
+        );
+
+        return $this->check_field_lengths('user', $record, $filename, $lengths);
+    }
+
+    /**
+     * Check the lengths of fields from a program record
+     * @todo: consider generalizing
+     *
+     * @param object $record The program record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_program_field_lengths($record, $filename) {
+        $lengths = array(
+            'idnumber' => 100,
+            'name' => 64,
+            'timetocomplete' => 64,
+            'frequency' => 64
+        );
+
+        return $this->check_field_lengths('user', $record, $filename, $lengths);
+    }
+
+    /**
+     * Check the lengths of fields from a track record
+     * @todo: consider generalizing
+     *
+     * @param object $record The track record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_track_field_lengths($record, $filename) {
+        $lengths = array(
+            'idnumber' => 100,
+            'name' => 255
+        );
+
+        return $this->check_field_lengths('user', $record, $filename, $lengths);
+    }
+
+    /**
+     * Check the lengths of fields from a userset record
+     * @todo: consider generalizing
+     *
+     * @param object $record The userset record
+     * @return boolean True if field lengths are ok, otherwise false
+     */
+    function check_userset_field_lengths($record, $filename) {
+        $lengths = array(
+            'name' => 255,
+            'display' => 255
+        );
+
+        return $this->check_field_lengths('user', $record, $filename, $lengths);
     }
 
     /**
@@ -1342,6 +1501,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
 
+        //field length checking
+        $lengthcheck = $this->check_class_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
         if (isset($record->idnumber)) {
             if ($DB->record_exists('crlm_class', array('idnumber' => $record->idnumber))) {
                 $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a class instance that already exists.", 0, $filename, $this->linenumber, $record, "class");
@@ -1378,47 +1543,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //associate this class instance to a Moodle course, if necessary
         $this->associate_class_to_moodle_course($record, $pmclass->id);
 
-        return true;
-    }
-
-    /**
-     * Check the lengths of fields from a class record
-     * @todo: consider generalizing
-     *
-     * @param object $record The class record
-     * @return boolean True if field lengths are ok, otherwise false
-     */
-    function check_class_field_lengths($record, $filename) {
-        $lengths = array('idnumber' => 100);
-
-        return $this->check_field_lengths('class', $record, $filename, $lengths);
-    }
-
-    /**
-     * Check the lengths of fields based on the supplied maximum lengths
-     *
-     * @param string $entitytype The entity type, as expected by the logger
-     * @param object $record The import record
-     * @param string $filename The name of the import file, excluding path
-     * @param array $lengths Mapping of fields to max lengths
-     */
-    function check_field_lengths($entitytype, $record, $filename, $lengths) {
-        foreach ($lengths as $field => $length) {
-            //note: do not worry about missing fields here
-            if (isset($record->$field)) {
-                $value = $record->$field;
-                if (strlen($value) > $length) {
-                    $identifier = $this->mappings[$field];
-                    // TODO: validaton
-                    /*$this->fslogger->log_failure("{$identifier} value of \"{$value}\" exceeds ".
-                                                 "the maximum field length of {$length}.",
-                                                 0, $filename, $this->linenumber, $record, $entitytype);*/
-                    return false;
-                }
-            }
-        }
-
-        //no problems found
         return true;
     }
 
@@ -1490,6 +1614,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
+
+        //NOTE: not checking field lengths because only idnumber can be too long, and
+        //we can't set this during updates
 
         $message = "";
 
@@ -1723,6 +1850,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function curriculum_create($record, $filename) {
         global $DB, $CFG;
 
+        //field length checking
+        $lengthcheck = $this->check_program_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
         if (isset($record->idnumber)) {
             if ($DB->record_exists('crlm_curriculum', array('idnumber' => $record->idnumber))) {
                 $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a program that already exists.", 0, $filename, $this->linenumber, $record, "curriculum");
@@ -1750,6 +1883,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     function curriculum_update($record, $filename) {
         global $CFG, $DB;
+
+        //field length checking
+        $lengthcheck = $this->check_program_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
 
         if (isset($record->idnumber)) {
             if (!$DB->record_exists('crlm_curriculum', array('idnumber' => $record->idnumber))) {
@@ -1813,6 +1952,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $DB, $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
+        //field length checking
+        $lengthcheck = $this->check_userset_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
         if (isset($record->name)) {
             if ($DB->record_exists('crlm_cluster', array('name' => $record->name))) {
                 $this->fslogger->log_failure("name value of \"{$record->name}\" refers to a user set that already exists.", 0, $filename, $this->linenumber, $record, "cluster");
@@ -1862,6 +2007,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function cluster_update($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+
+        //field length checking
+        $lengthcheck = $this->check_userset_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
 
         if (isset($record->name)) {
             $id = $DB->get_field(userset::TABLE, 'id', array('name'  => $record->name));
@@ -2059,6 +2210,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
+        //field length checking
+        $lengthcheck = $this->check_course_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
         if (isset($record->idnumber)) {
             if ($DB->record_exists('crlm_course', array('idnumber' => $record->idnumber))) {
                 $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a course description that already exists.", 0, $filename, $this->linenumber, $record, "course");
@@ -2147,6 +2304,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         $message = "";
+
+        //field length checking
+        $lengthcheck = $this->check_course_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
 
         if (isset($record->idnumber)) {
             if (!$crsid = $DB->get_field('crlm_course', 'id', array('idnumber' => $record->idnumber))) {
@@ -2252,6 +2415,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function track_create($record, $filename) {
         global $DB, $CFG;
 
+        //field length checking
+        $lengthcheck = $this->check_track_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
+
         if (isset($record->idnumber)) {
             if ($DB->record_exists('crlm_track', array('idnumber' => $record->idnumber))) {
                 $this->fslogger->log_failure("idnumber value of \"{$record->idnumber}\" refers to a track that already exists.", 0, $filename,  $this->linenumber, $record, "track");
@@ -2291,6 +2460,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function track_update($record, $filename) {
         global $DB, $CFG;
         $message = "";
+
+        //field length checking
+        $lengthcheck = $this->check_track_field_lengths($record, $filename);
+        if (!$lengthcheck) {
+            return false;
+        }
 
         if (isset($record->idnumber)) {
             if (isset($record->assignment)) {
