@@ -42,6 +42,7 @@ $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Export Fields';
 $string['configplaceholdersetting'] = 'Replace with real settings';
 $string['emailnotification'] = 'Email notification';
 $string['export_file'] = 'Export filename';
+$string['export_file_timestamp'] = '%b_%d_%Y_%H%M%S';
 $string['export_file_timestamp_label'] = 'Timestamp export file';
 $string['export_path'] = 'Export path';
 $string['exportfilesheading'] = 'Scheduled Export File Locations';
