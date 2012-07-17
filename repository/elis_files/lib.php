@@ -814,10 +814,44 @@ class repository_elis_files extends repository {
                         $a->username = $adminusername;
                         $a->url      = $CFG->wwwroot . '/user/editadvanced.php?id=' . $userid . '&amp;course=' . SITEID;
 
-                        $mform->addElement('static', 'admin_username_intro', get_string('adminusername', 'repository_elis_files'), get_string('configadminusernameconflict', 'repository_elis_files', $a));
+                        $mform->addElement('static', 'admin_username_intro', get_string('adminusername', 'repository_elis_files'),
+                                           get_string('configadminusernameconflict', 'repository_elis_files', $a));
                     } else {
-                        $mform->addElement('static', 'admin_username_intro', get_string('adminusername', 'repository_elis_files'), get_string('configadminusernameset', 'repository_elis_files', $adminusername));
+                        $mform->addElement('static', 'admin_username_intro', get_string('adminusername', 'repository_elis_files'),
+                                           get_string('configadminusernameset', 'repository_elis_files', $adminusername));
                     }
+                }
+            }
+
+            // Attmept to detect users in the system that are authenticated with a plug-in that does not use passwords and display
+            // a message indicating the script that can be run to do a bulk synchronise of these users.
+            $auths = elis_files_nopasswd_auths();
+
+            if (!empty($auths) && count($auths) > 0) {
+                $select = '';
+                $params = array();
+
+                if (count($auths) == 1) {
+                    $select          = 'auth = :auth1';
+                    $params['auth1'] = current($auths);
+                } else {
+                    $selects = array();
+
+                    for ($i = 1; $i <= count($auths); $i++) {
+                        $selects[]        .= ':auth'.$i;
+                        $params['auth'.$i] = $auths[$i - 1];
+                    }
+
+                    $select = 'auth IN ('.implode(', ', $selects).')';
+                }
+
+                $select       .= ' AND deleted = :del';
+                $params['del'] = 0;
+
+                if ($DB->record_exists_select('user', $select, $params)) {
+                    $mform->addElement('html', '<br />');
+                    $mform->addElement('html', '<dl class="healthissues notice"><dt>'.get_string('passwordlessusersync', 'repository_elis_files').
+                                    '</dt> <dd>'.get_string('configpasswordlessusersync', 'repository_elis_files').'</dd></dl>');
                 }
             }
         }
@@ -1024,9 +1058,13 @@ class repository_elis_files extends repository {
             $context = get_context_instance(CONTEXT_COURSE, $id);
         }
         // Get the non context based permissions
-        $capabilities = array('repository/elis_files:createowncontent'=> false,
-                              'repository/elis_files:createsharedcontent'=> false);
-        $this->elis_files->get_other_capabilities($USER, $capabilities);
+        $capabilities = array(
+            'repository/elis_files:createowncontent'=> false,
+            'repository/elis_files:createsharedcontent'=> false
+        );
+
+        $this->elis_files->get_other_capabilities($capabilities);
+
         $canedit = false;
 
         if (empty($userid) && empty($shared) && empty($oid)) {

@@ -131,32 +131,7 @@ class ELIS_files {
 
         $result = $this->verify_setup();
 
-        // Check if we need to initialize non-password users (openid, cas, ...)
-        if ($result && !self::$init && is_siteadmin($USER->id) &&
-            !get_config(self::$plugin_name, 'initialized')) {
-            require_once($CFG->dirroot . '/repository/elis_files/lib/eventlib.php');
-            error_log('ELIS_files() - INFO: initializing users ...');
-            self::$init = true;
-            $errors = 0;
-            $auths = elis_files_nopasswd_auths();
-            $authlist = "'". implode("', '", $auths) ."'";
-            $users = $DB->get_records_select('user', "auth IN ({$authlist})", array(), 'id, auth');
-            if (!empty($users)) {
-                foreach ($users as $user) {
-                    $user = get_complete_user_data('id', $user->id);
-                    $migrate_ok = elis_files_user_created($user);
-                    if (!$migrate_ok) {
-                        $errors++;
-                        error_log("ELIS_files() - failed migrating user ({$user->id}) to Alfresco.");
-                    }
-                }
-            }
-            error_log("ELIS_files() - INFO: initialization complete ({$errors} errors)");
-            if (!$errors) {
-                set_config('initialized', 1, self::$plugin_name);
-            }
-        }
-
+        return $result;
     }
 
 
@@ -2186,9 +2161,12 @@ class ELIS_files {
     /// to be determined based on the Alfresco capabilities the current user has.
         } else {
             // Get the non context based permissions
-            $capabilities = array('repository/elis_files:viewowncontent'=> false,
-                              'repository/elis_files:viewsharedcontent'=> false);
-            $this->get_other_capabilities($USER, $capabilities);
+            $capabilities = array(
+                'repository/elis_files:viewowncontent'=> false,
+                'repository/elis_files:viewsharedcontent'=> false
+            );
+
+            $this->get_other_capabilities($capabilities);
 
             if ($ufile) {
             /// If the current user is not the user who owns this file and we can't access anything in the
@@ -2458,11 +2436,14 @@ class ELIS_files {
         $viewalfcourse         = has_capability('repository/elis_files:viewcoursecontent', $context);
 
         // Get the non context based permissions
-        $capabilities = array('repository/elis_files:viewowncontent'=> false,
-                              'repository/elis_files:createowncontent'=> false,
-                              'repository/elis_files:viewsharedcontent'=> false,
-                              'repository/elis_files:createsharedcontent'=> false);
-        $this->get_other_capabilities($USER, $capabilities);
+        $capabilities = array(
+            'repository/elis_files:viewowncontent'=> false,
+            'repository/elis_files:createowncontent'=> false,
+            'repository/elis_files:viewsharedcontent'=> false,
+            'repository/elis_files:createsharedcontent'=> false
+        );
+
+        $this->get_other_capabilities($capabilities);
 
         // Build the option for browsing from the repository userset / course / site files.
         if ($cid == SITEID && $viewalfsite) {
@@ -2850,6 +2831,7 @@ class ELIS_files {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -3020,20 +3002,22 @@ class ELIS_files {
   /**
  * Find personal and shared repository capabilities
  *
- * @uses $CFG, $DB
- * @param object $user
+ * @uses $USER
  * @param array  $capabilities
- * @param int    $editalfpersonal
- * @param int    $viewalfshared
- * @param int    $editalfshared
  * @return none
  */
-    function get_other_capabilities($user,&$capabilities) {
-        global $CFG, $DB, $USER;
+    function get_other_capabilities(&$capabilities) {
+        global $USER;
+
+        // ELIS-6633 -- the user's capabilities don't seem to be set when accessing this code.... WHY?!
+        if (empty($USER->access['rdef'])) {
+            // Force reloading/caching of all the user's capabilities via role assignments
+            reload_all_capabilities();
+        }
 
         if (!empty($USER->access['rdef'])) {
             foreach ($USER->access['rdef'] as $ctx) {
-                foreach ($capabilities as $capability=>$value) {
+                foreach ($capabilities as $capability => $value) {
                     if (isset($ctx[$capability]) &&
                         $ctx[$capability] == CAP_ALLOW) {
                         $capabilities[$capability] = true;
@@ -3154,9 +3138,12 @@ class ELIS_files {
         $location = $USER->elis_files_repository_location;
 
         // Get the non context based permissions
-        $capabilities = array('repository/elis_files:viewowncontent'=> false,
-                              'repository/elis_files:viewsharedcontent'=> false);
-        $this->get_other_capabilities($USER, $capabilities);
+        $capabilities = array(
+            'repository/elis_files:viewowncontent'=> false,
+            'repository/elis_files:viewsharedcontent'=> false
+        );
+
+        $this->get_other_capabilities($capabilities);
 
         // If the previous value comes from within a cluster that is not the current cluster, return the root
         // storage value for the current cluster directory.

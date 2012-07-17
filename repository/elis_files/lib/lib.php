@@ -2744,3 +2744,13 @@ function elis_files_node_path($uuid, $path = '') {
         return '/'.$path;
     }
 }
+
+/**
+ * Method to return authentication methods that DO NOT use passwords
+ *
+ * @return array  list of authentications that DO NOT use passwords
+ */
+function elis_files_nopasswd_auths() {
+    // TBD: determine from auth plugin which don't support passwords ???
+    return array('openid', 'cas');
+}

@@ -161,12 +161,12 @@ function elis_files_role_unassigned($ra) {
                     AND rc.permission = :perm';
 
             $params = array(
-                'userid'     => $ra->userid,
-                'capability' => 'repository/elis_files:viewsitecontent',
-                'perm'       => CAP_ALLOW
+                'userid' => $ra->userid,
+                'cap'    => 'repository/elis_files:viewsitecontent',
+                'perm'   => CAP_ALLOW
             );
 
-            if (!$DB->record_exists_sql($sql, array('userid' => $ra->userid))) {
+            if (!$DB->record_exists_sql($sql, $params)) {
                 if ($permissions = elis_files_get_permissions($root->uuid, $username)) {
                     foreach ($permissions as $permission) {
                         elis_files_set_permission($username, $root->uuid, $permission, ELIS_FILES_CAPABILITY_DENIED);
@@ -356,6 +356,11 @@ function elis_files_userset_assigned($usersetinfo) {
 function elis_files_userset_deassigned($usersetinfo) {
     global $DB;
 
+    // Let's make sure the required properties are defined in the event data before proceeding -- ELIS-6567
+    if (!isset($usersetinfo->userid) || !isset($usersetinfo->clusterid)) {
+        return true;
+    }
+
     // Only proceed here if the Alfresco plug-in is actually enabled.
     if (!$repo = repository_factory::factory('elis_files')) {
         return true;
@@ -447,16 +452,6 @@ function elis_files_userset_deassigned($usersetinfo) {
     }
 
     return true;
-}
-
-/**
- * Method to return authentication methods that DO NOT use passwords
- *
- * @return array  list of authentications that DO NOT use passwords
- */
-function elis_files_nopasswd_auths() {
-    // TBD: determine from auth plugin which don't support passwords ???
-    return array('openid', 'cas');
 }
 
 /**
