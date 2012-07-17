@@ -356,6 +356,11 @@ function elis_files_userset_assigned($usersetinfo) {
 function elis_files_userset_deassigned($usersetinfo) {
     global $DB;
 
+    // Let's make sure the required properties are defined in the event data before proceeding -- ELIS-6567
+    if (!isset($usersetinfo->userid) || !isset($usersetinfo->clusterid)) {
+        return true;
+    }
+
     // Only proceed here if the Alfresco plug-in is actually enabled.
     if (!$repo = repository_factory::factory('elis_files')) {
         return true;
