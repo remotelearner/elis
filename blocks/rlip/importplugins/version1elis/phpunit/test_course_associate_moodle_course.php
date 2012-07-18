@@ -50,6 +50,7 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
 
         return array('course' => 'moodle',
                      'course_categories' => 'moodle',
+                     field::TABLE => 'elis_core',
                      course::TABLE => 'elis_program',
                      coursetemplate::TABLE => 'elis_program');
     }

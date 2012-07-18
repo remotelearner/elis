@@ -384,6 +384,10 @@ class elis_customfield_fs_log_test extends rlip_test {
                            '"Jan/01/2012:00:00.5" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "testfieldshortname".',
                            array('inctime' => 1)),
                      array('datetime',
+                           'Jan/01/2012:05',
+                           '"Jan/01/2012:05" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "testfieldshortname".',
+                           array('inctime' => 1)),
+                     array('datetime',
                            'Jan/01/2012:00:61',
                            '"Jan/01/2012:00:61" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "testfieldshortname".',
                            array('inctime' => 1)));
