@@ -160,10 +160,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      *
      * @param string $date Date in MMM/DD/YYYY format
      * @param boolean $old_formats Only support old (legacy) formats if set to true
+     * @param boolean $include_time For including time
      * @return mixed The unix timestamp, or false if date is
      *               not in the right format
      */
-    function parse_date($date, $old_formats = true) {
+    function parse_date($date, $old_formats = true, $include_time = false) {
         //determine which case we are in
         if (strpos($date, '/') !== false) {
             $delimiter = '/';
@@ -174,17 +175,27 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         } else {
             return false;
         }
-
         //make sure there are three parts
         $parts = explode($delimiter, $date);
         if (count($parts) != 3) {
             return false;
         }
 
+        $time = explode(':', $date);
+        $include_time = $include_time && count($time) > 1;
+
         if ($delimiter == '/') {
             //MMM/DD/YYYY or MM/DD/YYYY format
             //make sure the month is valid
-            list($month, $day, $year) = $parts;;
+
+            //time specified
+            if ($include_time) {
+                list($month, $day) = $parts;
+                $year = substr($parts[2], 0, strpos($parts[2], ':'));
+            } else {
+                list($month, $day, $year) = $parts;
+            }
+
             $months = array('jan', 'feb', 'mar', 'apr',
                             'may', 'jun', 'jul', 'aug',
                             'sep', 'oct', 'nov', 'dec');
@@ -192,6 +203,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             if ($pos === false) {
                 //legacy format (zero values handled below by checkdate)
                 $month = (int)$month;
+
             } else {
                 //new "text" format
                 $month = $pos + 1;
@@ -203,7 +215,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 return false;
             }
 
-            list($day, $month, $year) = $parts;
+            //time specified
+            if ($include_time) {
+                list($day, $month) = $parts;
+                $year = substr($parts[2], 0, strpos($parts[2], ':'));
+            } else {
+                list($day, $month, $year) = $parts;
+            }
             //TODO: consider doing more validation on month being an integer
         } else {
             //YYYY.MM.DD format
@@ -212,7 +230,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 return false;
             }
 
-            list($year, $month, $day) = $parts;
+            //time specified
+            if ($include_time) {
+                $month = $parts[1];
+                $day = $parts[2];
+                $year = substr($parts[0], 0, strpos($parts[0], ':'));
+            } else {
+                list($year, $month, $day) = $parts;
+            }
             //TODO: consider doing more validation on month being an integer
         }
 
@@ -229,13 +254,34 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $day = (int)$day;
         $year = (int)$year;
+
         if (!checkdate($month, $day, $year)) {
             //invalid combination of month, day and year
             return false;
         }
 
+        $hour = 0;
+        $minute = 0;
+
+        //time specified
+        if ($include_time) {
+            $hour_numeric = preg_match('/^\d{1,2}$/', $time[1]);
+            $minute_numeric = preg_match('/^\d{1,2}$/', $time[2]);
+
+            if ($hour_numeric && $minute_numeric) {
+                //determine if time is valid
+                $hour = (int) $time[1];
+                $minute = (int) $time[2];
+                if (!($hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59)) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+
         //return unix timestamp
-        return mktime(0, 0, 0, $month, $day, $year);
+        return mktime($hour, $minute, 0, $month, $day, $year);
     }
 
     /**
@@ -380,11 +426,19 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                     case 'checkbox':
                         //just in case
                         $string_value = (string)$value;
-                        if ($string_value != '0' && $string_value != '1') {
+
+                        if ($string_value != '0' && $string_value != '1' && strtolower($string_value) != 'yes' && strtolower($string_value) != 'no') {
                             //not a valid checkbox value
                             $message = '"'.$value.'" is not one of the available options for checkbox custom field "'.$field->shortname.'" (0, 1).';
                             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                             return false;
+                        }
+
+                        if (strtolower($string_value) == 'yes') {
+                            $record->{'field_'.$field->shortname} = array('1');
+                        }
+                        if (strtolower($string_value) == 'no') {
+                            $record->{'field_'.$field->shortname} = array('0');
                         }
                         break;
                     case 'menu':
@@ -419,46 +473,26 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                         $inctime = $f->owners['manual']->param_inctime;
                         if ($inctime) {
                             //date and time supported
-                            $parts = explode(':', $value);
-                            $valid = false;
-    
-                            if (count($parts) == 1) {
-                                //just date provided
-                                $test = $this->parse_date($value, false);
-                                $valid = $test !== false;
-                            } else if (count($parts) == 3) {
-                                //date and time provided
-                                $test = $this->parse_date($parts[0], false);
-                                if ($test) {
-                                    //first pieces is a valid date
-                                    $hour_numeric = preg_match('/^\d{1,2}$/', $parts[1]); 
-                                    $minute_numeric = preg_match('/^\d{1,2}$/', $parts[2]);
-    
-                                    if ($hour_numeric && $minute_numeric) {
-                                        //determine if time is valid
-                                        $hour = (int)$parts[1];
-                                        $minute = (int)$parts[2];
-                                        $valid = $hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59;
-                                    }
-                                }
-                            }
-    
-                            if (!$valid) {
+                            $date = $this->parse_date($value, false, true);
+
+                            if (!$date) {
                                 //could not parse date + time
                                 $message = '"'.$value.'" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "'.$field->shortname.'".';
                                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                                 return false;
+                            } else {
+                                $record->{'field_'.$field->shortname} = array($date);
                             }
-    
-    
                         } else {
                             //date only supported without time
-                            $test = $this->parse_date($value, false);
-                            if ($test === false) {
+                            $date = $this->parse_date($value, false, false);
+                            if (!$date) {
                                 //could not parse date
                                 $message = '"'.$value.'" is not a valid date in MMM/DD/YYYY format for date custom field "'.$field->shortname.'".';
                                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                                 return false;
+                            } else {
+                                 $record->{'field_'.$field->shortname} = array($date);
                             }
                         }
                     default:
@@ -3200,18 +3234,18 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->enrolmenttime)) {
-            $datedelta = new datedelta($record->enrolmenttime);
-            if (!$datedelta->getDateString()) {
-                $this->fslogger->log_failure("enrolmenttime value of \"{$record->enrolmenttime}\" is not a valid time delta in *h, *d, *w, *m, *y format.",
+            $value = $this->parse_date($record->enrolmenttime);
+            if ($value === false) {
+                $this->fslogger->log_failure("enrolmenttime value of \"{$record->enrolmenttime}\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.",
                                               0, $filename, $this->linenumber, $record, "enrolment");
                 return false;
             }
         }
 
         if (isset($record->completetime)) {
-            $datedelta = new datedelta($record->completetime);
-            if (!$datedelta->getDateString()) {
-                $this->fslogger->log_failure("completetime value of \"{$record->completetime}\" is not a valid time delta in *h, *d, *w, *m, *y format.",
+            $value = $this->parse_date($record->completetime);
+            if ($value === false) {
+                $this->fslogger->log_failure("completetime value of \"{$record->completetime}\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.",
                                               0, $filename, $this->linenumber, $record, "enrolment");
                 return false;
             }
@@ -3219,7 +3253,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         if (isset($record->completestatusid)) {
             if (!in_array(strtolower($record->completestatusid), array('0', '1', '2'))) {
-                $this->fslogger->log_failure("completestatusid value of \"{$record->completestatusid}\" is not one of the available options (0, 1, 2).", 0, $filename, $this->linenumber, $record, "enrolment");
+                $this->fslogger->log_failure("completestatusid value of \"{$record->completestatusid}\" is not one of the available options (0, 1, 2).",
+                                              0, $filename, $this->linenumber, $record, "enrolment");
                 return false;
             }
         }
@@ -3583,8 +3618,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $userid = $this->get_userid_from_record($record, $filename);
 
         if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
-            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in " .
-                                         "class instance \"{$idnumber}\" as student.", 0, $filename, $this->linenumber, $record, "enrolment");
+            $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in class instance \"{$idnumber}\" as student.",
+                                          0, $filename, $this->linenumber, $record, "enrolment");
             return false;
         }
 
@@ -3690,7 +3725,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $params = array();
         if (isset($record->user_username)) {
             $params['username'] = $record->user_username;
-            $params['mnethostid'] = $CFG->mnet_localhost_id; 
+            $params['mnethostid'] = $CFG->mnet_localhost_id;
         }
         if (isset($record->user_email)) {
             $params['email'] = $record->user_email;
@@ -3726,7 +3761,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $params = array();
         if (isset($record->user_username)) {
             $params['username'] = $record->user_username;
-            $params['mnethostid'] = $CFG->mnet_localhost_id; 
+            $params['mnethostid'] = $CFG->mnet_localhost_id;
         }
         if (isset($record->user_email)) {
             $params['email'] = $record->user_email;

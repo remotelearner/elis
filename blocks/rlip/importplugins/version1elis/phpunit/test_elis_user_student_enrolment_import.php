@@ -53,6 +53,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
         return array('config' => 'moodle',
                      course::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
+                     field::TABLE => 'elis_core',
                      student::TABLE => 'elis_program',
                      student_grade::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
