@@ -40,26 +40,6 @@ require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
-/**
- * Class that fetches import files for the user import
- */
-class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'course') {
-            return false;
-        }
-        return parent::get_import_file($entity, 'userset.csv');
-    }
-}
-
 class version1ELISClusterFSLogTest extends rlip_test {
 
     protected $backupGlobalsBlacklist = array('DB');
@@ -204,7 +184,7 @@ class version1ELISClusterFSLogTest extends rlip_test {
 
         //run the import
         $classname = "rlip_importprovider_fslog{$entitytype}";
-        $provider = new $classname($data);
+        $provider = new $classname($data, 'userset.csv');
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, true);
         //suppress output for now
         ob_start();

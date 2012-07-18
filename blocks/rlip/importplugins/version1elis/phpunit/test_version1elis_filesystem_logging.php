@@ -41,66 +41,6 @@ require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 /**
- * Class that fetches import files for the user import
- */
-class rlip_importprovider_fsloguser extends rlip_importprovider_withname_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'user') {
-            return false;
-        }
-        return parent::get_import_file($entity, 'user.csv');
-    }
-}
-
-/**
- * Class that fetches import files for the course import
- */
-class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'course') {
-            return false;
-        }
-        return parent::get_import_file($entity, 'course.csv');
-    }
-}
-
-/**
- * Class that fetches import files for the enrolment import
- */
-class rlip_importprovider_fslogenrolment extends rlip_importprovider_withname_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'enrolment') {
-            return false;
-        }
-        return parent::get_import_file($entity, 'enrolment.csv');
-    }
-}
-
-/**
  * Overlay database that allows for the handling of temporary tables as well
  * as some course-specific optimizations
  */
@@ -272,11 +212,21 @@ class version1elisFilesystemLoggingTest extends rlip_test {
         // Detect if we are running this test on a site with the ELIS PM system in place
         if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
             require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/pmclass.class.php'));
+            require_once(elispm::lib('data/course.class.php'));
+            require_once(elispm::lib('data/curriculum.class.php'));
+            require_once(elispm::lib('data/track.class.php'));
             require_once(elispm::lib('data/user.class.php'));
+            require_once(elispm::lib('data/userset.class.php'));
             require_once(elispm::lib('data/usermoodle.class.php'));
 
             $tables[user::TABLE] = 'elis_program';
             $tables[usermoodle::TABLE] = 'elis_program';
+            $tables[curriculum::TABLE] = 'elis_program';
+            $tables[course::TABLE] = 'elis_program';
+            $tables[pmclass::TABLE] = 'elis_program';
+            $tables[track::TABLE] = 'elis_program';
+            $tables[userset::TABLE] = 'elis_program';
         }
 
         return $tables;
@@ -368,11 +318,12 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     /**
      * Validates that the supplied data produces the expected error
      *
-     * @param array $data The import data to process
+     * @param array  $data The import data to process
      * @param string $expected_error The error we are expecting (message only)
-     * @param user $entitytype One of 'user', 'course', 'enrolment'
+     * @param user   $entitytype One of 'user', 'course', 'enrolment'
+     * @param string $importfilename  name of import file
      */
-    protected function assert_data_produces_error($data, $expected_error, $entitytype) {
+    protected function assert_data_produces_error($data, $expected_error, $entitytype, $importfilename = null) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
@@ -383,15 +334,14 @@ class version1elisFilesystemLoggingTest extends rlip_test {
 
         //run the import
         $classname = "rlip_importprovider_fslog{$entitytype}";
-        $provider = new $classname($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, true);
+        $provider = new $classname($data, $importfilename);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, true);
         //suppress output for now
         ob_start();
         $instance->run();
         ob_end_clean();
 
         //validate that a log file was created
-        $manual = true;
         //get first summary record - at times, multiple summary records are created and this handles that problem
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {
@@ -403,15 +353,11 @@ class version1elisFilesystemLoggingTest extends rlip_test {
         $plugin_type = 'import';
         $plugin = 'rlipimport_version1';
         $format = get_string('logfile_timestamp','block_rlip');
-        $testfilename = $filepath.'/'.$plugin_type.'_version1_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
+        $testfilename = $filepath.'/'.$plugin_type.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         //get most recent logfile
 
         $filename = self::get_current_logfile($testfilename);
-
-        if (!file_exists($filename)) {
-            echo "\n can't find logfile: $filename for \n$testfilename";
-        }
-        $this->assertTrue(file_exists($filename));
+        $this->assertTrue(file_exists($filename), "\n Can't find logfile: {$filename} for \n{$testfilename}");
 
         //fetch log line
         $pointer = fopen($filename, 'r');
@@ -915,6 +861,346 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                      array('idnumber', 255),
                      array('institution', 40),
                      array('department', 30));
+    }
+
+    /**
+     * Validate that the verison 1 import plugin logs the exact message required to the
+     * file system when the user import file is missing required fields
+     */
+    public function testVersion1ELISuserImportLogsMissingColumns() {
+        $data = array('action'    => 'create',
+                      'firstname' => 'testfirstname',
+                      'lastname'  => 'testlastname',
+                      'password'  => 'Testpassword!0',
+                      'city'      => 'Waterloo',
+                      'country'   => 'CA',
+                      'lang'      => 'en'
+                 );
+
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array('action'    => 'update',
+                      'firstname' => 'testfirstname',
+                      'lastname'  => 'testlastname',
+                      'password'  => 'Testpassword!0',
+                      'city'      => 'Waterloo',
+                      'country'   => 'CA',
+                      'lang'      => 'en'
+                 );
+
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array('action'    => 'delete',
+                      'firstname' => 'testfirstname',
+                      'lastname'  => 'testlastname',
+                      'password'  => 'Testpassword!0',
+                      'city'      => 'Waterloo',
+                      'country'   => 'CA',
+                      'lang'      => 'en'
+                 );
+
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /**
+     * Validate that the verison 1 import plugin logs the exact message required to the
+     * file system when the course(ELIS entity) import file is missing required fields
+     */
+    public function testVersion1ELISentityImportLogsMissingColumns() {
+        // create
+        $data = array('action'   => 'create',
+                      'context'  => 'curriculum',
+                      'name'     => 'ProgramName'
+                 );
+
+        $expected_error = "[course.csv line 2] Program could not be created. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'create',
+                      'context' => 'track',
+                      'name'    => 'TrackName'
+                 );
+
+        $expected_error = "[course.csv line 2] Track could not be created. Required fields assignment, idnumber are unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'create',
+                      'context' => 'course',
+                      'name'    => 'CourseDescriptionName'
+                 );
+
+        $expected_error = "[course.csv line 2] Course description could not be created. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'create',
+                      'context' => 'class',
+                      'name'    => 'ClassInstanceName'
+                 );
+
+        $expected_error = "[course.csv line 2] Class instance could not be created. Required fields assignment, idnumber are unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'create',
+                      'context' => 'cluster'
+                 );
+
+        $expected_error = "[course.csv line 2] User set could not be created. Required field name is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        // update
+        $data = array('action'  => 'update',
+                      'context' => 'curriculum',
+                      'name'    => 'NewProgramName'
+                 );
+
+        $expected_error = "[course.csv line 2] Program could not be updated. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'update',
+                      'context' => 'track',
+                      'name'    => 'NewTrackName'
+                 );
+
+        $expected_error = "[course.csv line 2] Track could not be updated. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'update',
+                      'context' => 'course',
+                      'name'    => 'NewCourseDescriptionName'
+                 );
+
+        $expected_error = "[course.csv line 2] Course description could not be updated. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'update',
+                      'context' => 'class',
+                      'name'    => 'NewClassInstanceName'
+                 );
+
+        $expected_error = "[course.csv line 2] Class instance could not be updated. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'update',
+                      'context' => 'cluster'
+                 );
+
+        $expected_error = "[course.csv line 2] User set could not be updated. Required field name is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        // delete
+        $data = array('action'  => 'delete',
+                      'context' => 'curriculum',
+                      'name'    => 'ProgramName'
+                 );
+
+        $expected_error = "[course.csv line 2] Program could not be deleted. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'delete',
+                      'context' => 'track',
+                      'name'    => 'TrackName'
+                 );
+
+        $expected_error = "[course.csv line 2] Track could not be deleted. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'delete',
+                      'context' => 'course',
+                      'name'    => 'CourseDescriptionName'
+                 );
+
+        $expected_error = "[course.csv line 2] Course description could not be deleted. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'delete',
+                      'context' => 'class',
+                      'name'    => 'ClassInstanceName'
+                 );
+
+        $expected_error = "[course.csv line 2] Class instance could not be deleted. Required field idnumber is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array('action'  => 'delete',
+                      'context' => 'cluster'
+                 );
+
+        $expected_error = "[course.csv line 2] User set could not be deleted. Required field name is unspecified or empty.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Validate that the verison 1 import plugin logs the exact message required to the
+     * file system when the enrolment import file is missing required fields
+     */
+    public function testVersion1ELISenrolmentImportLogsMissingColumns() {
+        // create
+        $data = array('action'        => 'create',
+                      'context'       => 'curriculum_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'create',
+                      'context'       => 'track_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'create',
+                      'context'       => 'course_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'create',
+                      'context'       => 'class_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'create',
+                      'context'       => 'cluster_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        // update
+        $data = array('action'        => 'create',
+                      'context'       => 'class_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'create',
+                      'context'       => 'track_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'create',
+                      'context'       => 'course_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'create',
+                      'context'       => 'class_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'create',
+                      'context'       => 'cluster_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        // update - only allowed for class context
+        $data = array('action'        => 'update',
+                      'context'       => 'class_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        // delete
+        $data = array('action'        => 'delete',
+                      'context'       => 'curriculum_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'delete',
+                      'context'       => 'track_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'delete',
+                      'context'       => 'course_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'delete',
+                      'context'       => 'class_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+
+        $data = array('action'        => 'delete',
+                      'context'       => 'cluster_1',
+                      'enrolmenttime' => 'Jul/17/2012:12:00'
+                 );
+
+        $expected_error = "[enrolment.csv line 1] Import file enrolment.csv was not processed because one of the following columns is required but all are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expected_error, 'enrolment');
     }
 
 }

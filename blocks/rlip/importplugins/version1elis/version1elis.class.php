@@ -64,10 +64,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                         'fax', 'birthdate', 'gender', 'language', 'transfercredits',
                                         'comments', 'notes', 'inactive');
 
-    static $import_fields_course_create = array('context');
-    static $import_fields_course_update = array('context');
-    static $import_fields_course_delete = array('context');
-
     //fields that are available during the "course" (i.e. pm entity) import
     static $available_fields_course = array('context', 'name', 'code', 'idnumber', 'syllabus', 'lengthdescription', 'length',
                                             'credits', 'cost', 'version', 'description', 'reqcredits', 'timetocomplete',
@@ -77,21 +73,71 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $course_field_keywords       = array('action', 'context', 'name', 'code', 'idnumber', 'syllabus', 'lengthdescription',
                                                 'length', 'credits', 'completion_grade', 'cost', 'version', 'assignment', 'link');
 
-    //TODO: deal with all required fields structures / setup
-    /*
-    static $import_fields_course_create = array('idnumber', 'name');
-    static $import_fields_course_update = array('idnumber');
-    static $import_fields_course_delete = array('idnumber');
-    */
+    static $import_fields_course_create = array(
+        'context',
+        'idnumber',
+        'name'
+    );
 
-    static $import_fields_program_create = array('idnumber', 'name');
-    static $import_fields_program_update = array('idnumber');
-    static $import_fields_program_delete = array('idnumber');
+    static $import_fields_course_update = array(
+        'context',
+        'idnumber'
+    );
+
+    static $import_fields_course_delete = array(
+        'context',
+        'idnumber'
+    );
+
+    static $import_fields_cluster_create = array(
+        'context',
+        'name'
+    );
+
+    static $import_fields_cluster_update = array(
+        'context',
+        'name'
+    );
+
+    static $import_fields_cluster_delete = array(
+        'context',
+        'name'
+    );
+
+    static $import_fields_curriculum_create = array(
+        'context',
+        'idnumber',
+        'name'
+    );
+
+    static $import_fields_curriculum_update = array(
+        'context',
+        'idnumber'
+    );
+
+    static $import_fields_curriculum_delete = array(
+        'context',
+        'idnumber'
+    );
+
     static $program_field_keywords = array('action', 'context', 'idnumber', 'name', 'description', 'reqcredits', 'timetocomplete', 'frequency', 'priority');
 
-    static $import_fields_class_create = array('idnumber','assignment');
-    static $import_fields_class_update = array('idnumber');
-    static $import_fields_class_delete = array('idnumber');
+    static $import_fields_class_create = array(
+        'assignment',
+        'context',
+        'idnumber'
+    );
+
+    static $import_fields_class_update = array(
+        'context',
+        'idnumber'
+    );
+
+    static $import_fields_class_delete = array(
+        'context',
+        'idnumber'
+    );
+
     static $available_fields_class = array('idnumber', 'startdate', 'enddate', 'starttimehour',
                                           'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
                                           'enrol_from_waitlist', 'assignment', 'track', 'autoenrol', 'link');
@@ -99,9 +145,23 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                           'starttimeminute', 'endtimehour', 'endtimeminute', 'maxstudents',
                                           'enrol_from_waitlist', 'assignment', 'track', 'autoenrol', 'link');
 
-    static $import_fields_track_create = array('idnumber', 'assignment');
-    static $import_fields_track_update = array('idnumber');
-    static $import_fields_track_delete = array('idnumber');
+    static $import_fields_track_create = array(
+        'assignment',
+        'context',
+        'idnumber',
+        'name'
+    );
+
+    static $import_fields_track_update = array(
+        'context',
+        'idnumber'
+    );
+
+    static $import_fields_track_delete = array(
+        'context',
+        'idnumber'
+    );
+
     static $available_fields_track = array('idnumber', 'name', 'description', 'startdate',
                                            'enddate', 'assignment', 'autocreate');
     static $track_field_keywords = array('action', 'context', 'idnumber', 'name', 'description', 'startdate',
@@ -109,9 +169,20 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     static $cluster_field_keywords = array('action', 'context', 'name', 'display', 'parent');
 
-    static $import_fields_enrolment_create = array('action', 'context', 'user_idnumber', 'user_username', 'user_email');
-    static $import_fields_enrolment_update = array('action', 'context', 'user_idnumber', 'user_username', 'user_email');
-    static $import_fields_enrolment_delete = array('action', 'context', 'user_idnumber', 'user_username', 'user_email');
+    static $import_fields_enrolment_create = array(
+        'context',
+        array('user_idnumber', 'user_username', 'user_email')
+    );
+
+    static $import_fields_enrolment_update = array(
+        'context',
+        array('user_idnumber', 'user_username', 'user_email')
+    );
+
+    static $import_fields_enrolment_delete = array(
+        'context',
+        array('user_idnumber', 'user_username', 'user_email')
+    );
 
     //fields that are available during the enrolment import
     static $available_fields_enrolment = array('context', 'user_idnumber', 'user_username', 'user_email',
@@ -151,6 +222,25 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         return $record;
+    }
+
+    /**
+     * Determines whether the current plugin supports the supplied combination
+     * of entity type and action
+     *
+     * @param string $entity The type of entity
+     * @param string $action The action being performed
+     *
+     * @return mixed An array of required fields, or false on error
+     */
+    function plugin_supports_action($entity, $action) {
+        //look for a method named [entity]_[action]
+        $method = "{$entity}_{$action}";
+        if (method_exists($this, $method)) {
+            return $this->get_import_fields($entity, $action);
+        }
+
+        return false;
     }
 
     /**
@@ -1206,6 +1296,18 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @param string $action The supplied action
      * @return string The action to use in the import
      */
+    function handle_curriculum_createorupdate($record, $action) {
+        return $this->handle_program_createorupdate($record, $action);
+    }
+
+    /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting for programs
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
     function handle_program_createorupdate($record, $action) {
         global $DB;
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -1297,6 +1399,19 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return $action;
     }
 
+
+    /**
+     * Performs any necessary conversion of the action value based on the
+     * "createorupdate" setting for user sets
+     *
+     * @param object $record One record of import data
+     * @param string $action The supplied action
+     * @return string The action to use in the import
+     */
+    function handle_cluster_createorupdate($record, $action) {
+        return $this->handle_userset_createorupdate($record, $action);
+    }
+
     /**
      * Delegate processing of an import line for entity type "course"
      *
@@ -1336,48 +1451,18 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        switch ($context) {
-            // TODO
-            case 'class':
-                //apply "createorupdate" flag, if necessary
-                if ($action == 'create') {
-                    $action = $this->handle_class_createorupdate($record, $action);
-                }
-                $record->action = $action;
-                break;
-            case 'curriculum':
-                //apply "createorupdate" flag, if necessary
-                if ($action == 'create') {
-                    $action = $this->handle_program_createorupdate($record, $action);
-                }
-                $record->action = $action;
-                break;
-            case 'course':
-                //apply "createorupdate" flag, if necessary
-                if ($action == 'create') {
-                    $action = $this->handle_course_createorupdate($record, $action);
-                }
-                $record->action = $action;
+        //apply "createorupdate" flag, if necessary
+        if ($action == 'create') {
+            $method = "handle_{$context}_createorupdate";
+            if (method_exists($this, $method)) {
+                $action = $this->$method($record, $action);
+            } // else TBD: bad context ???
+        }
+        $record->action = $action;
 
-                if (!$this->check_required_fields('course', $record, $filename)) {
-                    //missing a required field
-                    return false;
-                }
-                break;
-            case 'track':
-                //apply "createorupdate" flag, if necessary
-                if ($action == 'create') {
-                    $action = $this->handle_track_createorupdate($record, $action);
-                }
-                $record->action = $action;
-                break;
-            case 'cluster':
-                //apply "createorupdate" flag, if necessary
-                if ($action == 'create') {
-                    $action = $this->handle_userset_createorupdate($record, $action);
-                }
-                $record->action = $action;
-                break;
+        if (!$this->check_required_fields($context, $record, $filename)) {
+            //missing a required field
+            return false;
         }
 
         //remove empty fields
@@ -2232,6 +2317,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return true;
     }
 
+
     /**
      * Create a course
      * @todo: consider factoring this some more once other actions exist
@@ -2672,6 +2758,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 }
                 $record->action = $action;
                 break;
+        }
+
+        // TBD ???
+        if (!$this->check_required_fields('enrolment', $record, $filename)) {
+            //missing a required field
+            return false;
         }
 
         $method = "{$entity}_enrolment_{$action}";
@@ -3857,7 +3949,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         if (!in_array($translated_action, $header)) {
             //action column not specified
-            //TODO: logging
+            $message = "Import file {$filename} was not processed because it is missing the following ".
+                       "required column: action. Please fix the import file and re-upload it.";
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            $this->dblogger->signal_missing_columns($message);
             return false;
         }
 
@@ -3877,7 +3972,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //get list of required fields
         //note: for now, assuming that the delete action is available for
         //all entity types and requires the bare minimum in terms of fields
-        $required_fields = $this->plugin_supports_action($entity, 'delete');
+        $required_fields = ($entity == 'course')
+                           ? array('context') // ELIS-6133: ugly hack!
+                           : $this->plugin_supports_action($entity, 'delete');
 
         //perform the necessary transformation on the list of required fields
         $translated_required_fields = array();
@@ -3903,7 +4000,33 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $missing_fields = $this->get_missing_required_fields($record, $translated_required_fields);
 
         if ($missing_fields !== false) {
-            //TODO: logging
+            $first = reset($missing_fields);
+
+            //for now, assume "groups" are always first and only showing
+            //that one problem in the log
+            if (!is_array($first)) {
+                //1-of-n case
+
+                //list of fields, as displayed
+                $field_display = implode(', ', $missing_fields);
+                //singular/plural handling
+                $label = 'column';
+                if (count($missing_fields) > 1) {
+                    $label .= 's';
+                }
+                $message = "Import file {$filename} was not processed because it is missing the following ".
+                           "required {$label}: {$field_display}. Please fix the import file and re-upload it.";
+            } else {
+                //basic case, all missing fields are required
+
+                $field_display = implode(', ', $first);
+
+                $message = "Import file {$filename} was not processed because one of the following columns is ".
+                           "required but all are unspecified: {$field_display}. Please fix the import file and re-upload it.";
+            }
+
+            $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            $this->dblogger->signal_missing_columns($message);
             return false;
         }
 
