@@ -87,14 +87,17 @@ class rlip_importprovider_mock extends rlip_importprovider {
 class rlip_importprovider_withname_mock extends rlip_importprovider {
     //fixed data to use as import data
     var $data;
+    var $importfilename;
 
     /**
      * Constructor
      *
-     * @param array $data Fixed file contents
+     * @param array  $data           Fixed file contents
+     * @param string $importfilename Name of '.csv' file
      */
-    function __construct($data) {
+    function __construct($data, $importfilename = null) {
         $this->data = $data;
+        $this->importfilename = $importfilename;
     }
 
     /**
@@ -172,6 +175,75 @@ class rlip_importprovider_multi_mock extends rlip_importprovider {
         $fileplugin = rlip_fileplugin_factory::factory('/dev/null', NULL, true);
         $entity = '';
         return rlip_fslogger_factory::factory($plugin, $fileplugin, $entity);
+    }
+}
+
+/**
+ * Class that fetches import files for the user import
+ */
+class rlip_importprovider_fsloguser extends rlip_importprovider_withname_mock {
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'user') {
+            return false;
+        }
+        if (empty($this->importfilename)) {
+            $this->importfilename = 'user.csv';
+        }
+        return parent::get_import_file($entity, $this->importfilename);
+    }
+}
+
+/**
+ * Class that fetches import files for the course import
+ */
+class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock {
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'course') {
+            return false;
+        }
+        if (empty($this->importfilename)) {
+            $this->importfilename = 'course.csv';
+        }
+        return parent::get_import_file($entity, $this->importfilename);
+    }
+}
+
+/**
+ * Class that fetches import files for the enrolment import
+ */
+class rlip_importprovider_fslogenrolment extends rlip_importprovider_withname_mock {
+
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'enrolment') {
+            return false;
+        }
+        if (empty($this->importfilename)) {
+            $this->importfilename = 'enrolment.csv';
+        }
+        return parent::get_import_file($entity, $this->importfilename);
     }
 }
 

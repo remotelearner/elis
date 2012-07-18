@@ -101,6 +101,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
@@ -118,6 +119,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
                      RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+                     RLIP_LOG_TABLE => 'block_rlip',
                      classmoodlecourse::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',
                      coursetemplate::TABLE => 'elis_program',
@@ -166,7 +168,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                      'role_capabilities' => 'moodle',
                      'role_names' => 'moodle',
                      'user_preferences' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip',
+                     //RLIP_LOG_TABLE => 'block_rlip',
                      clusterassignment::TABLE => 'elis_program',
                      clustercurriculum::TABLE => 'elis_program',
                      clustertrack::TABLE => 'elis_program',

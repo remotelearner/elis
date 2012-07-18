@@ -225,7 +225,8 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
                                  'name' => 'testcurriculumname');
         $track_data = array('context' => 'track',
                             'idnumber' => 'testtrackidnumber',
-                            'assignment' => 'testcurriculumidnumber');
+                            'assignment' => 'testcurriculumidnumber',
+                            'name' => 'testtrackname');
         $course_data = array('context' => 'course',
                              'name' => 'testcoursename',
                              'idnumber' => 'testcourseidnumber',
