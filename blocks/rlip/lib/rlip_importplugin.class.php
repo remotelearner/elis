@@ -681,6 +681,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         if (!$writable = is_writable($CFG->dataroot.'/'.$filepath)) {
             //invalid folder specified for the logfile
             //log this message...
+            $this->dblogger->set_endtime(time());
             $this->fslogger->set_logfile_status(false);
             $this->dblogger->set_logfile_status(false);
             $this->dblogger->flush($filename);
@@ -698,12 +699,14 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         if (!$this->check_action_header($entity, $header, $filename)) {
             //action field not specified in the header, so we can't continue
+            $this->dblogger->set_endtime(time());
             $this->dblogger->flush($filename);
             return null;
         }
 
         if (!$this->check_required_headers($entity, $header, $filename)) {
             //a required field is missing from the header, so we can't continue
+            $this->dblogger->set_endtime(time());
             $this->dblogger->flush($filename);
             return null;
         }
