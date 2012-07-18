@@ -36,6 +36,28 @@ require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
+//TODO: move to a more general location
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/rlip_mock_provider.class.php');
+
+/**
+ * Class that fetches import files for the user import
+ */
+class rlip_importprovider_mockuser extends rlip_importprovider_mock {
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        if ($entity != 'user') {
+            return false;
+        }
+
+        return parent::get_import_file($entity);
+    }
+}
 
 /**
  * Class for validating database logging functionality for the Version 1 ELIS
@@ -56,6 +78,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array(
+            'config_plugins'        => 'moodle',
             'context'               => 'moodle',
             'events_queue'          => 'moodle',
             'events_queue_handlers' => 'moodle',
@@ -457,5 +480,138 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         $where = 'statusmessage = ?';
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
         $this->assertTrue($exists);
+    }
+
+    /**
+     * Validation for log end times
+     */
+
+    /**
+     * Helper function that runs the user import for a sample user
+     *
+     * @param array $data Import data to use
+     */
+    private function run_user_import($data) {
+        global $CFG;
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        require_once($file);
+
+        $provider = new rlip_importprovider_mockuser($data);
+
+        $importplugin = new rlip_importplugin_version1elis($provider);
+        $importplugin->run();
+    }
+
+    /**
+     * Validate that summary log end time is set when an invalid folder is set
+     * for the file system log
+     */
+    public function testNonWritableLogPathLogsCorrectEndTime() {
+        global $DB;
+
+        set_config('logfilelocation', 'adirectorythatshouldnotexist', 'rlipimport_version1elis');
+
+        $data = array(
+            'action'    => 'create',
+            'idnumber'  => 'testuseridnumber',
+            'username'  => 'testuserusername',
+            'email'     => 'test@useremail.com',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'country'   => 'CA'
+        );
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when the action column is not
+     * specified in the import
+     */
+    public function testMissingActionColumnLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array('idnumber' => 'testuseridnumber');
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when a required column is not
+     * specified in the import
+     */
+    public function testMissingRequiredColumnLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array('action' => 'create');
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when maximum runtime is exceeded
+     * when running the import
+     */
+    public function testMaxRuntimeExceededLogsCorrectEndTime() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+
+        $import_file = $CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/userfiledelay.csv';
+        $provider = new rlip_importprovider_userfile_delay($import_file);
+
+        //run the import
+        $mintime = time();
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider);
+        $importplugin->run(0, 0, 1);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when successfully processing an
+     * import file
+     */
+    public function testSuccessfulProcessingLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array(
+            'action'    => 'create',
+            'idnumber'  => 'testuseridnumber',
+            'username'  => 'testuserusername',
+            'email'     => 'test@useremail.com',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'country'   => 'CA'
+        );
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
     }
 }

@@ -1613,4 +1613,123 @@ class version1DatabaseLoggingTest extends rlip_test {
         @unlink($testdir . $file_name);
         @rmdir($testdir);
     }
+
+    /**
+     * Validation for log end times
+     */
+
+    /**
+     * Validate that summary log end time is set when an invalid folder is set
+     * for the file system log
+     */
+    public function testNonWritableLogPathLogsCorrectEndTime() {
+        global $DB;
+
+        set_config('logfilelocation', 'adirectorythatshouldnotexist', 'rlipimport_version1');
+
+        $data = array(
+            'action'    => 'create',
+            'username'  => 'testuserusername',
+            'password'  => 'Testpassword!0',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'email'     => 'test@useremail.com',
+            'city'      => 'testcity',
+            'country'   => 'CA'
+        );
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when the action column is not
+     * specified in the import
+     */
+    public function testMissingActionColumnLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array('idnumber' => 'testuseridnumber');
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when a required column is not
+     * specified in the import
+     */
+    public function testMissingRequiredColumnLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array('action' => 'create');
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when maximum runtime is exceeded
+     * when running the import
+     */
+    public function testMaxRuntimeExceededLogsCorrectEndTime() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+
+        $import_file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfiledelay.csv';
+        $provider = new rlip_importprovider_userfile_delay($import_file);
+
+        //run the import
+        $mintime = time();
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin->run(0, 0, 1);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when successfully processing an
+     * import file
+     */
+    public function testSuccessfulProcessingLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array(
+            'action'    => 'create',
+            'username'  => 'testuserusername',
+            'password'  => 'Testpassword!0',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'email'     => 'test@useremail.com',
+            'city'      => 'testcity',
+            'country'   => 'CA'
+        );
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
 }
