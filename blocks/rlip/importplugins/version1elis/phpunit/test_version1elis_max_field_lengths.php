@@ -36,6 +36,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 //TODO: move file to a general location
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/rlip_import_version1elis_fslogger.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -74,6 +75,35 @@ class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock 
             return false;
         }
         return parent::get_import_file($entity, 'course.csv');
+    }
+}
+
+/**
+ * Class for capturing failure messages
+ *
+ */
+class capture_fslogger extends rlip_import_version1elis_fslogger {
+    public $message;
+
+    /**
+     * Log a failure message to the log file, and potentially the screen
+     *
+     * @param string $message The message to long
+     * @param int $timestamp The timestamp to associate the message with, or 0
+     *                       for the current time
+     * @param string $filename The name of the import / export file we are
+     *                         reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file
+     *                              we are handling, if applicable
+     * @param Object $record Imported data
+     * @param string $type Type of import
+     */
+    function log_failure($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL, $record = NULL, $type = NULL) {
+        if (!empty($record) && !empty($type)) {
+            $this->message = $this->general_validation_message($record, $message, $type);
+        }
+
+        return true;
     }
 }
 
@@ -1120,5 +1150,129 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $maxlength = $length - 1;
         $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /**
+     * Testing of general message portion
+     */
+
+    /**
+     * Validate the "user" general message
+     */
+    public function testUserErrorContainsCorrectPrefix() {
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->idnumber = str_repeat('a', 256);
+        $record->username = 'testuserusername';
+        $record->firstname = 'testuserfirstname';
+        $record->lastname = 'testuserlastname';
+        $record->email = 'testuser@email.com';
+        $record->country = 'CA';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->mappings = rlipimport_version1elis_get_mapping('user');
+        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->check_user_field_lengths($record, 'bogus');
+
+        $expected_message = "User with username \"{$record->username}\", email \"{$record->email}\", idnumber \"{$record->idnumber}\" could not be created.";
+        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+    }
+
+    /**
+     * Validate the "course description" general message
+     */
+    public function testCourseDescriptionErrorContainsCorrectPrefix() {
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->context = 'course';
+        $record->name = str_repeat('a', 256);
+        $record->idnumber = 'testcourseidnumber';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
+        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->check_course_field_lengths($record, 'bogus');
+
+        $expected_message = "Course description with idnumber \"testcourseidnumber\" could not be created.";
+        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+    }
+
+    /**
+     * Validate the "program" general message
+     */
+    public function testProgramErrorContainsCorrectPrefix() {
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->context = 'program';
+        $record->name = str_repeat('a', 256);
+        $record->idnumber = 'testprogramidnumber';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
+        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->check_program_field_lengths($record, 'bogus');
+
+        $expected_message = "Program with idnumber \"testprogramidnumber\" could not be created.";
+        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+    }
+
+    /**
+     * Validate the "track" general message
+     */
+    public function testTrackErrorContainsCorrectPrefix() {
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->context = 'track';
+        $record->name = str_repeat('a', 256);
+        $record->idnumber = 'testtrackidnumber';
+        //TODO: remove?
+        $record->assignment = 'testprogramidnumber';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
+        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->check_track_field_lengths($record, 'bogus');
+
+        $expected_message = "Track with idnumber \"testtrackidnumber\" could not be created.";
+        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+    }
+
+    /**
+     * Validate the "class instance" general message
+     */
+    public function testClassInstanceErrorContainsCorrectPrefix() {
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->context = 'track';
+        $record->idnumber = str_repeat('a', 101);
+        //TODO: remove?
+        $record->assignment = 'testcourseidnumber';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
+        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->check_class_field_lengths($record, 'bogus');
+
+        $expected_message = "Class instance with idnumber \"{$record->idnumber}\" could not be created.";
+        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+    }
+
+    /**
+     * Validate the "userset" general message
+     */
+    public function testUsersetErrorContainsCorrectPrefix() {
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->context = 'cluster';
+        $record->name = 'testusersetname';
+        $record->display = str_repeat('a', 256);
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
+        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->check_userset_field_lengths($record, 'bogus');
+
+        $expected_message = "User set with name \"testusersetname\" could not be created.";
+        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
     }
 }

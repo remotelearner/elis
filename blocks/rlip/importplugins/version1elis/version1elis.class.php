@@ -1044,7 +1044,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             'version' => 100
         );
 
-        return $this->check_field_lengths('user', $record, $filename, $lengths);
+        return $this->check_field_lengths('course', $record, $filename, $lengths);
     }
 
     /**
@@ -1062,7 +1062,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             'frequency' => 64
         );
 
-        return $this->check_field_lengths('user', $record, $filename, $lengths);
+        return $this->check_field_lengths('curriculum', $record, $filename, $lengths);
     }
 
     /**
@@ -1078,7 +1078,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             'name' => 255
         );
 
-        return $this->check_field_lengths('user', $record, $filename, $lengths);
+        return $this->check_field_lengths('track', $record, $filename, $lengths);
     }
 
     /**
@@ -1094,7 +1094,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             'display' => 255
         );
 
-        return $this->check_field_lengths('user', $record, $filename, $lengths);
+        return $this->check_field_lengths('cluster', $record, $filename, $lengths);
     }
 
     /**
