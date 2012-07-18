@@ -37,46 +37,6 @@ require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/rlip_mock_provider.class.php');
 
 /**
- * Class that fetches import files for the user import
- */
-class rlip_importprovider_fslogcourse extends rlip_importprovider_withname_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'course') {
-            return false;
-        }
-        return parent::get_import_file($entity, 'course.csv');
-    }
-}
-
-/**
- * Class that fetches import files for the user import
- */
-class rlip_importprovider_fsloguser extends rlip_importprovider_withname_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'user') {
-            return false;
-        }
-        return parent::get_import_file($entity, 'user.csv');
-    }
-}
-
-/**
  * Class for testing ELIS custom field validation messages
  */
 class elis_customfield_fs_log_test extends rlip_test {
