@@ -90,7 +90,9 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
             user::TABLE             => 'elis_program',
             usermoodle::TABLE       => 'elis_program',
             clustertrack::TABLE     => 'elis_program',
-            trackassignment::TABLE  => 'elis_program'
+            track::TABLE            => 'elis_program',
+            trackassignment::TABLE  => 'elis_program',
+            curriculumcourse::TABLE => 'elis_program',
         );
     }
 
@@ -131,6 +133,8 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
             'user_info_data'          => 'moodle',
             'user_lastaccess'         => 'moodle',
             'user_preferences'        => 'moodle',
+            'cache_flags'             => 'moodle',
+            'files'                   => 'moodle',
             clusterassignment::TABLE  => 'elis_program',
             clustercurriculum::TABLE  => 'elis_program',
             coursetemplate::TABLE     => 'elis_program',
