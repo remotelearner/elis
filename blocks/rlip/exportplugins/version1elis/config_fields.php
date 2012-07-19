@@ -46,7 +46,7 @@ echo $OUTPUT->header();
 
 //initialize the display table
 $table = new html_table();
-$table->head = array(get_string('profilefieldname', 'rlipexport_version1elis'),
+$table->head = array(get_string('customfieldname', 'rlipexport_version1elis'),
                      get_string('columnheader', 'rlipexport_version1elis'), '', '', '');
 $table->data = array();
 
@@ -54,7 +54,7 @@ $table->data = array();
 
 //information used to track first / last rows
 $first = true;
-$max_order = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'MAX(fieldorder)', array());
+$max_order = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'MAX(fieldorder)', array());
 
 if ($recordset = rlipexport_version1elis_config::get_configured_fields()) {
     foreach ($recordset as $record) {
@@ -124,7 +124,7 @@ if (!empty($table->data)) {
     echo html_writer::end_tag('form');
 }
 
-//fetch all available profile fields
+//fetch all available custom fields
 $options = array();
 if ($recordset = rlipexport_version1elis_config::get_available_fields()) {
     foreach ($recordset as $record) {
@@ -134,15 +134,15 @@ if ($recordset = rlipexport_version1elis_config::get_available_fields()) {
 
 if (empty($options)) {
     if (empty($table->data)) {
-        echo html_writer::tag('span', get_string('profilefieldnotconfig', 'rlipexport_version1elis'));
+        echo html_writer::tag('span', get_string('customfieldnotconfig', 'rlipexport_version1elis'));
     } else {
-        echo html_writer::tag('span', get_string('profilefieldalladded', 'rlipexport_version1elis'));
+        echo html_writer::tag('span', get_string('customfieldalladded', 'rlipexport_version1elis'));
     }
 } else {
     echo html_writer::tag('span', get_string('addfieldinstructions', 'rlipexport_version1elis'));
     echo $OUTPUT->spacer(null, true);
 
-    $displaystring = get_string('addprofilefield', 'rlipexport_version1elis');
+    $displaystring = get_string('addcustomfield', 'rlipexport_version1elis');
     echo $OUTPUT->single_select($baseurl, 'field', $options, '', array('' => $displaystring));
 }
 
