@@ -31,6 +31,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
 
 /**
  * Test class for validating basic export data during a scheduled, incremental
@@ -57,6 +58,7 @@ class version1elisScheduledIncrementalExportTest extends rlip_test {
                      user::TABLE => 'elis_program',
                      'config_plugins' => 'moodle',
                      'elis_scheduled_tasks' => 'elis_core',
+                     RLIPEXPORT_VERSION1ELIS_FIELD_TABLE => 'rlipexport_version1elis',
                      //in case customized
                      'grade_letters' => 'moodle');
     }

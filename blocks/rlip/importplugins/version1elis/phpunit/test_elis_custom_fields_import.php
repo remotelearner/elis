@@ -35,6 +35,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 class elis_user_custom_fields_test extends elis_database_test {
 
@@ -71,39 +72,10 @@ class elis_user_custom_fields_test extends elis_database_test {
                         'context' => 'moodle',
                         'config' => 'moodle',
                         'config_plugins' => 'moodle',
-                        'cohort_members' => 'moodle',
-                        'groups_members' => 'moodle',
-                        'user_preferences' => 'moodle',
-                        'user_info_data' => 'moodle',
-                        'user_lastaccess' => 'moodle',
-                        'sessions' => 'moodle',
-                        'block_instances' => 'moodle',
-                        'block_positions' => 'moodle',
                         'filter_active' => 'moodle',
                         'filter_config' => 'moodle',
-                        'comments' => 'moodle',
-                        'rating' => 'moodle',
-                        'role_assignments' => 'moodle',
-                        'role_capabilities' => 'moodle',
-                        'role_names' => 'moodle',
                         'cache_flags' => 'moodle',
                         'events_queue' => 'moodle',
-                        'groups' => 'moodle',
-                        'course' => 'moodle',
-                        'course_sections' => 'moodle',
-                        'course_categories' => 'moodle',
-                        'enrol' => 'moodle',
-                        'role' => 'moodle',
-                        'role_context_levels' => 'moodle',
-                        'message' => 'moodle',
-                        'message_read' => 'moodle',
-                        'message_working' => 'moodle',
-                        'grade_items' => 'moodle',
-                        'grade_items_history' => 'moodle',
-                        'grade_grades' => 'moodle',
-                        'grade_grades_history' => 'moodle',
-                        'grade_categories' => 'moodle',
-                        'grade_categories_history' => 'moodle',
                         'user_enrolments' => 'moodle',
                         'events_queue_handlers' => 'moodle',
                         'elis_field_categories' => 'elis_core',
@@ -135,83 +107,81 @@ class elis_user_custom_fields_test extends elis_database_test {
                      'external_services_users'      => 'moodle');
     }
 
-    // Create and update cluster custom fields
-    function test_elis_cluster_custom_field_import() {
+    /**
+     * Create and update userset custom fields
+     *
+     * @dataProvider ui_type_provider
+     * @param string $ui_type The string value representing a UI type
+     * @param string $data Value for create
+     * @param mixed $expected Expected value after create as a string or int
+     * @param string $updateddata Value for update
+     * @param mixed $updateexpected Expected value after update as string or int
+     * @param string $name The name of the control
+     * @param string $datatype The datatype of the field
+     * @param mixed $maxlength The maxiumum length of the field as int or NULL
+     * @param mixed $inctime Include time along with the date as string or NULL
+     * @param mixed $options The options of the field as array or NULL
+    */
+    function test_elis_userset_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name, $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::file('accesslib.php'));
+        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
-        $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldclustercategory'));
+        $fieldid = $this->create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, CONTEXT_ELIS_USERSET);
 
-        $idchkbox = $DB->insert_record('elis_field', array('shortname' => 'testclustercheckboxshortname', 'name' => 'testclustercheckboxname', 'datatype' => 'bool', 'categoryid' => $id));
-        $idint = $DB->insert_record('elis_field', array('shortname' => 'testclusterintshortname', 'name' => 'testclusterintname', 'datatype' => 'int', 'categoryid' => $id));
-        $idshort = $DB->insert_record('elis_field', array('shortname' => 'testclustershortshortname', 'name' => 'testclustershortname', 'datatype' => 'char', 'categoryid' => $id));
-        $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testclustertextareashortname', 'name' => 'testclustertextareaname', 'datatype' => 'text', 'categoryid' => $id));
-        $idtext = $DB->insert_record('elis_field', array('shortname' => 'testclustertextshortname', 'name' => 'testclustertextname', 'datatype' => 'num', 'categoryid' => $id));
-
-        //associate fields to context levels
-        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
-        foreach ($fieldids as $fieldid) {
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
-                                                               'contextlevel' => CONTEXT_ELIS_USERSET));
-            $field_contextlevel->save();
-        }
+        $temp = new userset();
+        //prevent caching issues
+        $temp->reset_custom_field_list();
 
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'cluster';
         $record->name = 'testcluster';
-        $record->testclustercheckboxshortname = 1;
-        $record->testclusterintshortname = 100;
-        $record->testclustershortshortname = 'A';
-        $record->testclustertextareashortname = 'textareadata';
-        $record->testclustertextshortname = '2.0';
+        $record->{$name} = $data;
 
-        $this->run_elis_course_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $usercontext = context_elis_userset::instance($DB->get_field('crlm_cluster', 'id', array('name' => 'testcluster')));
+        $usersetcontext = context_elis_userset::instance($DB->get_field('crlm_cluster', 'id', array('name' => 'testcluster')));
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 1)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 100)));
+        $this->assert_field_values($datatype, $control, $fieldid, $usersetcontext->id, $expected);
 
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadata'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'A')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '2.00000')));
-
+        // update
         $record = new stdClass;
         $record->action = 'update';
         $record->context = 'cluster';
         $record->name = 'testcluster';
         $record->parent = 0;
-        $record->testclustercheckboxshortname = 0;
-        $record->testclusterintshortname = 200;
-        $record->testclustershortshortname = 'B';
-        $record->testclustertextareashortname = 'textareadataupdated';
-        $record->testclustertextshortname = '3.0';
+        $record->{$name} = $updateddata;
 
-        $this->run_elis_course_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 0)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 200)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadataupdated'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'B')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '3.00000')));
+        $this->assert_field_values($datatype, $control, $fieldid, $usersetcontext->id, $updateexpected);
     }
 
-    // Create and update class custom fields
-    function test_elis_class_custom_field_import() {
+    /**
+     * Create and update class custom fields
+     *
+     * @dataProvider ui_type_provider
+     * @param string $ui_type The string value representing a UI type
+     * @param string $data Value for create
+     * @param mixed $expected Expected value after create as a string or int
+     * @param string $updateddata Value for update
+     * @param mixed $updateexpected Expected value after update as string or int
+     * @param string $name The name of the control
+     * @param string $datatype The datatype of the field
+     * @param mixed $maxlength The maxiumum length of the field as int or NULL
+     * @param mixed $inctime Include time along with the date as string or NULL
+     * @param mixed $options The options of the field as array or NULL
+    */
+    function test_elis_class_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name, $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::file('accesslib.php'));
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
 
@@ -222,153 +192,118 @@ class elis_user_custom_fields_test extends elis_database_test {
         $record->name = 'testcourse';
         $importplugin->course_create($record, 'bogus');
 
-        $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldclasscategory'));
+        $fieldid = $this->create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, CONTEXT_ELIS_CLASS);
 
-        $idchkbox = $DB->insert_record('elis_field', array('shortname' => 'testclasscheckboxshortname', 'name' => 'testtrackcheckboxname', 'datatype' => 'bool', 'categoryid' => $id));
-        $idint = $DB->insert_record('elis_field', array('shortname' => 'testclassintshortname', 'name' => 'testtrackintname', 'datatype' => 'int', 'categoryid' => $id));
-        $idshort = $DB->insert_record('elis_field', array('shortname' => 'testclassshortshortname', 'name' => 'testtrackshortname', 'datatype' => 'char', 'categoryid' => $id));
-        $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testclasstextareashortname', 'name' => 'testtracktextareaname', 'datatype' => 'text', 'categoryid' => $id));
-        $idtext = $DB->insert_record('elis_field', array('shortname' => 'testclasstextshortname', 'name' => 'testtracktextname', 'datatype' => 'num', 'categoryid' => $id));
-
-        //associate fields to context levels
-        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
-        foreach ($fieldids as $fieldid) {
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
-                                                               'contextlevel' => CONTEXT_ELIS_CLASS));
-            $field_contextlevel->save();
-        }
+        $temp = new pmclass();
+        //prevent caching issues
+        $temp->reset_custom_field_list();
 
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'class';
         $record->idnumber = 'testclassid';
         $record->assignment = 'testcourseid';
-        $record->testclasscheckboxshortname = 1;
-        $record->testclassintshortname = 100;
-        $record->testclassshortshortname = 'A';
-        $record->testclasstextareashortname = 'textareadata';
-        $record->testclasstextshortname = '2.0';
+        $record->{$name} = $data;
 
-        $this->run_elis_course_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $usercontext = context_elis_class::instance($DB->get_field('crlm_class', 'id', array('idnumber' => 'testclassid')));
+        $classcontext = context_elis_class::instance($DB->get_field('crlm_class', 'id', array('idnumber' => 'testclassid')));
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 1)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 100)));
+        $this->assert_field_values($datatype, $control, $fieldid, $classcontext->id, $expected);
 
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadata'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'A')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '2.00000')));
-
+        // update
         $record = new stdClass;
         $record->action = 'update';
         $record->context = 'class';
         $record->idnumber = 'testclassid';
-        $record->testclasscheckboxshortname = 0;
-        $record->testclassintshortname = 200;
-        $record->testclassshortshortname = 'B';
-        $record->testclasstextareashortname = 'textareadataupdated';
-        $record->testclasstextshortname = '3.0';
+        $record->{$name} = $updateddata;
 
-        $this->run_elis_course_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 0)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 200)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadataupdated'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'B')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '3.00000')));
+        $this->assert_field_values($datatype, $control, $fieldid, $classcontext->id, $updateexpected);
     }
 
-    // Create and update course custom fields
-    function test_elis_course_custom_field_import() {
+    /**
+     * Create and update course custom fields
+     *
+     * @dataProvider ui_type_provider
+     * @param string $ui_type The string value representing a UI type
+     * @param string $data Value for create
+     * @param mixed $expected Expected value after create as a string or int
+     * @param string $updateddata Value for update
+     * @param mixed $updateexpected Expected value after update as string or int
+     * @param string $name The name of the control
+     * @param string $datatype The datatype of the field
+     * @param mixed $maxlength The maxiumum length of the field as int or NULL
+     * @param mixed $inctime Include time along with the date as string or NULL
+     * @param mixed $options The options of the field as array or NULL
+    */
+    function test_elis_course_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name, $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/course.class.php'));
-        require_once(elispm::file('accesslib.php'));
 
-        $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldcoursecategory'));
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
 
-        $idchkbox = $DB->insert_record('elis_field', array('shortname' => 'testcoursecheckboxshortname', 'name' => 'testtrackcheckboxname', 'datatype' => 'bool', 'categoryid' => $id));
-        $idint = $DB->insert_record('elis_field', array('shortname' => 'testcourseintshortname', 'name' => 'testtrackintname', 'datatype' => 'int', 'categoryid' => $id));
-        $idshort = $DB->insert_record('elis_field', array('shortname' => 'testcourseshortshortname', 'name' => 'testtrackshortname', 'datatype' => 'char', 'categoryid' => $id));
-        $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testcoursetextareashortname', 'name' => 'testtracktextareaname', 'datatype' => 'text', 'categoryid' => $id));
-        $idtext = $DB->insert_record('elis_field', array('shortname' => 'testcoursetextshortname', 'name' => 'testtracktextname', 'datatype' => 'num', 'categoryid' => $id));
+        $fieldid = $this->create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, CONTEXT_ELIS_COURSE);
 
-        //associate fields to context levels
-        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
-        foreach ($fieldids as $fieldid) {
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
-                                                               'contextlevel' => CONTEXT_ELIS_COURSE));
-            $field_contextlevel->save();
-        }
+        $temp = new course();
+        //prevent caching issues
+        $temp->reset_custom_field_list();
 
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'course';
         $record->name= 'testcourse';
         $record->idnumber = 'testcourseid';
-        $record->testcoursecheckboxshortname = 1;
-        $record->testcourseintshortname = 100;
-        $record->testcourseshortshortname = 'A';
-        $record->testcoursetextareashortname = 'textareadata';
-        $record->testcoursetextshortname = '2.0';
+        $record->{$name} = $data;
 
-        //prevent caching of the customfield list
-        $course = new course();
-        $course->reset_custom_field_list();
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $this->run_elis_course_import($record, false);
+        $coursecontext = context_elis_course::instance($DB->get_field('crlm_course', 'id', array('idnumber' => 'testcourseid')));
 
-        $usercontext = context_elis_course::instance($DB->get_field('crlm_course', 'id', array('idnumber' => 'testcourseid')));
+        $this->assert_field_values($datatype, $control, $fieldid, $coursecontext->id, $expected);
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 1)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 100)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadata'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'A')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '2.00000')));
-
+        // update
         $record = new stdClass;
         $record->action = 'update';
         $record->context = 'course';
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoure';
-        $record->testcoursecheckboxshortname = 0;
-        $record->testcourseintshortname = 200;
-        $record->testcourseshortshortname = 'B';
-        $record->testcoursetextareashortname = 'textareadataupdated';
-        $record->testcoursetextshortname = '3.0';
+        $record->{$name} = $updateddata;
 
-        $this->run_elis_course_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 0)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 200)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadataupdated'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'B')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '3.00000')));
+        $this->assert_field_values($datatype, $control, $fieldid, $coursecontext->id, $updateexpected);
     }
 
-    // Create and update track custom fields
-    function test_elis_track_custom_field_import() {
+    /**
+     * Create and update track custom fields
+     *
+     * @dataProvider ui_type_provider
+     * @param string $ui_type The string value representing a UI type
+     * @param string $data Value for create
+     * @param mixed $expected Expected value after create as a string or int
+     * @param string $updateddata Value for update
+     * @param mixed $updateexpected Expected value after update as string or int
+     * @param string $name The name of the control
+     * @param string $datatype The datatype of the field
+     * @param mixed $maxlength The maxiumum length of the field as int or NULL
+     * @param mixed $inctime Include time along with the date as string or NULL
+     * @param mixed $options The options of the field as array or NULL
+    */
+    function test_elis_track_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name, $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::file('accesslib.php'));
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
 
@@ -379,21 +314,11 @@ class elis_user_custom_fields_test extends elis_database_test {
         $record->name = 'testprogram';
         $importplugin->curriculum_create($record, 'bogus');
 
-        $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldtrackcategory'));
+        $fieldid = $this->create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, CONTEXT_ELIS_TRACK);
 
-        $idchkbox = $DB->insert_record('elis_field', array('shortname' => 'testtrackcheckboxshortname', 'name' => 'testtrackcheckboxname', 'datatype' => 'bool', 'categoryid' => $id));
-        $idint = $DB->insert_record('elis_field', array('shortname' => 'testtrackintshortname', 'name' => 'testtrackintname', 'datatype' => 'int', 'categoryid' => $id));
-        $idshort = $DB->insert_record('elis_field', array('shortname' => 'testtrackshortshortname', 'name' => 'testtrackshortname', 'datatype' => 'char', 'categoryid' => $id));
-        $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testtracktextareashortname', 'name' => 'testtracktextareaname', 'datatype' => 'text', 'categoryid' => $id));
-        $idtext = $DB->insert_record('elis_field', array('shortname' => 'testtracktextshortname', 'name' => 'testtracktextname', 'datatype' => 'num', 'categoryid' => $id));
-
-        //associate fields to context levels
-        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
-        foreach ($fieldids as $fieldid) {
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
-                                                               'contextlevel' => CONTEXT_ELIS_TRACK));
-            $field_contextlevel->save();
-        }
+        $temp = new track();
+        //prevent caching issues
+        $temp->reset_custom_field_list();
 
         $record = new stdClass;
         $record->action = 'create';
@@ -401,101 +326,70 @@ class elis_user_custom_fields_test extends elis_database_test {
         $record->name= 'testtrack';
         $record->idnumber = 'testtrackid';
         $record->assignment = 'testprogramid';
-        $record->testtrackcheckboxshortname = 1;
-        $record->testtrackintshortname = 100;
-        $record->testtrackshortshortname = 'A';
-        $record->testtracktextareashortname = 'textareadata';
-        $record->testtracktextshortname = '2.0';
+        $record->{$name} = $data;
 
-        $this->run_elis_course_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $usercontext = context_elis_track::instance($DB->get_field('crlm_track', 'id', array('idnumber' => 'testtrackid')));
+        $trackcontext = context_elis_track::instance($DB->get_field('crlm_track', 'id', array('idnumber' => 'testtrackid')));
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 1)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 100)));
+        $this->assert_field_values($datatype, $control, $fieldid, $trackcontext->id, $expected);
 
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadata'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'A')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '2.0')));
-
+        // update
         $record = new stdClass;
         $record->action = 'update';
         $record->context = 'track';
         $record->idnumber = 'testtrackid';
-        $record->testtrackcheckboxshortname = 0;
-        $record->testtrackintshortname = 200;
-        $record->testtrackshortshortname = 'B';
-        $record->testtracktextareashortname = 'textareadataupdated';
-        $record->testtracktextshortname = '3.0';
+        $record->{$name} = $updateddata;
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $this->run_elis_course_import($record, false);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 0)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 200)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadataupdated'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'B')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '3.0')));
+        $this->assert_field_values($datatype, $control, $fieldid, $trackcontext->id, $updateexpected);
     }
 
-    // Create and update program custom fields
-    function test_elis_program_custom_field_import() {
+    /**
+     * Create and update program custom fields
+     *
+     * @dataProvider ui_type_provider
+     * @param string $ui_type The string value representing a UI type
+     * @param string $data Value for create
+     * @param mixed $expected Expected value after create as a string or int
+     * @param string $updateddata Value for update
+     * @param mixed $updateexpected Expected value after update as string or int
+     * @param string $name The name of the control
+     * @param string $datatype The datatype of the field
+     * @param mixed $maxlength The maxiumum length of the field as int or NULL
+     * @param mixed $inctime Include time along with the date as string or NULL
+     * @param mixed $options The options of the field as array or NULL
+    */
+    function test_elis_program_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name, $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/curriculum.class.php'));
-        require_once(elispm::file('accesslib.php'));
+        require_once(elispm::lib('data/user.class.php'));
 
-        $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldprogramcategory'));
+        $fieldid = $this->create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, CONTEXT_ELIS_PROGRAM);
 
-        $idchkbox = $DB->insert_record('elis_field', array('shortname' => 'testprogramcheckboxshortname', 'name' => 'testprogramcheckboxname', 'datatype' => 'bool', 'categoryid' => $id));
-        $idint = $DB->insert_record('elis_field', array('shortname' => 'testprogramintshortname', 'name' => 'testprogramintname', 'datatype' => 'int', 'categoryid' => $id));
-        $idshort = $DB->insert_record('elis_field', array('shortname' => 'testprogramshortshortname', 'name' => 'testprogramshortname', 'datatype' => 'char', 'categoryid' => $id));
-        $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testprogramtextareashortname', 'name' => 'testprogramtextareaname', 'datatype' => 'text', 'categoryid' => $id));
-        $idtext = $DB->insert_record('elis_field', array('shortname' => 'testprogramtextshortname', 'name' => 'testprogramtextname', 'datatype' => 'num', 'categoryid' => $id));
-
-        //associate fields to context levels
-        $fieldids = array($idchkbox, $idint, $idshort, $idtextarea, $idtext);
-        foreach ($fieldids as $fieldid) {
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
-                                                               'contextlevel' => CONTEXT_ELIS_PROGRAM));
-            $field_contextlevel->save();
-        }
+        $temp = new curriculum();
+        //prevent caching issues
+        $temp->reset_custom_field_list();
 
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'curriculum';
         $record->idnumber = 'testprogramid';
         $record->name = 'testprogram';
-        $record->testprogramcheckboxshortname = 1;
-        $record->testprogramintshortname = 100;
-        $record->testprogramshortshortname = 'A';
-        $record->testprogramtextareashortname = 'textareadata';
-        $record->testprogramtextshortname = '2.0';
+        $record->{$name} = $data;
 
-        //prevent caching of the customfield list
-        $curriculum = new curriculum();
-        $curriculum->reset_custom_field_list();
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $this->run_elis_course_import($record, false);
+        $programcontext = context_elis_program::instance($DB->get_field('crlm_curriculum', 'id', array('idnumber' => 'testprogramid')));
 
-        $usercontext = context_elis_program::instance($DB->get_field('crlm_curriculum', 'id', array('idnumber' => 'testprogramid')));
-
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 1)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 100)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadata'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'A')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '2.00000')));
+        $this->assert_field_values($datatype, $control, $fieldid, $programcontext->id, $expected);
 
         // update
         $record = new stdClass;
@@ -503,48 +397,59 @@ class elis_user_custom_fields_test extends elis_database_test {
         $record->context = 'curriculum';
         $record->idnumber = 'testprogramid';
         $record->name = 'testprogram';
-        $record->testprogramcheckboxshortname = 0;
-        $record->testprogramintshortname = 200;
-        $record->testprogramshortshortname = 'B';
-        $record->testprogramtextareashortname = 'textareadataupdated';
-        $record->testprogramtextshortname = '3.0';
+        $record->{$name} = $updateddata;
 
-        $this->run_elis_course_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 0)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 200)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadataupdated'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idshort, 'contextid' => $usercontext->id, 'data' => 'B')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '3.00000')));
+        $this->assert_field_values($datatype, $control, $fieldid, $programcontext->id, $updateexpected);
     }
 
-    // Create and update user custom fields
-    function test_elis_user_custom_field_import() {
+    /**
+     * Data provider for testing various custom field UI / display types
+     *
+     * @return array The data, as expected by the testing method
+     */
+    function ui_type_provider() {
+        return array(array('checkbox', '0', '0', '1', '1', 'testcheckbox', 'bool', NULL, NULL, NULL),
+                     array('checkbox', '1', '1', '0', '0', 'testcheckbox', 'bool', NULL, NULL, NULL),
+                     array('checkbox', 'yes', '1', 'no', '0', 'testcheckbox', 'bool', NULL, NULL, NULL),
+                     array('checkbox', 'no',  '0', 'yes', '1', 'testcheckbox', 'bool', NULL, NULL, NULL),
+                     array('datetime', 'Jan/02/2012',  mktime(0, 0, 0, 1, 2, 2012), 'Feb/02/2012', mktime(0, 0, 0, 2, 2, 2012), 'textdatetime', 'datetime', NULL, '0', NULL),
+                     array('datetime', 'Jan/02/2012:01:30',  mktime(1, 30, 0, 1, 2, 2012), 'Feb/02/2012:01:30', mktime(1, 30, 0, 2, 2, 2012), 'textdatetime', 'datetime', NULL, '1', NULL),
+                     array('password', 'passworddata', 'passworddata', 'passworddataupdated', 'passworddataupdated', 'testpassword', 'char', 100, NULL, NULL),
+                     array('textarea', 'textareadata', 'textareadata', 'textareaupdated', 'textareaupdated', 'testtextarea', 'text', NULL, NULL, NULL),
+                     array('text', '2.2', '2.2', '3.3', '3.3', 'testtext', 'num', 100, NULL, NULL),
+                     array('menu', '2', '2', '3', '3', 'testmenu', 'int', NULL, NULL, array(1,2,3)));
+    }
+
+    /**
+     * Create and update user custom fields
+     *
+     * @dataProvider ui_type_provider
+     * @param string $ui_type The string value representing a UI type
+     * @param string $data Value for create
+     * @param mixed $expected Expected value after create as a string or int
+     * @param string $updateddata Value for update
+     * @param mixed $updateexpected Expected value after update as string or int
+     * @param string $name The name of the control
+     * @param string $datatype The datatype of the field
+     * @param mixed $maxlength The maxiumum length of the field as int or NULL
+     * @param mixed $inctime Include time along with the date as string or NULL
+     * @param mixed $options The options of the field as array or NULL
+    */
+    function test_elis_user_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name, $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::file('accesslib.php'));
+        require_once(elispm::lib('data/user.class.php'));
 
-        $id = $DB->insert_record('elis_field_categories', array('name' => 'testelisfieldcategory'));
+        $fieldid = $this->create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, CONTEXT_ELIS_USER);
 
-        $idchkbox = $DB->insert_record('elis_field', array('shortname' => 'testcheckboxshortname', 'name' => 'testcheckboxname', 'datatype' => 'bool', 'categoryid' => $id));
-        $iddatetime = $DB->insert_record('elis_field', array('shortname' => 'testdatetimeshortname', 'name' => 'testdatetimename', 'datatype' => 'text', 'categoryid' => $id));
-        $idmenu = $DB->insert_record('elis_field', array('shortname' => 'testmenushortname', 'name' => 'testmenuname', 'datatype' => 'char', 'categoryid' => $id));
-        $idtextarea = $DB->insert_record('elis_field', array('shortname' => 'testtextareashortname', 'name' => 'testtextareaname', 'datatype' => 'text', 'categoryid' => $id));
-        $idtext = $DB->insert_record('elis_field', array('shortname' => 'testtextshortname', 'name' => 'testtextname', 'datatype' => 'num', 'categoryid' => $id));
-        $idint = $DB->insert_record('elis_field', array('shortname' => 'testintshortname', 'name' => 'testintname', 'datatype' => 'int', 'categoryid' => $id));
-
-        //associate fields to context levels
-        $fieldids = array($idchkbox, $iddatetime, $idmenu, $idtextarea, $idtext, $idint);
-        foreach ($fieldids as $fieldid) {
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $fieldid,
-                                                               'contextlevel' => CONTEXT_ELIS_USER));
-            $field_contextlevel->save();
-        }
+        $temp = new user();
+        //prevent caching issues
+        $temp->reset_custom_field_list();
 
         $record = new stdClass;
         $record->action = 'create';
@@ -554,29 +459,15 @@ class elis_user_custom_fields_test extends elis_database_test {
         $record->firstname = 'testuserfirstname';
         $record->lastname = 'testuserlastname';
         $record->country = 'CA';
-        $record->testcheckboxshortname = 1;
-        $record->testdatetimeshortname = 'JAN/01/2012';
-        $record->testmenushortname = 'A';
-        $record->testtextareashortname = 'textareadata';
-        $record->testtextshortname = '2.0';
-        $record->testintshortname = 2;
+        $record->{$name} = $data;
 
-        $this->run_elis_user_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('user', (object)$record, 'bogus');
 
         $usercontext = context_elis_user::instance($DB->get_field('crlm_user', 'id', array('idnumber' => 'testuserid')));
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 1)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 2)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:date',
-                                            array('fieldid'=>$iddatetime, 'contextid'=>$usercontext->id, 'date' => 'JAN/01/2012'));
-        $this->assertTrue($exists);
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadata'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idmenu, 'contextid' => $usercontext->id, 'data' => 'A')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '2.00000')));
+        $this->assert_field_values($datatype, $control, $fieldid, $usercontext->id, $expected);
 
         // update
         $record = new stdClass;
@@ -587,27 +478,13 @@ class elis_user_custom_fields_test extends elis_database_test {
         $record->firstname = 'testuserfirstname';
         $record->lastname = 'testuserlastname';
         $record->country = 'CA';
-        $record->testcheckboxshortname = 0;
-        $record->testdatetimeshortname = 'FEB/01/2013';
-        $record->testmenushortname = 'B';
-        $record->testtextareashortname = 'textareadataupdated';
-        $record->testtextshortname = '3.0';
-        $record->testintshortname = 3;
+        $record->{$name} = $updateddata;
 
-        $this->run_elis_user_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('user', (object)$record, 'bogus');
 
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idchkbox, 'contextid' => $usercontext->id, 'data' => 0)));
-        $this->assertTrue($DB->record_exists('elis_field_data_int', array('fieldid' => $idint, 'contextid' => $usercontext->id, 'data' => 3)));
-
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:date',
-                                            array('fieldid'=>$iddatetime, 'contextid'=>$usercontext->id, 'date' => 'FEB/01/2013'));
-        $this->assertTrue($exists);
-        $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                            array('fieldid'=>$idtextarea, 'contextid'=>$usercontext->id, 'data' => 'textareadataupdated'));
-        $this->assertTrue($exists);
-
-        $this->assertTrue($DB->record_exists('elis_field_data_char', array('fieldid' => $idmenu, 'contextid' => $usercontext->id, 'data' => 'B')));
-        $this->assertTrue($DB->record_exists('elis_field_data_num', array('fieldid' => $idtext, 'contextid' => $usercontext->id, 'data' => '3.00000')));
+        $this->assert_field_values($datatype, $control, $fieldid, $usercontext->id, $updateexpected);
     }
 
     /**
@@ -659,101 +536,51 @@ class elis_user_custom_fields_test extends elis_database_test {
         $this->assertEquals('option1', $user->field_testcustomfieldshortname);
     }
 
-    /**
-     * Helper function that runs the program import for a sample program
-     *
-     * @param array $extradata Extra fields to set for the new program
-     */
-    private function run_elis_course_import($extradata, $use_default_data = true) {
-        global $CFG;
+    private function create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, $context) {
+        $field_category = new field_category(array('name' => 'testcategoryname'));
+        $field_category->save();
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
-        require_once($file);
+        $field = new field(array('shortname' => $name, 'name' => $name, 'datatype' => $datatype, 'categoryid' => $field_category->id));
+        $field->save();
 
-        if ($use_default_data) {
-            $data = $this->get_core_program_data();
+        $owner_data = array('control' => $control);
+
+        if ($options !== NULL) {
+            $owner_data['options'] = implode("\n", $options);
+        }
+
+        if ($maxlength !== NULL) {
+            $owner_data['maxlength'] = $maxlength;
+        }
+
+        if ($inctime !== NULL) {
+            $owner_data['inctime'] = $inctime;
+        }
+
+        //associate fields to context levels
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => $context));
+        $field_contextlevel->save();
+
+        field_owner::ensure_field_owner_exists($field, 'manual', $owner_data);
+
+        return $field->id;
+    }
+
+    private function assert_field_values($datatype, $control, $fieldid, $usercontextid, $expected) {
+        global $DB;
+
+        if ($datatype == 'bool' || $datatype == 'datetime') {
+            $datatype = 'int';
+        }
+
+        if ($control == "textarea") {
+            $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
+                                                array('fieldid'=> $fieldid, 'contextid'=> $usercontextid, 'data' => $expected));
+            $this->assertTrue($exists);
         } else {
-            $data = array();
+            $this->assertTrue($DB->record_exists('elis_field_data_' . $datatype, array('fieldid' => $fieldid, 'contextid' => $usercontextid, 'data' => $expected)));
         }
-
-        foreach ($extradata as $key => $value) {
-            $data[$key] = $value;
-        }
-
-        $provider = new rlip_importprovider_mockcourse($data);
-
-        $importplugin = new rlip_importplugin_version1elis($provider);
-        $importplugin->run();
-    }
-
-    /**
-     * Helper function that runs the user import for a sample user
-
-     *
-     * @param array $extradata Extra fields to set for the new user
-     */
-    private function run_elis_user_import($extradata, $use_default_data = true) {
-        global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
-        require_once($file);
-
-        if ($use_default_data) {
-            $data = $this->get_core_user_data();
-        } else {
-            $data = array();
-        }
-
-        foreach ($extradata as $key => $value) {
-            $data[$key] = $value;
-        }
-
-        $provider = new rlip_importprovider_mockuser($data);
-
-        $importplugin = new rlip_importplugin_version1elis($provider);
-        $importplugin->run();
     }
 
 }
-
-/**
- * Class that fetches import files for the user import
- */
-class rlip_importprovider_mockuser extends rlip_importprovider_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'user') {
-            return false;
-        }
-
-        return parent::get_import_file($entity);
-    }
-}
-
-/**
- * Class that fetches import files for the program import
- */
-class rlip_importprovider_mockcourse extends rlip_importprovider_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'course') {
-            return false;
-        }
-        return parent::get_import_file($entity);
-    }
-}
-
 

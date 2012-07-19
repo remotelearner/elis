@@ -34,6 +34,7 @@ global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
 
 /**
  * File plugin that just stores read records in memory
@@ -185,7 +186,8 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
                      course::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program');
+                     user::TABLE => 'elis_program',
+                     RLIPEXPORT_VERSION1ELIS_FIELD_TABLE => 'rlipexport_version1elis');
     }
 
     /**
@@ -268,7 +270,7 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
         $expecteddata = array('exportfirstname', 'exportlastname', 'exportusername', 'exportidnumber',
                               'testcourseidnumber', date('M/d/Y', 1000000000), date('M/d/Y', 1500000000),
                               'COMPLETED', '70.00000', 'C-');
-        return array(array($expecteddata)); 
+        return array(array($expecteddata));
     }
 
     /**
