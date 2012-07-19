@@ -272,6 +272,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         $time = explode(':', $date);
+
+        //validate that we have just a date, or a date + time (if time is allowed)
+        $parts_valid = count($time) == 1 || $include_time && count($time) == 3;
+        if (!$parts_valid) {
+            return false;
+        }
+
         $include_time = $include_time && count($time) > 1;
 
         if ($delimiter == '/') {
@@ -525,10 +532,15 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                         }
 
                         if (strtolower($string_value) == 'yes') {
-                            $record->{'field_'.$field->shortname} = array('1');
+                            //NOTE: this control type only supports a single value but the
+                            //API expects an array if it's multivalued
+                            $record->{'field_'.$field->shortname} = $field->multivalued ? array('1') : '1';
+                            
                         }
                         if (strtolower($string_value) == 'no') {
-                            $record->{'field_'.$field->shortname} = array('0');
+                            //NOTE: this control type only supports a single value but the
+                            //API expects an array if it's multivalued
+                            $record->{'field_'.$field->shortname} = $field->multivalued ? array('0') : '0';
                         }
                         break;
                     case 'menu':
@@ -571,7 +583,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                                 return false;
                             } else {
-                                $record->{'field_'.$field->shortname} = array($date);
+                                //NOTE: this control type only supports a single value but the
+                                //API expects an array if it's multivalued
+                                $record->{'field_'.$field->shortname} = $field->multivalued ? array($date) : $date;
                             }
                         } else {
                             //date only supported without time
@@ -582,7 +596,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                                 return false;
                             } else {
-                                 $record->{'field_'.$field->shortname} = array($date);
+                                //NOTE: this control type only supports a single value but the
+                                //API expects an array if it's multivalued
+                                 $record->{'field_'.$field->shortname} = $field->multivalued ? array($date) : $date;
                             }
                         }
                     default:
@@ -2728,9 +2744,15 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $entity = substr($record->context, 0, $pos);
         $idnumber = substr($record->context, $pos + 1);
 
-        $record->context = $entity;
+        $valid_contexts = array(
+            'course',
+            'curriculum',
+            'cluster',
+            'track',
+            'class',
+            'user'
+        );
 
-        $valid_contexts = array('course', 'curriculum', 'cluster', 'track', 'class');
         $valid_actions = array('create', 'update', 'delete');
 
         if (!in_array($context, $valid_contexts)) {
@@ -2748,7 +2770,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, 'enrolment');
             return false;
         }
-
 
         switch ($context) {
             case 'class':
@@ -3199,7 +3220,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $userid = $this->get_userid_from_record($record, $filename);
 
-        if (!$DB->record_exists('crlm_cluster_assignments', array('trackid' => $clusterid, 'userid' => $userid))) {
+        if (!$DB->record_exists('crlm_cluster_assignments', array('clusterid' => $clusterid, 'userid' => $userid))) {
             $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in user set \"{$name}\".", 0, $filename, $this->linenumber, $record, "enrolment");
             return false;
         }
@@ -3228,7 +3249,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * Obtain the back-end completion status constant from an enrolment import record
      *
      * @param object $record An import record
-     * @return mixed The numerical completion status value, or NULL if not valid
+     * @return mixed The numerical completion status value, NULL if not set, or
+     *               false if set to an invalid value
      */
     function get_completestatusid($record) {
         global $CFG, $DB;
@@ -3245,15 +3267,22 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //should be case-insensitive
         $completestatusid = strtolower($record->completestatusid);
 
+        $valid_statuses = array(
+            student::STUSTATUS_NOTCOMPLETE,
+            student::STUSTATUS_FAILED,
+            student::STUSTATUS_PASSED
+        );
+
         if ($completestatusid === "passed") {
             $result = student::STUSTATUS_PASSED;
         } else if ($completestatusid === "failed") {
             $result = student::STUSTATUS_FAILED;
         } else if ($completestatusid === "not completed") {
             $result = student::STUSTATUS_NOTCOMPLETE;
-        } else {
-            //TODO: actually validate here
+        } else if ($this->validate_fixed_list($record, 'completestatusid', $valid_statuses)) {
             $result = (int)$record->completestatusid;
+        } else {
+            $result = false;
         }
 
         return $result;
@@ -3343,12 +3372,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
         }
 
-        if (isset($record->completestatusid)) {
-            if (!in_array(strtolower($record->completestatusid), array('0', '1', '2'))) {
-                $this->fslogger->log_failure("completestatusid value of \"{$record->completestatusid}\" is not one of the available options (0, 1, 2).",
-                                              0, $filename, $this->linenumber, $record, "enrolment");
-                return false;
-            }
+        $completestatusid = $this->get_completestatusid($record);
+
+        if ($completestatusid === false) {
+            $this->fslogger->log_failure("completestatusid value of \"{$record->completestatusid}\" is not one of the available options (0, 1, 2).",
+                                          0, $filename, $this->linenumber, $record, "enrolment");
+            return false;
         }
 
         if (isset($record->grade)) {
@@ -3709,7 +3738,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $userid = $this->get_userid_from_record($record, $filename);
 
-        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+        if (!$DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
             $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in class instance \"{$idnumber}\" as student.",
                                           0, $filename, $this->linenumber, $record, "enrolment");
             return false;

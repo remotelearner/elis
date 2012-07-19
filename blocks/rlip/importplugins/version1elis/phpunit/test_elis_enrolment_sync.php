@@ -44,6 +44,7 @@ class elis_enrolment_sync_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
@@ -61,6 +62,7 @@ class elis_enrolment_sync_test extends elis_database_test {
                      'user_enrolments' => 'moodle',
                      classmoodlecourse::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',
+                     field::TABLE => 'elis_core',
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
