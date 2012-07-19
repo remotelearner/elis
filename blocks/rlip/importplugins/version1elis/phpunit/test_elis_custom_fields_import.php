@@ -611,6 +611,55 @@ class elis_user_custom_fields_test extends elis_database_test {
     }
 
     /**
+     * Validate that the "menu of choices" custom field type works correctly
+     * when options are separated by a carriage return and a line feed
+     */
+    public function testMenuOfChoicesIgnoresCarriageReturns() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('accesslib.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //setup
+        $field = new field(array(
+            'shortname' => 'testcustomfieldshortname',
+            'name'      => 'testcustomfieldname',
+            'datatype'  => 'char'
+        ));
+        $category = new field_category(array('name' => 'testcategoryname'));
+        field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_USER, $category);
+
+        $owner_params = array(
+            'control' => 'menu',
+            'options' => "option1\r\noption2"
+        );
+        field_owner::ensure_field_owner_exists($field, 'manual', $owner_params);
+
+        //run the create action
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->email = 'testuser@mail.com';
+        $record->username = 'testuser';
+        $record->idnumber = 'testuserid';
+        $record->firstname = 'testuserfirstname';
+        $record->lastname = 'testuserlastname';
+        $record->country = 'CA';
+        $record->testcustomfieldshortname = 'option1';
+
+        $user = new user();
+        $user->reset_custom_field_list();
+
+        $this->run_elis_user_import($record, false);
+
+        //validation
+        $user = new user(1);
+        $user->load();
+
+        $this->assertEquals('option1', $user->field_testcustomfieldshortname);
+    }
+
+    /**
      * Helper function that runs the program import for a sample program
      *
      * @param array $extradata Extra fields to set for the new program

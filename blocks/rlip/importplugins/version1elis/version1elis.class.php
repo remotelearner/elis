@@ -498,6 +498,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function validate_custom_field_data($action, $record, $filename, $type) {
         global $CFG;
         require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+        //needed for "trim_cr" method
+        require_once($CFG->dirroot.'/elis/core/fields/manual/custom_fields.php');
 
         foreach ($this->fields as $field) {
             //obtain the control type
@@ -545,6 +547,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                         break;
                     case 'menu':
                         $options = explode("\n", $f->owners['manual']->param_options);
+                        //remove carriage return characters
+                        array_walk($options, 'trim_cr');
+
                         if (!in_array($value, $options)) {
                             //not a valid option
                             $message = '"'.$value.'" is not one of the available options for menu of choices custom field "'.$field->shortname.'".';
