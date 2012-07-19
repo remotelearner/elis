@@ -26,7 +26,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['columnheader'] = 'Column Header';
+$string['addcustomfield'] = 'Add custom field...';$string['columnheader'] = 'Column Header';
+$string['addfieldinstructions'] = 'Please add a custom field using the dropdown below.';
 $string['completestatusstring'] = 'COMPLETED';
 $string['config_export_file'] = 'Enter the filename template to use for exporting data.';
 $string['configfieldstreelink'] = 'Field mapping';
@@ -41,6 +42,11 @@ $string['confignonincremental'] = 'Include all historical data in manual exports
 $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Export Fields';
 $string['configplaceholdersetting'] = 'Replace with real settings';
 $string['emailnotification'] = 'Email notification';
+$string['customfieldname'] = 'Custom Field Name';
+$string['customfieldsuccessdelete'] = 'Custom field successfully deleted.';
+$string['customfieldsuccessupdate'] = 'Custom field(s) successfully updated.';
+$string['customfieldnotconfig'] = 'There are no custom fields configured.';
+$string['customfieldalladded'] = 'All custom fields have been added.';
 $string['export_file'] = 'Export filename';
 $string['export_file_timestamp'] = '%b_%d_%Y_%H%M%S';
 $string['export_file_timestamp_label'] = 'Timestamp export file';
@@ -60,9 +66,10 @@ $string['header_username'] = 'Username';
 $string['incrementaldelta'] = 'Time delta for incremental manual export';
 $string['logging'] = 'Logging';
 $string['logfilelocation'] = 'Log file location';
+$string['nodatemarker'] = '-';
 $string['nonincremental'] = 'Enable non-incremental export';
 $string['placeholdersetting'] = 'Placeholder for settings';
 $string['pluginname'] = 'Version 1 ELIS export';
-$string['profilefieldname'] = 'Profile Field Name';
-$string['profilefieldnotconfig'] = 'There are no profile fields configured.';
+$string['revertheaders'] = 'Reset fields';
 $string['timeperiodheader'] = 'Time Period Settings';
+$string['updateheaders'] = 'Save changes';

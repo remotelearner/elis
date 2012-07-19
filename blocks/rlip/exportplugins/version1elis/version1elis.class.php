@@ -27,12 +27,21 @@
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
 require_once($CFG->dirroot.'/lib/gradelib.php');
+require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
 
 /**
  * PM class instance grade export compatible with the original PM grade
  * export for Moodle 1.9
  */
 class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
+    //mapping of user context custom field ids to data types
+    var $datatypes = array();
+    //mapping of user context custom field ids to default values
+    var $defaultdata = array();
+    //controls for datatypes
+    var $controls = array();
+    //stores which profile fields contain a date and time value
+    var $showtime = array();
     //recordset for tracking current export record
     var $recordset = null;
     //complete status string, used to avoid calling get_string for each row
@@ -69,7 +78,75 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                          get_string('header_letter', 'rlipexport_version1'));
 
         //query parameters
-        $params = array(student::STUSTATUS_PASSED);
+        $params = array();
+
+        //track extra SQL and parameters needed for custom fields
+        $extra_select = '';
+        $extra_joins = '';
+
+        //query to fetch all configured custom fields in the user context
+        $sql = "SELECT export.fieldid,
+                       export.header,
+                       field.datatype
+                FROM {".RLIPEXPORT_VERSION1ELIS_FIELD_TABLE."} export
+                  JOIN {".field_contextlevel::TABLE."} context
+                    ON export.fieldid = context.fieldid
+                  JOIN {".field::TABLE."} field
+                    ON field.id = context.fieldid
+                WHERE context.contextlevel = ".CONTEXT_ELIS_USER."
+                ORDER BY export.fieldorder";
+
+        if (($recordset = $DB->get_recordset_sql($sql)) && $recordset->valid()) {
+            $extra_joins = "LEFT JOIN {context} context
+                    ON context.contextlevel = ".CONTEXT_ELIS_USER."
+                    AND context.instanceid = u.id";
+            foreach ($recordset as $record) {
+                /**
+                 * Calculate information we'll need to format / transform records
+                 */
+
+                //field id used to index stored information
+                $fieldid = $record->fieldid;
+                //store the data type
+                $this->datatypes[$fieldid] = $record->datatype;
+
+                //store the default value
+                $field = new field($fieldid);
+                $this->defaultdata[$fieldid] = $field->get_default();
+                //track which fields show date and time values
+                $this->controls[$fieldid] = $field->owners['manual']->param_control;
+                if ($this->controls[$fieldid] == 'datetime' && $field->owners['manual']->param_inctime) {
+                    $this->showtime[$record->fieldid] = 1;
+                }
+
+                /**
+                 * Calculate extra SQL fragments / parameters
+                 */
+
+                //extra columns we'll need to display profile field values
+                $extra_select .= ",
+                                   custom_data_{$record->fieldid}.data
+                                   AS custom_field_{$record->fieldid}";
+                //extra joins we'll need to display profile field values
+                $field_data_table = "field_data_".$field->data_type();
+                $extra_joins = "{$extra_joins}
+                                LEFT JOIN {".$field_data_table::TABLE."} custom_data_{$record->fieldid}
+                                  ON custom_data_{$record->fieldid}.fieldid = ?
+                                  AND context.id = custom_data_{$record->fieldid}.contextid
+                                  AND custom_data_{$record->fieldid}.contextid IS NOT NULL";
+                //id of the appropriate custom field
+                $params[] = $fieldid;
+
+                /**
+                 * Calculate extra column headers
+                 */
+                $columns[] = $record->header;
+            }
+            $recordset->close();
+        }
+
+        // add passed as completion status requirement
+        $params[] = student::STUSTATUS_PASSED;
 
         //sql time condition
         $time_condition = '';
@@ -109,6 +186,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                        stu.completetime,
                        stu.grade,
                        mdlcrs.id AS mdlcrsid
+                       {$extra_select}
                 FROM {".user::TABLE."} u
                 JOIN {".student::TABLE."} stu
                   ON u.id = stu.userid
@@ -120,6 +198,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                   ON cls.id = clsmdl.classid
                 LEFT JOIN {course} mdlcrs
                   ON clsmdl.moodlecourseid = mdlcrs.id
+                {$extra_joins}
                 WHERE stu.completestatusid = ?
                 {$time_condition}
                 ORDER BY u.idnumber,
@@ -127,6 +206,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                          stu.completetime,
                          stu.grade DESC,
                          cls.idnumber";
+
         $this->recordset = $DB->get_recordset_sql($sql, $params);
 
         //write out header
@@ -147,6 +227,35 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
     }
 
     /**
+     * Transforms a custom field value for display in the export file
+     *
+     * @param int $fieldid The database record id of the custom field
+     * @param string $value The custom field value
+     * @return string The formatted string
+     */
+    function transform_value($fieldid, $value) {
+        if ($value === NULL) {
+            //not set, so use the default value
+            $value = $this->defaultdata[$fieldid];
+        }
+
+        if ($this->controls[$fieldid] == 'datetime') {
+            if ($value == 0) {
+                //use a marker to indicate that it's not set
+                $value = get_string('nodatemarker', 'rlipexport_version1elis');
+            } else if (isset($this->showtime[$fieldid]) && $this->showtime[$fieldid]){
+                //date and time
+                $value = date('M/d/Y:H:i', $value);
+            } else {
+                //just date
+                $value = date('M/d/Y', $value);
+            }
+        }
+
+        return $value;
+    }
+
+    /**
      * Hook for export the next data record in-place
      *
      * @return array The next record to be exported
@@ -154,7 +263,6 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
     function next() {
         //fetch the current record
         $record = $this->recordset->current();
-
         //set up our grade item
         $grade_item = new stdClass;
         if ($record->mdlcrsid !== NULL) {
@@ -178,6 +286,15 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                            $record->grade,
                            grade_format_gradevalue($record->grade, $grade_item, true, GRADE_DISPLAY_TYPE_LETTER, 5));
 
+        //iterate through our list of profile fields and perform data
+        //transformation on each field value
+        foreach (array_keys($this->datatypes) as $fieldid) {
+            $property = "custom_field_{$fieldid}";
+            $value = $record->{$property};
+            $value = $this->transform_value($fieldid, $value);
+
+            $csvrecord[] = $value;
+        }
         //move on to the next data record
         $this->recordset->next();
 
