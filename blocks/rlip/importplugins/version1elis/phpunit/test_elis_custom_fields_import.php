@@ -527,7 +527,9 @@ class elis_user_custom_fields_test extends elis_database_test {
         $user = new user();
         $user->reset_custom_field_list();
 
-        $this->run_elis_user_import($record, false);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('user', (object)$record, 'bogus');
 
         //validation
         $user = new user(1);
