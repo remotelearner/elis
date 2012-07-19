@@ -88,7 +88,9 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
             pmclass::TABLE          => 'elis_program',
             student::TABLE          => 'elis_program',
             user::TABLE             => 'elis_program',
-            usermoodle::TABLE       => 'elis_program'
+            usermoodle::TABLE       => 'elis_program',
+            clustertrack::TABLE     => 'elis_program',
+            trackassignment::TABLE  => 'elis_program'
         );
     }
 
@@ -503,6 +505,26 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
     }
 
     /**
+     * Determines whether a db log with the specified message exists
+     *
+     * @param string $message The message, or NULL to use the default success
+     *                        message
+     * @return boolean true if found, otherwise false
+     */
+    private function log_with_message_exists($message = NULL) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        if ($message === NULL) {
+            $message = 'All lines from import file memoryfile were successfully processed.';
+        }
+
+        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
+        $params = array('statusmessage' => $message);
+        return $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+    }
+
+    /**
      * Validate that summary log end time is set when an invalid folder is set
      * for the file system log
      */
@@ -613,5 +635,29 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
         $this->assertGreaterThanOrEqual($mintime, $record->endtime);
         $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validates the standard failure message
+     */
+    public function testLoggingLogsFailureMessage() {
+        set_config('createorupdate', 0, 'rlipimport_version1elis');
+
+        $data = array('entity' => 'user',
+                      'action' => 'update',
+                      'username' => 'rlipusername',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'email' => 'rlipuser@rlipdomain.com',
+                      'city' => 'rlipcity',
+                      'country' => 'CA');
+        $result = $this->run_user_import($data);
+        $this->assertNull($result);
+
+        $message = 'One or more lines from import file memoryfile failed because they contain data errors. '.
+                   'Please fix the import file and re-upload it.';
+        $exists = $this->log_with_message_exists($message);
+        $this->assertEquals(true, $exists);
     }
 }

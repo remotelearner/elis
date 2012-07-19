@@ -508,7 +508,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
         $record->entitytype = $entitytype;
         $record->standardfieldname = $standardfieldname;
         $record->customfieldname = $customfieldname;
-        $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
     }
 
     /**
@@ -805,7 +805,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'));
 
         //import provider that creates an instance of a file plugin that delays two seconds
-        //between reading the third and fourth entry 
+        //between reading the third and fourth entry
         $provider = new rlip_importprovider_delay_after_three_users($data);
         $manual = true;
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, $manual);
