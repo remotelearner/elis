@@ -43,6 +43,7 @@ class elis_track_import_test extends elis_database_test {
         global $CFG;
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
+        require_once(elis::lib('data/customfield.class.php'));
 
         $tables = array('crlm_track' => 'elis_program',
                         'crlm_cluster_track' => 'elis_program',
@@ -107,7 +108,16 @@ class elis_track_import_test extends elis_database_test {
                         'grade_categories' => 'moodle',
                         'grade_categories_history' => 'moodle',
                         'user_enrolments' => 'moodle',
-                        'events_queue_handlers' => 'moodle');
+                        'events_queue_handlers' => 'moodle',
+                        field::TABLE => 'elis_core',
+                        field_category::TABLE => 'elis_core',
+                        field_category_contextlevel::TABLE => 'elis_core',
+                        field_contextlevel::TABLE => 'elis_core',
+                        field_data_char::TABLE => 'elis_core',
+                        field_data_int::TABLE => 'elis_core',
+                        field_data_num::TABLE => 'elis_core',
+                        field_data_text::TABLE => 'elis_core',
+                        field_owner::TABLE => 'elis_core');
 
         return $tables;
     }
@@ -124,15 +134,6 @@ class elis_track_import_test extends elis_database_test {
                      'files'            => 'moodle',
                      'external_tokens'  => 'moodle',
                      'external_services_users'      => 'moodle',
-                     'elis_field_categories'        => 'elis_program',
-                     'elis_field_category_contexts' => 'elis_program',
-                     'elis_field_contextlevels'     => 'elis_program',
-                     'elis_field_data_char'         => 'elis_program',
-                     'elis_field'                   => 'elis_program',
-                     'elis_field_data_int'          => 'elis_program',
-                     'elis_field_data_num'          => 'elis_program',
-                     'elis_field_data_text'         => 'elis_program',
-                     'elis_field_owner'             => 'elis_program',
                      'external_tokens'              => 'moodle',
                      'external_services_users'      => 'moodle');
     }
@@ -192,9 +193,14 @@ class elis_track_import_test extends elis_database_test {
 
         $this->run_core_track_import(array(), true);
 
-        $data = array('action' => 'update', 'context' => 'track', 'idnumber' => 'testtrackid',
-                      'name' => 'testtrackpdated', 'description' => 'testdescriptionupdated',
-                      'startdate' => 'Jan/01/2012', 'enddate' => 'Jan/01/2012');
+        $data = array('action' => 'update',
+                      'context' => 'track',
+                      'idnumber' => 'testtrackid',
+                      'name' => 'testtrackpdated',
+                      'description' => 'testdescriptionupdated',
+                      'startdate' => 'Jan/01/2012',
+                      'enddate' => 'Jan/01/2012'
+        );
         $this->run_core_track_import($data, false);
 
         unset($data['action'], $data['context'], $data['description']);
@@ -202,6 +208,33 @@ class elis_track_import_test extends elis_database_test {
         $data['enddate'] = mktime(0, 0, 0, 1, 1, 2012);
 
         $this->assertTrue($DB->record_exists('crlm_track', $data));
+    }
+
+    // Data provider for mapping yes to 1 and no to 0
+    function field_provider() {
+        return array(array('0', '0'),
+                     array('1', '1'),
+                     array('yes', '1'),
+                     array('no', '0'));
+    }
+
+    /**
+     * @dataProvider field_provider
+     * @param string The import data (0, 1, yes, no)
+     * @param string The expected data (0, 1)
+     */
+    function test_elis_track_autocreate_import($data, $expected) {
+        global $CFG, $DB;
+
+        $this->run_core_program_import(array(), true);
+
+        $record = array();
+        $record = $this->get_core_track_data();
+        $record['autocreate'] = $data;
+
+        $this->run_core_track_import($record, false);
+
+        $this->assertEquals(true, $DB->record_exists(track::TABLE, array('idnumber' => $record['idnumber'])));
     }
 
     /**

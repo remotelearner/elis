@@ -35,6 +35,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 // Handy constants for readability
 define('ELIS_USER_EXISTS', true);
@@ -83,6 +84,7 @@ class elis_user_import_test extends elis_database_test {
         global $CFG;
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
+        require_once(elis::lib('data/customfield.class.php'));
 
         $tables = array(
                         'block_instances' => 'moodle',
@@ -140,7 +142,16 @@ class elis_user_import_test extends elis_database_test {
                         'user_preferences' => 'moodle',
                         'user_info_data' => 'moodle',
                         'user_lastaccess' => 'moodle',
-                        'user_enrolments' => 'moodle'
+                        'user_enrolments' => 'moodle',
+                        field::TABLE => 'elis_core',
+                        field_category::TABLE => 'elis_core',
+                        field_category_contextlevel::TABLE => 'elis_core',
+                        field_contextlevel::TABLE => 'elis_core',
+                        field_data_char::TABLE => 'elis_core',
+                        field_data_int::TABLE => 'elis_core',
+                        field_data_num::TABLE => 'elis_core',
+                        field_data_text::TABLE => 'elis_core',
+                        field_owner::TABLE => 'elis_core'
                      );
 
         return $tables;
@@ -161,15 +172,6 @@ class elis_user_import_test extends elis_database_test {
                      'files'            => 'moodle',
                      'external_tokens'  => 'moodle',
                      'external_services_users'      => 'moodle',
-                     'elis_field_categories'        => 'elis_program',
-                     'elis_field_category_contexts' => 'elis_program',
-                     'elis_field_contextlevels'     => 'elis_program',
-                     'elis_field_data_char'         => 'elis_program',
-                     'elis_field'                   => 'elis_program',
-                     'elis_field_data_int'          => 'elis_program',
-                     'elis_field_data_num'          => 'elis_program',
-                     'elis_field_data_text'         => 'elis_program',
-                     'elis_field_owner'             => 'elis_program',
                      'external_tokens'              => 'moodle',
                      'external_services_users'      => 'moodle');
     }
@@ -436,6 +438,33 @@ class elis_user_import_test extends elis_database_test {
         }
         $this->assertEquals($mdl_exists, $DB->record_exists('user', $user_data),
                             "Moodle user assertion: user_data; mdl_user = {$tmp}; {$mdl_user}");
+    }
+
+    // Data provider for mapping yes to 1 and no to 0
+    function field_provider() {
+        return array(array('0', '0'),
+                     array('1', '1'),
+                     array('yes', '1'),
+                     array('no', '0'));
+    }
+
+    /**
+     * @dataProvider field_provider
+     * @param string The import data (0, 1, yes, no)
+     * @param string The expected data (0, 1)
+     */
+    function test_elis_user_inactive_field($data, $expected) {
+        global $CFG, $DB;
+
+        $record = array();
+        $record = $this->test_setup_data[0];
+        $record['inactive'] = $data;
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->process_record('user', (object)$record, 'bogus');
+
+        $this->assertEquals(true, $DB->record_exists(user::TABLE, array('idnumber' => $record['idnumber'], 'inactive' => $expected)));
     }
 
 }
