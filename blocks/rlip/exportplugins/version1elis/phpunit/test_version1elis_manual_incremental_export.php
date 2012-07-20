@@ -33,70 +33,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-
-/**
- * File plugin that just stores read records in memory
- */
-class rlip_fileplugin_manual_incremental_elisexport extends rlip_fileplugin_base {
-    //stored data
-    private $data;
-
-    /**
-     * Open the file
-     *
-     * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
-     *                  the mode in which the file should be opened
-     */
-    public function open($mode) {
-        $this->data = array();
-    }
-
-    /**
-     * Read one entry from the file
-     *
-     * @return array The entry read
-     */
-    public function read() {
-        //nothing to do
-    }
-
-    /**
-     * Write one entry to the file
-     *
-     * @param array $entry The entry to write to the file
-     */
-    public function write($entry) {
-        $this->data[] = $entry;
-    }
-
-    /**
-     * Close the file
-     */
-    public function close() {
-        //nothing to do
-    }
-
-    /**
-     * Specifies the data currently stored
-     *
-     * @return array The data stored
-     */
-    public function get_data() {
-        return $this->data;
-    }
-
-    /**
-     * Specifies the name of the current open file
-     *
-     * @param  bool   $withpath  Whether to include fullpath with filename
-     *                           default is NOT to include full path.
-     * @return string The file name
-     */
-    function get_filename($withpath = false) {
-        return 'bogus';
-    }
-}
+require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/phpunit/rlip_fileplugin_export.class.php');
 
 /**
  * Test class for validating basic export data during a manual, nonincremental
@@ -119,7 +56,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
         set_config('incrementaldelta', '1d', 'rlipexport_version1elis');
 
         //plugin for file IO
-    	$fileplugin = new rlip_fileplugin_manual_incremental_elisexport();
+    	$fileplugin = new rlip_fileplugin_export();
     	$fileplugin->open(RLIP_FILE_WRITE);
 
     	//our specific export
@@ -844,7 +781,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         //plugin for file IO
-    	$fileplugin = new rlip_fileplugin_manual_incremental_elisexport();
+    	$fileplugin = new rlip_fileplugin_export();
     	$fileplugin->open(RLIP_FILE_WRITE);
 
     	//our specific export
