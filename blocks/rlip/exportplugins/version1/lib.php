@@ -137,7 +137,6 @@ class rlipexport_version1_config {
         $record->id = $exportid;
         $record->header = $header;
 
-        echo "\n updating header to $record->header";
         $DB->update_record(RLIPEXPORT_VERSION1_FIELD_TABLE, $record);
     }
 
