@@ -189,6 +189,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                                'enrolmenttime', 'assigntime', 'completetime', 'completestatusid',
                                                'grade', 'credits', 'locked', 'role');
 
+    static $yes_no_field_options = array(
+        'yes',
+        'no',
+        '1',
+        '0',
+    );
+
     //store mappings for the current entity type
     var $mappings = array();
 
@@ -786,12 +793,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->inactive)) {
-            if (!in_array(strtolower($record->inactive), array('0', '1', 'yes', 'no'))) {
+            if (!$this->validate_fixed_list($record, 'inactive', static::$yes_no_field_options)) {
                 $this->fslogger->log_failure("inactive value of \"{$record->inactive}\" is not one of the available options (0, 1).",
                                              0, $filename, $this->linenumber, $record, "user");
                 return false;
             } else {
-                $record->inactive = ($record->inactive == 'yes' || $record->inactive == '1') ? '1' : '0';
+                $record->inactive = ((string) $record->inactive == 'yes' || (string) $record->inactive == '1') ? '1' : '0';
             }
         }
 
@@ -1606,12 +1613,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->enrol_from_waitlist)) {
-            if (!in_array(strtolower($record->enrol_from_waitlist), array('0', '1', 'yes', 'no'))) {
+            if (!$this->validate_fixed_list($record, 'enrol_from_waitlist', static::$yes_no_field_options)) {
                 $this->fslogger->log_failure("enrol_from_waitlist value of \"{$record->enrol_from_waitlist}\" is not one of the available options (0, 1).",
                                              0, $filename, $this->linenumber, $record, "class");
                 return false;
             } else {
-                $record->enrol_from_waitlist = ($record->enrol_from_waitlist == 'yes' || $record->enrol_from_waitlist == '1') ? '1' : '0';
+                $record->enrol_from_waitlist = ((string) $record->enrol_from_waitlist == 'yes' || (string) $record->enrol_from_waitlist == '1') ? '1' : '0';
             }
         }
 
@@ -1623,12 +1630,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->autoenrol)) {
-            if (!in_array(strtolower($record->autoenrol), array('0', '1', 'yes', 'no'))) {
+            if (!$this->validate_fixed_list($record, 'autoenrol', static::$yes_no_field_options)) {
                 $this->fslogger->log_failure("autoenrol value of \"{$record->autoenrol}\" is not one of the available options (0, 1).",
                                              0, $filename, $this->linenumber, $record, "class");
                 return false;
             } else {
-                $record->autoenrol = ($record->autoenrol == 'yes' || $record->autoenrol == '1') ? '1' : '0';
+                $record->autoenrol = ((string) $record->autoenrol == 'yes' || (string) $record->autoenrol == '1') ? '1' : '0';
             }
         }
 
@@ -2218,11 +2225,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->recursive)) {
-            if (!in_array(strtolower($record->recursive), array('0', '1', 'yes', 'no'))) {
+            if (!$this->validate_fixed_list($record, 'recursive', static::$yes_no_field_options)) {
                 $this->fslogger->log_failure("recursive value of \"{$record->recursive}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "cluster");
                 return false;
             } else {
-                $record->recursive = ($record->recursive == 'yes' || $record->recursive == '1') ? '1' : '0';
+                $record->recursive = ((string) $record->recursive == 'yes' || (string) $record->recursive == '1') ? '1' : '0';
             }
         }
 
@@ -2552,11 +2559,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->autocreate)) {
-            if (!in_array(strtolower($record->autocreate), array('0', '1', 'yes', 'no'))) {
+            if (!$this->validate_fixed_list($record, 'autocreate', static::$yes_no_field_options)) {
                 $this->fslogger->log_failure("autocreate value of \"{$record->autocreate}\" is not one of the available options (0, 1).", 0, $filename,  $this->linenumber, $record, "track");
                 return false;
             } else {
-                $record->autocreate = ($record->autocreate == 'yes' || $record->autocreate == '1') ? '1' : '0';
+                $record->autocreate = ((string) $record->autocreate == 'yes' || (string) $record->autocreate == '1') ? '1' : '0';
             }
         }
 
@@ -3418,11 +3425,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->locked)) {
-            if (!in_array(strtolower($record->locked), array('0', '1', 'yes', 'no'))) {
+            if (!$this->validate_fixed_list($record, 'locked', static::$yes_no_field_options)) {
                 $this->fslogger->log_failure("locked value of \"{$record->locked}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "enrolment");
                 return false;
             } else {
-                $record->locked = ($record->locked == 'yes' || $record->locked == '1') ? '1' : '0';
+                $record->locked = ((string) $record->locked == 'yes' || (string) $record->locked == '1') ? '1' : '0';
             }
         }
 
