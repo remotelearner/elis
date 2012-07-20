@@ -37,7 +37,7 @@ define('CONTEXT_ELIS_USER',    1005);
 /**
  * Class for testing the storage and retrieval of custom field data
  */
-class custom_field_data_access_test extends elis_database_test {
+class customFieldDataAccessTest extends elis_database_test {
     //our sample context level
     const contextlevel = 9999;
     //id of our bogus context record
