@@ -892,10 +892,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $params['idnumber'] = $record->idnumber;
         }
 
-        $record->id = $DB->get_field('crlm_user', 'id', $params);
         //$record->timemodified = time();
-        //$DB->update_record('crlm_user', $record);
-
         $record = $this->add_custom_field_prefixes($record);
 
         //custom field validation
@@ -921,7 +918,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             unset($record->birthdate);
         }
 
-        $user = new user();
+        $user = new user($DB->get_field('crlm_user', 'id', $params));
+        $user->load();
         $user->set_from_data($record);
         $user->save();
 
@@ -939,6 +937,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
 
+        $params = array();
         $errors = array();
         $error = false;
 
@@ -947,6 +946,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 // TODO : mappings
                 $errors[] = "username value of \"{$record->username}\"";
                 $error = true;
+            } else {
+                $params['username'] = $record->username;
             }
         }
 
@@ -954,6 +955,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             if (!$DB->record_exists('crlm_user', array('email' => $record->email))) {
                 $errors[] = "email value of \"{$record->email}\"";
                 $error = true;
+            } else {
+                $params['email'] = $record->email;
             }
         }
 
@@ -961,6 +964,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             if (!$DB->record_exists('crlm_user', array('idnumber' => $record->idnumber))) {
                 $errors[] = "idnumber value of \"{$record->idnumber}\"";
                 $error = true;
+            } else {
+                $params['idnumber'] = $record->idnumber;
             }
         }
 
@@ -972,11 +977,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
             return false;
         }
-
-        // TODO: validation
-        $params = array('username'  => $record->username,
-                        'email'     => $record->email,
-                        'idnumber'  => $record->idnumber);
 
         if ($user = $DB->get_record('user', $params)) {
             user_delete_user($user);
