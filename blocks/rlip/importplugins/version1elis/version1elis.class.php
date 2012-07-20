@@ -3431,14 +3431,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
-        if (!$crsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $idnumber))) {
+        if (!$crsid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber))) {
             $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a class context.", 0, $filename, $this->linenumber, $record, "enrolment");
             return false;
         }
 
         $userid = $this->get_userid_from_record($record, $filename);
 
-        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+        if ($DB->record_exists(student::TABLE, array('classid' => $crsid, 'userid' => $userid))) {
             $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is already enrolled in class \"{$idnumber}\".", 0, $filename, $this->linenumber, $record, "enrolment");
             return false;
         }
@@ -3515,14 +3515,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/instructor.class.php'));
 
-        if (!$crsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $idnumber))) {
+        if (!$crsid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber))) {
             $this->fslogger->log_failure("instance value of \"{$idnumber}\" does not refer to a valid instance of a class context.", 0, $filename, $this->linenumber, $record, "enrolment");
             return false;
         }
 
         $userid = $this->get_userid_from_record($record, $filename);
 
-        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+        if ($DB->record_exists(instructor::TABLE, array('classid' => $crsid, 'userid' => $userid))) {
             $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is already enrolled in " .
                                          "class instance \"{$idnumber}\".", 0, $filename, $this->linenumber, $record, "enrolment");
             return false;
