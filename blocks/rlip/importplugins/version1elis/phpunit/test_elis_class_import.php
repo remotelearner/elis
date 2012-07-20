@@ -42,6 +42,7 @@ class elis_class_import_test extends elis_database_test {
         global $CFG;
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
+        require_once(elis::lib('data/customfield.class.php'));
 
         $tables = array('crlm_curriculum' => 'elis_program',
                         'crlm_class_moodle' => 'elis_program',
@@ -106,7 +107,16 @@ class elis_class_import_test extends elis_database_test {
                         'grade_categories' => 'moodle',
                         'grade_categories_history' => 'moodle',
                         'user_enrolments' => 'moodle',
-                        'events_queue_handlers' => 'moodle');
+                        'events_queue_handlers' => 'moodle',
+                        field::TABLE => 'elis_core',
+                        field_category::TABLE => 'elis_core',
+                        field_category_contextlevel::TABLE => 'elis_core',
+                        field_contextlevel::TABLE => 'elis_core',
+                        field_data_char::TABLE => 'elis_core',
+                        field_data_int::TABLE => 'elis_core',
+                        field_data_num::TABLE => 'elis_core',
+                        field_data_text::TABLE => 'elis_core',
+                        field_owner::TABLE => 'elis_core');
 
         return $tables;
     }
@@ -123,39 +133,32 @@ class elis_class_import_test extends elis_database_test {
                      'files'            => 'moodle',
                      'external_tokens'  => 'moodle',
                      'external_services_users'      => 'moodle',
-                     'elis_field_categories'        => 'elis_program',
-                     'elis_field_category_contexts' => 'elis_program',
-                     'elis_field_contextlevels'     => 'elis_program',
-                     'elis_field_data_char'         => 'elis_program',
-                     'elis_field'                   => 'elis_program',
-                     'elis_field_data_int'          => 'elis_program',
-                     'elis_field_data_num'          => 'elis_program',
-                     'elis_field_data_text'         => 'elis_program',
-                     'elis_field_owner'             => 'elis_program',
                      'external_tokens'              => 'moodle',
-                     'external_services_users'      => 'moodle');
+                     'external_services_users'      => 'moodle',
+        );
+
     }
 
     function test_create_elis_class_import() {
        global $DB;
 
-        $this->run_core_course_import(array(), true);
+        $this->run_elis_course_import(array(), true);
         $this->assertTrue($DB->record_exists('crlm_course', array('idnumber' => 'testcourseid')));
 
-        $this->run_core_class_import(array(), true);
+        $this->run_elis_class_import(array(), true);
         $this->assertTrue($DB->record_exists('crlm_class', array('idnumber' => 'testclassid')));
     }
 
     function test_delete_elis_class_import() {
         global $DB;
 
-        $this->run_core_course_import(array(), true);
+        $this->run_elis_course_import(array(), true);
         $this->assertTrue($DB->record_exists('crlm_course', array('idnumber' => 'testcourseid')));
 
-        $this->run_core_class_import(array(), true);
+        $this->run_elis_class_import(array(), true);
 
         $data = array('action' => 'delete', 'context' => 'class', 'idnumber' => 'testclassid');
-        $this->run_core_class_import($data, false);
+        $this->run_elis_class_import($data, false);
 
         unset($data['action'],$data['context']);
         $this->assertFalse($DB->record_exists('crlm_class', $data));
@@ -164,16 +167,61 @@ class elis_class_import_test extends elis_database_test {
     function test_update_elis_class_import() {
         global $DB;
 
-        $this->run_core_course_import(array(), true);
+        $this->run_elis_course_import(array(), true);
         $this->assertTrue($DB->record_exists('crlm_course', array('idnumber' => 'testcourseid')));
 
-        $this->run_core_class_import(array(), true);
+        $this->run_elis_class_import(array(), true);
 
         $data = array('action' => 'update', 'context' => 'class', 'idnumber' => 'testclassid', 'maxstudents' => 30);
-        $this->run_core_class_import($data, false);
+        $this->run_elis_class_import($data, false);
 
         unset($data['action'],$data['context']);
         $this->assertTrue($DB->record_exists('crlm_class', $data));
+    }
+
+    // Data provider for mapping yes to 1 and no to 0
+    function field_provider() {
+        return array(array('0', '0'),
+                     array('1', '1'),
+                     array('yes', '1'),
+                     array('no', '0'));
+    }
+
+    /**
+     * @dataProvider field_provider
+     * @param string The import data (0, 1, yes, no)
+     * @param string The expected data (0, 1)
+     */
+    function test_elis_class_enrol_from_waitlist_import($data, $expected) {
+        global $CFG, $DB;
+
+        $this->run_elis_course_import(array(), true);
+
+        $record = array();
+        $record = $this->get_core_class_data();
+        $record['enrol_from_waitlist'] = $data;
+
+        $this->run_elis_class_import($record, false);
+
+        $this->assertEquals(true, $DB->record_exists(pmclass::TABLE, array('idnumber' => $record['idnumber'], 'enrol_from_waitlist' => $expected)));
+    }
+
+    /**
+     * @dataProvider field_provider
+     * @param string The import data (0, 1, yes, no)
+     * @param string The expected data (0, 1)
+     */
+    function test_elis_class_autoenrol_import($data, $expected) {
+        global $CFG, $DB;
+
+        $this->run_elis_course_import(array(), true);
+
+        $record = array();
+        $record = $this->get_core_class_data();
+        $record['autoenrol'] = $data;
+
+        $this->run_elis_class_import($record, false);
+        $this->assertEquals(true, $DB->record_exists(pmclass::TABLE, array('idnumber' => $record['idnumber'])));
     }
 
     /**
@@ -208,7 +256,7 @@ class elis_class_import_test extends elis_database_test {
      *
      * @param array $extradata Extra fields to set for the new class
      */
-    private function run_core_class_import($extradata, $use_default_data = true) {
+    private function run_elis_class_import($extradata, $use_default_data = true) {
         global $CFG;
 
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
@@ -235,7 +283,7 @@ class elis_class_import_test extends elis_database_test {
      *
      * @param array $extradata Extra fields to set for the new course
      */
-    private function run_core_course_import($extradata, $use_default_data = true) {
+    private function run_elis_course_import($extradata, $use_default_data = true) {
         global $CFG;
 
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';

@@ -537,7 +537,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                             //NOTE: this control type only supports a single value but the
                             //API expects an array if it's multivalued
                             $record->{'field_'.$field->shortname} = $field->multivalued ? array('1') : '1';
-                            
+
                         }
                         if (strtolower($string_value) == 'no') {
                             //NOTE: this control type only supports a single value but the
@@ -786,10 +786,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->inactive)) {
-            if ($record->inactive != 0 && $record->inactive != 1) {
+            if (!in_array(strtolower($record->inactive), array('0', '1', 'yes', 'no'))) {
                 $this->fslogger->log_failure("inactive value of \"{$record->inactive}\" is not one of the available options (0, 1).",
                                              0, $filename, $this->linenumber, $record, "user");
                 return false;
+            } else {
+                $record->inactive = ($record->inactive == 'yes' || $record->inactive == '1') ? '1' : '0';
             }
         }
 
@@ -1608,6 +1610,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 $this->fslogger->log_failure("enrol_from_waitlist value of \"{$record->enrol_from_waitlist}\" is not one of the available options (0, 1).",
                                              0, $filename, $this->linenumber, $record, "class");
                 return false;
+            } else {
+                $record->enrol_from_waitlist = ($record->enrol_from_waitlist == 'yes' || $record->enrol_from_waitlist == '1') ? '1' : '0';
             }
         }
 
@@ -1619,10 +1623,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->autoenrol)) {
-            if ($record->autoenrol != 0 && $record->autoenrol != 1) {
+            if (!in_array(strtolower($record->autoenrol), array('0', '1', 'yes', 'no'))) {
                 $this->fslogger->log_failure("autoenrol value of \"{$record->autoenrol}\" is not one of the available options (0, 1).",
                                              0, $filename, $this->linenumber, $record, "class");
                 return false;
+            } else {
+                $record->autoenrol = ($record->autoenrol == 'yes' || $record->autoenrol == '1') ? '1' : '0';
             }
         }
 
@@ -2212,9 +2218,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->recursive)) {
-            if ($record->recursive != 0 && $record->recursive != 1) {
+            if (!in_array(strtolower($record->recursive), array('0', '1', 'yes', 'no'))) {
                 $this->fslogger->log_failure("recursive value of \"{$record->recursive}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "cluster");
                 return false;
+            } else {
+                $record->recursive = ($record->recursive == 'yes' || $record->recursive == '1') ? '1' : '0';
             }
         }
 
@@ -2544,9 +2552,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->autocreate)) {
-            if ($record->autocreate != "0" && $record->autocreate != "1") {
+            if (!in_array(strtolower($record->autocreate), array('0', '1', 'yes', 'no'))) {
                 $this->fslogger->log_failure("autocreate value of \"{$record->autocreate}\" is not one of the available options (0, 1).", 0, $filename,  $this->linenumber, $record, "track");
                 return false;
+            } else {
+                $record->autocreate = ($record->autocreate == 'yes' || $record->autocreate == '1') ? '1' : '0';
             }
         }
 
@@ -3408,9 +3418,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         if (isset($record->locked)) {
-            if ($record->locked != 0 && $record->locked != 1) {
+            if (!in_array(strtolower($record->locked), array('0', '1', 'yes', 'no'))) {
                 $this->fslogger->log_failure("locked value of \"{$record->locked}\" is not one of the available options (0, 1).", 0, $filename, $this->linenumber, $record, "enrolment");
                 return false;
+            } else {
+                $record->locked = ($record->locked == 'yes' || $record->locked == '1') ? '1' : '0';
             }
         }
 
