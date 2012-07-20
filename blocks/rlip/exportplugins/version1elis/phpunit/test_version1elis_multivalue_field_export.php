@@ -231,20 +231,63 @@ class version1elisMultivalueFieldExport extends elis_database_test {
     }
 
     /**
+     * Data provider that supplies information about the state of custom fields
+     * and data
+     *
+     * @return array The parameter data expected by the test function(s)
+     */
+    public function multivalueSetupProvider() {
+        return array(
+            array(0, false),
+            array(1, false),
+            array(0, true),
+            array(1, true)
+        );
+    }
+
+    /**
      * Validate that a single-value default is used when a user does not have
      * data for a multi-value menu of choices field
+     *
+     * @param int $multivalued 1 if the custom field should be defined as
+     *                         multivalued, otherwise 0
+     * @param boolean $multi_data_exists True if multi-valued data should exist
+     *                                   for some other context, otherwise false
+     * @dataProvider multivalueSetupProvider
      */
-    public function testExportContainsDefaultsForMenuOfChoices() {
+    public function testExportContainsDefaultsForMenuOfChoices($multivalued, $multi_data_exists) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+
         //setup
         $this->load_csv_data();
+        //NOTE: always set multivalued at first so array of data can be set
         $fieldid = $this->create_custom_field();
         $this->create_field_mapping($fieldid);
-        $data = array(
-            'option1',
-            'option2',
-            'option3'
-        );
-        $this->create_field_data($fieldid, $data);
+
+        if ($multi_data_exists) {
+            //set up multi-valued data at some context
+            $field = new field($fieldid);
+
+            $context = new stdClass;
+            $context->id = 9999;
+
+            $values = array(
+                'value1',
+                'value2'
+            );
+
+            //persist
+            field_data::set_for_context_and_field($context, $field, $values);
+        }
+
+        if ($multivalued == 0) {
+            //disable the multivalue setting
+            $field = new field($fieldid);
+            $field->multivalued = 0;
+            $field->save();
+        }
 
         //obtain data
         $data = $this->get_export_data();
