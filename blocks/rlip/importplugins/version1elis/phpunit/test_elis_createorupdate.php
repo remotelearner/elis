@@ -702,4 +702,93 @@ class elis_createorupdate_test extends elis_database_test {
                                                                       'userid' => $user->id,
                                                                       'completetime' => mktime(0, 0, 0, 1, 2, 2012))));
     }
+
+    /**
+     * Validate that create actions are converted to updates for a student and instructor enrolment when the
+     * "createorupdate" flag is enabled.
+     *
+     * This test first enrols a user as a student within a class and then updates the enrolment completion date and
+     * then attempts to enrol the same user as an instructor within a the same class and then update that enrolment
+     * completion date. In all four cases, the action is specified as a "create".
+     */
+    public function test_elis_createorupdate_updates_student_and_instructor_enrolment() {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/instructor.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+
+        // Set up initial conditions
+        set_config('createorupdate', 1, 'rlipimport_version1elis');
+
+        // Create the test course
+        $course = new course(array(
+            'name'     => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
+        $course->save();
+
+        // Create the test class
+        $class = new pmclass(array(
+            'courseid' => $course->id,
+            'idnumber' => 'testclassidnumber')
+        );
+        $class->save();
+
+        // Create the test user
+        $user = new user(array(
+            'username'  => 'testuserusername',
+            'email'     => 'test@useremail.com',
+            'idnumber'  => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'country'   => 'CA'
+        ));
+        $user->save();
+
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+
+        // (1) Run the first student enrolment
+        $record = new stdClass;
+        $record->action        = 'create';
+        $record->context       = 'class_testclassidnumber';
+        $record->user_username = 'testuserusername';
+        $record->role          = 'student';
+        $record->completetime  = 'Jan/01/2012';
+
+        // NOTE: we clone() the record because the createorupdate setting will rewrite the action parameter
+        $importplugin->process_record('enrolment', clone($record), 'bogus');
+
+        // Validation of the enrolment record
+        $params = array(
+            'classid'      => $class->id,
+            'userid'       => $user->id,
+            'completetime' => mktime(0, 0, 0, 1, 1, 2012)
+        );
+
+        $this->assertTrue($DB->record_exists(student::TABLE, $params));
+
+        // (2) Run the second student enrolment
+        $record->completetime = 'Jan/02/2012';
+        $importplugin->process_record('enrolment', clone($record), 'bogus');
+        $params['completetime'] = mktime(0, 0, 0, 1, 2, 2012);
+        $this->assertTrue($DB->record_exists(student::TABLE, $params));
+
+        // (3) Run the first teacher enrolment
+        $record->role         = 'instructor';
+        $record->completetime = 'Jan/01/2012';
+        $importplugin->process_record('enrolment', clone($record), 'bogus');
+        $params['completetime'] = mktime(0, 0, 0, 1, 1, 2012);
+        $this->assertTrue($DB->record_exists(instructor::TABLE, $params));
+
+        // (4) Run the second teacher enrolment
+        $record->completetime = 'Jan/02/2012';
+        $importplugin->process_record('enrolment', clone($record), 'bogus');
+        $params['completetime'] = mktime(0, 0, 0, 1, 2, 2012);
+        $this->assertTrue($DB->record_exists(instructor::TABLE, $params));
+    }
 }
