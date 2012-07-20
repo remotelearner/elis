@@ -130,6 +130,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
                      field_contextlevel::TABLE => 'elis_core',
                      field_data_int::TABLE => 'elis_core',
                      pmclass::TABLE => 'elis_program',
+                     student::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
                      trackassignment::TABLE => 'elis_program',
                      userset::TABLE => 'elis_program');
@@ -774,7 +775,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customidnumber = 'testclassidnumber';
         $record->customstartdate = 'Jan/01/2012';
         $record->customenddate = 'Jan/01/2012';
-        $record->customstarttimehour = '1';       
+        $record->customstarttimehour = '1';
         $record->customstarttimeminute = '5';
         $record->customendtimehour = '1';
         $record->customendtimeminute = '5';
@@ -876,7 +877,7 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         $record->customidnumber = 'testclassidnumber';
         $record->customstartdate = 'Jan/02/2012';
         $record->customenddate = 'Jan/02/2012';
-        $record->customstarttimehour = '2';       
+        $record->customstarttimehour = '2';
         $record->customstarttimeminute = '10';
         $record->customendtimehour = '2';
         $record->customendtimeminute = '10';
