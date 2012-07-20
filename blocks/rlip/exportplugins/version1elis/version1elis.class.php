@@ -47,6 +47,70 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
     //complete status string, used to avoid calling get_string for each row
     var $completestatusstring = '';
 
+    /**    
+     * constants for noting the state of a field with relation to multi-values
+     */
+
+    //field currently allows multi-value setups and has relevant data
+    const MULTIVALUE_ENABLED = 1;
+    //field does not currently allow multi-value setups but has historical data
+    //(i.e. only display first value)
+    const MULTIVALUE_HISTORICAL = 2;
+    //no multi-value data for this field
+    const MULTIVALUE_NONE = 3;
+
+    //maps fields to their multivalue statuses
+    var $multivaluestatus = array();
+
+    /**
+     * Set up the local tracking of the a custom field's status in relation to
+     * whether it's multivalued or not
+     *
+     * @param int $fieldid The id of the appropriate ELIS custom user field
+     * @param int $multivalued 1 if the field is multivalued, otherwise 0
+     * @return int The multivalue status flag, as calculated and stored for the
+     *             provided field
+     */
+    private function init_multivalue_status_for_field($fieldid, $multivalued) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+
+        //determine if multi-valued data exists for this custom field, whether
+        //the field currently supports it or not
+        $field = new field($fieldid);
+        $data_table = $field->data_table();
+        $sql = "SELECT 'x'
+                FROM {".$data_table."} data1
+                WHERE EXISTS (
+                    SELECT 'x'
+                    FROM {".$data_table."} data2
+                    WHERE data1.contextid = data2.contextid
+                    AND data1.contextid IS NOT NULL
+                    AND data1.fieldid = data2.fieldid
+                    AND data1.fieldid = ?
+                )";
+        $params = array($fieldid);
+
+        $multivalue_data_exists = $DB->record_exists_sql($sql, $params);
+
+        if ($multivalue_data_exists) {
+            //one or more contexts have multiple values assigned for this field
+            if ($multivalued) {
+                //field currently supports multi-values
+                $this->multivaluestatus[$fieldid] = self::MULTIVALUE_ENABLED;
+            } else {
+                //field no longer supports multi-values
+                $this->multivaluestatus[$fieldid] = self::MULTIVALUE_HISTORICAL;
+            }
+        } else {
+            //basic single value case
+            $this->multivaluestatus[$fieldid] = self::MULTIVALUE_NONE;
+        }
+
+        return $this->multivaluestatus[$fieldid];
+    }
+
     /**
      * Perform initialization that should
      * be done at the beginning of the export
@@ -87,7 +151,8 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         //query to fetch all configured custom fields in the user context
         $sql = "SELECT export.fieldid,
                        export.header,
-                       field.datatype
+                       field.datatype,
+                       field.multivalued
                 FROM {".RLIPEXPORT_VERSION1ELIS_FIELD_TABLE."} export
                   JOIN {".field_contextlevel::TABLE."} context
                     ON export.fieldid = context.fieldid
@@ -120,22 +185,34 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                 }
 
                 /**
+                 * Determine if the field is multi-valued or has some historical
+                 * multi-value data tied to it
+                 */
+                $multivaluestatus = $this->init_multivalue_status_for_field($record->fieldid, $record->multivalued);
+
+                /**
                  * Calculate extra SQL fragments / parameters
                  */
 
-                //extra columns we'll need to display profile field values
-                $extra_select .= ",
-                                   custom_data_{$record->fieldid}.data
-                                   AS custom_field_{$record->fieldid}";
-                //extra joins we'll need to display profile field values
-                $field_data_table = "field_data_".$field->data_type();
-                $extra_joins = "{$extra_joins}
-                                LEFT JOIN {".$field_data_table::TABLE."} custom_data_{$record->fieldid}
-                                  ON custom_data_{$record->fieldid}.fieldid = ?
-                                  AND context.id = custom_data_{$record->fieldid}.contextid
-                                  AND custom_data_{$record->fieldid}.contextid IS NOT NULL";
-                //id of the appropriate custom field
-                $params[] = $fieldid;
+                if ($multivaluestatus == self::MULTIVALUE_NONE) {
+                    //extra columns we'll need to display profile field values
+                    $extra_select .= ",
+                                       custom_data_{$fieldid}.data
+                                       AS custom_field_{$fieldid}";
+                    //extra joins we'll need to display profile field values
+                    $field_data_table = "field_data_".$field->data_type();
+                    $extra_joins = "{$extra_joins}
+                                    LEFT JOIN {".$field_data_table::TABLE."} custom_data_{$record->fieldid}
+                                      ON custom_data_{$fieldid}.fieldid = ?
+                                      AND context.id = custom_data_{$fieldid}.contextid
+                                      AND custom_data_{$fieldid}.contextid IS NOT NULL";
+                    //id of the appropriate custom field
+                    $params[] = $fieldid;
+                } else {
+                    //extra columns we'll need to display profile field values
+                    $extra_select .= ",
+                                       '' AS custom_field_{$fieldid}";
+                }
 
                 /**
                  * Calculate extra column headers
@@ -177,7 +254,8 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         }
 
         //initialize our recordset to the core data
-        $sql = "SELECT u.firstname,
+        $sql = "SELECT u.id AS userid,
+                       u.firstname,
                        u.lastname,
                        u.username,
                        u.idnumber,
@@ -229,14 +307,38 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
     /**
      * Transforms a custom field value for display in the export file
      *
+     * @param int $userid The id of the PM user in the current data row
      * @param int $fieldid The database record id of the custom field
      * @param string $value The custom field value
      * @return string The formatted string
      */
-    function transform_value($fieldid, $value) {
+    function transform_value($userid, $fieldid, $value) {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::file('accesslib.php'));
+
         if ($value === NULL) {
             //not set, so use the default value
             $value = $this->defaultdata[$fieldid];
+        }
+
+        if ($this->multivaluestatus[$fieldid] !== self::MULTIVALUE_NONE) {
+            $field = new field($fieldid);
+
+            $context = context_elis_user::instance($userid);
+            $data = field_data::get_for_context_and_field($context, $field);
+
+            if ($this->multivaluestatus[$fieldid] == self::MULTIVALUE_ENABLED) {
+                $parts = array();
+                foreach ($data as $datum) {
+                    $parts[] = $datum->data;
+                }
+
+                $value = implode(' / ', $parts);
+            } else {
+                $value = $data->current()->data;
+            }
         }
 
         if ($this->controls[$fieldid] == 'datetime') {
@@ -291,7 +393,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         foreach (array_keys($this->datatypes) as $fieldid) {
             $property = "custom_field_{$fieldid}";
             $value = $record->{$property};
-            $value = $this->transform_value($fieldid, $value);
+            $value = $this->transform_value($record->userid, $fieldid, $value);
 
             $csvrecord[] = $value;
         }
