@@ -42,6 +42,7 @@ class elis_user_program_enrolment_test extends elis_database_test {
         global $CFG;
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
+        require_once(elis::lib('data/customfield.class.php'));
 
         $tables = array('crlm_curriculum' => 'elis_program',
                         'crlm_class_moodle' => 'elis_program',
@@ -106,7 +107,16 @@ class elis_user_program_enrolment_test extends elis_database_test {
                         'grade_categories' => 'moodle',
                         'grade_categories_history' => 'moodle',
                         'user_enrolments' => 'moodle',
-                        'events_queue_handlers' => 'moodle');
+                        'events_queue_handlers' => 'moodle',
+                        field::TABLE => 'elis_core',
+                        field_category::TABLE => 'elis_core',
+                        field_category_contextlevel::TABLE => 'elis_core',
+                        field_contextlevel::TABLE => 'elis_core',
+                        field_data_char::TABLE => 'elis_core',
+                        field_data_int::TABLE => 'elis_core',
+                        field_data_num::TABLE => 'elis_core',
+                        field_data_text::TABLE => 'elis_core',
+                        field_owner::TABLE => 'elis_core');
 
         return $tables;
     }
@@ -123,15 +133,6 @@ class elis_user_program_enrolment_test extends elis_database_test {
                      'files'            => 'moodle',
                      'external_tokens'  => 'moodle',
                      'external_services_users'      => 'moodle',
-                     'elis_field_categories'        => 'elis_program',
-                     'elis_field_category_contexts' => 'elis_program',
-                     'elis_field_contextlevels'     => 'elis_program',
-                     'elis_field_data_char'         => 'elis_program',
-                     'elis_field'                   => 'elis_program',
-                     'elis_field_data_int'          => 'elis_program',
-                     'elis_field_data_num'          => 'elis_program',
-                     'elis_field_data_text'         => 'elis_program',
-                     'elis_field_owner'             => 'elis_program',
                      'external_tokens'              => 'moodle',
                      'external_services_users'      => 'moodle');
     }

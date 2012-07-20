@@ -211,9 +211,10 @@ class elis_userset_import_test extends elis_database_test {
     }
 
     /**
-     * Validate that a userset can be deleted with a minimal set of fields specified
+     * @dataProvider field_provider
+     * Validate that a userset can be ]deleted with a minimal set of fields specified
      */
-    public function test_delete_elis_userset_import_with_minimal_fields() {
+    public function test_delete_elis_userset_import_with_minimal_fields($data, $expected) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
@@ -223,12 +224,20 @@ class elis_userset_import_test extends elis_database_test {
         $userset->save();
 
         //run the import
-        $data = array('action' => 'delete');
+        $data = array('action' => 'delete', 'recursive' => $data);
         $this->run_core_userset_import($data, true);
 
         //validation
         $count = $DB->count_records(userset::TABLE);
         $this->assertEquals(0, $count);
+    }
+
+    // Data provider for mapping yes to 1 and no to 0
+    function field_provider() {
+        return array(array('0', '0'),
+                     array('1', '1'),
+                     array('yes', '1'),
+                     array('no', '0'));
     }
 
     /**
