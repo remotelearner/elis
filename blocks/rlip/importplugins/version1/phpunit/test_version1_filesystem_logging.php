@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 /**
@@ -263,6 +263,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'elis_scheduled_tasks' => 'elis_core',
                      RLIP_SCHEDULE_TABLE => 'block_rlip',
                      RLIP_LOG_TABLE => 'block_rlip',
+                     'tag_instance' => 'moodle',
                      'user' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle',
@@ -3246,7 +3247,7 @@ class version1FilesystemLoggingTest extends rlip_test {
 
     /**
      * Validate that approval messages still work when roles do not have the
-     * standard Moodle "view course" capability 
+     * standard Moodle "view course" capability
      */
     public function testVersion1ImportLogsSuccessWhenMissingCourseViewCapability() {
         //set up dependencies
@@ -6040,7 +6041,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $testdir = $CFG->dataroot . $file_path;
         @mkdir($testdir, 0777, true);
         @copy(dirname(__FILE__) ."/{$file_name}", $testdir . $file_name);
-        $provider = new rlip_importprovider_userfile_delay($CFG->dataroot . $file_path . $file_name);
+        $provider = new rlip_importprovider_file_delay($CFG->dataroot . $file_path . $file_name, 'user');
 
         //run the import
         $manual = true;
@@ -6111,7 +6112,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                       array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'));
 
         //import provider that creates an instance of a file plugin that delays two seconds
-        //between reading the third and fourth entry 
+        //between reading the third and fourth entry
         $provider = new rlip_importprovider_delay_after_three_users($data);
         $manual = true;
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);

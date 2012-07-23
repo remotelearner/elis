@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 /**
@@ -734,7 +734,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
         $testdir = $CFG->dataroot . $file_path;
         @mkdir($testdir, 0777, true);
         @copy(dirname(__FILE__) ."/{$file_name}", $testdir . $file_name);
-        $provider = new rlip_importprovider_userfile_delay($CFG->dataroot . $file_path . $file_name);
+        $provider = new rlip_importprovider_file_delay($CFG->dataroot . $file_path . $file_name, 'user');
 
         //run the import
         $manual = true;
