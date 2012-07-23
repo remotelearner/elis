@@ -341,9 +341,8 @@ class elis_entity_import_test extends elis_database_test {
                              // TBD: description is DB text field!
                              //'description' => 'Program Description',
                              'reqcredits'  => '7.5',
-                             //TBD:  timetocomplete & frequency require mapping
-                             //'timetocomplete'=> '???',
-                             //'frequency'   => '???',
+                             'timetocomplete'=> '1h,2d,3w,4m,5y',
+                             'frequency'   => '6h,7d,8w,9m,1y',
                              'priority'    => '2'
                          ),
                          $NO_TEST_SETUP,
@@ -796,6 +795,8 @@ class elis_entity_import_test extends elis_database_test {
         $file = get_plugin_directory('rlipimport', 'version1elis')
                 .'/version1elis.class.php';
         require_once($file);
+
+        set_config('enable_curriculum_expiration', true, 'elis_program');
 
         $import_data = array(
                            'action'  => $action,
