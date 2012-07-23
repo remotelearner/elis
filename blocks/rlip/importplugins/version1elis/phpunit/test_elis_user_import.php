@@ -399,12 +399,55 @@ class elis_user_import_test extends elis_database_test {
     }
 
     /**
+     * Field mapping function to convert IP date columns to timestamp DB field
+     *
+     * @param array  $input    The input IP data fields
+     * @param string $fieldkey The array key to check for date strings
+     */
+    public function map_date_field(&$input, $fieldkey) {
+        if (isset($input[$fieldkey])) {
+            $input[$fieldkey] = strtotime($input[$fieldkey] .' '. usertimezone());
+        }
+    }
+
+    /**
      * Class mapping function to convert IP column to Moodle user DB field
      *
      * @param mixed     $input             The input IP data fields
      * @return array    The mapped/translated data ready for DB
      */
     public function map_moodle_user($input) {
+        if (isset($input['mi'])) {
+            unset($input['mi']);
+        }
+        if (isset($input['email2'])) {
+            unset($input['email2']);
+        }
+        if (isset($input['address2'])) {
+            unset($input['address2']);
+        }
+        if (isset($input['fax'])) {
+            unset($input['fax']);
+        }
+        if (isset($input['birthdate'])) {
+            unset($input['birthdate']);
+        }
+        if (isset($input['gender'])) {
+            unset($input['gender']);
+        }
+        if (isset($input['language'])) {
+            $input['lang'] = $input['language'];
+            unset($input['language']);
+        }
+        if (isset($input['transfercredits'])) {
+            unset($input['transfercredits']);
+        }
+        if (isset($input['comments'])) {
+            unset($input['comments']);
+        }
+        if (isset($input['notes'])) {
+            unset($input['notes']);
+        }
         if (isset($input['inactive'])) {
             unset($input['inactive']);
         }
@@ -418,6 +461,7 @@ class elis_user_import_test extends elis_database_test {
      * @return array The mapped/translated data ready for DB
      */
     public function map_elis_user($input) {
+        $this->map_date_field($input, 'birthdate');
         $this->map_bool_field($input, 'inactive');
         return $input;
     }

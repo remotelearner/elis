@@ -559,16 +559,15 @@ class elis_entity_import_test extends elis_database_test {
     }
 
     /**
-     * Track mapping function to convert IP column to DB field
+     * Field mapping function to convert IP date columns to timestamp DB field
      *
-     * @param mixed $input  The input IP data fields
-     * @return array The mapped/translated data ready for DB
+     * @param array  $input    The input IP data fields
+     * @param string $fieldkey The array key to check for date strings
      */
-    public function map_track($input) {
-        if (isset($input['assignment'])) {
-            unset($input['assignment']);
+    public function map_date_field(&$input, $fieldkey) {
+        if (isset($input[$fieldkey])) {
+            $input[$fieldkey] = strtotime($input[$fieldkey] .' '. usertimezone());
         }
-        return $input;
     }
 
     /**
@@ -578,9 +577,77 @@ class elis_entity_import_test extends elis_database_test {
      * @return array The mapped/translated data ready for DB
      */
     public function map_class($input) {
+        global $DB;
         if (isset($input['assignment'])) {
+            $input['courseid'] = $DB->get_field('crlm_course', 'id',
+                                     array('idnumber' => $input['assignment']));
             unset($input['assignment']);
         }
+        $this->map_date_field($input, 'startdate');
+        $this->map_date_field($input, 'enddate');
+        $this->map_bool_field($input, 'autoenrol');
+        $this->map_bool_field($input, 'enrol_from_waitlist');
+        if (isset($input['track'])) {
+            //TBD: test valid
+            unset($input['track']);
+        }
+        return $input;
+    }
+
+    /**
+     * Cluster mapping function to convert IP column to DB field
+     *
+     * @param mixed $input  The input IP data fields
+     * @return array The mapped/translated data ready for DB
+     */
+    public function map_cluster($input) {
+        $this->map_bool_field($input, 'recursive');
+        return $input;
+    }
+
+    /**
+     * Ccourse mapping function to convert IP column to DB field
+     *
+     * @param mixed $input  The input IP data fields
+     * @return array The mapped/translated data ready for DB
+     */
+    public function map_course($input) {
+        global $DB;
+        if (isset($input['assignment'])) {
+            //? = $DB->get_field('crlm_curriculum', 'id',
+            //                   array('idnumber' => $input['assignment']));
+            unset($input['assignment']);
+        }
+        return $input;
+    }
+
+    /**
+     * Curriculum mapping function to convert IP column to DB field
+     *
+     * @param mixed $input  The input IP data fields
+     * @return array The mapped/translated data ready for DB
+     */
+    public function map_curriculum($input) {
+        // TBD: timetocomplete, frequency ???
+        return $input;
+    }
+
+    /**
+     * Track mapping function to convert IP column to DB field
+     *
+     * @param mixed $input  The input IP data fields
+     * @return array The mapped/translated data ready for DB
+     */
+    public function map_track($input) {
+        global $DB;
+        if (isset($input['assignment'])) {
+            $input['curid'] = $DB->get_field('crlm_curriculum', 'id',
+                                     array('idnumber' => $input['assignment']));
+            unset($input['assignment']);
+        }
+        $this->map_bool_field($input, 'autocreate');
+        $this->map_date_field($input, 'startdate');
+        $this->map_date_field($input, 'enddate');
         return $input;
     }
 
