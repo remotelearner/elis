@@ -101,7 +101,7 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
         $fileplugin = new rlip_fileplugin_csv_delay($file);
 
         //obtain plugin
-        $manual = true;
+        $manual = false;
         $plugin = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin, $manual);
         ob_start();
         $plugin->run(0, 0, 1);
@@ -121,7 +121,7 @@ class version1ExportFilesystemLoggingTest extends rlip_test {
             $starttime = $record->starttime;
             break;
         }
-        $testfilename = $filepath .'/' .$plugin_type .'_version1_manual_'.
+        $testfilename = $filepath .'/' .$plugin_type .'_version1_scheduled_'.
                         userdate($starttime, $format) .'.log';
         $filename = self::get_current_logfile($testfilename);
         $this->assertTrue(file_exists($filename));
