@@ -251,6 +251,26 @@ class elis_entity_import_test extends elis_database_test {
                          $NO_TEST_SETUP,
                          ELIS_ENTITY_EXISTS
                       );
+        // course create - all fields - ok!
+        $testdata[] = array('create', 'course',
+                         array(
+                             'idnumber'    => 'courseidnumber',
+                             'name'        => 'coursename',
+                             'code'        => 'coursecode',
+                             //TBD: syllabus in text DB field!!!
+                             //'syllabus'    => 'course syllabus',
+                             'lengthdescription'=> 'Length Description',
+                             'length'      => '100',
+                             'credits'     => '7.5',
+                             'completion_grade'=> '65',
+                             'cost'        => '$355.80',
+                             'version'     => '1.01',
+                             'assignment'  => 'programidnumber'
+                             // 'link' => 'TBD Moodle Course shortname'
+                         ),
+                         array(TEST_SETUP_CURRICULUM),
+                         ELIS_ENTITY_EXISTS
+                      );
 
         // course update - no id
         $testdata[] = array('update', 'course',
@@ -309,6 +329,22 @@ class elis_entity_import_test extends elis_database_test {
                          array(
                              'idnumber'    => 'programidnumber',
                              'name'        => 'programname',
+                         ),
+                         $NO_TEST_SETUP,
+                         ELIS_ENTITY_EXISTS
+                      );
+        // curriculum create - all fields - ok!
+        $testdata[] = array('create', 'curriculum',
+                         array(
+                             'idnumber'    => 'programidnumber',
+                             'name'        => 'programname',
+                             // TBD: description is DB text field!
+                             //'description' => 'Program Description',
+                             'reqcredits'  => '7.5',
+                             //TBD:  timetocomplete & frequency require mapping
+                             //'timetocomplete'=> '???',
+                             //'frequency'   => '???',
+                             'priority'    => '2'
                          ),
                          $NO_TEST_SETUP,
                          ELIS_ENTITY_EXISTS
@@ -387,6 +423,22 @@ class elis_entity_import_test extends elis_database_test {
                          array(TEST_SETUP_CURRICULUM),
                          ELIS_ENTITY_EXISTS
                       );
+        // track create - all-fields ok!
+        $testdata[] = array('create', 'track',
+                         array(
+                             'assignment'  => 'programidnumber',
+                             'idnumber'    => 'trackidnumber',
+                             'name'        => 'trackname',
+                             //TBD: description is DB text field
+                             //'description' => 'Track Description',
+                             'startdate'   => 'Jan/13/2012',
+                             'enddate'     => 'Jun/13/2012',
+                             'autocreate'  => 'yes',
+                             'assignment'  => 'programidnumber'
+                         ),
+                         array(TEST_SETUP_CURRICULUM),
+                         ELIS_ENTITY_EXISTS
+                      );
 
         // track update - no id
         $testdata[] = array('update', 'track',
@@ -449,6 +501,24 @@ class elis_entity_import_test extends elis_database_test {
                          array(TEST_SETUP_COURSE),
                          ELIS_ENTITY_EXISTS
                       );
+        // class create - all fields - ok!
+        $testdata[] = array('create', 'class',
+                         array(
+                             'assignment'  => 'courseidnumber',
+                             'idnumber'    => 'classidnumber',
+                             'startdate'   => 'Jan/13/2012',
+                             'enddate'     => 'Jun/13/2012',
+                             'starttimehour'=> '13',
+                             'starttimeminute'=> '15',
+                             'endtimehour'=> '14',
+                             'endtimeminute'=> '25',
+                             'maxstudents' => '35',
+                             'enrol_from_waitlist'=> 'yes',
+                             'track'       => 'trackidnumber',
+                         ),
+                         array(TEST_SETUP_CURRICULUM, TEST_SETUP_COURSE, TEST_SETUP_TRACK),
+                         ELIS_ENTITY_EXISTS
+                      );
 
         // class update - no idnumber
         $testdata[] = array('update', 'class',
@@ -502,6 +572,16 @@ class elis_entity_import_test extends elis_database_test {
                          $NO_TEST_SETUP,
                          ELIS_ENTITY_EXISTS
                       );
+        // cluster create - all fields - ok!
+        $testdata[] = array('create', 'cluster',
+                         array(
+                             'name'        => 'usersetCname',
+                             'display'     => 'Userset C Description',
+                             'parent'      => 'usersetname',
+                         ),
+                         array(TEST_SETUP_CLUSTER),
+                         ELIS_ENTITY_EXISTS
+                      );
 
         // cluster update - no name
         $testdata[] = array('update', 'cluster',
@@ -534,6 +614,7 @@ class elis_entity_import_test extends elis_database_test {
         $testdata[] = array('delete', 'cluster',
                          array(
                              'name'        => 'usersetname',
+                             'recursive'   => 'yes'
                          ),
                          array(TEST_SETUP_CLUSTER),
                          ELIS_ENTITY_DOESNOT_EXIST
@@ -559,28 +640,141 @@ class elis_entity_import_test extends elis_database_test {
     }
 
     /**
-     * Track mapping function to convert IP column to DB field
+     * Field mapping function to convert IP date columns to timestamp DB field
      *
-     * @param mixed $input  The input IP data fields
+     * @param array  $input    The input IP data fields
+     * @param string $fieldkey The array key to check for date strings
+     */
+    public function map_date_field(&$input, $fieldkey) {
+        if (isset($input[$fieldkey])) {
+           $datestr = str_split($input[$fieldkey]);
+            // Convert: MMM/DD/YYYY into MMM.DD,YYYY
+            $replaceslash = '.';
+            for ($i = 0; $i < count($datestr); ++$i) {
+                if ($datestr[$i] == '/') {
+                    $datestr[$i] = $replaceslash;
+                    $replaceslash = ',';
+                }
+            }
+            $datestr = implode('', $datestr);
+            $tzstr = usertimezone();
+            if (strpos($tzstr, 'UTC') === 0) {
+                $datestr .= ' '. $tzstr;
+            }
+            $input[$fieldkey] = strtotime($datestr); //TBD: timestamp
+        }
+    }
+
+    /**
+     * Class mapping function to convert IP column to DB field
+     *
+     * @param mixed $input       The input IP data fields
+     * @param bool  $shouldexist Flag indicating if ELIS entity should exist
      * @return array The mapped/translated data ready for DB
      */
-    public function map_track($input) {
-        if (isset($input['assignment'])) {
+    public function map_class($input, $shouldexist) {
+        global $DB;
+        if (array_key_exists('assignment', $input)) {
+            $input['courseid'] = $DB->get_field('crlm_course', 'id',
+                                     array('idnumber' => $input['assignment']));
+            unset($input['assignment']);
+        }
+        $this->map_date_field($input, 'startdate');
+        $this->map_date_field($input, 'enddate');
+        if (array_key_exists('track', $input)) {
+            if ($shouldexist) {
+                $this->assertFalse(!$DB->get_record('crlm_track', array('idnumber' => $input['track'])));
+            }
+            unset($input['track']);
+        }
+        $this->map_bool_field($input, 'autoenrol');
+        if (array_key_exists('autoenrol', $input)) {
+            //TBD: verify autoenrol ok???
+            unset($input['autoenrol']);
+        }
+        $this->map_bool_field($input, 'enrol_from_waitlist');
+        if (array_key_exists('track', $input)) {
+            //TBD: test valid
+            unset($input['track']);
+        }
+        return $input;
+    }
+
+    /**
+     * Cluster mapping function to convert IP column to DB field
+     *
+     * @param mixed $input       The input IP data fields
+     * @param bool  $shouldexist Flag indicating if ELIS entity should exist
+     * @return array The mapped/translated data ready for DB
+     */
+    public function map_cluster($input, $shouldexist) {
+        global $DB;
+        if (array_key_exists('parent', $input)) {
+            if ($input['parent'] == 'top') {
+                unset($input['parent']);
+            } else {
+                $input['parent'] = $DB->get_field('crlm_cluster', 'id',
+                                           array('name' => $input['parent']));
+            }
+        }
+        $this->map_bool_field($input, 'recursive');
+        if (array_key_exists('recursive', $input)) {
+            // TBD
+            unset($input['recursive']);
+        }
+        return $input;
+    }
+
+    /**
+     * Course mapping function to convert IP column to DB field
+     *
+     * @param mixed $input       The input IP data fields
+     * @param bool  $shouldexist Flag indicating if ELIS entity should exist
+     * @return array The mapped/translated data ready for DB
+     */
+    public function map_course($input, $shouldexist) {
+        global $DB;
+        if (array_key_exists('assignment', $input)) {
+            //? = $DB->get_field('crlm_curriculum', 'id',
+            //                   array('idnumber' => $input['assignment']));
             unset($input['assignment']);
         }
         return $input;
     }
 
     /**
-     * Class mapping function to convert IP column to DB field
+     * Curriculum mapping function to convert IP column to DB field
      *
-     * @param mixed $input  The input IP data fields
+     * @param mixed $input       The input IP data fields
+     * @param bool  $shouldexist Flag indicating if ELIS entity should exist
      * @return array The mapped/translated data ready for DB
      */
-    public function map_class($input) {
-        if (isset($input['assignment'])) {
+    public function map_curriculum($input, $shouldexist) {
+        // TBD: timetocomplete, frequency ???
+        return $input;
+    }
+
+    /**
+     * Track mapping function to convert IP column to DB field
+     *
+     * @param mixed $input       The input IP data fields
+     * @param bool  $shouldexist Flag indicating if ELIS entity should exist
+     * @return array The mapped/translated data ready for DB
+     */
+    public function map_track($input, $shouldexist) {
+        global $DB;
+        if (array_key_exists('assignment', $input)) {
+            $input['curid'] = $DB->get_field('crlm_curriculum', 'id',
+                                     array('idnumber' => $input['assignment']));
             unset($input['assignment']);
         }
+        $this->map_bool_field($input, 'autocreate');
+        if (array_key_exists('autocreate', $input)) {
+            //TBD: verify autocreate ok???
+            unset($input['autocreate']);
+        }
+        $this->map_date_field($input, 'startdate');
+        $this->map_date_field($input, 'enddate');
         return $input;
     }
 
@@ -628,7 +822,7 @@ class elis_entity_import_test extends elis_database_test {
         // Call any mapping functions to transform IP column to DB field
         $mapfcn = 'map_'. $context;
         if (method_exists($this, $mapfcn)) {
-            $entity_data = $this->$mapfcn($entity_data);
+            $entity_data = $this->$mapfcn($entity_data, $entity_exists);
         }
 
         ob_start();

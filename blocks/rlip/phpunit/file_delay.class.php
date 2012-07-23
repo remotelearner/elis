@@ -27,16 +27,18 @@
 /**
  * Import provider that constructs a file plugin which delays on reading
  */
-class rlip_importprovider_userfile_delay extends rlip_importprovider {
+class rlip_importprovider_file_delay extends rlip_importprovider {
     var $filename;
+    var $entity;
 
     /**
      * Constructor
      *
      * @param string $filename The filename to usefor import
      */
-    function __construct($filename) {
+    function __construct($filename, $entity) {
         $this->filename = $filename;
+        $this->entity = $entity;
     }
 
     /**
@@ -47,7 +49,7 @@ class rlip_importprovider_userfile_delay extends rlip_importprovider {
      * @return object The file plugin instance, or false if not applicable
      */
     function get_import_file($entity) {
-        if ($entity != 'user') {
+        if ($entity != $this->entity) {
             return false;
         }
 

@@ -38,7 +38,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 //TODO: move to a more general location
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -64,7 +64,7 @@ class rlip_importprovider_mockuser extends rlip_importprovider_mock {
  * Class that provides a delay for an import
  */
 class rlip_importprovider_manual_delay
-      extends rlip_importprovider_userfile_delay {
+      extends rlip_importprovider_file_delay {
 
     /**
      * Provides the object used to log information to the database to the
@@ -80,6 +80,7 @@ class rlip_importprovider_manual_delay
         return new rlip_dblogger_import(true);
     }
 }
+
 /**
  * Class for validating database logging functionality for the Version 1 ELIS
  * import
@@ -622,10 +623,10 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
     public function testMaxRuntimeExceededLogsCorrectEndTime() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 
         $import_file = $CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/userfiledelay.csv';
-        $provider = new rlip_importprovider_userfile_delay($import_file);
+        $provider = new rlip_importprovider_file_delay($import_file, 'user');
 
         //run the import
         $mintime = time();
@@ -688,31 +689,55 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         $this->assertEquals(true, $exists);
     }
 
+    /*
+     * Serve filenames for the different entities
+     * @return array of filenames
+     */
+    public function fileProvider() {
+        return array(array('userfile2.csv', 'user'),
+                     array('coursefile2.csv', 'course'),
+                     array('enrolmentfile2.csv', 'enrolment'));
+    }
+
     /**
      * Validate that MANUAL import obeys maxruntime
+     * @dataProvider fileProvider
      */
-    public function testManualImportObeysMaxRunTime() {
+    public function testManualImportObeysMaxRunTime($filename, $entity) {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        require_once($file);
 
         //set the log file name to a fixed value
         $filepath = $CFG->dataroot;
-        //set up a "user" import provider, using a single fixed file
+
         // MUST copy file to temp area 'cause it'll be deleted after import
-        $testfile = dirname(__FILE__) .'/userfile2.csv';
+        $testfile = dirname(__FILE__) .'/'.$filename;
         $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
-        $file = $tempdir .'userfile2.csv';
+        $file = $tempdir .$filename;
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
-        $provider = new rlip_importprovider_manual_delay($file);
 
+        $provider = new rlip_importprovider_manual_delay($file, $entity);
         //run the import
         $importplugin = new rlip_importplugin_version1elis($provider, true);
         ob_start();
         $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
-        $ui = ob_get_contents();
         ob_end_clean();
         $this->assertNotNull($result);
-        $expected_ui = "/.*generalbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
+        //get most recent record
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
+        foreach ($records as $record) {
+            $ui = $record->statusmessage;
+            break;
+        }
+        $expected_ui = "/.*Failed importing all lines from import file.*due to time limit exceeded.*/";
+        $this->assertRegExp($expected_ui, $ui);
+
+        // test that the filename is also included in the error message
+        // the mock provider returns 'filename' as the filename
+        $expected_ui = "/.*filename*/";
         $this->assertRegExp($expected_ui, $ui);
 
         // clean-up data file & tempdir
