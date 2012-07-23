@@ -89,6 +89,6 @@ class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
      */
     function get_filename($withpath = false) {
         //todo: implement?
-        return '';
+        return 'filename';
     }
 }
