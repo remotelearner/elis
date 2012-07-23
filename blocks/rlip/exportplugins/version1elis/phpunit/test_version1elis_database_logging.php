@@ -114,8 +114,7 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
 }
 
 /**
- * Class for testing export database logging for the "version 1" plugin
- * @author brendan
+ * Class for testing export database logging for the "Version 1 ELIS" plugin
  */
 class version1elisDatabaseLoggingTest extends rlip_test {
     /**
@@ -385,6 +384,84 @@ class version1elisDatabaseLoggingTest extends rlip_test {
                         'statusmessage' => 'Export file rliptestexport.csv successfully created.',
                         'dbops' => -1,
                         'unmetdependency' => 0);
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
+        $this->assertTrue($exists);
+    }
+
+    /**
+     * Data provider used to specify whether a run is scheduled or manual
+     *
+     * @return array An array containing a false value representing a scheduled run,
+     *               and a true representing a manual run 
+     */
+    public function exportTypeProvider() {
+        return array(
+            array(false),
+            array(true)
+        );
+    }
+
+    /**
+     * Validate that an appropriate error is logged when maximum runtime is
+     * exceeded during a manual or scheduled export
+     *
+     * @param boolean $manual True if the run should be manual, or false for
+     *                        scheduled
+     * @dataProvider exportTypeProvider
+     */
+    public function testDBloggingLogsRuntimeExceeded($manual) {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/phpunit/rlip_fileplugin_export.class.php');
+
+        //make sure the export is insensitive to time values
+        set_config('nonincremental', 1, 'rlipexport_version1elis');
+        //set up data for one course and one enroled user
+        $this->load_csv_data();
+
+        $fileplugin = new rlip_fileplugin_export();
+        $plugin = rlip_dataplugin_factory::factory('rlipexport_version1elis', NULL, $fileplugin, $manual);
+        //lower bound on starttime
+        $starttime = time();
+        //suppress output in the "manual" case
+        ob_start();
+        //run the export (note that we don't particularly care about scheduled start time here)
+        $plugin->run(0, 0, -1);
+        ob_end_clean();
+        //upper bound on endtime
+        $endtime = time();
+
+        //validation
+        $select = "export = :export AND
+                   plugin = :plugin AND
+                   userid = :userid AND
+                   targetstarttime = :targetstarttime AND
+                   starttime >= :starttime AND
+                   endtime <= :endtime AND
+                   filesuccesses = :filesuccesses AND
+                   filefailures = :filefailures AND
+                   storedsuccesses = :storedsuccesses AND
+                   storedfailures = :storedfailures AND
+                   {$DB->sql_compare_text('statusmessage')} = :statusmessage AND
+                   dbops = :dbops AND
+                   unmetdependency = :unmetdependency";
+        $params = array(
+            'export'          => 1,
+            'plugin'          => 'rlipexport_version1elis',
+            'userid'          => $USER->id,
+            'targetstarttime' => 0,
+            'starttime'       => $starttime,
+            'endtime'         => $endtime,
+            'filesuccesses'   => 0,
+            'filefailures'    => 0,
+            'storedsuccesses' => 0,
+            'storedfailures'  => 0,
+            'statusmessage'   => 'Export file bogus not created due to time limit exceeded!',
+            'dbops'           => -1,
+            'unmetdependency' => 0
+        );
+
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }

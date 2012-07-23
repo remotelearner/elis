@@ -105,7 +105,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 
         //set up the file-system logger, if exists
         $filepath = get_config($this->plugin, 'logfilelocation');
-        $filename = rlip_log_file_name('export', $this->plugin, $filepath, $manual, $this->dblogger->starttime);
+        $filename = rlip_log_file_name('export', $this->plugin, $filepath, '', $manual, $this->dblogger->starttime);
         if (!empty($filename)) {
             $this->dblogger->set_log_path($filename);
             $fileplugin = rlip_fileplugin_factory::factory($filename, NULL, true, $manual);
@@ -209,7 +209,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
                 // time limit exceeded - abort with log message
                 $this->dblogger->signal_maxruntime_exceeded();
                 if ($this->fslogger) {
-                    $msg = get_string($this->fileplugin->sendtobrowser
+                    $msg = get_string($this->manual
                                       ? 'manualexportexceedstimelimit'
                                       : 'exportexceedstimelimit', 'block_rlip');
                     $this->fslogger->log_failure($msg);
