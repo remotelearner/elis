@@ -383,6 +383,26 @@ class elis_user_import_test extends elis_database_test {
     }
 
     /**
+     * Class mapping function to convert IP column to Moodle user DB field
+     *
+     * @param mixed     $input             The input IP data fields
+     * @return array    The mapped/translated data ready for DB
+     */
+    public function map_moodle_user($input) {
+        return $input;
+    }
+
+    /**
+     * Class mapping function to convert IP column to ELIS crlm_user DB field
+     *
+     * @param mixed $input  The input IP data fields
+     * @return array The mapped/translated data ready for DB
+     */
+    public function map_elis_user($input) {
+        return $input;
+    }
+
+    /**
      * User import test cases
      *
      * @uses $DB
@@ -429,14 +449,16 @@ class elis_user_import_test extends elis_database_test {
         $mdl_user = ob_get_contents();
         ob_end_clean();
 
-        $this->assertEquals($elis_exists, $DB->record_exists('crlm_user', $user_data), "ELIS user assertion: user_data; crlm_user  = {$tmp} ; {$crlm_user}");
+        $elis_user = $this->map_elis_user($user_data);
+        $this->assertEquals($elis_exists, $DB->record_exists('crlm_user', $elis_user), "ELIS user assertion: user_data; crlm_user  = {$tmp} ; {$crlm_user}");
         if ($mdl_exists === true) {
             $user_data['deleted'] = 0;
         } else if ($mdl_exists === MDL_USER_DELETED) {
             $mdl_exists = true;
             $user_data = array('id' => $mdl_userid, 'deleted' => 1);
         }
-        $this->assertEquals($mdl_exists, $DB->record_exists('user', $user_data),
+        $mdl_user = $this->map_moodle_user($user_data);
+        $this->assertEquals($mdl_exists, $DB->record_exists('user', $mdl_user),
                             "Moodle user assertion: user_data; mdl_user = {$tmp}; {$mdl_user}");
     }
 
@@ -466,6 +488,5 @@ class elis_user_import_test extends elis_database_test {
 
         $this->assertEquals(true, $DB->record_exists(user::TABLE, array('idnumber' => $record['idnumber'], 'inactive' => $expected)));
     }
-
 }
 
