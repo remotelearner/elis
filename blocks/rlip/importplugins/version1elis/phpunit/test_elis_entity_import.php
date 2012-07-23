@@ -257,16 +257,15 @@ class elis_entity_import_test extends elis_database_test {
                              'idnumber'    => 'courseidnumber',
                              'name'        => 'coursename',
                              'code'        => 'coursecode',
-                             //TBD: syllabus in text DB field!!!
-                             //'syllabus'    => 'course syllabus',
+                             'syllabus'    => 'course syllabus',
                              'lengthdescription'=> 'Length Description',
                              'length'      => '100',
                              'credits'     => '7.5',
                              'completion_grade'=> '65',
                              'cost'        => '$355.80',
                              'version'     => '1.01',
-                             'assignment'  => 'programidnumber'
-                             // 'link' => 'TBD Moodle Course shortname'
+                             'assignment'  => 'programidnumber',
+                             //'link'        => 'Moodle Course shortname'
                          ),
                          array(TEST_SETUP_CURRICULUM),
                          ELIS_ENTITY_EXISTS
@@ -338,8 +337,7 @@ class elis_entity_import_test extends elis_database_test {
                          array(
                              'idnumber'    => 'programidnumber',
                              'name'        => 'programname',
-                             // TBD: description is DB text field!
-                             //'description' => 'Program Description',
+                             'description' => 'Program Description',
                              'reqcredits'  => '7.5',
                              'timetocomplete'=> '1h,2d,3w,4m,5y',
                              'frequency'   => '6h,7d,8w,9m,1y',
@@ -428,8 +426,7 @@ class elis_entity_import_test extends elis_database_test {
                              'assignment'  => 'programidnumber',
                              'idnumber'    => 'trackidnumber',
                              'name'        => 'trackname',
-                             //TBD: description is DB text field
-                             //'description' => 'Track Description',
+                             'description' => 'Track Description',
                              'startdate'   => 'Jan/13/2012',
                              'enddate'     => 'Jun/13/2012',
                              'autocreate'  => 'yes',
@@ -734,9 +731,24 @@ class elis_entity_import_test extends elis_database_test {
     public function map_course($input, $shouldexist) {
         global $DB;
         if (array_key_exists('assignment', $input)) {
-            //? = $DB->get_field('crlm_curriculum', 'id',
-            //                   array('idnumber' => $input['assignment']));
+            $this->assertEquals($shouldexist,
+                       $DB->record_exists('crlm_curriculum_course', array()));
             unset($input['assignment']);
+        }
+        if (array_key_exists('syllabus', $input)) {
+            $where = $DB->sql_compare_text('syllabus') .' = ?';
+            $this->assertEquals($shouldexist,
+                    $DB->record_exists_select('crlm_course', $where,
+                            array(substr($input['syllabus'], 0, 32))));
+            unset($input['syllabus']);
+        }
+        if (array_key_exists('link', $input)) {
+            $mdl_courseid = $DB->get_field('course', 'id',
+                                         array('shortname' => $input['link']));
+            $this->assertEquals($shouldexist && $mdl_courseid !== false,
+                    $DB->record_exists('crlm_coursetemplate',
+                                       array('location' => $mdl_courseid)));
+            unset($input['link']);
         }
         return $input;
     }
@@ -749,7 +761,14 @@ class elis_entity_import_test extends elis_database_test {
      * @return array The mapped/translated data ready for DB
      */
     public function map_curriculum($input, $shouldexist) {
-        // TBD: timetocomplete, frequency ???
+        global $DB;
+        if (array_key_exists('description', $input)) {
+            $where = $DB->sql_compare_text('description') .' = ?';
+            $this->assertEquals($shouldexist,
+                    $DB->record_exists_select('crlm_curriculum', $where,
+                            array(substr($input['description'], 0, 32))));
+            unset($input['description']);
+        }
         return $input;
     }
 
@@ -774,6 +793,13 @@ class elis_entity_import_test extends elis_database_test {
         }
         $this->map_date_field($input, 'startdate');
         $this->map_date_field($input, 'enddate');
+        if (array_key_exists('description', $input)) {
+            $where = $DB->sql_compare_text('description') .' = ?';
+            $this->assertEquals($shouldexist,
+                    $DB->record_exists_select('crlm_track', $where,
+                            array(substr($input['description'], 0, 32))));
+            unset($input['description']);
+        }
         return $input;
     }
 
@@ -797,6 +823,15 @@ class elis_entity_import_test extends elis_database_test {
         require_once($file);
 
         set_config('enable_curriculum_expiration', true, 'elis_program');
+      /* *** TBD ***
+        if ($context == 'course') {
+            // create Moodle course with shortname='Moodle Course shortname'
+            $DB->insert_record('course_categories',
+                               array('name' => 'Moodle Course Category 1'));
+            create_course((object)array('idnumber'  => 'Moodle Course ID',
+                                        'shortname' => 'Moodle Course shortname',                                       'category'  => 1));
+        }
+      ****** */
 
         $import_data = array(
                            'action'  => $action,
