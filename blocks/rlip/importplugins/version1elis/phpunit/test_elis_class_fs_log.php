@@ -728,6 +728,89 @@ class version1ELISClassFSLogTest extends rlip_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
+    /* Test that the correct error messages are shown for the provided fields on class create */
+    public function testClassInvalidIdentifyingFieldsOnCreate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'create'
+        );
+        $expected_error = "[class.csv line 1] Import file class.csv was not processed because it is missing the following required column: context. Please fix the import file and re-upload it.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => ''
+        );
+        $expected_error = "[class.csv line 2] Entity could not be created.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => '',
+            'context' => ''
+        );
+        $expected_error = "[class.csv line 2] Entity could not be processed.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'class',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be created. Required field assignment is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'class',
+            'assignment' => 'testassignment'
+        );
+        $expected_error = "[class.csv line 2] Class instance could not be created. Required field idnumber is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on class update */
+    public function testClassInvalidIdentifyingFieldsOnUpdate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'class',
+            'idnumber' => ''
+        );
+        $expected_error = "[class.csv line 2] Class instance could not be updated. Required field idnumber is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'class',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be updated. idnumber value of \"testidnumber\" does not refer to a valid class instance.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on class delete */
+    public function testClassInvalidIdentifyingFieldsOnDelete() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'delete',
+            'context' => 'class',
+            'idnumber' => ''
+        );
+        $expected_error = "[class.csv line 2] Class instance could not be deleted. Required field idnumber is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'delete',
+            'context' => 'class',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be deleted. idnumber value of \"testidnumber\" does not refer to a valid class instance.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
     /**
      * Validate that class deletion validation works
      */
