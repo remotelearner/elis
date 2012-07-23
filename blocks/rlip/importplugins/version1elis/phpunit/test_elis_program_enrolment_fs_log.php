@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
