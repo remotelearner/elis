@@ -358,6 +358,114 @@ class version1ELISTrackFSLogTest extends rlip_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
+    /* Test that the correct error messages are shown for the provided fields on track create */
+    public function testTrackInvalidIdentifyingFieldsOnCreate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'create'
+        );
+        $expected_error = "[track.csv line 1] Import file track.csv was not processed because it is missing the following required column: context. Please fix the import file and re-upload it.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => ''
+        );
+        $expected_error = "[track.csv line 2] Entity could not be created.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => '',
+            'context' => ''
+        );
+        $expected_error = "[track.csv line 2] Entity could not be processed.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => '',
+            'context' => 'track'
+        );
+        $expected_error = "[track.csv line 2] Track could not be processed. Required field action is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'track',
+            'idnumber' => '',
+        );
+        $expected_error = "[track.csv line 2] Track could not be created. Required fields assignment, idnumber, name are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'track',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required fields assignment, name are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'track',
+            'idnumber' => 'testidnumber',
+            'name' => 'testname'
+        );
+        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required field assignment is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'track',
+            'idnumber' => 'testidnumber',
+            'assignment' => 'testassignment'
+        );
+        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required field name is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on track update */
+    public function testTrackInvalidIdentifyingFieldsOnUpdate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'track',
+            'idnumber' => '',
+        );
+        $expected_error = "[track.csv line 2] Track could not be updated. Required field idnumber is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'track',
+            'idnumber' => 'testidnumber',
+        );
+        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be updated. idnumber value of \"testidnumber\" does not refer to a valid track.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on track delete */
+    public function testTrackInvalidIdentifyingFieldsOnDelete() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'delete',
+            'context' => 'track',
+            'idnumber' => '',
+        );
+        $expected_error = "[track.csv line 2] Track could not be deleted. Required field idnumber is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'delete',
+            'context' => 'track',
+            'idnumber' => 'testidnumber',
+        );
+        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be deleted. idnumber value of \"testidnumber\" does not refer to a valid track.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('crlm_track', dirname(__FILE__).'/tracktable.csv');

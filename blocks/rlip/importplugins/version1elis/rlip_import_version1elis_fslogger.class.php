@@ -184,11 +184,11 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             $msg = implode(' ', $lines).' '.$message;
         }
 
-        if ($type == "course") {
+        if (isset($record->context) && $record->context == "course") {
             $type = ucfirst($type);
             switch ($record->action) {
                 case "create":
-                    if (empty($record->context) || empty($record->idnumber) || empty($record->name)) {
+                    if (empty($record->context) || empty($record->idnumber)) {
                         $msg = "Course description could not be created. " . $message;
                     } else {
                         $msg =  "{$type} description with idnumber \"{$record->idnumber}\" could not be created. " . $message;
@@ -220,7 +220,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             switch ($record->action) {
                 case "create":
                     //make sure all required fields are specified
-                    if (empty($record->idnumber) || empty($record->username) || empty($record->email) || empty($record->firstname) || empty($record->lastname) || empty($record->country)) {
+                    if (empty($record->username) && empty($record->email) && empty($record->idnumber)) {
                         $msg = "User could not be created. " . $message;
                     } else {
                         $user_descriptor = rlip_importplugin_version1elis::get_user_descriptor($record);
@@ -252,12 +252,12 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             }
         }
 
-        if ($type == "track") {
+        if (isset($record->context) && $record->context == "track") {
             $type = ucfirst($type);
             switch ($record->action) {
                 case "create":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->assignment) || empty($record->idnumber) || empty($record->name)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Track could not be created. " . $message;
                     } else {
                         $msg =  "{$type} with idnumber \"{$record->idnumber}\" could not be created. " . $message;
@@ -265,7 +265,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                     break;
                 case "update":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Track could not be updated. " . $message;
                     } else {
                         $msg = "{$type} with idnumber \"{$record->idnumber}\" could not be updated. " . $message;
@@ -273,7 +273,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                     break;
                 case "delete":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Track could not be deleted. " . $message;
                     } else {
                         $msg = "{$type} with idnumber \"{$record->idnumber}\" could not be deleted. " . $message;
@@ -325,7 +325,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             switch ($record->action) {
                 case "create":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber) || empty($record->name)) {
+                    if (empty($record->context) || empty($record->idnumber)) {
                         $msg = "Program could not be created. " . $message;
                     } else {
                         $msg = "Program with idnumber \"{$record->idnumber}\" could not be created. " . $message;
@@ -354,12 +354,12 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             }
         }
 
-        if ($type == "class") {
+        if (isset($record->context) && $record->context == "class") {
             $type = ucfirst($type);
             switch ($record->action) {
                 case "create":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber) || empty($record->assignment)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Class instance could not be created. " . $message;
                     } else {
                         $msg = "Class instance with idnumber \"{$record->idnumber}\" could not be created. " . $message;
@@ -367,7 +367,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                     break;
                 case "update":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Class instance could not be updated. " . $message;
                     } else {
                         $msg = "Class instance with idnumber \"{$record->idnumber}\" could not be updated. " . $message;
@@ -375,7 +375,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                     break;
                 case "delete":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Class instance could not be deleted. " . $message;
                     } else {
                         $msg = "Class instance with idnumber \"{$record->idnumber}\" could not be deleted. " . $message;
