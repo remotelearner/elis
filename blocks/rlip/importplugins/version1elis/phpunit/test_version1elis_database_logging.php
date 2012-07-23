@@ -38,6 +38,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 //TODO: move to a more general location
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -59,6 +60,26 @@ class rlip_importprovider_mockuser extends rlip_importprovider_mock {
     }
 }
 
+/*
+ * Class that provides a delay for an import
+ */
+class rlip_importprovider_manual_delay
+      extends rlip_importprovider_userfile_delay {
+
+    /**
+     * Provides the object used to log information to the database to the
+     * import
+     *
+     * @return object the DB logger
+     */
+    function get_dblogger() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
+
+        //force MANUAL
+        return new rlip_dblogger_import(true);
+    }
+}
 /**
  * Class for validating database logging functionality for the Version 1 ELIS
  * import
@@ -665,5 +686,37 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
                    'Please fix the import file and re-upload it.';
         $exists = $this->log_with_message_exists($message);
         $this->assertEquals(true, $exists);
+    }
+
+    /**
+     * Validate that MANUAL import obeys maxruntime
+     */
+    public function testManualImportObeysMaxRunTime() {
+        global $CFG, $DB;
+
+        //set the log file name to a fixed value
+        $filepath = $CFG->dataroot;
+        //set up a "user" import provider, using a single fixed file
+        // MUST copy file to temp area 'cause it'll be deleted after import
+        $testfile = dirname(__FILE__) .'/userfile2.csv';
+        $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
+        $file = $tempdir .'userfile2.csv';
+        @mkdir($tempdir, 0777, true);
+        @copy($testfile, $file);
+        $provider = new rlip_importprovider_manual_delay($file);
+
+        //run the import
+        $importplugin = new rlip_importplugin_version1elis($provider, true);
+        ob_start();
+        $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
+        $ui = ob_get_contents();
+        ob_end_clean();
+        $this->assertNotNull($result);
+        $expected_ui = "/.*generalbox.*Failed importing all lines from import file.*due to time limit exceeded.*/";
+        $this->assertRegExp($expected_ui, $ui);
+
+        // clean-up data file & tempdir
+        @unlink($file);
+        @rmdir($tempdir);
     }
 }
