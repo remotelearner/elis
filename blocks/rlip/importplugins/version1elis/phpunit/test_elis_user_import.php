@@ -430,12 +430,12 @@ class elis_user_import_test extends elis_database_test {
     }
 
     /**
-     * Field mapping function to convert IP date columns to timestamp DB field
+     * Field mapping function to convert IP birthdate column to birthdate DB field
      *
      * @param array  $input    The input IP data fields
      * @param string $fieldkey The array key to check for date strings
      */
-    public function map_date_field(&$input, $fieldkey) {
+    public function map_birthdate_field(&$input, $fieldkey) {
         if (isset($input[$fieldkey])) {
             $datestr = str_split($input[$fieldkey]);
             // Convert: MMM/DD/YYYY into MMM.DD,YYYY
@@ -526,23 +526,46 @@ class elis_user_import_test extends elis_database_test {
     /**
      * Class mapping function to convert IP column to ELIS crlm_user DB field
      *
-     * @param mixed $input  The input IP data fields
+     * @param mixed $input       The input IP data fields
+     * @param bool  $shouldexist Flag indicating whether the ELIS user should exist
      * @return array The mapped/translated data ready for DB
      */
-    public function map_elis_user($input) {
-        $this->map_date_field($input, 'birthdate');
+    public function map_elis_user($input, $shouldexist) {
+        global $DB;
+        $this->map_birthdate_field($input, 'birthdate');
         $this->map_bool_field($input, 'inactive');
 
         if (array_key_exists('password', $input)) {
             unset($input['password']); // TBD: md5( ... + $CFG->salt) ...
         }
 
+        $comments = null;
+        $notes = null;
         // TBD: find way to test longtext fields using sql_compare_text()
         if (array_key_exists('comments', $input)) {
+            $comments = substr($input['comments'], 0, 32);
             unset($input['comments']);
         }
         if (array_key_exists('notes', $input)) {
+            $notes = substr($input['notes'], 0, 32);
             unset($input['notes']);
+        }
+        if ($shouldexist && ($comments || $notes)) {
+            $where = '';
+            $params = array();
+            if ($comments) {
+                $where .= $DB->sql_compare_text('comments') .' = ?';
+                $params[] = $comments;
+            }
+            if ($notes) {
+                if (!empty($where)) {
+                    $where .= ' AND ';
+                }
+                $where .= $DB->sql_compare_text('notes') .' = ?';
+                $params[] = $notes;
+            }
+            $this->assertFalse(
+                    !$DB->record_exists_select('crlm_user', $where, $params));
         }
         return $input;
     }
@@ -584,7 +607,7 @@ class elis_user_import_test extends elis_database_test {
             mtrace("\nException in test_elis_user_import(): ". $e->getMessage()
                    ."\n");
         }
-        $elis_user_data = $this->map_elis_user($user_data);
+        $elis_user_data = $this->map_elis_user($user_data, $elis_exists);
         ob_start();
         var_dump($elis_user_data);
         $tmp = ob_get_contents();
