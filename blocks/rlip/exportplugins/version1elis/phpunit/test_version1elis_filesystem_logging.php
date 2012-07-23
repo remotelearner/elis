@@ -83,12 +83,12 @@ class version1elisDatabaseLoggingTest extends rlip_test {
      * Data provider used to specify whether a run is scheduled or manual
      *
      * @return array An array containing a false value representing a scheduled run,
-     *               and a true representing a manual run 
+     *               and a true representing a manual run, along with the expected error
      */
     public function exportTypeProvider() {
         return array(
-            array(false, get_string('exportexceedstimelimit', 'block_rlip')),
-            array(true, get_string('manualexportexceedstimelimit', 'block_rlip'))
+            array(false, get_string('exportexceedstimelimit', 'block_rlip')."\n"),
+            array(true, get_string('manualexportexceedstimelimit', 'block_rlip')."\n")
         );
     }
 
