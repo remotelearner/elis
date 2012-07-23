@@ -543,6 +543,22 @@ class elis_entity_import_test extends elis_database_test {
     }
 
     /**
+     * Field mapping function to convert IP boolean column to user DB field
+     *
+     * @param array  $input    The input IP data fields
+     * @param string $fieldkey The array key to check for boolean strings
+     */
+    public function map_bool_field(&$input, $fieldkey) {
+        if (isset($input[$fieldkey])) {
+            if ($input[$fieldkey] == 'no') {
+                $input[$fieldkey] = '0';
+            } else if ($input[$fieldkey] == 'yes') {
+                $input[$fieldkey] = '1';
+            }
+        }
+    }
+
+    /**
      * Track mapping function to convert IP column to DB field
      *
      * @param mixed $input  The input IP data fields
