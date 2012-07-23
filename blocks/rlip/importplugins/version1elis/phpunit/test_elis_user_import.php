@@ -383,12 +383,31 @@ class elis_user_import_test extends elis_database_test {
     }
 
     /**
+     * Field mapping function to convert IP boolean column to user DB field
+     *
+     * @param array  $input    The input IP data fields
+     * @param string $fieldkey The array key to check for boolean strings
+     */
+    public function map_bool_field(&$input, $fieldkey) {
+        if (isset($input[$fieldkey])) {
+            if ($input[$fieldkey] == 'no') {
+                $input[$fieldkey] = '0';
+            } else if ($input[$fieldkey] == 'yes') {
+                $input[$fieldkey] = '1';
+            }
+        }
+    }
+
+    /**
      * Class mapping function to convert IP column to Moodle user DB field
      *
      * @param mixed     $input             The input IP data fields
      * @return array    The mapped/translated data ready for DB
      */
     public function map_moodle_user($input) {
+        if (isset($input['inactive'])) {
+            unset($input['inactive']);
+        }
         return $input;
     }
 
@@ -399,6 +418,7 @@ class elis_user_import_test extends elis_database_test {
      * @return array The mapped/translated data ready for DB
      */
     public function map_elis_user($input) {
+        $this->map_bool_field($input, 'inactive');
         return $input;
     }
 
