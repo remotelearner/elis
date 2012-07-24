@@ -4053,13 +4053,24 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $missing_fields = $this->get_missing_required_fields($record, $translated_required_fields);
 
         if ($missing_fields !== false) {
-            $first = reset($missing_fields);
+            // ELIS-6149 -- A group of fields can appear anywhere within the list of requried fields, so we must check
+            // each field to see if it's an array.
+            $fields  = array_values($missing_fields);
+            $message = '';
 
-            //for now, assume "groups" are always first and only showing
-            //that one problem in the log
-            if (!is_array($first)) {
-                //1-of-n case
+            foreach ($fields as $field) {
+                // A group of fields should be the only thing appearing within the log file
+                if (is_array($field)) {
+                    //basic case, all missing fields are required
+                    $field_display = implode(', ', $field);
 
+                    $message = "Import file {$filename} was not processed because one of the following columns is ".
+                            "required but all are unspecified: {$field_display}. Please fix the import file and re-upload it.";
+                }
+            }
+
+            //1-of-n case
+            if (empty($message)) {
                 //list of fields, as displayed
                 $field_display = implode(', ', $missing_fields);
                 //singular/plural handling
@@ -4067,15 +4078,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                 if (count($missing_fields) > 1) {
                     $label .= 's';
                 }
-                $message = "Import file {$filename} was not processed because it is missing the following ".
-                           "required {$label}: {$field_display}. Please fix the import file and re-upload it.";
-            } else {
-                //basic case, all missing fields are required
 
-                $field_display = implode(', ', $first);
-
-                $message = "Import file {$filename} was not processed because one of the following columns is ".
-                           "required but all are unspecified: {$field_display}. Please fix the import file and re-upload it.";
+                $message = "Import file {$filename} was not processed because it is missing the following required {$label}: ".
+                           "{$field_display}. Please fix the import file and re-upload it.";
             }
 
             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
