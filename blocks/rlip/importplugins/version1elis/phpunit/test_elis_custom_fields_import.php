@@ -184,6 +184,7 @@ class elis_user_custom_fields_test extends elis_database_test {
         require_once(elis::lib('data/customfield.class.php'));
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
 
         $record = new stdClass;
         $record->action = 'create';
@@ -306,6 +307,7 @@ class elis_user_custom_fields_test extends elis_database_test {
         require_once(elis::lib('data/customfield.class.php'));
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
 
         $record = new stdClass;
         $record->action = 'create';

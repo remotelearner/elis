@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Test class for validating that users are auto-assigned to clusters (i.e.
@@ -147,6 +148,7 @@ class elis_cluster_profile_import_test extends elis_database_test {
         $record->testfieldshortname1 = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', $record, 'bogus');
 
         //validation
@@ -183,6 +185,7 @@ class elis_cluster_profile_import_test extends elis_database_test {
         $user->reset_custom_field_list();
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', $record, 'bogus');
 
         //validation
@@ -220,6 +223,7 @@ class elis_cluster_profile_import_test extends elis_database_test {
         $record->testfieldshortname1 = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', $record, 'bogus');
 
         //validation
@@ -258,6 +262,7 @@ class elis_cluster_profile_import_test extends elis_database_test {
         $record->testfieldshortname2 = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', $record, 'bogus');
 
         //validation

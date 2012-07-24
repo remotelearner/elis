@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Validate that IP actions trigger the appropriate userset site groups functionality,
@@ -249,6 +250,7 @@ class elis_userset_site_groups_test extends elis_database_test {
         $record->userset_groupings = '1';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         //need to call process_record so that custom field mappings are handled
         $importplugin->process_record('course', $record, 'bogus');
 
@@ -273,6 +275,7 @@ class elis_userset_site_groups_test extends elis_database_test {
         $record->username = 'testuserusername';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_enrolment_create($record, 'bogus', 'testusersetname');
 
         $this->validate_end_result();
@@ -306,6 +309,7 @@ class elis_userset_site_groups_test extends elis_database_test {
         $temp->reset_custom_field_list();
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         //need to call process_record so that custom field mappings are handled
         $importplugin->process_record('user', $record, 'bogus');
 

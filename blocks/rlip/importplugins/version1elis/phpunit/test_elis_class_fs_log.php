@@ -39,6 +39,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 class version1ELISClassFSLogTest extends rlip_test {
 
@@ -199,6 +200,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $classname = "rlip_importprovider_fslog{$entitytype}";
         $provider = new $classname($data, 'class.csv');
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, true);
+        $instance->fslogger = new silent_fslogger(NULL);
         //suppress output for now
         ob_start();
         $instance->run();
@@ -258,6 +260,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -280,6 +283,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
@@ -304,6 +308,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -327,6 +332,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
@@ -352,6 +358,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -376,6 +383,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
@@ -402,6 +410,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -427,6 +436,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
@@ -454,6 +464,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -480,6 +491,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
@@ -508,6 +520,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -535,6 +548,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
@@ -565,6 +579,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -593,6 +608,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
@@ -623,6 +639,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -650,6 +667,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
@@ -679,6 +697,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $data = array('action' => 'create',
@@ -707,6 +726,7 @@ class version1ELISClassFSLogTest extends rlip_test {
         $record->name = 'testcoursename';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->course_create($record, 'bogus');
 
         $this->load_csv_data();
