@@ -720,6 +720,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $user->set_from_data($record);
         $user->save();
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record);
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully created.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -932,6 +939,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $user->set_from_data($record);
         $user->save();
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record);
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully updated.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -995,6 +1009,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $user = new user($user);
             $user->delete();
         }
+
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record);
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully deleted.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -1696,6 +1717,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //associate this class instance to a Moodle course, if necessary
         $this->associate_class_to_moodle_course($record, $pmclass->id);
 
+        //log success
+        $success_message = "Class instance with idnumber \"{$record->idnumber}\" successfully created.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -1806,7 +1831,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //associate this class instance to a Moodle course, if necessary
         $this->associate_class_to_moodle_course($record, $pmclass->id);
 
-        $this->fslogger->log_success($message, 0, $filename, $this->linenumber);
+        //log success
+        $success_message = "Class instance with idnumber \"{$record->idnumber}\" successfully updated.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -1825,6 +1852,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $course = new pmclass($course);
             $course->delete();
         }
+
+        //log success
+        $success_message = "Class instance with idnumber \"{$record->idnumber}\" successfully deleted.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -2031,6 +2062,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $cur->set_from_data($record);
         $cur->save();
 
+        //log success
+        $success_message = "Program with idnumber \"{$record->idnumber}\" successfully created.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -2072,6 +2107,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $cur->set_from_data($record);
         $cur->save();
 
+        //log success
+        $success_message = "Program with idnumber \"{$record->idnumber}\" successfully updated.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -2089,6 +2128,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $cur = new curriculum($cur);
             $cur->delete();
         }
+
+        //log success
+        $success_message = "Program with idnumber \"{$record->idnumber}\" successfully deleted.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -2146,6 +2189,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $cluster->set_from_data($record);
         $cluster->save();
 
+        //log success
+        $success_message = "User set with name \"{$record->name}\" successfully created.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -2201,6 +2248,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $data->set_from_data($record);
         $data->save();
 
+        //log success
+        $success_message = "User set with name \"{$record->name}\" successfully updated.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -2239,6 +2290,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $data->deletesubs = true;
         }
         $data->delete();
+
+        //log success
+        $success_message = "User set with name \"{$record->name}\" successfully deleted.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -2414,6 +2469,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //associate this course description to a Moodle course, if necessary
         $this->associate_course_to_moodle_course($record, $course->id);
 
+        //log success
+        $success_message = "Course description with idnumber \"{$record->idnumber}\" successfully created.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -2444,6 +2503,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $course = new course($course);
             $course->delete();
         }
+
+        //log success
+        $success_message = "Course description with idnumber \"{$record->idnumber}\" successfully deleted.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -2519,7 +2582,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //associate this course description to a Moodle course, if necessary
         $this->associate_course_to_moodle_course($record, $course->id);
 
-        $this->fslogger->log_success($message, 0, $filename, $this->linenumber);
+        //log success
+        $success_message = "Course description with idnumber \"{$record->idnumber}\" successfully updated.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -2612,6 +2677,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $track->set_from_data($record);
         $track->save();
 
+        //log success
+        $success_message = "Track with idnumber \"{$record->idnumber}\" successfully created.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -2654,7 +2723,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $track->set_from_data($record);
         $track->save();
 
-        $this->fslogger->log_success($message, 0, $filename, $this->linenumber);
+        //log success
+        $success_message = "Track with idnumber \"{$record->idnumber}\" successfully updated.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -2671,6 +2742,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $track = new track($track);
         $track->delete();
+
+        //log success
+        $success_message = "Track with idnumber \"{$record->idnumber}\" successfully deleted.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -2959,6 +3034,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $stucur = new curriculumstudent($record);
         $stucur->save();
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully enrolled in program \"{$idnumber}\".";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -2979,6 +3061,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $stucur = new curriculumstudent(array('id' => $associd));
         $stucur->delete();
+
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully unenrolled from program \"{$idnumber}\".";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -3074,6 +3163,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //create the association
         usertrack::enrol($userid, $trackid);
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully enrolled in track \"{$idnumber}\".";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -3118,6 +3214,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                                                     'trackid' => $trackid));
         $usertrack = new usertrack($usertrackid);
         $usertrack->delete();
+
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully unenrolled from track \"{$idnumber}\".";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -3217,6 +3320,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                                          'autoenrol' => 0));
         $clusterassignment->save();
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully enrolled in user set \"{$name}\".";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -3263,6 +3373,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                                                                     'plugin' => 'manual'));
         $clusterassignment = new clusterassignment($clusterassignmentid);
         $clusterassignment->delete();
+
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully unenrolled from user set \"{$name}\".";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -3516,6 +3633,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $student->save();
         }
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully enrolled in class instance \"{$idnumber}\" as a student.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -3576,6 +3700,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                            'assigntime' => $assigntime,
                                            'completetime' => $completetime));
         $instructor->save();
+
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully enrolled in class instance \"{$idnumber}\" as an instructor.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -3669,6 +3800,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $student->save();
         }
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "Student enrolment for user with {$user_descriptor} in class instance \"{$idnumber}\" successfully updated.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -3716,6 +3854,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         $instructor->save();
+
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "Instructor enrolment for user with {$user_descriptor} in class instance \"{$idnumber}\" successfully updated.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -3784,6 +3929,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $student = new student($studentid);
         $student->delete();
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully unenrolled from class instance \"{$idnumber}\" as a student.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -3831,6 +3983,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                                                    'classid' => $classid));
         $instructor = new instructor($studentid);
         $instructor->delete();
+
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully unenrolled from class instance \"{$idnumber}\" as an instructor.";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -3888,6 +4047,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         role_assign($roleid, $userid, $targetcontext->id);
 
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully assigned role with shortname \"{$record->role}\" on user \"{$idnumber}\".";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
+
         return true;
     }
 
@@ -3923,6 +4089,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $roleid = $DB->get_field('role', 'id', array('shortname' => $record->role));
 
         role_unassign($roleid, $userid, $targetcontext->id);
+
+        //string to describe the user
+        $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
+
+        //log success
+        $success_message = "User with {$user_descriptor} successfully unassigned role with shortname \"{$record->role}\" on user \"{$idnumber}\".";
+        $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
     }
@@ -4096,11 +4269,12 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @param boolean $value_syntax true if we want to use "field" value of
      *                              "value" syntax, otherwise use field "value"
      *                              syntax
+     * @param string $prefix a string prefix to expect at the beginning of properties
      * @return string The description of identifying fields, as a
      *                comma-separated string
      * [field1] "value1", ...
      */
-    function get_user_descriptor($record, $value_syntax = false) {
+    function get_user_descriptor($record, $value_syntax = false, $prefix = '') {
         $fragments = array();
 
         //the fields we care to check
@@ -4109,13 +4283,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                  'idnumber');
 
         foreach ($possible_fields as $field) {
-            if (isset($record->$field) && $record->$field !== '') {
+            //use the prefix to find data, if necessary
+            $customkey = $prefix.$field;
+
+            if (isset($record->$customkey) && $record->$customkey !== '') {
                 //data for that field
-                $value = $record->$field;
+                $value = $record->$customkey;
 
                 //calculate syntax fragment
                 if ($value_syntax) {
-                    $identifier = $this->mappings[$field];
+                    $identifier = $this->mappings[$customkey];
                     $fragments[] = "{$identifier} value of \"{$value}\"";
                 } else {
                     $fragments[] = "{$field} \"{$value}\"";

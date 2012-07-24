@@ -59,6 +59,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
         require_once(elispm::lib('data/usertrack.class.php'));
 
         return array(
+            'context'                => 'moodle',
             'role'                   => 'moodle',
             'user'                   => 'moodle',
             RLIP_LOG_TABLE           => 'block_rlip',
@@ -99,7 +100,6 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
             'cohort_members'          => 'moodle',
             'comments'                => 'moodle',
             'cache_flags'             => 'moodle',
-            'context'                 => 'moodle',
             'events_queue'            => 'moodle',
             'events_queue_handlers'   => 'moodle',
             'external_services_users' => 'moodle',
@@ -186,16 +186,16 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
             $error = fgets($pointer);
             if (!empty($error)) { // could be an empty new line
                 if (is_array($expected_message)) {
-                    $actual_error[] = substr($error, $prefix_length);
+                    $actual_message[] = substr($error, $prefix_length);
                 } else {
-                    $actual_error = substr($error, $prefix_length);
+                    $actual_message = substr($error, $prefix_length);
                 }
             }
         }
 
         fclose($pointer);
 
-        $this->assertEquals($expected_message, $actual_error);
+        $this->assertEquals($expected_message, $actual_message);
     }
 
     /**
@@ -303,7 +303,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
         $identifier = $this->get_user_identifier($username, $email, $idnumber);
 
         //validation
-        $expected_message = '[user.csv line 2] User with username '.$identifier.' successfully '.$action.'d.';
+        $expected_message = "[user.csv line 2] User with {$identifier} successfully {$action}d.\n";
         $this->assert_data_produces_message($data, $expected_message, 'user');
     }
 
@@ -429,7 +429,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
         $this->load_csv_data($create_program, $create_track, $create_course, $create_class, $create_userset, false);
 
         //validation
-        $expected_message = '[course.csv line 2] '.$context_description.' with '.$uniquefield.' "'.$uniquevalue.'" successfully '.$action.'d.';
+        $expected_message = "[course.csv line 2] {$context_description} with {$uniquefield} \"$uniquevalue\" successfully {$action}d.\n";
         $this->assert_data_produces_message($data, $expected_message, 'course');
     }
 
@@ -487,7 +487,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
             array('create', 'cluster_testusersetname', 'testuserusername', 'testuser@email.com', '', 'enrolled in user set "testusersetname".', array()),
             array('create', 'cluster_testusersetname', 'testuserusername', '', 'testuseridnumber', 'enrolled in user set "testusersetname".', array()),
             array('create', 'cluster_testusersetname', '', 'testuser@email.com', 'testuseridnumber', 'enrolled in user set "testusersetname".', array()),
-            array('create', 'cluster_testusersetname', 'testuserusername', 'testuser@email.com', 'testuseridnumber', 'enrolled in uset set "testusersetname".', array()),
+            array('create', 'cluster_testusersetname', 'testuserusername', 'testuser@email.com', 'testuseridnumber', 'enrolled in user set "testusersetname".', array()),
             //user set unenrol
             array('delete', 'cluster_testusersetname', 'testuserusername', '', '', 'unenrolled from user set "testusersetname".', array()),
             array('delete', 'cluster_testusersetname', '', 'testuser@email.com', '', 'unenrolled from user set "testusersetname".', array()),
@@ -495,7 +495,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
             array('delete', 'cluster_testusersetname', 'testuserusername', 'testuser@email.com', '', 'unenrolled from user set "testusersetname".', array()),
             array('delete', 'cluster_testusersetname', 'testuserusername', '', 'testuseridnumber', 'unenrolled from user set "testusersetname".', array()),
             array('delete', 'cluster_testusersetname', '', 'testuser@email.com', 'testuseridnumber', 'unenrolled from user set "testusersetname".', array()),
-            array('delete', 'cluster_testusersetname', 'testuserusername', 'testuser@email.com', 'testuseridnumber', 'unenrolled from uset set "testusersetname".', array()),
+            array('delete', 'cluster_testusersetname', 'testuserusername', 'testuser@email.com', 'testuseridnumber', 'unenrolled from user set "testusersetname".', array()),
             //(student) class enrol
             array('create', 'class_testclassidnumber', 'testuserusername', '', '', 'enrolled in class instance "testclassidnumber" as a student.', array()),
             array('create', 'class_testclassidnumber', '', 'testuser@email.com', '', 'enrolled in class instance "testclassidnumber" as a student.', array()),
@@ -648,9 +648,9 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
 
         //set up appropriate data to satisfy any necessary dependencies
         $parts = explode('_', $context);
-        $create_program = $parts[0] == 'curriculum';
+        $create_program = $parts[0] == 'curriculum' || $parts[0] == 'track';
         $create_track = $parts[0] == 'track';
-        $create_course = $parts[0] == 'course';
+        $create_course = $parts[0] == 'course' || $parts[0] == 'class';
         $create_class = $parts[0] == 'class';
         $create_userset = $parts[0] == 'cluster';
         $this->load_csv_data($create_program, $create_track, $create_course, $create_class, $create_userset, true);
@@ -673,7 +673,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
         $identifier = $this->get_user_identifier($username, $email, $idnumber);
 
         //validation
-        $expected_message = 'User with '.$identifier.' successfully '.$message_suffix;
+        $expected_message = "[enrolment.csv line 2] User with {$identifier} successfully {$message_suffix}\n";
         $this->assert_data_produces_message($data, $expected_message, 'enrolment');
     }
 
@@ -717,7 +717,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
         $identifier = $this->get_user_identifier($username, $email, $idnumber);
 
         //validation
-        $expected_message = 'Student enrolment for user with '.$identifier.' in class instance "testclassidnumber" successfully updated.';
+        $expected_message = "[enrolment.csv line 2] Student enrolment for user with {$identifier} in class instance \"testclassidnumber\" successfully updated.\n";
         $this->assert_data_produces_message($data, $expected_message, 'enrolment');
     }
 
@@ -747,7 +747,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
         $identifier = $this->get_user_identifier($username, $email, $idnumber);
 
         //validation
-        $expected_message = 'Instructor enrolment for user with '.$identifier.' in class instance "testclassidnumber" successfully updated.';
+        $expected_message = "[enrolment.csv line 2] Instructor enrolment for user with {$identifier} in class instance \"testclassidnumber\" successfully updated.\n";
         $this->assert_data_produces_message($data, $expected_message, 'enrolment');
     }
 }
