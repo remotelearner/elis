@@ -286,12 +286,12 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             }
         }
 
-        if ($type == "cluster") {
+        if (isset($record->context) && $record->context == "cluster") {
             $type = ucfirst($type);
             switch ($record->action) {
                 case "create":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->name)) {
+                    if (empty($record->name)) {
                         $msg = "User set could not be created. " . $message;
                     } else {
                         $msg = "User set with name \"{$record->name}\" could not be created. " . $message;
@@ -299,7 +299,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                     break;
                 case "update":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->name)) {
+                    if (empty($record->name)) {
                         $msg = "User set could not be updated. " . $message;
                     } else {
                         $msg = "User set with name \"{$record->name}\" could not be updated. " . $message;
@@ -307,7 +307,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                     break;
                 case "delete":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->name)) {
+                    if (empty($record->name)) {
                         $msg = "User set could not be deleted. " . $message;
                     } else {
                         $msg = "User set with name \"{$record->name}\" could not be deleted. " . $message;
@@ -320,12 +320,12 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
             }
         }
 
-        if ($type == "curriculum") {
+        if (isset($record->context) && $record->context == "curriculum") {
             $type = ucfirst($type);
             switch ($record->action) {
                 case "create":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Program could not be created. " . $message;
                     } else {
                         $msg = "Program with idnumber \"{$record->idnumber}\" could not be created. " . $message;
@@ -333,7 +333,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                     break;
                 case "update":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Program could not be updated. " . $message;
                     } else {
                         $msg = "Program with idnumber \"{$record->idnumber}\" could not be updated. " . $message;
@@ -341,7 +341,7 @@ class rlip_import_version1elis_fslogger extends rlip_fslogger_linebased {
                     break;
                 case "delete":
                     //make sure all required fields are specified
-                    if (empty($record->context) || empty($record->idnumber)) {
+                    if (empty($record->idnumber)) {
                         $msg = "Program could not be deleted. " . $message;
                     } else {
                         $msg = "Program with idnumber \"{$record->idnumber}\" could not be deleted. " . $message;
