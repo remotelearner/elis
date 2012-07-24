@@ -127,6 +127,8 @@ class elis_class_import_test extends elis_database_test {
     static protected function get_ignored_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/student.class.php'));
 
         return array('log'              => 'moodle',
                      RLIP_LOG_TABLE     => 'block_rlip',
@@ -135,6 +137,7 @@ class elis_class_import_test extends elis_database_test {
                      'external_services_users'      => 'moodle',
                      'external_tokens'              => 'moodle',
                      'external_services_users'      => 'moodle',
+                     student::TABLE                 => 'elis_program'
         );
 
     }

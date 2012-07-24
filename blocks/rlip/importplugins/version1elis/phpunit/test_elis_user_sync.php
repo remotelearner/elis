@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Class for validating that ELIS / PM user actions propagate the appropriate
@@ -86,6 +87,7 @@ class elis_user_sync_test extends elis_database_test {
         $record->language = 'fr';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->user_create($record, 'bogus');
 
         //validate the connection between the PM and Moodle use records
@@ -174,6 +176,7 @@ class elis_user_sync_test extends elis_database_test {
         $record->testfieldshortname = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', $record, 'bogus');
 
         //validation
@@ -219,6 +222,7 @@ class elis_user_sync_test extends elis_database_test {
         $record->language = 'en_us';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->user_update($record, 'bogus');
 
         //validation
@@ -301,6 +305,7 @@ class elis_user_sync_test extends elis_database_test {
         $record->testfieldshortname = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', $record, 'bogus');
 
         //validation
