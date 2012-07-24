@@ -594,8 +594,8 @@ class elis_summary_log_field_mappings_test extends elis_database_test {
 
         // Testing a custom action mapping value
         if (isset($mapping['action'])) {
-            $message = 'Import file memoryfile was not processed because it is missing the following required column: action. '.
-                        'Please fix the import file and re-upload it.';
+            $message = 'Import file memoryfile was not processed because it is missing the following required column: '.
+                       $mapping['action'].'. Please fix the import file and re-upload it.';
 
         // User create is only a subset of the required fields
         } else if ($entity == 'user' && $data['action'] == 'create') {
