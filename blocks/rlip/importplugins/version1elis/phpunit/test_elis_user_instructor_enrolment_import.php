@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Class for validating that assignment of users to class instances as instructors
@@ -131,6 +132,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $record->role = 'teacher';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
         //validation
@@ -205,6 +207,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $record->role = 'teacher';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
         //validation
@@ -265,6 +268,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $record->role = $role;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
         //validation
@@ -342,6 +346,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $record->role = 'instructor';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
         //validation
@@ -408,6 +413,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $record->role = 'instructor';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
         //validation
@@ -463,6 +469,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $record->role = $role;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
         //validation
@@ -526,6 +533,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $record->role = 'instructor';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_delete($record, 'bogus', 'testclassidnumber');
 
         //validation
@@ -578,6 +586,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $record->role = $role;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_delete($record, 'bogus', 'testclassidnumber');
 
         //validation

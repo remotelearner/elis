@@ -96,6 +96,7 @@ class elis_user_field_mappings_test extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
@@ -108,6 +109,7 @@ class elis_user_field_mappings_test extends elis_database_test {
                      field_category::TABLE => 'elis_core',
                      field_contextlevel::TABLE => 'elis_core',
                      field_data_int::TABLE => 'elis_core',
+                     student::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program');
     }

@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
  * Unit test for validating all handling of the user set hierarchy and related
@@ -130,6 +131,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->name = 'usersetname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_create($record, 'bogus');
 
         //validate userset record
@@ -174,6 +176,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->parent = 'parentname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_create($record, 'bogus');
 
         //validate userset record
@@ -223,6 +226,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->parent = 'top';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_update($record, 'bogus');
 
         //validate userset record
@@ -271,6 +275,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->parent = 'parentname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_update($record, 'bogus');
 
         //validate userset record
@@ -323,6 +328,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->parent = 'finalparentname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_update($record, 'bogus');
 
         //validate userset record
@@ -366,6 +372,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->name = 'usersetname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
         //validate deletion of userset record
@@ -405,6 +412,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->name = 'childname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
         //validate deletion of userset record
@@ -459,6 +467,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->recursive = $recursive;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
         //validate deletion of both userset records
@@ -498,6 +507,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->name = 'parentname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
         //validate deletion of parent userset record
@@ -559,6 +569,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->recursive = $recursive;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
         //validate deletion of both userset records
@@ -616,6 +627,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->name = 'parentname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
         //validate the deletion of the "parent" userset
@@ -682,6 +694,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->recursive = $recursive;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
         //validate deletion of three userset records
@@ -744,6 +757,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $record->name = 'grandparentname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
         //validate the deletion of the "grandparent" userset

@@ -35,6 +35,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 class elis_user_program_enrolment_test extends elis_database_test {
 
@@ -151,6 +152,7 @@ class elis_user_program_enrolment_test extends elis_database_test {
         $record->country = 'CA';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->user_create($record, 'bogus');
 
         $record = new stdClass;
@@ -175,6 +177,7 @@ class elis_user_program_enrolment_test extends elis_database_test {
     function test_elis_user_program_unenrolment_import() {
         global $DB;
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
 
         $this->test_elis_user_program_enrolment_import();
 
