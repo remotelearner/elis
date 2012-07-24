@@ -4003,7 +4003,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         if (!in_array($translated_action, $header)) {
             //action column not specified
             $message = "Import file {$filename} was not processed because it is missing the following ".
-                       "required column: action. Please fix the import file and re-upload it.";
+                       "required column: {$this->mappings['action']}. Please fix the import file and re-upload it.";
             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
             $this->dblogger->signal_missing_columns($message);
             return false;
