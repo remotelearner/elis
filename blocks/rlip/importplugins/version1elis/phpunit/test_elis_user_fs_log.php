@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 /*
@@ -823,6 +823,162 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'country' => 'CA');
 
         $expected_error = "[user.csv line 2] User with username \"invalidtestusername\", email \"invalidtest@user.com\", idnumber \"invalidtestidnumber\" could not be updated. username value of \"invalidtestusername\", email value of \"invalidtest@user.com\", idnumber value of \"invalidtestidnumber\" do not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on user create */
+    public function testUserInvalidIdentifyingFieldsOnCreate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'create'
+        );
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => '',
+            'username' => ''
+        );
+        $expected_error = "[user.csv line 2] User could not be processed. Required field action is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'create',
+            'username' => '',
+            'email' => '',
+            'idnumber' => ''
+        );
+
+        $expected_error = "[user.csv line 2] User could not be created. Required fields idnumber, username, firstname, lastname, email, country are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'create',
+            'username' => 'testusername'
+        );
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. Required fields idnumber, firstname, lastname, email, country are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'create',
+            'email' => 'user@mail.com'
+        );
+        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be created. Required fields idnumber, username, firstname, lastname, country are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'create',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be created. Required fields username, firstname, lastname, email, country are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'create',
+            'username' => 'testusername',
+            'email' => 'user@mail.com',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"user@mail.com\", idnumber \"testidnumber\" could not be created. Required fields firstname, lastname, country are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'create',
+            'username' => 'testusername',
+            'email' => 'user@mail.com',
+            'idnumber' => 'testidnumber',
+            'firstname' => 'dsfds',
+            'lastname' => 'sadfs'
+        );
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"user@mail.com\", idnumber \"testidnumber\" could not be created. Required field country is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on user update */
+    public function testUserInvalidIdentifyingFieldsOnUpdate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'update',
+            'username' => 'testusername'
+        );
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. username value of \"testusername\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'update',
+            'email' => 'user@mail.com'
+        );
+        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be updated. email value of \"user@mail.com\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'update',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be updated. idnumber value of \"testidnumber\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'update',
+            'username' => '',
+            'email' => '',
+            'idnumber' => ''
+        );
+
+        $expected_error = "[user.csv line 2] User could not be updated. One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'update',
+        );
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on user delete */
+    public function testUserInvalidIdentifyingFieldsOnDelete() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'delete',
+            'username' => 'testusername'
+        );
+
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be deleted. username value of \"testusername\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+
+        $data = array(
+            'action' => 'delete',
+            'email' => 'user@mail.com'
+        );
+        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be deleted. email value of \"user@mail.com\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'delete',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be deleted. idnumber value of \"testidnumber\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'delete',
+            'username' => '',
+            'email' => '',
+            'idnumber' => ''
+        );
+
+        $expected_error = "[user.csv line 2] User could not be deleted. One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $data = array(
+            'action' => 'delete',
+        );
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 

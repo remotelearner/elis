@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 class version1ELISProgramFSLogTest extends rlip_test {
@@ -528,6 +528,104 @@ class version1ELISProgramFSLogTest extends rlip_test {
 
         $expected_error = "[program.csv line 2] Program with idnumber \"invalidtestprogramidnumber\" could not be deleted. " .
                           "idnumber value of \"invalidtestprogramidnumber\" does not refer to a valid program.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on program create */
+    public function testProgramInvalidIdentifyingFieldsOnCreate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'create'
+        );
+        $expected_error = "[program.csv line 1] Import file program.csv was not processed because it is missing the following required column: context. Please fix the import file and re-upload it.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => ''
+        );
+        $expected_error = "[program.csv line 2] Entity could not be created.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => '',
+            'context' => ''
+        );
+        $expected_error = "[program.csv line 2] Entity could not be processed.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => '',
+            'context' => 'curriculum'
+        );
+        $expected_error = "[program.csv line 2] Program could not be processed. Required field action is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'curriculum',
+            'idnumber' => '',
+        );
+        $expected_error = "[program.csv line 2] Program could not be created. Required fields idnumber, name are unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'curriculum',
+            'idnumber' => 'testidnumber'
+        );
+        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be created. Required field name is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+       $data = array(
+            'action' => 'create',
+            'context' => 'curriculum',
+            'name' => 'testname'
+        );
+        $expected_error = "[program.csv line 2] Program could not be created. Required field idnumber is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on program update */
+    public function testTrackInvalidIdentifyingFieldsOnUpdate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'curriculum',
+            'idnumber' => '',
+        );
+        $expected_error = "[program.csv line 2] Program could not be updated. Required field idnumber is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'curriculum',
+            'idnumber' => 'testidnumber',
+        );
+        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be updated. idnumber value of \"testidnumber\" does not refer to a valid program.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on program delete */
+    public function testTrackInvalidIdentifyingFieldsOnDelete() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'delete',
+            'context' => 'curriculum',
+            'idnumber' => '',
+        );
+        $expected_error = "[program.csv line 2] Program could not be deleted. Required field idnumber is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'delete',
+            'context' => 'curriculum',
+            'idnumber' => 'testidnumber',
+        );
+        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be deleted. idnumber value of \"testidnumber\" does not refer to a valid program.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 

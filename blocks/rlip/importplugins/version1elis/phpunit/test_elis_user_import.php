@@ -274,6 +274,37 @@ class elis_user_import_test extends elis_database_test {
                          NO_TEST_SETUP,
                          ELIS_USER_EXISTS, MDL_USER_EXISTS
                       );
+        // all possible fields create data!
+        $testdata[] = array('create',
+                         array(
+                             'idnumber'  => 'testidnumber',
+                             'username'  => 'testusername',
+                             'password'  => 'TestPassword0!', // TBD: policy
+                             'firstname' => 'testfirstname',
+                             'lastname'  => 'testlastname',
+                             'mi'        => 'mi',
+                             'email'     => 'test@email.com',
+                             'email2'    => 'test@email2.com',
+                             'address'   => '123 My Street',
+                             'address2'  => 'Unit 1A',
+                             'city'      => '*',
+                             'state'     => 'ON',
+                             'postalcode'=> 'A1B2C3',
+                             'country'   => 'CA',
+                             'phone'     => '123-555-4567',
+                             'phone2'    => '890-555-1234',
+                             'fax'       => '567-555-8901',
+                             'birthdate' => 'Jan/13/2011',
+                             'gender'    => 'M',
+                             'language'  => 'en',
+                             'transfercredits'=> '5',
+                             'comments'  => 'My comments',
+                             'notes'     => 'My notes',
+                             'inactive'  => 'no'
+                         ),
+                         NO_TEST_SETUP,
+                         ELIS_USER_EXISTS, MDL_USER_EXISTS
+                      );
 
         // update tests - all identifying fields
         $testdata[] = array('update',
@@ -399,14 +430,30 @@ class elis_user_import_test extends elis_database_test {
     }
 
     /**
-     * Field mapping function to convert IP date columns to timestamp DB field
+     * Field mapping function to convert IP birthdate column to birthdate DB field
      *
      * @param array  $input    The input IP data fields
      * @param string $fieldkey The array key to check for date strings
      */
-    public function map_date_field(&$input, $fieldkey) {
+    public function map_birthdate_field(&$input, $fieldkey) {
         if (isset($input[$fieldkey])) {
-            $input[$fieldkey] = strtotime($input[$fieldkey] .' '. usertimezone());
+            $datestr = str_split($input[$fieldkey]);
+            // Convert: MMM/DD/YYYY into MMM.DD,YYYY
+            $replaceslash = '.';
+            for ($i = 0; $i < count($datestr); ++$i) {
+                if ($datestr[$i] == '/') {
+                    $datestr[$i] = $replaceslash;
+                    $replaceslash = ',';
+                }
+            }
+            $datestr = implode('', $datestr);
+            $tzstr = usertimezone();
+            if (strpos($tzstr, 'UTC') === 0) {
+                $datestr .= ' '. $tzstr;
+            }
+            $timestamp = strtotime($datestr);
+            $input[$fieldkey] = strftime('%Y/%m/%d', $timestamp);
+            //mtrace("map_date_field(input['{$fieldkey}']) => strtotime('{$datestr}') ...=> {$input[$fieldkey]}");
         }
     }
 
@@ -417,52 +464,109 @@ class elis_user_import_test extends elis_database_test {
      * @return array    The mapped/translated data ready for DB
      */
     public function map_moodle_user($input) {
-        if (isset($input['mi'])) {
+        if (array_key_exists('password', $input)) {
+            unset($input['password']); // TBD: md5( ... + $CFG->salt) ...
+        }
+        if (array_key_exists('mi', $input)) {
             unset($input['mi']);
         }
-        if (isset($input['email2'])) {
+        if (array_key_exists('email2', $input)) {
             unset($input['email2']);
         }
-        if (isset($input['address2'])) {
+        if (array_key_exists('address2', $input)) {
             unset($input['address2']);
         }
-        if (isset($input['fax'])) {
+        // TBD: ELIS doesn't sync phone number fields
+        if (array_key_exists('phone', $input)) {
+            //$input['phone1'] = $input['phone'];
+            unset($input['phone']);
+        }
+        if (array_key_exists('phone2', $input)) {
+            unset($input['phone2']);
+        }
+        if (array_key_exists('fax', $input)) {
             unset($input['fax']);
         }
-        if (isset($input['birthdate'])) {
+        if (array_key_exists('postalcode', $input)) {
+            unset($input['postalcode']);
+        }
+        if (array_key_exists('state', $input)) {
+            unset($input['state']);
+        }
+        if (array_key_exists('birthdate', $input)) {
             unset($input['birthdate']);
         }
-        if (isset($input['gender'])) {
+        if (array_key_exists('gender', $input)) {
             unset($input['gender']);
         }
-        if (isset($input['language'])) {
+        if (array_key_exists('language', $input)) {
             $input['lang'] = $input['language'];
             unset($input['language']);
         }
-        if (isset($input['transfercredits'])) {
+        if (array_key_exists('transfercredits', $input)) {
             unset($input['transfercredits']);
         }
-        if (isset($input['comments'])) {
+        if (array_key_exists('comments', $input)) {
             unset($input['comments']);
         }
-        if (isset($input['notes'])) {
+        if (array_key_exists('notes', $input)) {
             unset($input['notes']);
         }
-        if (isset($input['inactive'])) {
+        if (array_key_exists('inactive', $input)) {
             unset($input['inactive']);
         }
+        //ob_start();
+        //var_dump($input);
+        //$tmp = ob_get_contents();
+        //ob_end_clean();
+        //mtrace("map_moodle_user(): output => {$tmp}");
         return $input;
     }
 
     /**
      * Class mapping function to convert IP column to ELIS crlm_user DB field
      *
-     * @param mixed $input  The input IP data fields
+     * @param mixed $input       The input IP data fields
+     * @param bool  $shouldexist Flag indicating whether the ELIS user should exist
      * @return array The mapped/translated data ready for DB
      */
-    public function map_elis_user($input) {
-        $this->map_date_field($input, 'birthdate');
+    public function map_elis_user($input, $shouldexist) {
+        global $DB;
+        $this->map_birthdate_field($input, 'birthdate');
         $this->map_bool_field($input, 'inactive');
+
+        if (array_key_exists('password', $input)) {
+            unset($input['password']); // TBD: md5( ... + $CFG->salt) ...
+        }
+
+        $comments = null;
+        $notes = null;
+        // TBD: find way to test longtext fields using sql_compare_text()
+        if (array_key_exists('comments', $input)) {
+            $comments = substr($input['comments'], 0, 32);
+            unset($input['comments']);
+        }
+        if (array_key_exists('notes', $input)) {
+            $notes = substr($input['notes'], 0, 32);
+            unset($input['notes']);
+        }
+        if ($shouldexist && ($comments || $notes)) {
+            $where = '';
+            $params = array();
+            if ($comments) {
+                $where .= $DB->sql_compare_text('comments') .' = ?';
+                $params[] = $comments;
+            }
+            if ($notes) {
+                if (!empty($where)) {
+                    $where .= ' AND ';
+                }
+                $where .= $DB->sql_compare_text('notes') .' = ?';
+                $params[] = $notes;
+            }
+            $this->assertFalse(
+                    !$DB->record_exists_select('crlm_user', $where, $params));
+        }
         return $input;
     }
 
@@ -490,7 +594,12 @@ class elis_user_import_test extends elis_database_test {
                 $importplugin = new rlip_importplugin_version1elis($provider);
                 @$importplugin->run();
             }
-            $mdl_userid = $DB->get_field('user', 'id', $user_data);
+            $mdl_user_data = $this->map_moodle_user($user_data);
+            ob_start();
+            var_dump($mdl_user_data);
+            $mdl_user_data_dump = ob_get_contents();
+            ob_end_clean();
+            $mdl_userid = $DB->get_field('user', 'id', $mdl_user_data);
             $provider = new rlip_importprovider_mockuser($import_data);
             $importplugin = new rlip_importplugin_version1elis($provider);
             @$importplugin->run();
@@ -498,8 +607,9 @@ class elis_user_import_test extends elis_database_test {
             mtrace("\nException in test_elis_user_import(): ". $e->getMessage()
                    ."\n");
         }
+        $elis_user_data = $this->map_elis_user($user_data, $elis_exists);
         ob_start();
-        var_dump($user_data);
+        var_dump($elis_user_data);
         $tmp = ob_get_contents();
         ob_end_clean();
 
@@ -513,17 +623,16 @@ class elis_user_import_test extends elis_database_test {
         $mdl_user = ob_get_contents();
         ob_end_clean();
 
-        $elis_user = $this->map_elis_user($user_data);
-        $this->assertEquals($elis_exists, $DB->record_exists('crlm_user', $elis_user), "ELIS user assertion: user_data; crlm_user  = {$tmp} ; {$crlm_user}");
+        $this->assertEquals($elis_exists, $DB->record_exists('crlm_user', $elis_user_data), "ELIS user assertion: elis_user_data; crlm_user  = {$tmp} ; {$crlm_user}");
         if ($mdl_exists === true) {
-            $user_data['deleted'] = 0;
+            $mdl_user_data['deleted'] = 0;
         } else if ($mdl_exists === MDL_USER_DELETED) {
             $mdl_exists = true;
-            $user_data = array('id' => $mdl_userid, 'deleted' => 1);
+            $mdl_user_data = array('id' => $mdl_userid, 'deleted' => 1);
         }
-        $mdl_user = $this->map_moodle_user($user_data);
-        $this->assertEquals($mdl_exists, $DB->record_exists('user', $mdl_user),
-                            "Moodle user assertion: user_data; mdl_user = {$tmp}; {$mdl_user}");
+
+        $this->assertEquals($mdl_exists, $DB->record_exists('user', $mdl_user_data),
+                            "Moodle user assertion: mdl_user_data; mdl_user = {$mdl_user_data_dump}; {$mdl_user}");
     }
 
     // Data provider for mapping yes to 1 and no to 0

@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 class version1ELISClusterFSLogTest extends rlip_test {
@@ -312,6 +312,88 @@ class version1ELISClusterFSLogTest extends rlip_test {
                       'parent' => 'invalidparent');
 
         $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be updated. parent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on cluster create */
+    public function testClusterInvalidIdentifyingFieldsOnCreate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'create'
+        );
+        $expected_error = "[userset.csv line 1] Import file userset.csv was not processed because it is missing the following required column: context. Please fix the import file and re-upload it.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => ''
+        );
+        $expected_error = "[userset.csv line 2] Entity could not be created.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => '',
+            'context' => ''
+        );
+        $expected_error = "[userset.csv line 2] Entity could not be processed.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => '',
+            'context' => 'cluster'
+        );
+        $expected_error = "[userset.csv line 2] User set could not be processed. Required field action is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'cluster',
+            'name' => '',
+        );
+        $expected_error = "[userset.csv line 2] User set could not be created. Required field name is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on cluster update */
+    public function testTrackInvalidIdentifyingFieldsOnUpdate() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'cluster',
+            'name' => '',
+        );
+        $expected_error = "[userset.csv line 2] User set could not be updated. Required field name is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'cluster',
+            'name' => 'testname',
+        );
+        $expected_error = "[userset.csv line 2] User set with name \"testname\" could not be updated. name value of \"testname\" does not refer to a valid user set.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+    /* Test that the correct error messages are shown for the provided fields on cluster delete */
+    public function testTrackInvalidIdentifyingFieldsOnDelete() {
+        global $CFG, $DB;
+
+        $data = array(
+            'action' => 'delete',
+            'context' => 'cluster',
+            'name' => '',
+        );
+        $expected_error = "[userset.csv line 2] User set could not be deleted. Required field name is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        $data = array(
+            'action' => 'delete',
+            'context' => 'cluster',
+            'name' => 'testname',
+        );
+        $expected_error = "[userset.csv line 2] User set with name \"testname\" could not be deleted. name value of \"testname\" does not refer to a valid user set.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 

@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -196,7 +196,7 @@ class rlip_importprovider_loguser_dynamic extends rlip_importprovider_loguser {
     }
 }
 
-class rlip_importprovider_userfile extends rlip_importprovider {
+class rlip_importprovider_file extends rlip_importprovider {
     var $filename;
 
     function __construct($filename) {
@@ -220,7 +220,7 @@ class rlip_importprovider_userfile extends rlip_importprovider {
 }
 
 class rlip_importprovider_manual_delay
-      extends rlip_importprovider_userfile_delay {
+      extends rlip_importprovider_file_delay {
 
     /**
      * Provides the object used to log information to the database to the
@@ -866,7 +866,7 @@ class version1DatabaseLoggingTest extends rlip_test {
                       SELECT * FROM
                       {$prefix}context
                       WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
-        
+
         //set up the site course context
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
@@ -1139,7 +1139,7 @@ class version1DatabaseLoggingTest extends rlip_test {
         $file = $tempdir .'userfile.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
-        $provider = new rlip_importprovider_userfile($file);
+        $provider = new rlip_importprovider_file($file, 'user');
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);
@@ -1162,6 +1162,9 @@ class version1DatabaseLoggingTest extends rlip_test {
      */
     public function testVersion1ManualImportObeysMaxRunTime() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //set the log file name to a fixed value
         $filepath = $CFG->dataroot;
@@ -1172,7 +1175,7 @@ class version1DatabaseLoggingTest extends rlip_test {
         $file = $tempdir .'userfile2.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
-        $provider = new rlip_importprovider_manual_delay($file);
+        $provider = new rlip_importprovider_manual_delay($file, 'user');
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider, true);
@@ -1194,6 +1197,8 @@ class version1DatabaseLoggingTest extends rlip_test {
      */
     public function testVersion1ScheduledImportObeysMaxRunTime() {
         global $CFG, $DB;
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //set the log file name to a fixed value
         $filepath = $CFG->dataroot;
@@ -1205,7 +1210,7 @@ class version1DatabaseLoggingTest extends rlip_test {
         $file = $tempdir .'userfile2.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
-        $provider = new rlip_importprovider_userfile_delay($file);
+        $provider = new rlip_importprovider_file_delay($file,'user');
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);
@@ -1690,10 +1695,10 @@ class version1DatabaseLoggingTest extends rlip_test {
     public function testMaxRuntimeExceededLogsCorrectEndTime() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 
         $import_file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfiledelay.csv';
-        $provider = new rlip_importprovider_userfile_delay($import_file);
+        $provider = new rlip_importprovider_file_delay($import_file, 'user');
 
         //run the import
         $mintime = time();
