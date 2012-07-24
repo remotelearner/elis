@@ -1163,7 +1163,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     public function testProgramErrorContainsCorrectPrefix() {
         $record = new stdClass;
         $record->action = 'create';
-        $record->context = 'program';
+        $record->context = 'curriculum';
         $record->name = str_repeat('a', 256);
         $record->idnumber = 'testprogramidnumber';
 
@@ -1203,7 +1203,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     public function testClassInstanceErrorContainsCorrectPrefix() {
         $record = new stdClass;
         $record->action = 'create';
-        $record->context = 'track';
+        $record->context = 'class';
         $record->idnumber = str_repeat('a', 101);
         //TODO: remove?
         $record->assignment = 'testcourseidnumber';
