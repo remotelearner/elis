@@ -964,15 +964,21 @@ function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
 
             //get the display name from the plugin-specific language string
             $plugin_name = "{$plugintype}_{$name}";
+
+            //figure out the location (directory) configured for log file storage
             $logfilelocation = get_config($plugin_name, 'logfilelocation');
-            $logfilelocation = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR)  . RLIP_DEFAULT_LOG_PATH .
-                               DIRECTORY_SEPARATOR . trim($logfilelocation, DIRECTORY_SEPARATOR);
+            if (empty($logfilelocation)) {
+                $logfilelocation = RLIP_DEFAULT_LOG_PATH;
+            }
+
+            $logfilelocation = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.
+                               trim($logfilelocation, DIRECTORY_SEPARATOR);
             $logfileprefix = "{$pluginvalue}_{$name}";
             $logfiledate = $timestamp;
 
             //do a glob of all log files of this plugin name and of the previous day's date
             $files = array();
-            foreach (glob("{$logfilelocation}/{$logfileprefix}*{$logfiledate}*.log") as $file) {
+            foreach (glob("{$logfilelocation}/{$logfileprefix}_*{$logfiledate}*.log") as $file) {
                 $files[] = $file;
             }
 
