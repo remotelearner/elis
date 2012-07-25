@@ -482,7 +482,6 @@ class elis_user_import_test extends elis_database_test {
      */
     public function map_birthdate_field(&$input, $fieldkey) {
         if (isset($input[$fieldkey])) {
-
             $date = $input[$fieldkey];
 
             //determine which case we are in
