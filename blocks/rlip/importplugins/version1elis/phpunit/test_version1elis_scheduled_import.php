@@ -61,7 +61,10 @@ class version1elisScheduledImportTest extends rlip_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('user' => 'moodle');
+        return array(
+            'context' => 'moodle',
+            'user'   => 'moodle'
+        );
     }
 
     /**
