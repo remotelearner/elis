@@ -430,7 +430,45 @@ class elis_entity_import_test extends elis_database_test {
                              'startdate'   => 'Jan/13/2012',
                              'enddate'     => 'Jun/13/2012',
                              'autocreate'  => 'yes',
-                             'assignment'  => 'programidnumber'
+                         ),
+                         array(TEST_SETUP_CURRICULUM),
+                         ELIS_ENTITY_EXISTS
+                      );
+
+        // track create - date format YYYY.MM.DD
+        $testdata[] = array('create', 'track',
+                         array(
+                             'assignment'  => 'programidnumber',
+                             'idnumber'    => 'trackidnumber',
+                             'name'        => 'trackname',
+                             'startdate'   => '2000.12.25',
+                             'enddate'     => '2001.01.02',
+                         ),
+                         array(TEST_SETUP_CURRICULUM),
+                         ELIS_ENTITY_EXISTS
+                      );
+
+        // track create - date format DD-MM-YYYY
+        $testdata[] = array('create', 'track',
+                         array(
+                             'assignment'  => 'programidnumber',
+                             'idnumber'    => 'trackidnumber',
+                             'name'        => 'trackname',
+                             'startdate'   => '25-12-2000',
+                             'enddate'     => '24-11-2001',
+                         ),
+                         array(TEST_SETUP_CURRICULUM),
+                         ELIS_ENTITY_EXISTS
+                      );
+
+        // track create - date format MM/DD/YYYY
+        $testdata[] = array('create', 'track',
+                         array(
+                             'assignment'  => 'programidnumber',
+                             'idnumber'    => 'trackidnumber',
+                             'name'        => 'trackname',
+                             'startdate'   => '12/25/2000',
+                             'enddate'     => '11/24/2001',
                          ),
                          array(TEST_SETUP_CURRICULUM),
                          ELIS_ENTITY_EXISTS
@@ -513,6 +551,42 @@ class elis_entity_import_test extends elis_database_test {
                              'track'       => 'trackidnumber',
                          ),
                          array(TEST_SETUP_CURRICULUM, TEST_SETUP_COURSE, TEST_SETUP_TRACK),
+                         ELIS_ENTITY_EXISTS
+                      );
+
+        // class create - date format YYYY.MM.DD
+        $testdata[] = array('create', 'class',
+                         array(
+                             'assignment'  => 'courseidnumber',
+                             'idnumber'    => 'classidnumber',
+                             'startdate'   => '2000.12.25',
+                             'enddate'     => '2001.11.24'
+                         ),
+                         array(TEST_SETUP_COURSE),
+                         ELIS_ENTITY_EXISTS
+                      );
+
+        // class create - date format DD-MM-YYYY
+        $testdata[] = array('create', 'class',
+                         array(
+                             'assignment'  => 'courseidnumber',
+                             'idnumber'    => 'classidnumber',
+                             'startdate'   => '25-12-2000',
+                             'enddate'     => '20-11-2001'
+                         ),
+                         array(TEST_SETUP_COURSE),
+                         ELIS_ENTITY_EXISTS
+                      );
+
+        // class create - date format MM/DD/YYYY
+        $testdata[] = array('create', 'class',
+                         array(
+                             'assignment'  => 'courseidnumber',
+                             'idnumber'    => 'classidnumber',
+                             'startdate'   => '12/25/2000',
+                             'enddate'     => '11/20/2001'
+                         ),
+                         array(TEST_SETUP_COURSE),
                          ELIS_ENTITY_EXISTS
                       );
 
@@ -643,21 +717,42 @@ class elis_entity_import_test extends elis_database_test {
      */
     public function map_date_field(&$input, $fieldkey) {
         if (isset($input[$fieldkey])) {
-           $datestr = str_split($input[$fieldkey]);
-            // Convert: MMM/DD/YYYY into MMM.DD,YYYY
-            $replaceslash = '.';
-            for ($i = 0; $i < count($datestr); ++$i) {
-                if ($datestr[$i] == '/') {
-                    $datestr[$i] = $replaceslash;
-                    $replaceslash = ',';
+            $date = $input[$fieldkey];
+
+            //determine which case we are in
+            if (strpos($date, '/') !== false) {
+                $delimiter = '/';
+            } else if (strpos($date, '-') !== false) {
+                $delimiter = '-';
+            } else if (strpos($date, '.') !== false) {
+                $delimiter = '.';
+            } else {
+                return false;
+            }
+
+            $parts = explode($delimiter, $date);
+
+            if ($delimiter == '/') {
+                //MMM/DD/YYYY or MM/DD/YYYY format
+                list($month, $day, $year) = $parts;
+
+                $months = array('jan', 'feb', 'mar', 'apr',
+                                'may', 'jun', 'jul', 'aug',
+                                'sep', 'oct', 'nov', 'dec');
+                $pos = array_search(strtolower($month), $months);
+                if ($pos !== false) {
+                    $month = $pos + 1;
                 }
+            } else if ($delimiter == '-') {
+                //DD-MM-YYYY format
+                list($day, $month, $year) = $parts;
+            } else {
+                //YYYY.MM.DD format
+                list($year, $month, $day) = $parts;
             }
-            $datestr = implode('', $datestr);
-            $tzstr = usertimezone();
-            if (strpos($tzstr, 'UTC') === 0) {
-                $datestr .= ' '. $tzstr;
-            }
-            $input[$fieldkey] = strtotime($datestr); //TBD: timestamp
+
+            $timestamp = mktime(0, 0, 0, $month, $day, $year);
+            $input[$fieldkey] = $timestamp;
         }
     }
 

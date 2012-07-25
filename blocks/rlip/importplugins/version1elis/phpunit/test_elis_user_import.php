@@ -306,6 +306,51 @@ class elis_user_import_test extends elis_database_test {
                          ELIS_USER_EXISTS, MDL_USER_EXISTS
                       );
 
+        // Test date format YYYY.MM.DD
+        $testdata[] = array('create',
+                        array(
+                            'idnumber'  => 'testidnumber',
+                            'username'  => 'testusername',
+                            'firstname' => 'testfirstname',
+                            'lastname'  => 'testlastname',
+                            'email'     => 'test@email.com',
+                            'country'   => 'CA',
+                            'birthdate' => '2000.12.25',
+                        ),
+                        NO_TEST_SETUP,
+                        ELIS_USER_EXISTS, MDL_USER_EXISTS
+                     );
+
+        // Test date format DD-MM-YYYY
+        $testdata[] = array('create',
+                        array(
+                            'idnumber'  => 'testidnumber',
+                            'username'  => 'testusername',
+                            'firstname' => 'testfirstname',
+                            'lastname'  => 'testlastname',
+                            'email'     => 'test@email.com',
+                            'country'   => 'CA',
+                            'birthdate' => '25-12-2000',
+                        ),
+                        NO_TEST_SETUP,
+                        ELIS_USER_EXISTS, MDL_USER_EXISTS
+                     );
+
+        // Test date format MM/DD/YYYY
+        $testdata[] = array('create',
+                        array(
+                            'idnumber'  => 'testidnumber',
+                            'username'  => 'testusername',
+                            'firstname' => 'testfirstname',
+                            'lastname'  => 'testlastname',
+                            'email'     => 'test@email.com',
+                            'country'   => 'CA',
+                            'birthdate' => '12/25/2000',
+                        ),
+                        NO_TEST_SETUP,
+                        ELIS_USER_EXISTS, MDL_USER_EXISTS
+                     );
+
         // update tests - all identifying fields
         $testdata[] = array('update',
                          array(
@@ -437,23 +482,42 @@ class elis_user_import_test extends elis_database_test {
      */
     public function map_birthdate_field(&$input, $fieldkey) {
         if (isset($input[$fieldkey])) {
-            $datestr = str_split($input[$fieldkey]);
-            // Convert: MMM/DD/YYYY into MMM.DD,YYYY
-            $replaceslash = '.';
-            for ($i = 0; $i < count($datestr); ++$i) {
-                if ($datestr[$i] == '/') {
-                    $datestr[$i] = $replaceslash;
-                    $replaceslash = ',';
+            $date = $input[$fieldkey];
+
+            //determine which case we are in
+            if (strpos($date, '/') !== false) {
+                $delimiter = '/';
+            } else if (strpos($date, '-') !== false) {
+                $delimiter = '-';
+            } else if (strpos($date, '.') !== false) {
+                $delimiter = '.';
+            } else {
+                return false;
+            }
+
+            $parts = explode($delimiter, $date);
+
+            if ($delimiter == '/') {
+                //MMM/DD/YYYY or MM/DD/YYYY format
+                list($month, $day, $year) = $parts;
+
+                $months = array('jan', 'feb', 'mar', 'apr',
+                                'may', 'jun', 'jul', 'aug',
+                                'sep', 'oct', 'nov', 'dec');
+                $pos = array_search(strtolower($month), $months);
+                if ($pos !== false) {
+                    $month = $pos + 1;
                 }
+            } else if ($delimiter == '-') {
+                //DD-MM-YYYY format
+                list($day, $month, $year) = $parts;
+            } else {
+                //YYYY.MM.DD format
+                list($year, $month, $day) = $parts;
             }
-            $datestr = implode('', $datestr);
-            $tzstr = usertimezone();
-            if (strpos($tzstr, 'UTC') === 0) {
-                $datestr .= ' '. $tzstr;
-            }
-            $timestamp = strtotime($datestr);
+
+            $timestamp = mktime(0, 0, 0, $month, $day, $year);
             $input[$fieldkey] = strftime('%Y/%m/%d', $timestamp);
-            //mtrace("map_date_field(input['{$fieldkey}']) => strtotime('{$datestr}') ...=> {$input[$fieldkey]}");
         }
     }
 
