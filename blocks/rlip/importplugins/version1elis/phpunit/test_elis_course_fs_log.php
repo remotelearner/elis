@@ -380,6 +380,21 @@ class version1ELISCourseFSLogTest extends rlip_test {
     }
 
     /**
+     * Validate log message for an invalid action value for the course
+     * entity type
+     */
+    public function testLogsInvalidCourseAction() {
+        //data
+        $data = array('action' => 'bogus',
+                      'context' => 'course',
+                      'shortname' => 'testshortname');
+        $expected_message = "[course.csv line 2] Course could not be processed. Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'course');
+    }
+
+    /**
      * Validate idnumber validation works on course delete
      */
     public function testELISCourseInvalidIdnumberDelete() {

@@ -629,6 +629,21 @@ class version1ELISProgramFSLogTest extends rlip_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
+    /**
+     * Validate log message for an invalid action value for the program
+     * entity type
+     */
+    public function testLogsInvalidProgramAction() {
+        //data
+        $data = array('action' => 'bogus',
+                      'context' => 'curriculum',
+                      'idnumber' => 'testprogramidnumber');
+        $expected_message = "[program.csv line 2] Program could not be processed. Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'course');
+    }
+
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('crlm_curriculum', dirname(__FILE__).'/programtable.csv');
