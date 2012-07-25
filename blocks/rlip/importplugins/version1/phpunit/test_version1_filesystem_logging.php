@@ -6635,67 +6635,6 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
-    /*
-     * Validate that all log files from the previous day are bundled into a zip file
-     * and named with the previous day's date
-     */
-    function testVersion1ImportLogZipsDaily() {
-        global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->libdir .'/filestorage/zip_archive.php');
-
-        // clean-up any existing log & zip files
-        self::cleanup_log_files();
-        self::cleanup_zip_files();
-
-        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
-
-        $plugin_type = 'import';
-        $plugin = 'rlipimport_version1';
-        $format = get_string('logfile_timestamp','block_rlip');
-
-        $USER->timezone = 99;
-        // create some log files to be zipped by the cron job
-        // Way earlier then any real existing files!
-        $starttime = make_timestamp(1971, 1, 3);
-        $filenames = array();
-        for ($i = 0; $i < 10; ++$i) {
-            $filenames[$i] = rlip_log_file_name($plugin_type, $plugin, '', 'user',
-                                           false, $starttime + $i * 3600);
-            //write out a line to the logfile
-            $logfile = new rlip_fileplugin_log($filenames[$i]);
-            $logfile->open(RLIP_FILE_WRITE);
-            $logfile->write(array('test entry'));
-            $logfile->close();
-        }
-
-        //call cron job that zips the specified day's log files
-        $zipfiles = rlip_compress_logs_cron('bogus', 0, $starttime);
-        $this->assertTrue(!empty($zipfiles));
-
-        //was a zip file created?
-        //verify that the compressed file exists
-        $exists = file_exists($zipfiles[0]);
-        $this->assertTrue($exists);
-
-        //open zip_archive and verify all logs included
-        $zip = new zip_archive();
-        $result = $zip->open($zipfiles[0]);
-        $this->assertTrue($result);
-        $this->assertEquals(10, $zip->count());
-        $zip->close();
-
-        //verify that the log files created are gone...
-        for ($i = 0; $i < 10; ++$i) {
-            $exists = file_exists($filenames[$i]);
-            $this->assertFalse($exists);
-        }
-
-        // delete the test zip
-        @unlink($zipfiles[0]);
-    }
-
     /**
      * Validate that general enrolment errors are only displayed for enrolments
      * on the course context on enrolment create
