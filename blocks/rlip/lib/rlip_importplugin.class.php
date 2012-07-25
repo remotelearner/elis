@@ -627,8 +627,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      * @param int    $maxruntime   The max time in seconds to complete import
      *                             default: 0 => unlimited time
      * @param object $state        Previous ran state data to continue from
-     * @return mixed object        Current state of import processing
-     *                             or null for success.
+     * @return mixed object        Current state of import processing,
+     *                             null for success, false if file is skipped.
      */
     function process_import_file($entity, $maxruntime = 0, $state = null) {
         global $CFG;
@@ -645,7 +645,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //fetch a file plugin for the current file
         $fileplugin = $this->provider->get_import_file($entity);
         if ($fileplugin === false) {
-            return null; // no error cause we're just gonna skip this entity
+            return false; // no error cause we're just gonna skip this entity
         }
 
         // must count import files lines in case of error
@@ -663,7 +663,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         $fileplugin->open(RLIP_FILE_READ);
         if (!$header = $fileplugin->read()) {
-            return null; // no error cause we're just gonna skip this entity
+            return false; // no error cause we're just gonna skip this entity
         }
         //initialize line number
         $this->linenumber = 0;
@@ -787,6 +787,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         //determine the entities that represent the different files to process
         $entities = $this->get_import_entities();
 
+        //track whether some file was processed
+        $file_processed = false;
+
         //process each import file
         foreach ($entities as $entity) {
             $starttime = time();
@@ -796,8 +799,13 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 }
                 unset($state->entity);
             }
-            if (($result = $this->process_import_file($entity, $maxruntime,
-                                                      $state)) !== null) {
+
+            $result = $this->process_import_file($entity, $maxruntime, $state);
+
+            //flag a file having been processed if method was successful
+            $file_processed = $file_processed || ($result === NULL);
+
+            if ($result !== NULL && $result !== false) {
                 if ($this->fslogger) {
                     //todo: look at a better way to do this for non-flat
                     //file formats like XML
@@ -816,7 +824,10 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             }
             if ($maxruntime) {
                 $usedtime = time() - $starttime;
-                if ($usedtime  < $maxruntime) {
+
+                //NOTE: if no file was processed, we should keep running
+                //this will never hapen in practise but is helpful in unit testing
+                if ($usedtime < $maxruntime || !$file_processed) {
                     $maxruntime -= $usedtime;
                 } else if (($nextentity = next($entities)) !== false) {
                     // import time limit already exceeded, log & exit
@@ -828,6 +839,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                         $filename = $fileplugin->get_filename();
                     }
                     //flush db log record
+                    //TODO: set end time?
                     $this->dblogger->flush($filename);
                     $state = new stdClass;
                     $state->result = false;
