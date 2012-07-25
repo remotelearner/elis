@@ -62,6 +62,20 @@ class rlip_fileplugin_inputclosed extends rlip_fileplugin_readmemory {
 }
 
 /**
+ * Mock file plugin that never returns data
+ */
+class rlip_fileplugin_nodata extends rlip_fileplugin_readmemory {
+    /**
+     * Read one entry from the file
+     *
+     * @return array The entry read
+     */
+    function read() {
+        return false;
+    }
+}
+
+/**
  * Mock file plugin provider that supplies the import with our mock file plugin
  */
 class rlip_importprovider_mock extends rlip_importprovider {
@@ -77,6 +91,22 @@ class rlip_importprovider_mock extends rlip_importprovider {
                       array('sampleentity', 'sampleaction'));
 
         return new rlip_fileplugin_readmemory($data);
+    }
+}
+
+/**
+ * File plugin provider that always returns false instead of an actual file plugin
+ */
+class rlip_importprovider_false extends rlip_importprovider {
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        return false;
     }
 }
 
@@ -142,6 +172,25 @@ class rlip_importprovider_multiple extends rlip_importprovider {
         }
 
         return new rlip_fileplugin_readmemory($data);
+    }
+}
+
+/**
+ * Mock file plugin provider that returns a data-less file plugin
+ */
+class rlip_importprovider_nodata extends rlip_importprovider {
+    /**
+     * Hook for providing a file plugin for a particular
+     * import entity type
+     *
+     * @param string $entity The type of entity
+     * @return object The file plugin instance, or false if not applicable
+     */
+    function get_import_file($entity) {
+        $data = array(array('entity', 'action'),
+                      array('sampleentity', 'sampleaction'));
+
+        return new rlip_fileplugin_nodata($data);
     }
 }
 
@@ -323,5 +372,37 @@ class importPluginTest extends rlip_test {
         //validation
         $this->assertTrue($fslogger->get_manual());
         @rmdir($CFG->dataroot . DIRECTORY_SEPARATOR . 'bogus');
+    }
+
+    /**
+     * Validate that the process_import_file method returns false when an invalid
+     * entity is specified
+     */
+    public function testProcessImportFileReturnsFalseForInvalidEntity() {
+        $provider = new rlip_importprovider_false();
+
+        $importplugin = new rlip_importplugin_sample($provider);
+        $importplugin->run();
+
+        $result = $importplugin->process_import_file('bogusentity', 0, NULL);
+
+        //method should return false instead of NULL, types are important
+        $this->assertSame(false, $result);
+    }
+
+    /**
+     * Validate that the process_import_file method returns false when and
+     * import file is missing 
+     */
+    public function testProcessImportFileReturnsFalseForMissingFile() {
+        $provider = new rlip_importprovider_nodata();
+
+        $importplugin = new rlip_importplugin_sample($provider);
+        $importplugin->run();
+
+        $result = $importplugin->process_import_file('bogusentity', 0, NULL);
+
+        //method should return false instead of NULL, types are important
+        $this->assertSame(false, $result);
     }
 }

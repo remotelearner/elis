@@ -106,6 +106,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
             'elis_scheduled_tasks'  => 'elis_core',
             'events_queue'          => 'moodle',
             'events_queue_handlers' => 'moodle',
+            'grade_grades'          => 'moodle',
             RLIP_LOG_TABLE          => 'block_rlip',
             RLIP_SCHEDULE_TABLE     => 'block_rlip',
             course::TABLE           => 'elis_program',
