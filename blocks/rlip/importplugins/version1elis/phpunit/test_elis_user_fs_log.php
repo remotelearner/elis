@@ -983,6 +983,20 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     }
 
     /**
+     * Validate log message for an invalid action value for the user
+     * entity type
+     */
+    public function testLogsInvalidUserAction() {
+        //data
+        $data = array('action' => 'bogus',
+                      'username' => 'testusername');
+        $expected_message = "[user.csv line 2] User could not be processed. Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'user');
+    }
+
+    /**
      * Asserts that a record in the given table exists
      *
      * @param string $table The database table to check

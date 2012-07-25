@@ -843,6 +843,21 @@ class version1ELISClassFSLogTest extends rlip_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
+    /**
+     * Validate log message for an invalid action value for the class
+     * entity type
+     */
+    public function testLogsInvalidClassAction() {
+        //data
+        $data = array('action' => 'bogus',
+                      'context' => 'class',
+                      'idnumber' => 'testclassid');
+        $expected_message = "[class.csv line 2] Class instance could not be processed. Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'course');
+    }
+
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('crlm_class', dirname(__FILE__).'/classtable.csv');

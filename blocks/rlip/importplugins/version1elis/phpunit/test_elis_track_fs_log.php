@@ -466,6 +466,21 @@ class version1ELISTrackFSLogTest extends rlip_test {
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
+    /**
+     * Validate log message for an invalid action value for the track
+     * entity type
+     */
+    public function testLogsInvalidTrackAction() {
+        //data
+        $data = array('action' => 'bogus',
+            'context' => 'track',
+            'idnumber' => 'testidnumber');
+        $expected_message = "[track.csv line 2] Track could not be processed. Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'course');
+    }
+
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('crlm_track', dirname(__FILE__).'/tracktable.csv');
