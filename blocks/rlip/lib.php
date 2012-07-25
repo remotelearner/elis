@@ -1164,7 +1164,7 @@ function rlip_send_log_email($plugin, $recipient, $archive_name) {
     //obtain email contents
     $plugindisplay = get_string('pluginname', $plugin);
     $subject = get_string('notificationemailsubject', 'block_rlip', $plugindisplay);
-    $message = get_string('notificationemailmessage', 'block_rlip');
+    $message = get_string('notificationemailmessage', 'block_rlip', $plugindisplay);
 
     //send the email
     email_to_user($recipient, $admin, $subject, $message, '', $archive_name, $archive_name);
