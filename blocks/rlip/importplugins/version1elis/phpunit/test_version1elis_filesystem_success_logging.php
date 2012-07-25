@@ -67,6 +67,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
             RLIP_LOG_TABLE                        => 'block_rlip',
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
             clusterassignment::TABLE              => 'elis_program',
+            curriculumcourse::TABLE               => 'elis_program',
             course::TABLE                         => 'elis_program',
             curriculum::TABLE                     => 'elis_program',
             curriculumstudent::TABLE              => 'elis_program',
