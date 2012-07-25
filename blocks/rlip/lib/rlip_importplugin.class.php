@@ -828,6 +828,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                         $filename = $fileplugin->get_filename();
                     }
                     //flush db log record
+                    //TODO: set end time?
                     $this->dblogger->flush($filename);
                     $state = new stdClass;
                     $state->result = false;

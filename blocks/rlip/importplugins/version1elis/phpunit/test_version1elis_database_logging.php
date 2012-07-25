@@ -92,6 +92,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
@@ -102,9 +103,11 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         return array(
             'config_plugins'        => 'moodle',
             'context'               => 'moodle',
+            'elis_scheduled_tasks'  => 'elis_core',
             'events_queue'          => 'moodle',
             'events_queue_handlers' => 'moodle',
             RLIP_LOG_TABLE          => 'block_rlip',
+            RLIP_SCHEDULE_TABLE     => 'block_rlip',
             course::TABLE           => 'elis_program',
             curriculum::TABLE       => 'elis_program',
             curriculumcourse::TABLE => 'elis_program',
@@ -743,5 +746,94 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         // clean-up data file & tempdir
         @unlink($file);
         @rmdir($tempdir);
+    }
+
+    /*
+     * Serve filenames for the different entities, including number of lines
+     *
+     * @return array Pameter data, as expected by the test method
+     */
+    public function fileAndLineCountProvider() {
+        return array(array('userfile2.csv', 'user', 3),
+                     array('coursefile2.csv', 'course', 1),
+                     array('enrolmentfile2.csv', 'enrolment', 1));
+    }
+
+    /**
+     * Validate that SCHEDULED import obeys maxruntime
+     *
+     * @dataProvider fileAndLineCountProvider
+     * @param string $filename The name of the file we are importing
+     * @param string $entity The entity type, such as 'user'
+     * @param int $numlines The total number of lines in the file
+     */
+    public function testScheduledImportObeysMaxRunTime($filename, $entity, $numlines) {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        $file_path = '/block_rlip_phpunit/';
+        $file_name = $filename;
+        set_config('schedule_files_path', $file_path, 'rlipimport_version1elis');
+        set_config($entity.'_schedule_file', $file_name, 'rlipimport_version1elis');
+
+        //set up the test directory
+        $testdir = $CFG->dataroot . $file_path;
+        @mkdir($testdir, 0777, true);
+        @copy(dirname(__FILE__) ."/{$file_name}", $testdir.$file_name);
+
+        //create the job
+        $data = array('plugin' => 'rlipimport_version1elis',
+                      'period' => '5m',
+                      'type' => 'rlipimport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //set next runtime values to a known state
+        $DB->execute("UPDATE {elis_scheduled_tasks}
+                          SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."}
+                      SET nextruntime = ?", array(1));
+
+        //run the import
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $mintime = time();
+        run_ipjob($taskname, -1);
+        $maxtime = time();
+
+        //clean-up data file & test dir
+        @unlink($testdir.$file_name);
+        @rmdir($testdir);
+
+        //validation
+        $params = array(
+            'export' => 0,
+            'plugin' => 'rlipimport_version1elis',
+            'targetstarttime' => 1,
+            'filesuccesses' => 0,
+            'filefailures' => 0,
+            'storedsuccesses' => 0,
+            'storedfailures' => 0
+        );
+        $exists = $DB->record_exists(RLIP_LOG_TABLE, $params);
+
+
+        $log = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        //validate entity type
+        $this->assertEquals($entity, $log->entitytype);
+
+        //validate status message
+        $a = new stdClass;
+        $a->filename = $filename;
+        $a->recordsprocessed = 0;
+        $a->totalrecords = $numlines;
+        $expected_message = get_string('dblogimportexceedstimelimit', 'block_rlip', $a);
+        $this->assertEquals($expected_message, $log->statusmessage);
+
+        //validate logged start time
+        $this->assertGreaterThanOrEqual($mintime, $log->starttime);
+        $this->assertLessThanOrEqual($maxtime, $log->starttime);
+
+        //validate logged end time
+        $this->assertGreaterThanOrEqual($mintime, $log->endtime);
+        $this->assertLessThanOrEqual($maxtime, $log->endtime);
     }
 }
