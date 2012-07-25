@@ -47,7 +47,7 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $tables = array(RLIP_LOG_TABLE => 'block_rlip',
@@ -341,6 +341,22 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
 
         $expected_error = "[enrolment.csv line 2] Enrolment could not be created. User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" is already enrolled in program \"testprogramidnumber\".\n";
         $this->assert_data_produces_error($data, $expected_error, 'enrolment');
+    }
+
+    /**
+     * Validate log message for an invalid action value for program enrolments
+     */
+    public function testLogsInvalidProgramEnrolmentAction() {
+        //data
+        $data = array('action' => 'bogus',
+                      'context' => 'curriculum_testprogramidnumber',
+                      'user_idnumber' => 'testidnumber',
+                      'user_username' => 'testusername',
+                      'user_email' => 'test@user.com');
+        $expected_message = "[enrolment.csv line 2] Enrolment in \"curriculum_testprogramidnumber\" could not be processed. Action of \"bogus\" is not supported.\n";
+
+        //validation
+        $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
 
     protected function load_csv_data() {

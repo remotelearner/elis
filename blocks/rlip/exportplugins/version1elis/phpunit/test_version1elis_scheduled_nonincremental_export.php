@@ -241,4 +241,44 @@ class version1elisScheduledNonincrementalExportTest extends rlip_test {
         $eof = fgetcsv($handle);
         $this->assertEquals(false, $eof);
     }
+
+    /**
+     * Validate that, when the available runtime is exceeded, IP leaves the next
+     * runtime for this plugin unchanged
+     */
+    public function testExportLeavesNextRuntimeWhenTimeLimitExceeded() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        //load data
+        $this->load_csv_data();
+
+        //set up configuration
+        set_config('export_path', '/rlip/rlipexport_version1elis', 'rlipexport_version1elis');
+        set_config('export_file', 'export_version1elis.csv', 'rlipexport_version1elis');
+        set_config('nonincremental', 1, 'rlipexport_version1elis');
+
+        //create the job
+        $data = array('plugin' => 'rlipexport_version1elis',
+                      'period' => '5m',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //set next runtime values to a known state
+        $DB->execute("UPDATE {elis_scheduled_tasks}
+                          SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."}
+                      SET nextruntime = ?", array(1));
+
+        //run the job
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname, -1);
+
+        //validate that nextruntime values haven't changed
+        $exists = $DB->record_exists('elis_scheduled_tasks', array('nextruntime' => 1));
+        $this->assertTrue($exists);
+
+        $exists = $DB->record_exists(RLIP_SCHEDULE_TABLE, array('nextruntime' => 1));
+        $this->assertTrue($exists);
+    }
 }
