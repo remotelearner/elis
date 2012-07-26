@@ -89,10 +89,12 @@ class rlip_importplugin_sample extends rlip_importplugin_base {
     }
 
     /**
-     * Specifies flag for indicating that this plugin is for testing only
+     * Specifies flag for indicating whether this plugin is actually available
+     * on the current system, particularly for viewing in the UI and running
+     * scheduled tasks
      */
-    function is_test_plugin() {
+    function is_available() {
         //this plugin is for testing only
-        return true;
+        return false;
     }
 }
