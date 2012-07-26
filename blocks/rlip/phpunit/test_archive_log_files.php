@@ -56,16 +56,28 @@ class archiveLogFileTest extends rlip_test {
      *               the import plugin and the log path
      */
     public function importPluginProvider() {
-        return array(
+        global $CFG;
+
+        $runs = array(
             array('import', 'rlipimport_version1', ''),
             array('import', 'rlipimport_version1', RLIP_DEFAULT_LOG_PATH),
-            array('import', 'rlipimport_version1elis', ''),
-            array('import', 'rlipimport_version1elis', RLIP_DEFAULT_LOG_PATH),
             array('export', 'rlipexport_version1', ''),
             array('export', 'rlipexport_version1', RLIP_DEFAULT_LOG_PATH),
-            array('export', 'rlipexport_version1elis', ''),
-            array('export', 'rlipexport_version1elis', RLIP_DEFAULT_LOG_PATH),
         );
+
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            //add the PM plugins if applicable
+            $pm_runs = array(
+                array('import', 'rlipimport_version1elis', ''),
+                array('import', 'rlipimport_version1elis', RLIP_DEFAULT_LOG_PATH),
+                array('export', 'rlipexport_version1elis', ''),
+                array('export', 'rlipexport_version1elis', RLIP_DEFAULT_LOG_PATH),
+            );
+
+            $runs = array_merge($runs, $pm_runs);
+        }
+
+        return $runs;
     }
 
     /**

@@ -51,11 +51,13 @@ abstract class rlip_dataplugin {
     abstract function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null);
 
     /**
-     * Specifies flag for indicating that this plugin is for testing only
+     * Specifies flag for indicating whether this plugin is actually available
+     * on the current system, particularly for viewing in the UI and running
+     * scheduled tasks
      */
-    function is_test_plugin() {
-        //by default, assume the plugin is an "actual" plugin
-        return false;
+    function is_available() {
+        //by default, assume the plugin is available
+        return true;
     }
 
     /**

@@ -25,8 +25,6 @@
  */
 
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once ($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/user.class.php'));
 
 /**
  * Legacy PM / ELIS import
@@ -652,6 +650,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function user_create($record, $filename) {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/user.class.php'));
 
         // Custom fields validation
         /*if (!$this->validate_user_profile_data($record, $filename)) {
@@ -851,6 +851,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function user_update($record, $filename) {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/user.class.php'));
 
         //field length checking
         $lengthcheck = $this->check_user_field_lengths($record, $filename);
@@ -959,6 +961,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function user_delete($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/user.class.php'));
 
         $params = array();
         $errors = array();
@@ -1031,6 +1035,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function handle_user_createorupdate($record, $action) {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
 
         //check config setting
@@ -1282,7 +1287,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return string The action to use in the import
      */
     function handle_class_createorupdate($record, $action) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
 
         //check config setting
@@ -1315,7 +1321,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return string The action to use in the import
      */
     function handle_course_createorupdate($record, $action) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
 
         //check config setting
@@ -1360,7 +1367,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return string The action to use in the import
      */
     function handle_program_createorupdate($record, $action) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/curriculum.class.php'));
 
         //check config setting
@@ -1393,7 +1401,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return string The action to use in the import
      */
     function handle_track_createorupdate($record, $action) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/track.class.php'));
 
         //check config setting
@@ -1426,7 +1435,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return string The action to use in the import
      */
     function handle_userset_createorupdate($record, $action) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
         //check config setting
@@ -1768,7 +1778,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function get_available_fields($entitytype) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
 
         if ($this->plugin_supports($entitytype) !== false) {
             $attribute = 'available_fields_'.$entitytype;
@@ -2419,7 +2430,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function course_create($record, $filename) {
         global $CFG, $DB;
-        require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
         //field length checking
         $lengthcheck = $this->check_course_field_lengths($record, $filename);
@@ -2486,7 +2497,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function course_delete($record, $filename) {
         global $CFG, $DB;
-        require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
         if (isset($record->idnumber)) {
             if (!$DB->record_exists('crlm_course', array('idnumber' => $record->idnumber))) {
@@ -2521,7 +2532,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function course_update($record, $filename) {
         global $CFG, $DB;
-        require_once ($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         $message = "";
 
         //field length checking
@@ -2759,7 +2770,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return string The action to use in the import
      */
     function handle_enrolment_createorupdate($record, $action) {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/instructor.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
@@ -3184,6 +3196,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function track_enrolment_delete($record, $filename, $idnumber) {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
@@ -4309,5 +4322,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return implode(', ', $fragments);
     }
 
+    /**
+     * Specifies flag for indicating whether this plugin is actually available
+     * on the current system, particularly for viewing in the UI and running
+     * scheduled tasks
+     */
+    function is_available() {
+        global $CFG;
+
+        //this plugin is only available if the PM code is present
+        return file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
+    }
 }
 
