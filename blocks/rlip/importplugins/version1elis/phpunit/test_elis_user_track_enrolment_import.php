@@ -81,9 +81,9 @@ class elis_user_track_enrolment_test extends elis_database_test {
      * @return array Parameter data, as needed by the test methods
      */
     function user_identifier_provider() {
-        return array(array('testuserusername', NULL, NULL),
-                     array(NULL, 'testuser@email.com', NULL),
-                     array(NULL, NULL, 'testuseridnumber'));
+        return array(array('create', 'delete', 'testuserusername', NULL, NULL),
+                     array('enrol', 'unenrol', NULL, 'testuser@email.com', NULL),
+                     array('enroll', 'unenroll', NULL, NULL, 'testuseridnumber'));
     }
 
     /**
@@ -94,7 +94,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
      * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
      * @dataProvider user_identifier_provider
      */
-    function test_elis_user_track_enrolment_import($username, $email, $idnumber) {
+    function test_elis_user_track_enrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -122,6 +122,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
 
         //run the track enrolment create action
         $record = new stdClass;
+        $record->action = $actioncreate;
         $record->context = 'track_testtrackidnumber';
         if ($username != NULL) {
             $record->user_username = $user->username;
@@ -135,7 +136,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
-        $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
         //validation
         $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id,
@@ -150,7 +151,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
      * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
      * @dataProvider user_identifier_provider
      */
-    function test_elis_user_track_unenrolment_import($username, $email, $idnumber) {
+    function test_elis_user_track_unenrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -183,6 +184,7 @@ class elis_user_track_enrolment_test extends elis_database_test {
 
         //run the track enrolment delete action
         $record = new stdClass;
+        $record->action = $actiondelete;
         $record->context = 'track_testtrackidnumber';
         if ($username != NULL) {
             $record->user_username = $user->username;
@@ -196,9 +198,10 @@ class elis_user_track_enrolment_test extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
-        $importplugin->track_enrolment_delete($record, 'bogus', 'testtrackidnumber');
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
         //validation
         $this->assertEquals(0, $DB->count_records(usertrack::TABLE));
     }
+
 }
