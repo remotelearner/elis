@@ -49,6 +49,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                            'country');
 
     static $import_fields_user_delete = array(array('username', 'email', 'idnumber'));
+    static $import_fields_user_disable = array(array('username', 'email', 'idnumber'));
 
     //fields that are available during the "course" (i.e. pm entity) import
     static $available_fields_user = array('username', 'password', 'idnumber', 'firstname',
@@ -168,6 +169,18 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     static $cluster_field_keywords = array('action', 'context', 'name', 'display', 'parent');
 
     static $import_fields_enrolment_create = array(
+        'context',
+        array('user_idnumber', 'user_username', 'user_email')
+    );
+
+    // legacy action 'enrol'
+    static $import_fields_enrolment_enrol = array(
+        'context',
+        array('user_idnumber', 'user_username', 'user_email')
+    );
+
+    // legacy action 'enroll'
+    static $import_fields_enrolment_enroll = array(
         'context',
         array('user_idnumber', 'user_username', 'user_email')
     );
@@ -641,6 +654,18 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Add a user
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function user_add($record, $filename) {
+        //note: this is only here due to legacy 1.9 weirdness
+        return $this->user_create($record, $filename);
+    }
+
+    /**
      * Create a user
      * @todo: consider factoring this some more once other actions exist
      *
@@ -949,6 +974,18 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
+    }
+
+    /**
+     * Disable a user
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @return boolean true on success, otherwise false
+     */
+    function user_disable($record, $filename) {
+        //note: this is only here due to legacy 1.9 weirdness
+        return $this->user_delete($record, $filename);
     }
 
     /**
@@ -2862,11 +2899,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             'user'
         );
 
-        $valid_actions = array('create', 'update', 'delete');
+        $valid_actions = array('create', 'update', 'delete', 'enrol', 'enroll', 'unenrol', 'unenroll');
 
         if (!in_array($context, $valid_contexts)) {
             if (in_array($action, $valid_actions)) {
-                $message = "Enrolment could not be {$record->action}d.";
+                if ($action == 'enrol' || $action == 'enroll') {
+                    $message = "Enrolment could not be created.";
+                } else if ($action == 'unenrol' || $action == 'unenroll') {
+                    $message = "Enrolment could not be deleted.";
+                } else {
+                    $message = "Enrolment could not be {$record->action}d.";
+                }
             } else {
                 $message = "Enrolment could not be processed.";
             }
@@ -3022,6 +3065,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return true;
     }
 
+    // Legacy support for 'enroll' action
+    function curriculum_enrolment_enroll($record, $filename, $idnumber) {
+        return $this->curriculum_enrolment_create($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'enrol' action
+    function curriculum_enrolment_enrol($record, $filename, $idnumber) {
+        return $this->curriculum_enrolment_create($record, $filename, $idnumber);
+    }
+
     function curriculum_enrolment_create($record, $filename, $idnumber) {
         global $DB, $CFG;
 
@@ -3054,6 +3107,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
+    }
+
+    // Legacy support for 'unenroll' action
+    function curriculum_enrolment_unenroll($record, $filename, $idnumber) {
+        return $this->curriculum_enrolment_delete($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'unenrol' action
+    function curriculum_enrolment_unenrol($record, $filename, $idnumber) {
+        return $this->curriculum_enrolment_delete($record, $filename, $idnumber);
     }
 
     function curriculum_enrolment_delete($record, $filename, $idnumber) {
@@ -3135,6 +3198,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return true;
     }
 
+    // Legacy support for 'enrol' action
+    function track_enrolment_enrol($record, $filename, $idnumber) {
+        return $this->track_enrolment_create($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'enroll' action
+    function track_enrolment_enroll($record, $filename, $idnumber) {
+        return $this->track_enrolment_create($record, $filename, $idnumber);
+    }
+
     /**
      * Create a track enrolment
      *
@@ -3183,6 +3256,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
+    }
+
+    // Legacy support for 'unenrol' action
+    function track_enrolment_unenrol($record, $filename, $idnumber) {
+        return $this->track_enrolment_delete($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'unenroll' action
+    function track_enrolment_unenroll($record, $filename, $idnumber) {
+        return $this->track_enrolment_delete($record, $filename, $idnumber);
     }
 
     /**
@@ -3236,6 +3319,26 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
+    }
+
+    // Legacy support for 'enrol' action
+    function cluster_enrolment_enrol($record, $filename, $idnumber) {
+        return $this->cluster_enrolment_create($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'enroll' action
+    function cluster_enrolment_enroll($record, $filename, $idnumber) {
+        return $this->cluster_enrolment_create($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'unenrol' action
+    function cluster_enrolment_unenrol($record, $filename, $idnumber) {
+        return $this->cluster_enrolment_delete($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'unenroll' action
+    function cluster_enrolment_unenroll($record, $filename, $idnumber) {
+        return $this->cluster_enrolment_delete($record, $filename, $idnumber);
     }
 
     /**
@@ -3975,7 +4078,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $userid = $this->get_userid_from_record($record, $filename);
 
-        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+        if (!$DB->record_exists(instructor::TABLE, array('classid' => $crsid, 'userid' => $userid))) {
             $this->fslogger->log_failure("User with username \"{$record->user_username}\", email \"{$record->user_email}\", idnumber \"{$record->user_idnumber}\" is not enrolled in " .
                                          "class instance \"{$idnumber}\" as instructor.", 0, $filename, $this->linenumber, $record, "enrolment");
             return false;
@@ -4007,6 +4110,26 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         return true;
     }
 
+    // Legacy support for 'enrol' action
+    function class_enrolment_enrol($record, $filename, $idnumber) {
+        return $this->class_enrolment_create($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'enroll' action
+    function class_enrolment_enroll($record, $filename, $idnumber) {
+        return $this->class_enrolment_create($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'unenrol' action
+    function class_enrolment_unenrol($record, $filename, $idnumber) {
+        return $this->class_enrolment_delete($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'unenroll' action
+    function class_enrolment_unenroll($record, $filename, $idnumber) {
+        return $this->class_enrolment_delete($record, $filename, $idnumber);
+    }
+
     /**
      * Delete a student or instructor class instance enrolment
      *
@@ -4025,6 +4148,26 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             //run student import
             return $this->class_enrolment_delete_student($record, $filename, $idnumber);
         }
+    }
+
+    // Legacy support for 'enroll' action
+    function user_enrolment_enroll($record, $filename, $idnumber) {
+        return $this->user_enrolment_create($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'enrol' action
+    function user_enrolment_enrol($record, $filename, $idnumber) {
+        return $this->user_enrolment_create($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'unenroll' action
+    function user_enrolment_unenroll($record, $filename, $idnumber) {
+        return $this->user_enrolment_delete($record, $filename, $idnumber);
+    }
+
+    // Legacy support for 'unenrol' action
+    function user_enrolment_unenrol($record, $filename, $idnumber) {
+        return $this->user_enrolment_delete($record, $filename, $idnumber);
     }
 
     /**
