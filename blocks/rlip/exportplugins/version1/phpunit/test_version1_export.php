@@ -364,7 +364,7 @@ class version1ExportTest extends rlip_test {
      */
     private function create_data_record($userid, $fieldid, $data) {
         global $DB;
-z
+
         //set up and insert the record
         $datarecord = new stdClass;
         $datarecord->userid = $userid;

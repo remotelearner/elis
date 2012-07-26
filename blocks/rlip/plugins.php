@@ -65,9 +65,9 @@ foreach ($plugintypes as $plugintype) {
     $directory = str_replace($CFG->dirroot, $CFG->wwwroot, $directory);
 
     foreach ($plugins as $name => $path) {
-        //skip plugins used for testing only
+        //skip plugins used for testing only / ones that are not available
         $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$name}");
-        if ($instance->is_test_plugin()) {
+        if (!$instance->is_available()) {
             continue;
         }
 
