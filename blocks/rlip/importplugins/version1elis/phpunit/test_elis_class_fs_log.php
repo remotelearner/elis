@@ -49,10 +49,11 @@ class version1ELISClassFSLogTest extends rlip_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
-        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
+
+        $tables = array(
                      'user' => 'moodle',
                      'crlm_curriculum' => 'elis_program',
                      'crlm_class' => 'elis_program',
@@ -82,10 +83,10 @@ class version1ELISClassFSLogTest extends rlip_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-                     //RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'elis_scheduled_tasks' => 'elis_core',
                      RLIP_SCHEDULE_TABLE => 'block_rlip',
                      RLIP_LOG_TABLE => 'block_rlip',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      'user' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle',
@@ -252,9 +253,32 @@ class version1ELISClassFSLogTest extends rlip_test {
     }
 
     /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
+    }
+
+    /**
      * Validate that start date validation works on class create
      */
     public function testELISClassStartDateCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'startdate', 'customstartdate');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -268,9 +292,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'idnumber' => 'testclassid',
                       'assignment' => 'testcourseid',
                       'name' => 'testclassname',
-                      'startdate' => '01-02');
+                      'customstartdate' => '01-02');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. startdate value of \"01-02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. customstartdate value of \"01-02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -278,6 +302,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that start date validation works on class update
      */
     public function testELISClassStartDateUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'startdate', 'customstartdate');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -293,9 +320,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'idnumber' => 'testclassid',
                       'assignment' => 'testcourseid',
                       'name' => 'testclassname',
-                      'startdate' => '01-02');
+                      'customstartdate' => '01-02');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. startdate value of \"01-02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. customstartdate value of \"01-02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -303,6 +330,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that end date validation works on class create
      */
     public function testELISClassEndDateCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'enddate', 'customenddate');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -317,9 +347,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'name' => 'testclassname',
                       'assignment' => 'testcourseid',
                       'startdate' => '01-02-2012',
-                      'enddate' => '01.02');
+                      'customenddate' => '01.02');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. enddate value of \"01.02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. customenddate value of \"01.02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -327,6 +357,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that end date validation works on class update
     */
     public function testELISClassEndDateUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'enddate', 'customenddate');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -343,9 +376,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'name' => 'testclassname',
                       'assignment' => 'testcourseid',
                       'startdate' => '01-02-2012',
-                      'enddate' => '01.02');
+                      'customenddate' => '01.02');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. enddate value of \"01.02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. customenddate value of \"01.02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -353,6 +386,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that stat time validation works on class create
      */
     public function testELISClassStartTimeMinuteCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'starttimeminute', 'customstarttimeminute');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -368,9 +404,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'assignment' => 'testcourseid',
                       'startdate' => '01-02-2012',
                       'enddate' => '2012.01.02',
-                      'starttimeminute' => 7);
+                      'customstarttimeminute' => 7);
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. starttimeminute value of \"7\" is not on a five-minute boundary.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. customstarttimeminute value of \"7\" is not on a five-minute boundary.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -378,6 +414,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that start time validation works on class create
      */
     public function testELISClassStartTimeMinuteUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'starttimeminute', 'customstarttimeminute');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -395,9 +434,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'assignment' => 'testcourseid',
                       'startdate' => '01-02-2012',
                       'enddate' => '2012.01.02',
-                      'starttimeminute' => 7);
+                      'customstarttimeminute' => 7);
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. starttimeminute value of \"7\" is not on a five-minute boundary.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. customstarttimeminute value of \"7\" is not on a five-minute boundary.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -405,6 +444,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that end time validation works on class create
      */
     public function testELISClassEndTimeMinuteCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'endtimeminute', 'customendtimeminute');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -421,9 +463,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'startdate' => '01-02-2012',
                       'enddate' => '2012.01.02',
                       'starttimehour' => 5,
-                      'endtimeminute' => 6);
+                      'customendtimeminute' => 6);
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. endtimeminute value of \"6\" is not on a five-minute boundary.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. customendtimeminute value of \"6\" is not on a five-minute boundary.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -431,6 +473,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that start time validation works on class update
      */
     public function testELISClassEndTimeMinuteUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'endtimeminute', 'customendtimeminute');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -449,9 +494,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'startdate' => '01-02-2012',
                       'enddate' => '2012.01.02',
                       'starttimehour' => 5,
-                      'endtimeminute' => 6);
+                      'customendtimeminute' => 6);
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. endtimeminute value of \"6\" is not on a five-minute boundary.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. customendtimeminute value of \"6\" is not on a five-minute boundary.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -459,6 +504,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that max students validation works on class create
      */
     public function testELISClassMaxStudentsCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'maxstudents', 'custommaxstudents');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -476,9 +524,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enddate' => '2012.01.02',
                       'starttimehour' => 5,
                       'endtimeminute' => 5,
-                      'maxstudents' => -1);
+                      'custommaxstudents' => -1);
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. maxstudents value of \"-1\" is not a non-negative integer.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. custommaxstudents value of \"-1\" is not a non-negative integer.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -486,6 +534,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that max students validation works on class update
      */
     public function testELISClassMaxStudentsUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'maxstudents', 'custommaxstudents');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -505,9 +556,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enddate' => '2012.01.02',
                       'starttimehour' => 5,
                       'endtimeminute' => 5,
-                      'maxstudents' => -1);
+                      'custommaxstudents' => -1);
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. maxstudents value of \"-1\" is not a non-negative integer.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. custommaxstudents value of \"-1\" is not a non-negative integer.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -515,6 +566,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that enrol from waitlist validation works on class create
      */
     public function testELISClassEnrolFromWaitlistCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'enrol_from_waitlist', 'customenrol_from_waitlist');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -533,9 +587,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'starttimehour' => 5,
                       'endtimeminute' => 5,
                       'maxstudents' => 30,
-                      'enrol_from_waitlist' => 'invalidflag');
+                      'customenrol_from_waitlist' => 'invalidflag');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. enrol_from_waitlist value of \"invalidflag\" is not one of the available options (0, 1).\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. customenrol_from_waitlist value of \"invalidflag\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -543,6 +597,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that enrol from waitlist validation works on class update
      */
     public function testELISClassEnrolFromWaitlistUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'enrol_from_waitlist', 'customenrol_from_waitlist');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -563,9 +620,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'starttimehour' => 5,
                       'endtimeminute' => 5,
                       'maxstudents' => 30,
-                      'enrol_from_waitlist' => 'invalidflag');
+                      'customenrol_from_waitlist' => 'invalidflag');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. enrol_from_waitlist value of \"invalidflag\" is not one of the available options (0, 1).\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. customenrol_from_waitlist value of \"invalidflag\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -574,6 +631,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that track validation works on class create
      */
     public function testELISClassInvalidTrackCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'assignment', 'customassignment');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -586,7 +646,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'context' => 'class',
                       'idnumber' => 'testclassid',
                       'name' => 'testclassname',
-                      'assignment' => 'testcourseid',
+                      'customassignment' => 'testcourseid',
                       'startdate' => '01-02-2012',
                       'enddate' => '2012.01.02',
                       'starttimehour' => 5,
@@ -595,7 +655,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enrol_from_waitlist' => 1,
                       'track' => 'invalidtrack');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. assignment value of \"invalidtrack\" does not refer to a valid track.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. customassignment value of \"invalidtrack\" does not refer to a valid track.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -603,6 +663,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that track validation works on class create
      */
     public function testELISClassInvalidTrackUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'assignment', 'customassignment');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -617,7 +680,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'context' => 'class',
                       'idnumber' => 'testclassid',
                       'name' => 'testclassname',
-                      'assignment' => 'testcourseid',
+                      'customassignment' => 'testcourseid',
                       'startdate' => '01-02-2012',
                       'enddate' => '2012.01.02',
                       'starttimehour' => 5,
@@ -626,7 +689,7 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'enrol_from_waitlist' => 1,
                       'track' => 'invalidtrack');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. assignment value of \"invalidtrack\" does not refer to a valid track.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. customassignment value of \"invalidtrack\" does not refer to a valid track.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -634,6 +697,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that autoenrol validation works on class create
      */
     public function testELISClassAutoEnrolCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'enrol_from_waitlist', 'customenrol_from_waitlist');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -652,9 +718,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'starttimehour' => 5,
                       'endtimeminute' => 5,
                       'maxstudents' => 30,
-                      'enrol_from_waitlist' => 3);
+                      'customenrol_from_waitlist' => 3);
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. enrol_from_waitlist value of \"3\" is not one of the available options (0, 1).\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. customenrol_from_waitlist value of \"3\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -662,6 +728,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that autoenrol validation works on class update
      */
     public function testELISClassAutoEnrolUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'enrol_from_waitlist', 'customenrol_from_waitlist');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -682,9 +751,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'starttimehour' => 5,
                       'endtimeminute' => 5,
                       'maxstudents' => 30,
-                      'enrol_from_waitlist' => 3);
+                      'customenrol_from_waitlist' => 3);
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. enrol_from_waitlist value of \"3\" is not one of the available options (0, 1).\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. customenrol_from_waitlist value of \"3\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -692,6 +761,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that link validation works on class create
      */
     public function testELISClassLinkCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'link', 'customlink');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -711,9 +783,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'endtimeminute' => 5,
                       'maxstudents' => 30,
                       'enrol_from_waitlist' => 1,
-                      'link' => 'invalidmoodlecourse');
+                      'customlink' => 'invalidmoodlecourse');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be created. customlink value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -721,6 +793,9 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that link validation works on class update
      */
     public function testELISClassLinkUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'link', 'customlink');
+
         $record = new stdClass;
         $record->idnumber = 'testcourseid';
         $record->name = 'testcoursename';
@@ -742,9 +817,9 @@ class version1ELISClassFSLogTest extends rlip_test {
                       'endtimeminute' => 5,
                       'maxstudents' => 30,
                       'enrol_from_waitlist' => 1,
-                      'link' => 'invalidmoodlecourse');
+                      'customlink' => 'invalidmoodlecourse');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be updated. customlink value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -752,40 +827,49 @@ class version1ELISClassFSLogTest extends rlip_test {
     public function testClassInvalidIdentifyingFieldsOnCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'context', 'customcontext');
+
         $data = array(
             'action' => 'create'
         );
-        $expected_error = "[class.csv line 1] Import file class.csv was not processed because it is missing the following required column: context. Please fix the import file and re-upload it.\n";
+        $expected_error = "[class.csv line 1] Import file class.csv was not processed because it is missing the following required column: customcontext. Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'create',
-            'context' => ''
+            'customcontext' => ''
         );
         $expected_error = "[class.csv line 2] Entity could not be created.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => '',
-            'context' => ''
+            'customcontext' => ''
         );
         $expected_error = "[class.csv line 2] Entity could not be processed.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
-        $data = array(
-            'action' => 'create',
-            'context' => 'class',
-            'idnumber' => 'testidnumber'
-        );
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be created. Required field assignment is unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        //create mapping record
+        $this->create_mapping_record('course', 'assignment', 'customassignment');
 
         $data = array(
             'action' => 'create',
-            'context' => 'class',
-            'assignment' => 'testassignment'
+            'customcontext' => 'class',
+            'idnumber' => 'testidnumber'
         );
-        $expected_error = "[class.csv line 2] Class instance could not be created. Required field idnumber is unspecified or empty.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be created. Required field customassignment is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
+        $data = array(
+            'action' => 'create',
+            'customcontext' => 'class',
+            'customassignment' => 'testassignment'
+        );
+        $expected_error = "[class.csv line 2] Class instance could not be created. Required field customidnumber is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -793,20 +877,23 @@ class version1ELISClassFSLogTest extends rlip_test {
     public function testClassInvalidIdentifyingFieldsOnUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
         $data = array(
             'action' => 'update',
             'context' => 'class',
-            'idnumber' => ''
+            'customidnumber' => ''
         );
-        $expected_error = "[class.csv line 2] Class instance could not be updated. Required field idnumber is unspecified or empty.\n";
+        $expected_error = "[class.csv line 2] Class instance could not be updated. Required field customidnumber is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'update',
             'context' => 'class',
-            'idnumber' => 'testidnumber'
+            'customidnumber' => 'testidnumber'
         );
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be updated. idnumber value of \"testidnumber\" does not refer to a valid class instance.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be updated. customidnumber value of \"testidnumber\" does not refer to a valid class instance.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -814,20 +901,23 @@ class version1ELISClassFSLogTest extends rlip_test {
     public function testClassInvalidIdentifyingFieldsOnDelete() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
         $data = array(
             'action' => 'delete',
             'context' => 'class',
-            'idnumber' => ''
+            'customidnumber' => ''
         );
-        $expected_error = "[class.csv line 2] Class instance could not be deleted. Required field idnumber is unspecified or empty.\n";
+        $expected_error = "[class.csv line 2] Class instance could not be deleted. Required field customidnumber is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'delete',
             'context' => 'class',
-            'idnumber' => 'testidnumber'
+            'customidnumber' => 'testidnumber'
         );
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be deleted. idnumber value of \"testidnumber\" does not refer to a valid class instance.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testidnumber\" could not be deleted. customidnumber value of \"testidnumber\" does not refer to a valid class instance.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -835,11 +925,14 @@ class version1ELISClassFSLogTest extends rlip_test {
      * Validate that class deletion validation works
      */
     public function testELISClassDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
         $data = array('action' => 'delete',
                       'context' => 'class',
-                      'idnumber' => 'testclassid');
+                      'customidnumber' => 'testclassid');
 
-        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be deleted. idnumber value of \"testclassid\" does not refer to a valid class instance.\n";
+        $expected_error = "[class.csv line 2] Class instance with idnumber \"testclassid\" could not be deleted. customidnumber value of \"testclassid\" does not refer to a valid class instance.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 

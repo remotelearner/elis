@@ -71,9 +71,11 @@ class elis_notifications_test extends elis_database_test {
                      pmclass::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
                      track::TABLE => 'elis_program',
+                     trackassignment::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program');
+                     usertrack::TABLE => 'elis_program',
+                     waitlist::TABLE => 'elis_program');
     }
 
     /**
@@ -155,7 +157,7 @@ class elis_notifications_test extends elis_database_test {
 
         return array(array(student::STUSTATUS_NOTCOMPLETE, false),
                      array(student::STUSTATUS_FAILED, false),
-                     array(student::STUSTATUS_PASSED, true)); 
+                     array(student::STUSTATUS_PASSED, true));
     }
 
     /**
@@ -238,7 +240,7 @@ class elis_notifications_test extends elis_database_test {
         return array(array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE, false),
                      array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_FAILED, false),
                      array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_PASSED, true),
-                     array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED, false)); 
+                     array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED, false));
     }
 
     /**

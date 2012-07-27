@@ -42,12 +42,14 @@ class version1ELISEnrolmentFSLogTest extends rlip_test {
 
     static function get_overlay_tables() {
         global $CFG;
+
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $tables = array(
                      RLIP_LOG_TABLE => 'block_rlip',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
                      );
 
         return $tables;
@@ -139,6 +141,26 @@ class version1ELISEnrolmentFSLogTest extends rlip_test {
         fclose($pointer);
 
         $this->assertEquals($expected_error, $actual_error);
+    }
+
+    /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
     }
 
     public function enrolmentTypeProvider() {

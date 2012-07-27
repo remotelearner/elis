@@ -47,10 +47,10 @@ class version1ELISTrackFSLogTest extends rlip_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
-        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
+        $tables = array(
                      'user' => 'moodle',
                      'crlm_curriculum' => 'elis_program',
                      'crlm_track' => 'elis_program',
@@ -78,10 +78,10 @@ class version1ELISTrackFSLogTest extends rlip_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-                     //RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'elis_scheduled_tasks' => 'elis_core',
                      RLIP_SCHEDULE_TABLE => 'block_rlip',
                      RLIP_LOG_TABLE => 'block_rlip',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      'user' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle',
@@ -235,9 +235,32 @@ class version1ELISTrackFSLogTest extends rlip_test {
     }
 
     /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
+    }
+
+    /**
      * Validate that start date validation works on track create
      */
     public function testELISTrackInvalidStartDateCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'startdate', 'customstartdate');
+
         $this->load_program();
 
         $data = array('action' => 'create',
@@ -245,10 +268,10 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'idnumber' => 'testtrackid',
                       'assignment' => 'testprogramidnumber',
                       'name' => 'testtrack',
-                      'startdate' => '1340138101');
+                      'customstartdate' => '1340138101');
 
         $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be created. " .
-                          "startdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+                          "customstartdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -256,16 +279,19 @@ class version1ELISTrackFSLogTest extends rlip_test {
      * Validate that start date validation works on track update
      */
     public function testELISTrackInvalidStartDateUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'startdate', 'customstartdate');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'track',
                       'idnumber' => 'testtrackid',
                       'name' => 'testtrack',
-                      'startdate' => '1340138101');
+                      'customstartdate' => '1340138101');
 
         $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be updated. " .
-                          "startdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+                          "customstartdate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -273,6 +299,9 @@ class version1ELISTrackFSLogTest extends rlip_test {
      * Validate that end date validation works on track create
      */
     public function testELISTrackInvalidEndDateCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'enddate', 'customenddate');
+
         $this->load_program();
 
         $data = array('action' => 'create',
@@ -281,10 +310,10 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'name' => 'testtrack',
                       'assignment' => 'testprogramidnumber',
                       'startdate' => '01/02/2012',
-                      'enddate' => '1340138101');
+                      'customenddate' => '1340138101');
 
         $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be created. " .
-                          "enddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+                          "customenddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -292,6 +321,9 @@ class version1ELISTrackFSLogTest extends rlip_test {
      * Validate that end date validation works on track update
      */
     public function testELISTrackInvalidEndDateUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'enddate', 'customenddate');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -299,10 +331,10 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'idnumber' => 'testtrackid',
                       'name' => 'testtrack',
                       'startdate' => '01/02/2012',
-                      'enddate' => '1340138101');
+                      'customenddate' => '1340138101');
 
         $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be updated. " .
-                          "enddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+                          "customenddate value of \"1340138101\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -310,6 +342,9 @@ class version1ELISTrackFSLogTest extends rlip_test {
      * Validate that autocreate validation works on track create
      */
     public function testELISTrackInvalidAutocreateCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'autocreate', 'customautocreate');
+
         $this->load_program();
 
         $data = array('action' => 'create',
@@ -319,10 +354,10 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'assignment' => 'testprogramidnumber',
                       'startdate' => '01/02/2012',
                       'enddate' => '01-02-2012',
-                      'autocreate' => -1);
+                      'customautocreate' => -1);
 
         $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be created. " .
-                          "autocreate value of \"-1\" is not one of the available options (0, 1).\n";
+                          "customautocreate value of \"-1\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -330,6 +365,9 @@ class version1ELISTrackFSLogTest extends rlip_test {
      * Validate that autocreate validation works on track update
      */
     public function testELISTrackInvalidAutocreateUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'autocreate', 'customautocreate');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -338,10 +376,10 @@ class version1ELISTrackFSLogTest extends rlip_test {
                       'name' => 'testtrack',
                       'startdate' => '01/02/2012',
                       'enddate' => '01-02-2012',
-                      'autocreate' => -1);
+                      'customautocreate' => -1);
 
         $expected_error = "[track.csv line 2] Track with idnumber \"testtrackid\" could not be updated. " .
-                          "autocreate value of \"-1\" is not one of the available options (0, 1).\n";
+                          "customautocreate value of \"-1\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -362,65 +400,76 @@ class version1ELISTrackFSLogTest extends rlip_test {
     public function testTrackInvalidIdentifyingFieldsOnCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'context', 'customcontext');
+
         $data = array(
             'action' => 'create'
         );
-        $expected_error = "[track.csv line 1] Import file track.csv was not processed because it is missing the following required column: context. Please fix the import file and re-upload it.\n";
+        $expected_error = "[track.csv line 1] Import file track.csv was not processed because it is missing the following required column: customcontext. Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'create',
-            'context' => ''
+            'customcontext' => ''
         );
         $expected_error = "[track.csv line 2] Entity could not be created.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => '',
-            'context' => ''
+            'customcontext' => ''
         );
         $expected_error = "[track.csv line 2] Entity could not be processed.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
+        //create mapping record
+        $this->create_mapping_record('course', 'action', 'customaction');
+
         $data = array(
-            'action' => '',
-            'context' => 'track'
+            'customaction' => '',
+            'customcontext' => 'track'
         );
-        $expected_error = "[track.csv line 2] Track could not be processed. Required field action is unspecified or empty.\n";
+        $expected_error = "[track.csv line 2] Track could not be processed. Required field customaction is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        //create mapping record
+        $this->create_mapping_record('course', 'assignment', 'customassignment');
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+        $this->create_mapping_record('course', 'name', 'customname');
+
+        $data = array(
+            'customaction' => 'create',
+            'customcontext' => 'track',
+            'customidnumber' => '',
+        );
+        $expected_error = "[track.csv line 2] Track could not be created. Required fields customassignment, customidnumber, customname are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
-            'action' => 'create',
-            'context' => 'track',
-            'idnumber' => '',
+            'customaction' => 'create',
+            'customcontext' => 'track',
+            'customidnumber' => 'testidnumber'
         );
-        $expected_error = "[track.csv line 2] Track could not be created. Required fields assignment, idnumber, name are unspecified or empty.\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required fields customassignment, customname are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
-            'action' => 'create',
-            'context' => 'track',
-            'idnumber' => 'testidnumber'
+            'customaction' => 'create',
+            'customcontext' => 'track',
+            'customidnumber' => 'testidnumber',
+            'customname' => 'testname'
         );
-        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required fields assignment, name are unspecified or empty.\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required field customassignment is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
-            'action' => 'create',
-            'context' => 'track',
-            'idnumber' => 'testidnumber',
-            'name' => 'testname'
+            'customaction' => 'create',
+            'customcontext' => 'track',
+            'customidnumber' => 'testidnumber',
+            'customassignment' => 'testassignment'
         );
-        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required field assignment is unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-
-        $data = array(
-            'action' => 'create',
-            'context' => 'track',
-            'idnumber' => 'testidnumber',
-            'assignment' => 'testassignment'
-        );
-        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required field name is unspecified or empty.\n";
+        $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be created. Required field customname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -428,18 +477,21 @@ class version1ELISTrackFSLogTest extends rlip_test {
     public function testTrackInvalidIdentifyingFieldsOnUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
         $data = array(
             'action' => 'update',
             'context' => 'track',
-            'idnumber' => '',
+            'customidnumber' => '',
         );
-        $expected_error = "[track.csv line 2] Track could not be updated. Required field idnumber is unspecified or empty.\n";
+        $expected_error = "[track.csv line 2] Track could not be updated. Required field customidnumber is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'update',
             'context' => 'track',
-            'idnumber' => 'testidnumber',
+            'customidnumber' => 'testidnumber',
         );
         $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be updated. idnumber value of \"testidnumber\" does not refer to a valid track.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
@@ -449,18 +501,21 @@ class version1ELISTrackFSLogTest extends rlip_test {
     public function testTrackInvalidIdentifyingFieldsOnDelete() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
         $data = array(
             'action' => 'delete',
             'context' => 'track',
-            'idnumber' => '',
+            'customidnumber' => '',
         );
-        $expected_error = "[track.csv line 2] Track could not be deleted. Required field idnumber is unspecified or empty.\n";
+        $expected_error = "[track.csv line 2] Track could not be deleted. Required field customidnumber is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'delete',
             'context' => 'track',
-            'idnumber' => 'testidnumber',
+            'customidnumber' => 'testidnumber',
         );
         $expected_error = "[track.csv line 2] Track with idnumber \"testidnumber\" could not be deleted. idnumber value of \"testidnumber\" does not refer to a valid track.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');

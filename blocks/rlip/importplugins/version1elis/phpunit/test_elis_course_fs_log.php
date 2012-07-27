@@ -47,7 +47,7 @@ class version1ELISCourseFSLogTest extends rlip_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $tables = array(RLIP_LOG_TABLE => 'block_rlip',
@@ -81,10 +81,10 @@ class version1ELISCourseFSLogTest extends rlip_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-                     //RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'elis_scheduled_tasks' => 'elis_core',
                      RLIP_SCHEDULE_TABLE => 'block_rlip',
                      RLIP_LOG_TABLE => 'block_rlip',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      'user' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle',
@@ -247,16 +247,39 @@ class version1ELISCourseFSLogTest extends rlip_test {
     }
 
     /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
+    }
+
+    /**
      * Validate that link validation works on course create
      */
     public function testELISCourseInvalidLinkCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'link', 'customlink');
+
         $data = array('action' => 'create',
                       'context' => 'course',
                       'idnumber' => 'testcourseid',
                       'name' => 'testcourse',
-                      'link' => 'invalidmoodlecourse');
+                      'customlink' => 'invalidmoodlecourse');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. customlink value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -264,14 +287,17 @@ class version1ELISCourseFSLogTest extends rlip_test {
      * Validate that link validation works on course update
      */
     public function testELISCourseInvalidLinkUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'link', 'customlink');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'course',
                       'idnumber' => 'testcourseid',
-                      'link' => 'invalidmoodlecourse');
+                      'customlink' => 'invalidmoodlecourse');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. link value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. customlink value of \"invalidmoodlecourse\" does not refer to a valid Moodle course.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -279,13 +305,16 @@ class version1ELISCourseFSLogTest extends rlip_test {
      * Validate that link validation works on course create
      */
     public function testELISCourseInvalidAssignmentCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'assignment', 'customassignment');
+
         $data = array('action' => 'create',
                       'context' => 'course',
                       'idnumber' => 'testcourseid',
                       'name' => 'testcourse',
-                      'assignment' => 'invalidprogram');
+                      'customassignment' => 'invalidprogram');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. assignment value of \"invalidprogram\" does not refer to a valid program.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. customassignment value of \"invalidprogram\" does not refer to a valid program.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -293,15 +322,18 @@ class version1ELISCourseFSLogTest extends rlip_test {
      * Validate that assignment validation works on course update
      */
     public function testELISCourseInvalidAssignmentUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'assignment', 'customassignment');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'course',
                       'idnumber' => 'testcourseid',
                       'name' => 'testcourse',
-                      'assignment' => 'invalidprogram');
+                      'customassignment' => 'invalidprogram');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. assignment value of \"invalidprogram\" does not refer to a valid program.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. customassignment value of \"invalidprogram\" does not refer to a valid program.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -309,13 +341,16 @@ class version1ELISCourseFSLogTest extends rlip_test {
      * Validate that credit validation works on course creation
      */
     public function testELISCourseInvalidCreditCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'credits', 'customcredits');
+
         $data = array('action' => 'create',
                       'context' => 'course',
                       'idnumber' => 'testcourseid',
                       'name' => 'testcourse',
-                      'credits' => '-1');
+                      'customcredits' => '-1');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. transfercredits value of \"-1\" is not a non-negative number.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. customcredits value of \"-1\" is not a non-negative number.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -323,14 +358,17 @@ class version1ELISCourseFSLogTest extends rlip_test {
      * Validate that credit validation works on course update
      */
     public function testELISCourseInvalidCreditUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'credits', 'customcredits');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'course',
                       'idnumber' => 'testcourseid',
-                      'credits' => '-1');
+                      'customcredits' => '-1');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. transfercredits value of \"-1\" is not a non-negative number.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. customcredits value of \"-1\" is not a non-negative number.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -338,14 +376,17 @@ class version1ELISCourseFSLogTest extends rlip_test {
      * Validate that completion grade validation works on course create
      */
     public function testELISCourseInvalidCompletionGradeCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'completion_grade', 'customcompletion_grade');
+
         $data = array('action' => 'create',
                       'context' => 'course',
                       'idnumber' => 'testcourseid',
                       'name' => 'testcourse',
                       'credits' => '1',
-                      'completion_grade' => '-1');
+                      'customcompletion_grade' => '-1');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. completion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be created. customcompletion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -353,15 +394,18 @@ class version1ELISCourseFSLogTest extends rlip_test {
      * Validate that completion grade validation works on course update
      */
     public function testELISCourseInvalidCompletionGradeUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'completion_grade', 'customcompletion_grade');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'course',
                       'idnumber' => 'testcourseid',
                       'credits' => '1',
-                      'completion_grade' => '-1');
+                      'customcompletion_grade' => '-1');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. completion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"testcourseid\" could not be updated. customcompletion_grade value of \"-1\" is not one of the available options (0 .. 100).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -369,13 +413,33 @@ class version1ELISCourseFSLogTest extends rlip_test {
      * Validate idnumber validation works on course update
      */
     public function testELISCourseInvalidIdnumberUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'course',
-                      'idnumber' => 'invalidtestcourseid');
+                      'customidnumber' => 'invalidtestcourseid');
 
-        $expected_error = "[course.csv line 2] Course description with idnumber \"invalidtestcourseid\" could not be updated. idnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
+        $expected_error = "[course.csv line 2] Course description with idnumber \"invalidtestcourseid\" could not be updated. customidnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+    }
+
+   /**
+     * Validate idnumber validation works on course delete
+     */
+    public function testELISCourseInvalidIdnumberDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'delete',
+                      'context' => 'course',
+                      'customidnumber' => 'invalidtestcourseid');
+
+        $expected_error = "[course.csv line 2] Course description with idnumber \"invalidtestcourseid\" could not be deleted. customidnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -392,20 +456,6 @@ class version1ELISCourseFSLogTest extends rlip_test {
 
         //validation
         $this->assert_data_produces_error($data, $expected_message, 'course');
-    }
-
-    /**
-     * Validate idnumber validation works on course delete
-     */
-    public function testELISCourseInvalidIdnumberDelete() {
-        $this->load_csv_data();
-
-        $data = array('action' => 'delete',
-                      'context' => 'course',
-                      'idnumber' => 'invalidtestcourseid');
-
-        $expected_error = "[course.csv line 2] Course description with idnumber \"invalidtestcourseid\" could not be deleted. idnumber value of \"invalidtestcourseid\" does not refer to a valid course description.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
     protected function load_csv_data() {

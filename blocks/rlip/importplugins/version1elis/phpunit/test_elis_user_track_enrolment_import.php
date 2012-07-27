@@ -56,10 +56,12 @@ class elis_user_track_enrolment_test extends elis_database_test {
                      curriculum::TABLE => 'elis_program',
                      field::TABLE => 'elis_core',
                      track::TABLE => 'elis_program',
+                     trackassignment::TABLE => 'elis_program',
                      student::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program');
+                     usertrack::TABLE => 'elis_program',
+                     waitlist::TABLE => 'elis_program');
     }
 
     /**
