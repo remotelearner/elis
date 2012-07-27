@@ -360,18 +360,20 @@ class elis_user_import_test extends elis_database_test {
             );
 
         // Test legacy action 'add'
-        $testdata[] = array('add',
-                        array(
-                            'idnumber'  => 'testidnumber',
-                            'username'  => 'testusername',
-                            'firstname' => 'testfirstname',
-                            'lastname'  => 'testlastname',
-                            'email'     => 'test@email.com',
-                            'country'   => 'CA',
-                        ),
-                        NO_TEST_SETUP,
-                        ELIS_USER_EXISTS, MDL_USER_EXISTS
-                     );
+        $testdata[] = array(
+            'add',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'email'     => 'test@email.com',
+                'country'   => 'CA',
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+            );
 
         // Test date format MM/DD/YYYY
         $testdata[] = array(
@@ -672,15 +674,17 @@ class elis_user_import_test extends elis_database_test {
         );
 
         // test legacy action 'disable'
-        $testdata[] = array('disable',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'email'     => 'test@email.com',
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_DOESNOT_EXIST, MDL_USER_DELETED
-                      );
+        $testdata[] = array(
+            'disable',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'email'     => 'test@email.com',
+            ),
+            0, // <- test setup index
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
 
         return $testdata;
     }
