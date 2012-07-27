@@ -75,9 +75,11 @@ class elis_user_userset_enrolment_test extends elis_database_test {
      * @return array Parameter data, as needed by the test methods
      */
     function user_identifier_provider() {
-        return array(array('testuserusername', NULL, NULL),
-                     array(NULL, 'testuser@email.com', NULL),
-                     array(NULL, NULL, 'testuseridnumber'));
+        return array(
+                array('create', 'delete', 'testuserusername', NULL, NULL),
+                array('enrol', 'unenrol', NULL, 'testuser@email.com', NULL),
+                array('enroll', 'unenroll', NULL, NULL, 'testuseridnumber')
+               );
     }
 
     /**
@@ -88,7 +90,7 @@ class elis_user_userset_enrolment_test extends elis_database_test {
      * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
      * @dataProvider user_identifier_provider
      */
-    function test_elis_user_userset_enrolment_import($username, $email, $idnumber) {
+    function test_elis_user_userset_enrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/clusterassignment.class.php'));
@@ -108,6 +110,7 @@ class elis_user_userset_enrolment_test extends elis_database_test {
 
         //run the track enrolment create action
         $record = new stdClass;
+        $record->action = $actioncreate;
         $record->context = 'cluster_testusersetname';
         if ($username != NULL) {
             $record->user_username = $user->username;
@@ -121,7 +124,7 @@ class elis_user_userset_enrolment_test extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
-        $importplugin->cluster_enrolment_create($record, 'bogus', 'testusersetname');
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
         //validation
         $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => $user->id,
@@ -139,7 +142,7 @@ class elis_user_userset_enrolment_test extends elis_database_test {
      * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
      * @dataProvider user_identifier_provider
      */
-    function test_elis_user_userset_unenrolment_import($username, $email, $idnumber) {
+    function test_elis_user_userset_unenrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/clusterassignment.class.php'));
@@ -171,6 +174,7 @@ class elis_user_userset_enrolment_test extends elis_database_test {
 
         //run the userset enrolment delete action
         $record = new stdClass;
+        $record->action = $actiondelete;
         $record->context = 'cluster_testusersetname';
         if ($username != NULL) {
             $record->user_username = $user->username;
@@ -184,7 +188,7 @@ class elis_user_userset_enrolment_test extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
-        $importplugin->cluster_enrolment_delete($record, 'bogus', 'testusersetname');
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
         //validation
         $this->assertEquals(0, $DB->count_records(clusterassignment::TABLE));
