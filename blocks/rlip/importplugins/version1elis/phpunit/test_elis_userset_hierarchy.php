@@ -58,34 +58,36 @@ class elis_userset_hierarchy_test extends elis_database_test {
         require_once(elispm::lib('data/usertrack.class.php'));
         require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
 
-        return array('block_instances' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'comments' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'context' => 'moodle',
-                     'files' => 'moodle',
-                     'filter_active' => 'moodle',
-                     'filter_config' => 'moodle',
-                     'grading_areas' => 'moodle',
-                     'rating' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'role_names' => 'moodle',
-                     field_data_int::TABLE => 'elis_core',
-                     field_data_num::TABLE => 'elis_core',
-                     field_data_char::TABLE => 'elis_core',
-                     field_data_text::TABLE => 'elis_core',
-                     clusterassignment::TABLE => 'elis_program',
-                     clustercurriculum::TABLE => 'elis_program',
-                     clustertrack::TABLE => 'elis_program',
-                     curriculumstudent::TABLE => 'elis_program',
-                     track::TABLE => 'elis_program',
-                     trackassignment::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program',
-                     userset_profile::TABLE => 'elis_program');
+        return array(
+            'block_instances' => 'moodle',
+            'block_positions' => 'moodle',
+            'cache_flags' => 'moodle',
+            'comments' => 'moodle',
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'files' => 'moodle',
+            'filter_active' => 'moodle',
+            'filter_config' => 'moodle',
+            'grading_areas' => 'moodle',
+            'rating' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_names' => 'moodle',
+            field_data_int::TABLE => 'elis_core',
+            field_data_num::TABLE => 'elis_core',
+            field_data_char::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core',
+            clusterassignment::TABLE => 'elis_program',
+            clustercurriculum::TABLE => 'elis_program',
+            clustertrack::TABLE => 'elis_program',
+            curriculumstudent::TABLE => 'elis_program',
+            track::TABLE => 'elis_program',
+            trackassignment::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program',
+            usertrack::TABLE => 'elis_program',
+            userset_profile::TABLE => 'elis_program'
+        );
     }
 
     /**
@@ -103,11 +105,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
      * Clear the in-memory context cache
      */
     function clear_context_cache() {
-        global $UNITTEST;
-
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
     }
 
     /**
@@ -216,8 +214,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $parent->save();
 
         //create the child userset
-        $child = new userset(array('name' => 'childname',
-                                   'parent' => $parent->id));
+        $child = new userset(array('name' => 'childname', 'parent' => $parent->id));
         $child->save();
 
         //run the user set update action
@@ -318,8 +315,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $finalparent->save();
 
         //create the child userset
-        $child = new userset(array('name' => 'childname',
-                                   'parent' => $initialparent->id));
+        $child = new userset(array('name' => 'childname', 'parent' => $initialparent->id));
         $child->save();
 
         //run the user set update action
@@ -403,8 +399,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $parent->save();
 
         //create the child userset
-        $child = new userset(array('name' => 'childname',
-                                   'parent' => $parent->id));
+        $child = new userset(array('name' => 'childname', 'parent' => $parent->id));
         $child->save();
 
         //run the user set delete action
@@ -429,8 +424,12 @@ class elis_userset_hierarchy_test extends elis_database_test {
      * @return array Data, as expected by the test methods
      */
     function recursive_provider() {
-        return array(array(1),
-                     array('yes'));
+        return array(
+            array(1),
+            array('yes'),
+            array(0),
+            array('no')
+        );
     }
 
     /**
@@ -457,24 +456,31 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $parent->save();
 
         //create the child userset
-        $child = new userset(array('name' => 'childname',
-                                   'parent' => $parent->id));
+        $child = new userset(array('name' => 'childname', 'parent' => $parent->id));
         $child->save();
+
+        // Determine counts to check for after we run the delete -- depending on the value of recursive
+        if ($recursive === 0 || $recursive === 'no') {
+            $usersetcount = 1;
+            $contextcount = 2;
+        } else {
+            $usersetcount = 0;
+            $contextcount = 1;
+        }
 
         //run the user set delete action
         $record = new stdClass;
-        $record->name = 'parentname';
+        $record->name      = 'parentname';
         $record->recursive = $recursive;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
-        //validate deletion of both userset records
-        $this->assertEquals(0, $DB->count_records(userset::TABLE));
+        $this->assertEquals($usersetcount, $DB->count_records(userset::TABLE));
 
-        //validate deletion of both context records
-        $this->assertEquals(1, $DB->count_records('context'));
+        //validate deletion of both context record(s)
+        $this->assertEquals($contextcount, $DB->count_records('context'));
     }
 
     /**
@@ -498,8 +504,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $parent->save();
 
         //create the child userset
-        $child = new userset(array('name' => 'childname',
-                                   'parent' => $parent->id));
+        $child = new userset(array('name' => 'childname', 'parent' => $parent->id));
         $child->save();
 
         //run the user set delete action
@@ -554,14 +559,21 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $grandparent->save();
 
         //create the parent userset
-        $parent = new userset(array('name' => 'parentname',
-                                    'parent' => $grandparent->id));
+        $parent = new userset(array('name' => 'parentname', 'parent' => $grandparent->id));
         $parent->save();
 
         //create the child userset
-        $child = new userset(array('name' => 'childname',
-                                   'parent' => $parent->id));
+        $child = new userset(array('name' => 'childname', 'parent' => $parent->id));
         $child->save();
+
+        // Determine counts to check for after we run the delete -- depending on the value of recursive
+        if ($recursive === 0 || $recursive === 'no') {
+            $usersetcount = 2;
+            $contextcount = 3;
+        } else {
+            $usersetcount = 1;
+            $contextcount = 2;
+        }
 
         //run the user set delete action
         $record = new stdClass;
@@ -572,8 +584,9 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
-        //validate deletion of both userset records
-        $this->assertEquals(1, $DB->count_records(userset::TABLE));
+        //validate deletion of userset record(s)
+        $this->assertEquals($usersetcount, $DB->count_records(userset::TABLE));
+
         //validate that the "grandparent" userset is the one left intact
         $userset = $DB->get_record(userset::TABLE, array('id' => 1));
         $this->assertNotEquals(false, $userset);
@@ -581,8 +594,9 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $this->assertEquals(0, $userset->parent);
         $this->assertEquals(1, $userset->depth);
 
-        //validate deletion of both context records
-        $this->assertEquals(2, $DB->count_records('context'));
+        //validate deletion of context record(s)
+        $this->assertEquals($contextcount, $DB->count_records('context'));
+
         //validate that the "grandparent" context is the one left intact
         $context = $DB->get_record('context', array('id' => 2));
         $this->assertNotEquals(false, $context);
@@ -613,13 +627,11 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $grandparent->save();
 
         //create the parent userset
-        $parent = new userset(array('name' => 'parentname',
-                                    'parent' => $grandparent->id));
+        $parent = new userset(array('name' => 'parentname', 'parent' => $grandparent->id));
         $parent->save();
 
         //create the child userset
-        $child = new userset(array('name' => 'childname',
-                                   'parent' => $parent->id));
+        $child = new userset(array('name' => 'childname', 'parent' => $parent->id));
         $child->save();
 
         //run the user set delete action
@@ -674,19 +686,25 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $greatgrandparent->save();
 
         //create the grandparent userset
-        $grandparent = new userset(array('name' => 'grandparentname',
-                                         'parent' => $greatgrandparent->id));
+        $grandparent = new userset(array('name' => 'grandparentname', 'parent' => $greatgrandparent->id));
         $grandparent->save();
 
         //create the parent userset
-        $parent = new userset(array('name' => 'parentname',
-                                    'parent' => $grandparent->id));
+        $parent = new userset(array('name' => 'parentname', 'parent' => $grandparent->id));
         $parent->save();
 
         //create the child userset
-        $child = new userset(array('name' => 'childname',
-                                   'parent' => $parent->id));
+        $child = new userset(array('name' => 'childname', 'parent' => $parent->id));
         $child->save();
+
+        // Determine counts to check for after we run the delete -- depending on the value of recursive
+        if ($recursive === 0 || $recursive === 'no') {
+            $usersetcount = 3;
+            $contextcount = 4;
+        } else {
+            $usersetcount = 1;
+            $contextcount = 2;
+        }
 
         //run the user set delete action
         $record = new stdClass;
@@ -697,8 +715,9 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->cluster_delete($record, 'bogus');
 
-        //validate deletion of three userset records
-        $this->assertEquals(1, $DB->count_records(userset::TABLE));
+        //validate deletion of userset record(s)
+        $this->assertEquals($usersetcount, $DB->count_records(userset::TABLE));
+
         //validate that the "great grandparent" userset is the one left intact
         $userset = $DB->get_record(userset::TABLE, array('id' => 1));
         $this->assertNotEquals(false, $userset);
@@ -706,8 +725,9 @@ class elis_userset_hierarchy_test extends elis_database_test {
         $this->assertEquals(0, $userset->parent);
         $this->assertEquals(1, $userset->depth);
 
-        //validate deletion of three context records
-        $this->assertEquals(2, $DB->count_records('context'));
+        //validate deletion of context record(s)
+        $this->assertEquals($contextcount, $DB->count_records('context'));
+
         //validate that the "great grandparent" context is the one left intact
         $context = $DB->get_record('context', array('id' => 2));
         $this->assertNotEquals(false, $context);

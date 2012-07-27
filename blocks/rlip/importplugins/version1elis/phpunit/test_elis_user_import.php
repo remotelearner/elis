@@ -81,78 +81,77 @@ class elis_user_import_test extends elis_database_test {
         );
 
     protected static function get_overlay_tables() {
-        global $CFG;
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
         require_once(elis::lib('data/customfield.class.php'));
 
         $tables = array(
-                        'block_instances' => 'moodle',
-                        'block_positions' => 'moodle',
-                        'cache_flags' => 'moodle',
-                        'cohort_members' => 'moodle',
-                        'comments' => 'moodle',
-                        'config' => 'moodle',
-                        'config_plugins' => 'moodle',
-                        'context' => 'moodle',
-                        'course' => 'moodle',
-                        'course_categories' => 'moodle',
-                        'course_sections' => 'moodle',
-                        'crlm_class_graded' => 'elis_program',
-                        'crlm_class_instructor' => 'elis_program',
-                        'crlm_cluster_assignments' => 'elis_program',
-                        'crlm_curriculum_assignment' => 'elis_program',
-                        'crlm_curriculum_course' => 'elis_program',
-                        'crlm_environment' => 'elis_program',
-                        'crlm_results' => 'elis_program',
-                        'crlm_results_action' => 'elis_program',
-                        'crlm_tag' => 'elis_program',
-                        'crlm_tag_instance' => 'elis_program',
-                        'crlm_track' => 'elis_program',
-                        'crlm_track_class' => 'elis_program',
-                        'crlm_user' => 'elis_program',
-                        'crlm_user_moodle' => 'elis_program',
-                        'crlm_user_track' => 'elis_program',
-                        'crlm_usercluster' => 'elis_program',
-                        'crlm_wait_list' => 'elis_program',
-                        'enrol' => 'moodle',
-                        'events_queue' => 'moodle',
-                        'events_queue_handlers' => 'moodle',
-                        'filter_active' => 'moodle',
-                        'filter_config' => 'moodle',
-                        'grade_categories' => 'moodle',
-                        'grade_categories_history' => 'moodle',
-                        'grade_grades' => 'moodle',
-                        'grade_grades_history' => 'moodle',
-                        'grade_items' => 'moodle',
-                        'grade_items_history' => 'moodle',
-                        'groups' => 'moodle',
-                        'groups_members' => 'moodle',
-                        'message' => 'moodle',
-                        'message_read' => 'moodle',
-                        'message_working' => 'moodle',
-                        'rating' => 'moodle',
-                        'role' => 'moodle',
-                        'role_context_levels' => 'moodle',
-                        'role_assignments' => 'moodle',
-                        'role_capabilities' => 'moodle',
-                        'role_names' => 'moodle',
-                        'sessions' => 'moodle',
-                        'user' => 'moodle',
-                        'user_preferences' => 'moodle',
-                        'user_info_data' => 'moodle',
-                        'user_lastaccess' => 'moodle',
-                        'user_enrolments' => 'moodle',
-                        field::TABLE => 'elis_core',
-                        field_category::TABLE => 'elis_core',
-                        field_category_contextlevel::TABLE => 'elis_core',
-                        field_contextlevel::TABLE => 'elis_core',
-                        field_data_char::TABLE => 'elis_core',
-                        field_data_int::TABLE => 'elis_core',
-                        field_data_num::TABLE => 'elis_core',
-                        field_data_text::TABLE => 'elis_core',
-                        field_owner::TABLE => 'elis_core'
-                     );
+            'block_instances' => 'moodle',
+            'block_positions' => 'moodle',
+            'cache_flags' => 'moodle',
+            'cohort_members' => 'moodle',
+            'comments' => 'moodle',
+            'config' => 'moodle',
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            'course_sections' => 'moodle',
+            'crlm_class_graded' => 'elis_program',
+            'crlm_class_instructor' => 'elis_program',
+            'crlm_cluster_assignments' => 'elis_program',
+            'crlm_curriculum_assignment' => 'elis_program',
+            'crlm_curriculum_course' => 'elis_program',
+            'crlm_environment' => 'elis_program',
+            'crlm_results' => 'elis_program',
+            'crlm_results_action' => 'elis_program',
+            'crlm_tag' => 'elis_program',
+            'crlm_tag_instance' => 'elis_program',
+            'crlm_track' => 'elis_program',
+            'crlm_track_class' => 'elis_program',
+            'crlm_user' => 'elis_program',
+            'crlm_user_moodle' => 'elis_program',
+            'crlm_user_track' => 'elis_program',
+            'crlm_usercluster' => 'elis_program',
+            'crlm_wait_list' => 'elis_program',
+            'enrol' => 'moodle',
+            'events_queue' => 'moodle',
+            'events_queue_handlers' => 'moodle',
+            'filter_active' => 'moodle',
+            'filter_config' => 'moodle',
+            'grade_categories' => 'moodle',
+            'grade_categories_history' => 'moodle',
+            'grade_grades' => 'moodle',
+            'grade_grades_history' => 'moodle',
+            'grade_items' => 'moodle',
+            'grade_items_history' => 'moodle',
+            'groups' => 'moodle',
+            'groups_members' => 'moodle',
+            'message' => 'moodle',
+            'message_read' => 'moodle',
+            'message_working' => 'moodle',
+            'rating' => 'moodle',
+            'role' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_names' => 'moodle',
+            'sessions' => 'moodle',
+            'user' => 'moodle',
+            'user_preferences' => 'moodle',
+            'user_info_data' => 'moodle',
+            'user_lastaccess' => 'moodle',
+            'user_enrolments' => 'moodle',
+            field::TABLE => 'elis_core',
+            field_category::TABLE => 'elis_core',
+            field_category_contextlevel::TABLE => 'elis_core',
+            field_contextlevel::TABLE => 'elis_core',
+            field_data_char::TABLE => 'elis_core',
+            field_data_int::TABLE => 'elis_core',
+            field_data_num::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core',
+            field_owner::TABLE => 'elis_core'
+        );
 
         return $tables;
     }
@@ -166,14 +165,16 @@ class elis_user_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
 
-        return array(student::TABLE     => 'elis_program',
-                     'log'              => 'moodle',
-                     RLIP_LOG_TABLE     => 'block_rlip',
-                     'files'            => 'moodle',
-                     'external_tokens'  => 'moodle',
-                     'external_services_users'      => 'moodle',
-                     'external_tokens'              => 'moodle',
-                     'external_services_users'      => 'moodle');
+        return array(
+            student::TABLE     => 'elis_program',
+            'log'              => 'moodle',
+            RLIP_LOG_TABLE     => 'block_rlip',
+            'files'            => 'moodle',
+            'external_tokens'  => 'moodle',
+            'external_services_users' => 'moodle',
+            'external_tokens'         => 'moodle',
+            'external_services_users' => 'moodle'
+        );
     }
 
     /**
@@ -183,277 +184,478 @@ class elis_user_import_test extends elis_database_test {
      */
     public function dataProviderForTests() {
         $testdata = array();
+
         // user create - no idnumber
-        $testdata[] = array('create',
-                         array(
-                             'username'  => 'testusername',
-                             'email'     => 'test@email.com',
-                             'firstname' => 'testfirstname',
-                             'lastname'  => 'testlastname',
-                             'country'   => 'CA'
-                         ),
-                         NO_TEST_SETUP,
-                         ELIS_USER_DOESNOT_EXIST,
-                         MDL_USER_DOESNOT_EXIST
-                      );
+        $testdata[] = array(
+            'create',
+            array(
+                'username'  => 'testusername',
+                'email'     => 'test@email.com',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'country'   => 'CA'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DOESNOT_EXIST
+        );
+
         // create - no username
-        $testdata[] = array('create',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'email'     => 'test@email.com',
-                             'firstname' => 'testfirstname',
-                             'lastname'  => 'testlastname',
-                             'country'   => 'CA'
-                         ),
-                         NO_TEST_SETUP,
-                         ELIS_USER_DOESNOT_EXIST,
-                         MDL_USER_DOESNOT_EXIST
-                      );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'email'     => 'test@email.com',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'country'   => 'CA'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DOESNOT_EXIST
+        );
+
         // create - no email
-        $testdata[] = array('create',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'firstname' => 'testfirstname',
-                             'lastname'  => 'testlastname',
-                             'country'   => 'CA'
-                         ),
-                         NO_TEST_SETUP,
-                         ELIS_USER_DOESNOT_EXIST,
-                         MDL_USER_DOESNOT_EXIST
-                      );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'country'   => 'CA'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DOESNOT_EXIST
+        );
+
         // create - no firstname
-        $testdata[] = array('create',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'email'     => 'test@email.com',
-                             'lastname'  => 'testlastname',
-                             'country'   => 'CA'
-                         ),
-                         NO_TEST_SETUP,
-                         ELIS_USER_DOESNOT_EXIST,
-                         MDL_USER_DOESNOT_EXIST
-                      );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'email'     => 'test@email.com',
+                'lastname'  => 'testlastname',
+                'country'   => 'CA'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DOESNOT_EXIST
+        );
+
         // create - no lastname
-        $testdata[] = array('create',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'email'     => 'test@email.com',
-                             'firstname' => 'testfirstname',
-                             'country'   => 'CA'
-                         ),
-                         NO_TEST_SETUP,
-                         ELIS_USER_DOESNOT_EXIST,
-                         MDL_USER_DOESNOT_EXIST
-                      );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'email'     => 'test@email.com',
+                'firstname' => 'testfirstname',
+                'country'   => 'CA'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DOESNOT_EXIST
+        );
+
         // create - no country
-        $testdata[] = array('create',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'email'     => 'test@email.com',
-                             'firstname' => 'testfirstname',
-                             'lastname'  => 'testlastname',
-                         ),
-                         NO_TEST_SETUP,
-                         ELIS_USER_DOESNOT_EXIST,
-                         MDL_USER_DOESNOT_EXIST
-                      );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'email'     => 'test@email.com',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DOESNOT_EXIST
+        );
+
         // all required create data!
-        $testdata[] = array('create',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'email'     => 'test@email.com',
-                             'firstname' => 'testfirstname',
-                             'lastname'  => 'testlastname',
-                             'country'   => 'CA'
-                         ),
-                         NO_TEST_SETUP,
-                         ELIS_USER_EXISTS, MDL_USER_EXISTS
-                      );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'email'     => 'test@email.com',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'country'   => 'CA'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
         // all possible fields create data!
-        $testdata[] = array('create',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'password'  => 'TestPassword0!', // TBD: policy
-                             'firstname' => 'testfirstname',
-                             'lastname'  => 'testlastname',
-                             'mi'        => 'mi',
-                             'email'     => 'test@email.com',
-                             'email2'    => 'test@email2.com',
-                             'address'   => '123 My Street',
-                             'address2'  => 'Unit 1A',
-                             'city'      => '*',
-                             'state'     => 'ON',
-                             'postalcode'=> 'A1B2C3',
-                             'country'   => 'CA',
-                             'phone'     => '123-555-4567',
-                             'phone2'    => '890-555-1234',
-                             'fax'       => '567-555-8901',
-                             'birthdate' => 'Jan/13/2011',
-                             'gender'    => 'M',
-                             'language'  => 'en',
-                             'transfercredits'=> '5',
-                             'comments'  => 'My comments',
-                             'notes'     => 'My notes',
-                             'inactive'  => 'no'
-                         ),
-                         NO_TEST_SETUP,
-                         ELIS_USER_EXISTS, MDL_USER_EXISTS
-                      );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'password'  => 'TestPassword0!', // TBD: policy
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'mi'        => 'mi',
+                'email'     => 'test@email.com',
+                'email2'    => 'test@email2.com',
+                'address'   => '123 My Street',
+                'address2'  => 'Unit 1A',
+                'city'      => '*',
+                'state'     => 'ON',
+                'postalcode'=> 'A1B2C3',
+                'country'   => 'CA',
+                'phone'     => '123-555-4567',
+                'phone2'    => '890-555-1234',
+                'fax'       => '567-555-8901',
+                'birthdate' => 'Jan/13/2011',
+                'gender'    => 'M',
+                'language'  => 'en',
+                'transfercredits'=> '5',
+                'comments'  => 'My comments',
+                'notes'     => 'My notes',
+                'inactive'  => 'no'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
 
         // Test date format YYYY.MM.DD
-        $testdata[] = array('create',
-                        array(
-                            'idnumber'  => 'testidnumber',
-                            'username'  => 'testusername',
-                            'firstname' => 'testfirstname',
-                            'lastname'  => 'testlastname',
-                            'email'     => 'test@email.com',
-                            'country'   => 'CA',
-                            'birthdate' => '2000.12.25',
-                        ),
-                        NO_TEST_SETUP,
-                        ELIS_USER_EXISTS, MDL_USER_EXISTS
-                     );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'email'     => 'test@email.com',
+                'country'   => 'CA',
+                'birthdate' => '2000.12.25',
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+            );
 
         // Test date format DD-MM-YYYY
-        $testdata[] = array('create',
-                        array(
-                            'idnumber'  => 'testidnumber',
-                            'username'  => 'testusername',
-                            'firstname' => 'testfirstname',
-                            'lastname'  => 'testlastname',
-                            'email'     => 'test@email.com',
-                            'country'   => 'CA',
-                            'birthdate' => '25-12-2000',
-                        ),
-                        NO_TEST_SETUP,
-                        ELIS_USER_EXISTS, MDL_USER_EXISTS
-                     );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'email'     => 'test@email.com',
+                'country'   => 'CA',
+                'birthdate' => '25-12-2000',
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+            );
 
         // Test date format MM/DD/YYYY
-        $testdata[] = array('create',
-                        array(
-                            'idnumber'  => 'testidnumber',
-                            'username'  => 'testusername',
-                            'firstname' => 'testfirstname',
-                            'lastname'  => 'testlastname',
-                            'email'     => 'test@email.com',
-                            'country'   => 'CA',
-                            'birthdate' => '12/25/2000',
-                        ),
-                        NO_TEST_SETUP,
-                        ELIS_USER_EXISTS, MDL_USER_EXISTS
-                     );
+        $testdata[] = array(
+            'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'email'     => 'test@email.com',
+                'country'   => 'CA',
+                'birthdate' => '12/25/2000',
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+            );
+
+        // Create - gender field - "m"
+        $testdata[] = array(
+          'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'email'     => 'test@email.com',
+                'country'   => 'CA',
+                'gender'   => 'm'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Create - gender field - "M"
+        $testdata[] = array(
+          'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'email'     => 'test@email.com',
+                'country'   => 'CA',
+                'gender'   => 'M'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Create - gender field - "f"
+        $testdata[] = array(
+          'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'email'     => 'test@email.com',
+                'country'   => 'CA',
+                'gender'   => 'f'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Create - gender field - "F"
+        $testdata[] = array(
+          'create',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'email'     => 'test@email.com',
+                'country'   => 'CA',
+                'gender'   => 'F'
+            ),
+            NO_TEST_SETUP,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
 
         // update tests - all identifying fields
-        $testdata[] = array('update',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'email'     => 'test@email.com',
-                             'firstname' => 'testfirstnamechange1',
-                             'lastname'  => 'testlastnamechange1',
-                             'country'   => 'US'
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_EXISTS,
-                         MDL_USER_EXISTS
-                      );
+        $testdata[] = array(
+            'update',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'email'     => 'test@email.com',
+                'firstname' => 'testfirstnamechange1',
+                'lastname'  => 'testlastnamechange1',
+                'country'   => 'US'
+            ),
+            0, // <- test setup index
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
         // update - idnumber id only
-        $testdata[] = array('update',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'firstname' => 'testfirstnamechange2',
-                             'lastname'  => 'testlastnamechange2',
-                             'country'   => 'US'
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_EXISTS, MDL_USER_EXISTS
-                      );
+        $testdata[] = array(
+            'update',
+            array(
+                'idnumber'  => 'testidnumber',
+                'firstname' => 'testfirstnamechange2',
+                'lastname'  => 'testlastnamechange2',
+                'country'   => 'US'
+            ),
+            0, // <- test setup index
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
         // update - username id only
-        $testdata[] = array('update',
-                         array(
-                             'username'  => 'testusername',
-                             'firstname' => 'testfirstnamechange3',
-                             'lastname'  => 'testlastnamechange3',
-                             'country'   => 'US'
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_EXISTS, MDL_USER_EXISTS
-                      );
+        $testdata[] = array(
+            'update',
+            array(
+                'username'  => 'testusername',
+                'firstname' => 'testfirstnamechange3',
+                'lastname'  => 'testlastnamechange3',
+                'country'   => 'US'
+            ),
+            0, // <- test setup index
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
         // update - email id only
-        $testdata[] = array('update',
-                         array(
-                             'email'     => 'test@email.com',
-                             'firstname' => 'testfirstnamechange4',
-                             'lastname'  => 'testlastnamechange4',
-                             'country'   => 'US'
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_EXISTS, MDL_USER_EXISTS
-                      );
+        $testdata[] = array(
+            'update',
+            array(
+                'email'     => 'test@email.com',
+                'firstname' => 'testfirstnamechange4',
+                'lastname'  => 'testlastnamechange4',
+                'country'   => 'US'
+            ),
+            0, // <- test setup index
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
         // update - no id columns
-        $testdata[] = array('update',
-                         array(
-                             'firstname' => 'testfirstnamechange5',
-                             'lastname'  => 'testlastnamechange5',
-                             'country'   => 'US'
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_DOESNOT_EXIST, MDL_USER_DOESNOT_EXIST
-                      );
+        $testdata[] = array(
+            'update',
+            array(
+                'firstname' => 'testfirstnamechange5',
+                'lastname'  => 'testlastnamechange5',
+                'country'   => 'US'
+            ),
+            0, // <- test setup index
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DOESNOT_EXIST
+        );
+
+        // Update - Setting all possible data fields
+        $testdata[] = array(
+            'update',
+            array(
+                'idnumber'       => 'testidnumber',
+                'username'       => 'testusername',
+                'password'       => 'UpdatedPassword',
+                'firstname'      => 'testfirstname_update',
+                'lastname'       => 'testlastname_update',
+                'mi'             => 'IM',
+                'email'          => 'test@email.com',
+                'email2'         => 'test_update@email2.com',
+                'address'        => 'Updated 123 My Street',
+                'address2'       => 'Updated Unit 1A',
+                'city'           => 'Updated',
+                'state'          => 'NY',
+                'postalcode'     => '12345',
+                'country'        => 'US',
+                'phone'          => '987-654-3210',
+                'phone2'         => '123-456-7890',
+                'fax'            => '109-855-5765',
+                'birthdate'      => 'Jul/26/1980',
+                'gender'         => 'F',
+                'language'       => 'en_us',
+                'transfercredits'=> '10',
+                'comments'       => 'Updated comments',
+                'notes'          => 'Updated notes',
+                'inactive'       => 'yes'
+            ),
+            0,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Update - gender field - "m"
+        $testdata[] = array(
+          'update',
+            array(
+                'idnumber' => 'testidnumber',
+                'gender'   => 'm'
+            ),
+            0,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Update - gender field - "M"
+        $testdata[] = array(
+          'update',
+            array(
+                'idnumber' => 'testidnumber',
+                'gender'   => 'M'
+            ),
+            0,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Update - gender field - "f"
+        $testdata[] = array(
+          'update',
+            array(
+                'idnumber' => 'testidnumber',
+                'gender'   => 'f'
+            ),
+            0,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Update - gender field - "F"
+        $testdata[] = array(
+          'update',
+            array(
+                'idnumber' => 'testidnumber',
+                'gender'   => 'F'
+            ),
+            0,
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
 
         // delete cases
         // delete - no id columns
-        $testdata[] = array('delete',
-                         array(
-                             'firstname' => 'testfirstname',
-                             'lastname'  => 'testlastname',
-                             'country'   => 'CA'
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_EXISTS, MDL_USER_EXISTS
-                      );
+        $testdata[] = array(
+            'delete',
+            array(
+                'firstname' => 'testfirstname',
+                'lastname'  => 'testlastname',
+                'country'   => 'CA'
+            ),
+            0, // <- test setup index
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
         // delete - idnumber id only
-        $testdata[] = array('delete',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_DOESNOT_EXIST, MDL_USER_DELETED
-                      );
+        $testdata[] = array(
+            'delete',
+            array(
+                'idnumber'  => 'testidnumber',
+            ),
+            0, // <- test setup index
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
+
         // delete - username id only
-        $testdata[] = array('delete',
-                         array(
-                             'username'  => 'testusername',
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_DOESNOT_EXIST, MDL_USER_DELETED
-                      );
+        $testdata[] = array(
+            'delete',
+            array(
+                'username'  => 'testusername',
+            ),
+            0, // <- test setup index
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
+
         // delete - email id only
-        $testdata[] = array('delete',
-                         array(
-                             'email'     => 'test@email.com',
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_DOESNOT_EXIST, MDL_USER_DELETED
-                      );
+        $testdata[] = array(
+            'delete',
+            array(
+                'email'     => 'test@email.com',
+            ),
+            0, // <- test setup index
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
+
         // delete - all id fields
-        $testdata[] = array('delete',
-                         array(
-                             'idnumber'  => 'testidnumber',
-                             'username'  => 'testusername',
-                             'email'     => 'test@email.com',
-                         ),
-                         0, // <- test setup index
-                         ELIS_USER_DOESNOT_EXIST, MDL_USER_DELETED
-                      );
+        $testdata[] = array(
+            'delete',
+            array(
+                'idnumber'  => 'testidnumber',
+                'username'  => 'testusername',
+                'email'     => 'test@email.com',
+            ),
+            0, // <- test setup index
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
 
         return $testdata;
     }
@@ -628,8 +830,7 @@ class elis_user_import_test extends elis_database_test {
                 $where .= $DB->sql_compare_text('notes') .' = ?';
                 $params[] = $notes;
             }
-            $this->assertFalse(
-                    !$DB->record_exists_select('crlm_user', $where, $params));
+            $this->assertFalse(!$DB->record_exists_select('crlm_user', $where, $params));
         }
         return $input;
     }
@@ -640,11 +841,9 @@ class elis_user_import_test extends elis_database_test {
      * @uses $DB
      * @dataProvider dataProviderForTests
      */
-    public function test_elis_user_import($action, $user_data, $setup_index,
-                                          $elis_exists, $mdl_exists) {
+    public function test_elis_user_import($action, $user_data, $setup_index, $elis_exists, $mdl_exists) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1elis')
-                .'/version1elis.class.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         $import_data = array('action' => $action);
@@ -658,6 +857,7 @@ class elis_user_import_test extends elis_database_test {
                 $importplugin = new rlip_importplugin_version1elis($provider);
                 @$importplugin->run();
             }
+
             $mdl_user_data = $this->map_moodle_user($user_data);
             ob_start();
             var_dump($mdl_user_data);
@@ -668,8 +868,7 @@ class elis_user_import_test extends elis_database_test {
             $importplugin = new rlip_importplugin_version1elis($provider);
             @$importplugin->run();
         } catch (Exception $e) {
-            mtrace("\nException in test_elis_user_import(): ". $e->getMessage()
-                   ."\n");
+            mtrace("\nException in test_elis_user_import(): ". $e->getMessage()."\n");
         }
         $elis_user_data = $this->map_elis_user($user_data, $elis_exists);
         ob_start();
@@ -687,7 +886,8 @@ class elis_user_import_test extends elis_database_test {
         $mdl_user = ob_get_contents();
         ob_end_clean();
 
-        $this->assertEquals($elis_exists, $DB->record_exists('crlm_user', $elis_user_data), "ELIS user assertion: elis_user_data; crlm_user  = {$tmp} ; {$crlm_user}");
+        $this->assertEquals($elis_exists, $DB->record_exists(user::TABLE, $elis_user_data),
+                            "ELIS user assertion: elis_user_data; ".user::TABLE."  = $tmp ; $crlm_user");
         if ($mdl_exists === true) {
             $mdl_user_data['deleted'] = 0;
         } else if ($mdl_exists === MDL_USER_DELETED) {
@@ -696,15 +896,17 @@ class elis_user_import_test extends elis_database_test {
         }
 
         $this->assertEquals($mdl_exists, $DB->record_exists('user', $mdl_user_data),
-                            "Moodle user assertion: mdl_user_data; mdl_user = {$mdl_user_data_dump}; {$mdl_user}");
+                            "Moodle user assertion: mdl_user_data; mdl_user = $mdl_user_data_dump ; $mdl_user");
     }
 
     // Data provider for mapping yes to 1 and no to 0
     function field_provider() {
-        return array(array('0', '0'),
-                     array('1', '1'),
-                     array('yes', '1'),
-                     array('no', '0'));
+        return array(
+            array('0', '0'),
+            array('1', '1'),
+            array('yes', '1'),
+            array('no', '0')
+        );
     }
 
     /**
@@ -713,7 +915,7 @@ class elis_user_import_test extends elis_database_test {
      * @param string The expected data (0, 1)
      */
     function test_elis_user_inactive_field($data, $expected) {
-        global $CFG, $DB;
+        global $DB;
 
         $record = array();
         $record = $this->test_setup_data[0];
@@ -723,7 +925,11 @@ class elis_user_import_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
-        $this->assertEquals(true, $DB->record_exists(user::TABLE, array('idnumber' => $record['idnumber'], 'inactive' => $expected)));
+        $params = array(
+            'idnumber' => $record['idnumber'],
+            'inactive' => $expected
+        );
+
+        $this->assertEquals(true, $DB->record_exists(user::TABLE, $params));
     }
 }
-
