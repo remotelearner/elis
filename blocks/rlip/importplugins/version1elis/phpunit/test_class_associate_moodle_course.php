@@ -150,19 +150,22 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
 
-        return array('backup_controllers' => 'moodle',
-                     'course' => 'moodle',
-                     field::TABLE => 'elis_core',
-                     'course_categories' => 'moodle',
-                     'grade_categories' => 'moodle',
-                     'grade_items' => 'moodle',
-                     'role' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     classmoodlecourse::TABLE => 'elis_program',
-                     course::TABLE => 'elis_program',
-                     coursetemplate::TABLE => 'elis_program',
-                     pmclass::TABLE => 'elis_program');
+        return array(
+            'backup_controllers' => 'moodle',
+            'course' => 'moodle',
+            field::TABLE => 'elis_core',
+            'course_categories' => 'moodle',
+            'grade_categories' => 'moodle',
+            'grade_items' => 'moodle',
+            'role' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            classmoodlecourse::TABLE => 'elis_program',
+            course::TABLE => 'elis_program',
+            coursetemplate::TABLE => 'elis_program',
+            pmclass::TABLE => 'elis_program',
+            'user_enrolments' => 'moodle'
+        );
     }
 
     /**

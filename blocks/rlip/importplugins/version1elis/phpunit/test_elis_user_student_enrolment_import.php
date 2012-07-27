@@ -81,9 +81,11 @@ class elis_user_student_enrolment_test extends elis_database_test {
      * @return array Parameter data, as needed by the test methods
      */
     function user_identifier_provider() {
-        return array(array('testuserusername', NULL, NULL),
-                     array(NULL, 'testuser@email.com', NULL),
-                     array(NULL, NULL, 'testuseridnumber'));
+        return array(
+                array('create', 'delete', 'testuserusername', NULL, NULL),
+                array('enrol', 'unenrol', NULL, 'testuser@email.com', NULL),
+                array('enroll', 'unenroll', NULL, NULL, 'testuseridnumber')
+               );
     }
 
     /**
@@ -95,7 +97,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
      * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
      * @dataProvider user_identifier_provider
      */
-    function test_elis_user_student_minimal_fields_enrolment_import($username, $email, $idnumber) {
+    function test_elis_user_student_minimal_fields_enrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -123,6 +125,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         //run the class enrolment create action
         $record = new stdClass;
+        $record->action = $actioncreate;
         $record->context = 'class_testclassidnumber';
         if ($username != NULL) {
             $record->user_username = $user->username;
@@ -136,7 +139,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
-        $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
         //validation
         $midnight_today = mktime(0, 0, 0);
@@ -159,7 +162,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
      * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
      * @dataProvider user_identifier_provider
      */
-    public function test_elis_user_student_maximal_fields_enrolment_import($username, $email, $idnumber) {
+    public function test_elis_user_student_maximal_fields_enrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -477,7 +480,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
      * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
      * @dataProvider user_identifier_provider
      */
-    public function test_update_elis_user_student_enrolment_with_all_fields($username, $email, $idnumber) {
+    public function test_update_elis_user_student_enrolment_with_all_fields($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -554,7 +557,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
      * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
      * @dataProvider user_identifier_provider
      */
-    public function test_elis_user_student_unenrolment_import($username, $email, $idnumber) {
+    public function test_elis_user_student_unenrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -591,6 +594,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         //run the student enrolment delete action
         $record = new stdClass;
+        $record->action = $actiondelete;
         $record->context = 'class_testclassidnumber';
         if ($username != NULL) {
             $record->user_username = $user->username;
@@ -604,7 +608,7 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
-        $importplugin->class_enrolment_delete($record, 'bogus', 'testclassidnumber');
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
         //validation
         $this->assertEquals(0, $DB->count_records(student::TABLE));

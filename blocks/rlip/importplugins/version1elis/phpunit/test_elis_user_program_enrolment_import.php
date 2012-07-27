@@ -138,7 +138,21 @@ class elis_user_program_enrolment_test extends elis_database_test {
                      'external_services_users'      => 'moodle');
     }
 
-    function test_elis_user_program_enrolment_import() {
+    // Provider for different actions on import
+    function action_provider() {
+        return array(
+                array('create', 'delete'),
+                array('enrol', 'unenrol'),
+                array('enroll', 'unenroll')
+               );
+    }
+
+    /**
+     * Test program enrolment import
+     *
+     * @dataProvider action_provider
+     */
+    function test_elis_user_program_enrolment_import($actioncreate, $actiondelete) {
         global $DB;
 
         $record = new stdClass;
@@ -164,29 +178,34 @@ class elis_user_program_enrolment_test extends elis_database_test {
         $importplugin->curriculum_create($record, 'bogus');
 
         $record = new stdClass;
-        $record->action = 'create';
+        $record->action = $actioncreate;
         $record->context = 'curriculum_testprogramid';
         $record->user_idnumber = 'testidnumber';
 
-        $importplugin->curriculum_enrolment_create($record, 'bogus', 'testprogramid');
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
         $userid = $DB->get_field('crlm_user', 'id', array('idnumber' => 'testidnumber'));
         $this->assertTrue($DB->record_exists('crlm_curriculum_assignment', array('userid' => $userid)));
     }
 
-    function test_elis_user_program_unenrolment_import() {
+    /**
+     * Test program unenrolment import
+     *
+     * @dataProvider action_provider
+     */
+    function test_elis_user_program_unenrolment_import($actioncreate, $actiondelete) {
         global $DB;
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
 
-        $this->test_elis_user_program_enrolment_import();
+        $this->test_elis_user_program_enrolment_import($actioncreate, $actiondelete);
 
         $record = new stdClass;
-        $record->action = 'delete';
+        $record->action = $actiondelete;
         $record->context = 'curriculum_testprogramid';
         $record->user_idnumber = 'testidnumber';
 
-        $importplugin->curriculum_enrolment_delete($record, 'bogus', 'testprogramid');
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
         $userid = $DB->get_field('crlm_user', 'id', array('idnumber' => 'testidnumber'));
         $this->assertFalse($DB->record_exists('crlm_curriculum_assignment', array('userid' => $userid)));

@@ -816,7 +816,6 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         );
         $exists = $DB->record_exists(RLIP_LOG_TABLE, $params);
 
-
         $log = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
         //validate entity type
         $this->assertEquals($entity, $log->entitytype);

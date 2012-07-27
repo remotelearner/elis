@@ -50,7 +50,7 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
-        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
+        $tables = array(
                      'user' => 'moodle',
                      'crlm_curriculum' => 'elis_program',
                      'crlm_curriculum_assignment' => 'elis_program',
@@ -78,7 +78,7 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-                     //RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      'elis_scheduled_tasks' => 'elis_core',
                      RLIP_SCHEDULE_TABLE => 'block_rlip',
                      RLIP_LOG_TABLE => 'block_rlip',
@@ -234,6 +234,26 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
         $this->assertEquals($expected_error, $actual_error);
     }
 
+    /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
+    }
+
     // Validate that program validation works on enrolment create
     public function testELISProgramEnrolmentValidationCreate() {
         $this->load_csv_data();
@@ -295,6 +315,9 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
 
     // Validate that program validation works on enrolment deletion
     public function testELISProgramEnrolmentValidationDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'reqcredits', 'customreqcredits');
+
         $data = array('action' => 'delete',
                       'context' => 'curriculum_invalidtestprogramid',
                       'user_idnumber' => 'testidnumber',
@@ -307,6 +330,7 @@ class version1ELISProgramEnrolmentFSLogTest extends rlip_test {
 
     // Validate user validation works on enrolment deletion
     public function testELISProgramEnrolmentUserDelete() {
+
         $this->load_csv_data();
 
         $data = array('action' => 'delete',

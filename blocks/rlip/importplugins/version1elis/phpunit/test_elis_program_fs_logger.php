@@ -47,10 +47,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
-        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
+        $tables = array(
                      'user' => 'moodle',
                      'crlm_curriculum' => 'elis_program',
                      'config_plugins' => 'moodle',
@@ -77,7 +77,7 @@ class version1ELISProgramFSLogTest extends rlip_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-                     //RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      'elis_scheduled_tasks' => 'elis_core',
                      RLIP_SCHEDULE_TABLE => 'block_rlip',
                      RLIP_LOG_TABLE => 'block_rlip',
@@ -235,17 +235,40 @@ class version1ELISProgramFSLogTest extends rlip_test {
     }
 
     /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
+    }
+
+    /**
      * Validate that required credits validation works on program create
      */
     public function testELISProgramInvalidReqCreditsFormatCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'reqcredits', 'customreqcredits');
+
         $data = array('action' => 'create',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
-                      'reqcredits' => '10.000');
+                      'customreqcredits' => '10.000');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
-                          "reqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
+                          "customreqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -253,16 +276,20 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that required credits validation works on program update
      */
     public function testELISProgramInvalidReqCreditsFormatUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'reqcredits', 'customreqcredits');
+
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
-                      'reqcredits' => '10.000');
+                      'customreqcredits' => '10.000');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
-                          "reqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
+                          "customreqcredits value of \"10.000\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -270,14 +297,18 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that required credits validation works on program create
      */
     public function testELISProgramInvalidReqCreditsFormat2Create() {
+        //create mapping record
+        $this->create_mapping_record('course', 'reqcredits', 'customreqcredits');
+
+
         $data = array('action' => 'create',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
-                      'reqcredits' => '10.0.0');
+                      'customreqcredits' => '10.0.0');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
-                          "reqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
+                          "customreqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -285,16 +316,20 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that required credits validation works on program update
      */
     public function testELISProgramInvalidReqCreditsFormat2Update() {
+        //create mapping record
+        $this->create_mapping_record('course', 'reqcredits', 'customreqcredits');
+
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
-                      'reqcredits' => '10.0.0');
+                      'customreqcredits' => '10.0.0');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
-                          "reqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
+                          "customreqcredits value of \"10.0.0\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -302,14 +337,17 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that required credits validation works on program create
      */
     public function testELISProgramInvalidReqCreditsFormat3Create() {
+        //create mapping record
+        $this->create_mapping_record('course', 'reqcredits', 'customreqcredits');
+
         $data = array('action' => 'create',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprorgam',
-                      'reqcredits' => '100000000000.00');
+                      'customreqcredits' => '100000000000.00');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
-                          "reqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
+                          "customreqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -317,16 +355,19 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that required credits validation works on program update
      */
     public function testELISProgramInvalidReqCreditsFormat3Update() {
+        //create mapping record
+        $this->create_mapping_record('course', 'reqcredits', 'customreqcredits');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprorgam',
-                      'reqcredits' => '100000000000.00');
+                      'customreqcredits' => '100000000000.00');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
-                          "reqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
+                          "customreqcredits value of \"100000000000.00\" is not a number with at most ten total digits and two decimal digits.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -334,15 +375,18 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that time to complete validation works on program create
      */
     public function testELISProgramInvalidTimetoCompleteFormat1Create() {
+        //create mapping record
+        $this->create_mapping_record('course', 'timetocomplete', 'customtimetocomplete');
+
         $data = array('action' => 'create',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
                       'reqcredits' => '10',
-                      'timetocomplete' => '1x');
+                      'customtimetocomplete' => '1x');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
-                          "timetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+                          "customtimetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -350,6 +394,9 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that time to complete validation works on program update
      */
     public function testELISProgramInvalidTimetoCompleteFormat1Update() {
+        //create mapping record
+        $this->create_mapping_record('course', 'timetocomplete', 'customtimetocomplete');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -357,10 +404,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
                       'reqcredits' => '10',
-                      'timetocomplete' => '1x');
+                      'customtimetocomplete' => '1x');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
-                          "timetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+                          "customtimetocomplete value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -368,15 +415,18 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that time to complete validation works on program create
      */
     public function testELISProgramInvalidTimetoCompleteFormat2Create() {
+        //create mapping record
+        $this->create_mapping_record('course', 'timetocomplete', 'customtimetocomplete');
+
         $data = array('action' => 'create',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprorgam',
                       'reqcredits' => '10',
-                      'timetocomplete' => '1');
+                      'customtimetocomplete' => '1');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
-                          "timetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+                          "customtimetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -384,6 +434,9 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that time to complete validation works on program update
      */
     public function testELISProgramInvalidTimetoCompleteFormat2Update() {
+        //create mapping record
+        $this->create_mapping_record('course', 'timetocomplete', 'customtimetocomplete');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -391,10 +444,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
                       'reqcredits' => '10',
-                      'timetocomplete' => '1');
+                      'customtimetocomplete' => '1');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
-                          "timetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+                          "customtimetocomplete value of \"1\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -402,16 +455,19 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that frequency validation works on program create
      */
     public function testELISProgramFrequencyConfigNotSetCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'frequency', 'customfrequency');
+
         $data = array('action' => 'create',
                       'context' => 'curriculum',
                       'idnumber' => 'testprogramidnumber',
                       'name' => 'testprogram',
                       'reqcredits' => '10',
                       'timetocomplete' => '1d',
-                      'frequency' => '1d');
+                      'customfrequency' => '1d');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
-                          "Program frequency / expiration cannot be set because program expiration is globally disabled.\n";
+                          "Program customfrequency / expiration cannot be set because program expiration is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -419,6 +475,9 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that frequency validation works on program update
      */
     public function testELISProgramFrequencyConfigNotSetUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'frequency', 'customfrequency');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -427,10 +486,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'name' => 'testprogram',
                       'reqcredits' => '10',
                       'timetocomplete' => '1d',
-                      'frequency' => '1d');
+                      'customfrequency' => '1d');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
-                          "Program frequency / expiration cannot be set because program expiration is globally disabled.\n";
+                          "Program customfrequency / expiration cannot be set because program expiration is globally disabled.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -438,6 +497,9 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that frequency validation works on program create
      */
     public function testELISProgramInvalidFrequencyCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'frequency', 'customfrequency');
+
         set_config('enable_curriculum_expiration', 1, 'elis_program');
 
         $data = array('action' => 'create',
@@ -446,10 +508,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'name' => 'testprogram',
                       'reqcredits' => '10',
                       'timetocomplete' => '1d',
-                      'frequency' => '1x');
+                      'customfrequency' => '1x');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
-                          "frequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+                          "customfrequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -457,6 +519,9 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that frequency validation works on program updatee
      */
     public function testELISProgramInvalidFrequencyUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'frequency', 'customfrequency');
+
         set_config('enable_curriculum_expiration', 1, 'elis_program');
 
         $this->load_csv_data();
@@ -467,10 +532,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'name' => 'testprogram',
                       'reqcredits' => '10',
                       'timetocomplete' => '1d',
-                      'frequency' => '1x');
+                      'customfrequency' => '1x');
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
-                          "frequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
+                          "customfrequency value of \"1x\" is not a valid time delta in *h, *d, *w, *m, *y format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -478,6 +543,9 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that priority validation works on program create
      */
     public function testELISProgramInvalidPriorityCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'priority', 'custompriority');
+
         set_config('enable_curriculum_expiration', 1, 'elis_program');
 
         $data = array('action' => 'create',
@@ -487,10 +555,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'reqcredits' => '10',
                       'timetocomplete' => '1d',
                       'frequency' => '1d',
-                      'priority' => 11);
+                      'custompriority' => 11);
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be created. " .
-                          "priority value of \"11\" is not one of the available options (0 .. 10).\n";
+                          "custompriority value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -498,6 +566,9 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that priority validation works on program update
      */
     public function testELISProgramInvalidPriorityUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'priority', 'custompriority');
+
         set_config('enable_curriculum_expiration', 1, 'elis_program');
 
         $this->load_csv_data();
@@ -509,10 +580,10 @@ class version1ELISProgramFSLogTest extends rlip_test {
                       'reqcredits' => '10',
                       'timetocomplete' => '1d',
                       'frequency' => '1d',
-                      'priority' => 11);
+                      'custompriority' => 11);
 
         $expected_error = "[program.csv line 2] Program with idnumber \"testprogramidnumber\" could not be updated. " .
-                          "priority value of \"11\" is not one of the available options (0 .. 10).\n";
+                          "custompriority value of \"11\" is not one of the available options (0 .. 10).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -520,6 +591,9 @@ class version1ELISProgramFSLogTest extends rlip_test {
      * Validate that validation works on program delete
      */
     public function testELISProgramInvalidProgramIdDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'reqcredits', 'customreqcredits');
+
         $this->load_csv_data();
 
         $data = array('action' => 'delete',
@@ -535,55 +609,65 @@ class version1ELISProgramFSLogTest extends rlip_test {
     public function testProgramInvalidIdentifyingFieldsOnCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'context', 'customcontext');
+
         $data = array(
             'action' => 'create'
         );
-        $expected_error = "[program.csv line 1] Import file program.csv was not processed because it is missing the following required column: context. Please fix the import file and re-upload it.\n";
+        $expected_error = "[program.csv line 1] Import file program.csv was not processed because it is missing the following required column: customcontext. Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'create',
-            'context' => ''
+            'customcontext' => ''
         );
         $expected_error = "[program.csv line 2] Entity could not be created.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => '',
-            'context' => ''
+            'customcontext' => ''
         );
         $expected_error = "[program.csv line 2] Entity could not be processed.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
+        //create mapping record
+        $this->create_mapping_record('course', 'action', 'customaction');
+
         $data = array(
-            'action' => '',
-            'context' => 'curriculum'
+            'customaction' => '',
+            'customcontext' => 'curriculum'
         );
-        $expected_error = "[program.csv line 2] Program could not be processed. Required field action is unspecified or empty.\n";
+        $expected_error = "[program.csv line 2] Program could not be processed. Required field customaction is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+        $this->create_mapping_record('course', 'name', 'customname');
+
+        $data = array(
+            'customaction' => 'create',
+            'customcontext' => 'curriculum',
+            'customidnumber' => '',
+        );
+        $expected_error = "[program.csv line 2] Program could not be created. Required fields customidnumber, customname are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
-            'action' => 'create',
-            'context' => 'curriculum',
-            'idnumber' => '',
+            'customaction' => 'create',
+            'customcontext' => 'curriculum',
+            'customidnumber' => 'testidnumber'
         );
-        $expected_error = "[program.csv line 2] Program could not be created. Required fields idnumber, name are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
-
-        $data = array(
-            'action' => 'create',
-            'context' => 'curriculum',
-            'idnumber' => 'testidnumber'
-        );
-        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be created. Required field name is unspecified or empty.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be created. Required field customname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
        $data = array(
-            'action' => 'create',
-            'context' => 'curriculum',
-            'name' => 'testname'
+            'customaction' => 'create',
+            'customcontext' => 'curriculum',
+            'customname' => 'testname'
         );
-        $expected_error = "[program.csv line 2] Program could not be created. Required field idnumber is unspecified or empty.\n";
+        $expected_error = "[program.csv line 2] Program could not be created. Required field customidnumber is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -591,20 +675,24 @@ class version1ELISProgramFSLogTest extends rlip_test {
     public function testTrackInvalidIdentifyingFieldsOnUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
+
         $data = array(
             'action' => 'update',
             'context' => 'curriculum',
-            'idnumber' => '',
+            'customidnumber' => '',
         );
-        $expected_error = "[program.csv line 2] Program could not be updated. Required field idnumber is unspecified or empty.\n";
+        $expected_error = "[program.csv line 2] Program could not be updated. Required field customidnumber is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'update',
             'context' => 'curriculum',
-            'idnumber' => 'testidnumber',
+            'customidnumber' => 'testidnumber',
         );
-        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be updated. idnumber value of \"testidnumber\" does not refer to a valid program.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be updated. customidnumber value of \"testidnumber\" does not refer to a valid program.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -612,20 +700,24 @@ class version1ELISProgramFSLogTest extends rlip_test {
     public function testTrackInvalidIdentifyingFieldsOnDelete() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'idnumber', 'customidnumber');
+
+
         $data = array(
             'action' => 'delete',
             'context' => 'curriculum',
-            'idnumber' => '',
+            'customidnumber' => '',
         );
-        $expected_error = "[program.csv line 2] Program could not be deleted. Required field idnumber is unspecified or empty.\n";
+        $expected_error = "[program.csv line 2] Program could not be deleted. Required field customidnumber is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'delete',
             'context' => 'curriculum',
-            'idnumber' => 'testidnumber',
+            'customidnumber' => 'testidnumber',
         );
-        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be deleted. idnumber value of \"testidnumber\" does not refer to a valid program.\n";
+        $expected_error = "[program.csv line 2] Program with idnumber \"testidnumber\" could not be deleted. customidnumber value of \"testidnumber\" does not refer to a valid program.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 

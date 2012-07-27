@@ -473,6 +473,18 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
     }
 
     /**
+     * Specifies flag for indicating whether this plugin is actually available
+     * on the current system, particularly for viewing in the UI and running
+     * scheduled tasks
+     */
+    function is_available() {
+        global $CFG;
+
+        //this plugin is only available if the PM code is present
+        return file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
+    }
+
+    /**
      * Mainline for export processing
      *
      * @param int $targetstarttime The timestamp representing the theoretical
