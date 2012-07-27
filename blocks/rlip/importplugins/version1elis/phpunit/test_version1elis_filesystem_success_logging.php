@@ -75,10 +75,12 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
             pmclass::TABLE                        => 'elis_program',
             student::TABLE                        => 'elis_program',
             track::TABLE                          => 'elis_program',
+            trackassignment::TABLE                => 'elis_program',
             user::TABLE                           => 'elis_program',
             usermoodle::TABLE                     => 'elis_program',
             usertrack::TABLE                      => 'elis_program',
-            userset::TABLE                        => 'elis_program'
+            userset::TABLE                        => 'elis_program',
+            waitlist::TABLE                       => 'elis_program'
         );
     }
 
@@ -548,7 +550,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
             array('delete', 'user_testuseridnumber', 'testuserusername', '', 'testuseridnumber', 'unassigned role with shortname "testroleshortname" on user "testuseridnumber".', $role_params),
             array('delete', 'user_testuseridnumber', '', 'testuser@email.com', 'testuseridnumber', 'unassigned role with shortname "testroleshortname" on user "testuseridnumber".', $role_params),
             array('delete', 'user_testuseridnumber', 'testuserusername', 'testuser@email.com', 'testuseridnumber', 'unassigned role with shortname "testroleshortname" on user "testuseridnumber".', $role_params),
-       ); 
+       );
     }
 
     /**
@@ -661,7 +663,7 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
 
         if ($parts[0] == 'user') {
             //need role for a role assignment
-            create_role('testrolename', 'testroleshortname', 'testroledescription'); 
+            create_role('testrolename', 'testroleshortname', 'testroledescription');
         }
 
         if ($action != 'create') {

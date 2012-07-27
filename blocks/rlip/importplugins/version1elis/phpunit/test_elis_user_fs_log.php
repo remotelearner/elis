@@ -172,7 +172,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $tables = array(RLIP_LOG_TABLE => 'block_rlip',
@@ -201,7 +201,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-                     //RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      'elis_scheduled_tasks' => 'elis_core',
                      RLIP_SCHEDULE_TABLE => 'block_rlip',
                      RLIP_LOG_TABLE => 'block_rlip',
@@ -363,10 +363,13 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISUserUsernameCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
-                      'username' => 'testusername',
+                      'customusername' => 'testusername',
                       'idnumber' => 'testidnumber',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
@@ -375,7 +378,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'city' => 'Waterloo',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be created. username value of \"testusername\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be created. customusername value of \"testusername\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -385,6 +388,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserEmailCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
@@ -393,12 +399,12 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
                       'lastname' => 'rliplastname',
-                      'email' => 'com.mail@user',
+                      'customemail' => 'com.mail@user',
                       'city' => 'Waterloo',
                       'birhtdate' => 'JAN/01/2012',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"com.mail@user\", idnumber \"validtestidnumber\" could not be created. email value of \"com.mail@user\" is not a valid email address.\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"com.mail@user\", idnumber \"validtestidnumber\" could not be created. customemail value of \"com.mail@user\" is not a valid email address.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -408,6 +414,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserEmail2Create() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'email2', 'customemail2');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
@@ -417,12 +426,12 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'firstname' => 'rlipfirstname',
                       'lastname' => 'rliplastname',
                       'email' => 'user@validmail.com',
-                      'email2' => 'com.mail@user',
+                      'customemail2' => 'com.mail@user',
                       'city' => 'Waterloo',
                       'birthdate' => '2012.01.02',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. email2 value of \"com.mail@user\" is not a valid email address.\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. customemail2 value of \"com.mail@user\" is not a valid email address.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -432,6 +441,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserEmail2Update() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'email2', 'customemail2');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -441,12 +453,12 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'firstname' => 'rlipfirstname',
                       'lastname' => 'rliplastname',
                       'email' => 'test@user.com',
-                      'email2' => 'com.mail@user',
+                      'customemail2' => 'com.mail@user',
                       'city' => 'Waterloo',
                       'birthdate' => '2012.01.02',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. email2 value of \"com.mail@user\" is not a valid email address.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. customemail2 value of \"com.mail@user\" is not a valid email address.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -456,6 +468,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserCountryCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'country', 'customcountry');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
@@ -467,9 +482,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'email' => 'user@validmail.com',
                       'city' => 'Waterloo',
                       'birthdate' => '01/02/2012',
-                      'country' => 'invalidCA');
+                      'customcountry' => 'invalidCA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. country value of \"invalidCA\" is not a valid country or country code.\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. customcountry value of \"invalidCA\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -479,6 +494,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserCountryUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'country', 'customcountry');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -490,9 +508,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'email' => 'test@user.com',
                       'city' => 'Waterloo',
                       'birthdate' => '01/02/2012',
-                      'country' => 'invalidCA');
+                      'customcountry' => 'invalidCA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. country value of \"invalidCA\" is not a valid country or country code.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. customcountry value of \"invalidCA\" is not a valid country or country code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -502,6 +520,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserBirthdateCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'birthdate', 'custombirthdate');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
@@ -512,10 +533,10 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'lastname' => 'rliplastname',
                       'email' => 'user@validmail.com',
                       'city' => 'Waterloo',
-                      'birthdate' => '01/02',
+                      'custombirthdate' => '01/02',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. birthdate value of \"01/02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. custombirthdate value of \"01/02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -525,6 +546,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserBirthdateUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'birthdate', 'custombirthdate');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -535,10 +559,10 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'lastname' => 'rliplastname',
                       'email' => 'test@user.com',
                       'city' => 'Waterloo',
-                      'birthdate' => '01/02',
+                      'custombirthdate' => '01/02',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. birthdate value of \"01/02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. custombirthdate value of \"01/02\" is not a valid date in MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -548,6 +572,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserGenderCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'gender', 'customgender');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
@@ -559,10 +586,10 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'email' => 'user@validmail.com',
                       'city' => 'Waterloo',
                       'lang' => 'en',
-                      'gender' => 'invalidgender',
+                      'customgender' => 'invalidgender',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. gender value of \"invalidgender\" is not one of the available options (M, male, F, female).\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. customgender value of \"invalidgender\" is not one of the available options (M, male, F, female).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -572,6 +599,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserGenderUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'gender', 'customgender');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -583,10 +613,10 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'email' => 'test@user.com',
                       'city' => 'Waterloo',
                       'lang' => 'en',
-                      'gender' => 'invalidgender',
+                      'customgender' => 'invalidgender',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. gender value of \"invalidgender\" is not one of the available options (M, male, F, female).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. customgender value of \"invalidgender\" is not one of the available options (M, male, F, female).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -596,6 +626,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserLangCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'lang', 'customlang');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
@@ -606,12 +639,11 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'lastname' => 'rliplastname',
                       'email' => 'user@validmail.com',
                       'city' => 'Waterloo',
-                      'lang' => 'en',
                       'gender' => 'F',
-                      'lang' => 'invalidlang',
+                      'customlang' => 'invalidlang',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. language value of \"invalidlang\" is not a valid language code.\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. customlang value of \"invalidlang\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -621,6 +653,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISInvalidUserLangUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'lang', 'customlang');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -631,12 +666,11 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'lastname' => 'rliplastname',
                       'email' => 'test@user.com',
                       'city' => 'Waterloo',
-                      'lang' => 'en',
                       'gender' => 'F',
-                      'lang' => 'invalidlang',
+                      'customlang' => 'invalidlang',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. language value of \"invalidlang\" is not a valid language code.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. customlang value of \"invalidlang\" is not a valid language code.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -645,6 +679,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
      */
     public function testELISInvalidUserTransferCreditsCreate() {
         global $CFG, $DB;
+
+        //create mapping record
+        $this->create_mapping_record('user', 'transfercredits', 'customtransfercredits');
 
         $this->load_csv_data();
 
@@ -659,10 +696,10 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'lang' => 'en',
                       'gender' => 'F',
                       'lang' => 'en',
-                      'transfercredits' => -1,
+                      'customtransfercredits' => -1,
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. transfercredits value of \"-1\" is not a non-negative integer.\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"user@validmail.com\", idnumber \"validtestidnumber\" could not be created. customtransfercredits value of \"-1\" is not a non-negative integer.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -671,6 +708,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
      */
     public function testELISInvalidUserTransferCreditsUpdate() {
         global $CFG, $DB;
+
+        //create mapping record
+        $this->create_mapping_record('user', 'transfercredits', 'customtransfercredits');
 
         $this->load_csv_data();
 
@@ -685,10 +725,10 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'lang' => 'en',
                       'gender' => 'F',
                       'lang' => 'en',
-                      'transfercredits' => -1,
+                      'customtransfercredits' => -1,
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. transfercredits value of \"-1\" is not a non-negative integer.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. customtransfercredits value of \"-1\" is not a non-negative integer.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -697,6 +737,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
      */
     public function testELISUserInvalidInactiveCreate() {
         global $CFG, $DB;
+
+        //create mapping record
+        $this->create_mapping_record('user', 'inactive', 'custominactive');
 
         $this->load_csv_data();
 
@@ -708,10 +751,10 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'lastname' => 'rliplastname',
                       'email' => 'test@validmail.com',
                       'city' => 'Waterloo',
-                      'inactive' => 2,
+                      'custominactive' => 2,
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"test@validmail.com\", idnumber \"validtestidnumber\" could not be created. inactive value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"test@validmail.com\", idnumber \"validtestidnumber\" could not be created. custominactive value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
    }
 
@@ -721,6 +764,9 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISUserInvalidInactiveUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'inactive', 'custominactive');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
@@ -731,10 +777,10 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'lastname' => 'rliplastname',
                       'email' => 'test@user.com',
                       'city' => 'Waterloo',
-                      'inactive' => 2,
+                      'custominactive' => 2,
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. inactive value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. custominactive value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
    }
 
@@ -744,11 +790,14 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISUserIdnumberCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
                       'username' => 'validtestusername',
-                      'idnumber' => 'testidnumber',
+                      'customidnumber' => 'testidnumber',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
                       'lastname' => 'rliplastname',
@@ -756,7 +805,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'city' => 'Waterloo',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"validtest@user.com\", idnumber \"testidnumber\" could not be created. idnumber value of \"testidnumber\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"validtest@user.com\", idnumber \"testidnumber\" could not be created. customidnumber value of \"testidnumber\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -766,10 +815,13 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISUserUsernameUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
-                      'username' => 'invalidtestusername',
+                      'customusername' => 'invalidtestusername',
                       'idnumber' => 'testidnumber',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
@@ -778,7 +830,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'city' => 'Waterloo',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"invalidtestusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. username value of \"invalidtestusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"invalidtestusername\", email \"test@user.com\", idnumber \"testidnumber\" could not be updated. customusername value of \"invalidtestusername\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -788,10 +840,13 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISUserIdnumberUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
-                      'username' => 'testusername',
+                      'customusername' => 'testusername',
                       'idnumber' => 'invalidtestidnumber',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
@@ -810,10 +865,13 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testELISUserMultipleInvalidFieldUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
-                      'username' => 'invalidtestusername',
+                      'customusername' => 'invalidtestusername',
                       'idnumber' => 'invalidtestidnumber',
                       'password' => 'Rlippassword!0',
                       'firstname' => 'rlipfirstname',
@@ -822,7 +880,7 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                       'city' => 'Waterloo',
                       'country' => 'CA');
 
-        $expected_error = "[user.csv line 2] User with username \"invalidtestusername\", email \"invalidtest@user.com\", idnumber \"invalidtestidnumber\" could not be updated. username value of \"invalidtestusername\", email value of \"invalidtest@user.com\", idnumber value of \"invalidtestidnumber\" do not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"invalidtestusername\", email \"invalidtest@user.com\", idnumber \"invalidtestidnumber\" could not be updated. customusername value of \"invalidtestusername\", email value of \"invalidtest@user.com\", idnumber value of \"invalidtestidnumber\" do not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -830,68 +888,80 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testUserInvalidIdentifyingFieldsOnCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+        $this->create_mapping_record('user', 'email', 'customemail');
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
         $data = array(
             'action' => 'create'
         );
-        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        //create mapping record
+        $this->create_mapping_record('user', 'action', 'customaction');
+
+        $data = array(
+            'customaction' => '',
+            'customusername' => ''
+        );
+        $expected_error = "[user.csv line 2] User could not be processed. Required field customaction is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        $this->create_mapping_record('user', 'firstname', 'customfirstname');
+        $this->create_mapping_record('user', 'lastname', 'customlastname');
+        $this->create_mapping_record('user', 'country', 'customcountry');
+
+        $data = array(
+            'customaction' => 'create',
+            'customusername' => '',
+            'customemail' => '',
+            'customidnumber' => ''
+        );
+
+        $expected_error = "[user.csv line 2] User could not be created. Required fields customidnumber, customusername, customfirstname, customlastname, customemail, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
-            'action' => '',
-            'username' => ''
+            'customaction' => 'create',
+            'customusername' => 'testusername'
         );
-        $expected_error = "[user.csv line 2] User could not be processed. Required field action is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. Required fields customidnumber, customfirstname, customlastname, customemail, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
-            'action' => 'create',
-            'username' => '',
-            'email' => '',
-            'idnumber' => ''
+            'customaction' => 'create',
+            'customemail' => 'user@mail.com'
         );
-
-        $expected_error = "[user.csv line 2] User could not be created. Required fields idnumber, username, firstname, lastname, email, country are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be created. Required fields customidnumber, customusername, customfirstname, customlastname, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
-            'action' => 'create',
-            'username' => 'testusername'
+            'customaction' => 'create',
+            'customidnumber' => 'testidnumber'
         );
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be created. Required fields idnumber, firstname, lastname, email, country are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be created. Required fields customusername, customfirstname, customlastname, customemail, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
-            'action' => 'create',
-            'email' => 'user@mail.com'
+            'customaction' => 'create',
+            'customusername' => 'testusername',
+            'customemail' => 'user@mail.com',
+            'customidnumber' => 'testidnumber'
         );
-        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be created. Required fields idnumber, username, firstname, lastname, country are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"user@mail.com\", idnumber \"testidnumber\" could not be created. Required fields customfirstname, customlastname, customcountry are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
-            'action' => 'create',
-            'idnumber' => 'testidnumber'
+            'customaction' => 'create',
+            'customusername' => 'testusername',
+            'customemail' => 'user@mail.com',
+            'customidnumber' => 'testidnumber',
+            'customfirstname' => 'dsfds',
+            'customlastname' => 'sadfs'
         );
-        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be created. Required fields username, firstname, lastname, email, country are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
-
-        $data = array(
-            'action' => 'create',
-            'username' => 'testusername',
-            'email' => 'user@mail.com',
-            'idnumber' => 'testidnumber'
-        );
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"user@mail.com\", idnumber \"testidnumber\" could not be created. Required fields firstname, lastname, country are unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
-
-        $data = array(
-            'action' => 'create',
-            'username' => 'testusername',
-            'email' => 'user@mail.com',
-            'idnumber' => 'testidnumber',
-            'firstname' => 'dsfds',
-            'lastname' => 'sadfs'
-        );
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"user@mail.com\", idnumber \"testidnumber\" could not be created. Required field country is unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"user@mail.com\", idnumber \"testidnumber\" could not be created. Required field customcountry is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -899,42 +969,51 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testUserInvalidIdentifyingFieldsOnUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         $data = array(
             'action' => 'update',
-            'username' => 'testusername'
+            'customusername' => 'testusername'
         );
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. username value of \"testusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be updated. customusername value of \"testusername\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
+
+        $data = array(
+            'action' => 'update',
+            'customemail' => 'user@mail.com'
+        );
+        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be updated. customemail value of \"user@mail.com\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        //create mapping record
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
+        $data = array(
+            'action' => 'update',
+            'customidnumber' => 'testidnumber'
+        );
+        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be updated. customidnumber value of \"testidnumber\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
             'action' => 'update',
-            'email' => 'user@mail.com'
-        );
-        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be updated. email value of \"user@mail.com\" does not refer to a valid user.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
-
-        $data = array(
-            'action' => 'update',
-            'idnumber' => 'testidnumber'
-        );
-        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be updated. idnumber value of \"testidnumber\" does not refer to a valid user.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
-
-        $data = array(
-            'action' => 'update',
-            'username' => '',
-            'email' => '',
-            'idnumber' => ''
+            'customusername' => '',
+            'customemail' => '',
+            'customidnumber' => ''
         );
 
-        $expected_error = "[user.csv line 2] User could not be updated. One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be updated. One of customusername, customemail, customidnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
             'action' => 'update',
         );
-        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -942,43 +1021,51 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     public function testUserInvalidIdentifyingFieldsOnDelete() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('user', 'username', 'customusername');
+
         $data = array(
             'action' => 'delete',
-            'username' => 'testusername'
+            'customusername' => 'testusername'
         );
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be deleted. username value of \"testusername\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\" could not be deleted. customusername value of \"testusername\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
 
         $data = array(
             'action' => 'delete',
-            'email' => 'user@mail.com'
+            'customemail' => 'user@mail.com'
         );
-        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be deleted. email value of \"user@mail.com\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with email \"user@mail.com\" could not be deleted. customemail value of \"user@mail.com\" does not refer to a valid user.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        //create mapping record
+        $this->create_mapping_record('user', 'idnumber', 'customidnumber');
+
+        $data = array(
+            'action' => 'delete',
+            'customidnumber' => 'testidnumber'
+        );
+        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be deleted. customidnumber value of \"testidnumber\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
             'action' => 'delete',
-            'idnumber' => 'testidnumber'
-        );
-        $expected_error = "[user.csv line 2] User with idnumber \"testidnumber\" could not be deleted. idnumber value of \"testidnumber\" does not refer to a valid user.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
-
-        $data = array(
-            'action' => 'delete',
-            'username' => '',
-            'email' => '',
-            'idnumber' => ''
+            'customusername' => '',
+            'customemail' => '',
+            'customidnumber' => ''
         );
 
-        $expected_error = "[user.csv line 2] User could not be deleted. One of username, email, idnumber is required but all are unspecified or empty.\n";
+        $expected_error = "[user.csv line 2] User could not be deleted. One of customusername, customemail, customidnumber is required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $data = array(
             'action' => 'delete',
         );
-        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.\n";
+        $expected_error = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -1007,6 +1094,26 @@ class version1elisFilesystemLoggingTest extends rlip_test {
 
         $exists = $DB->record_exists($table, $params);
         $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
     }
 
     protected function load_csv_data() {
