@@ -184,7 +184,8 @@ class elis_entity_import_test extends elis_database_test {
             'user_preferences' => 'moodle',
             'user_info_data' => 'moodle',
             'user_lastaccess' => 'moodle',
-            'user_enrolments' => 'moodle'
+            'user_enrolments' => 'moodle',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
             );
 
         return $tables;

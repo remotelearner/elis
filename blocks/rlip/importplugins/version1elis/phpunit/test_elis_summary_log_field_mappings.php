@@ -108,7 +108,12 @@ class elis_summary_log_field_mappings_test extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
+        global $CFG;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/student.class.php'));
+
         return array(
+            student::TABLE => 'elis_program',
             RLIP_LOG_TABLE => 'block_rlip',
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
         );
@@ -572,7 +577,7 @@ class elis_summary_log_field_mappings_test extends elis_database_test {
 
     /**
      *
-     * 
+     *
      * @dataProvider customMappingAndDataProvider
      * @param string $entity  The entity type for import ('user', 'course', 'enrolment')
      * @param array  $mapping The custom field mapping

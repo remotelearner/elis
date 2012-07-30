@@ -41,6 +41,8 @@ class version1elisScheduledImportTest extends rlip_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
@@ -53,7 +55,8 @@ class version1elisScheduledImportTest extends rlip_test {
             RLIP_SCHEDULE_TABLE    => 'block_rlip',
             'config'               => 'moodle',
             'config_plugins'       => 'moodle',
-            'elis_scheduled_tasks' => 'elis_core'
+            'elis_scheduled_tasks' => 'elis_core',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
         );
     }
 

@@ -116,7 +116,8 @@ class elis_class_import_test extends elis_database_test {
                         field_data_int::TABLE => 'elis_core',
                         field_data_num::TABLE => 'elis_core',
                         field_data_text::TABLE => 'elis_core',
-                        field_owner::TABLE => 'elis_core');
+                        field_owner::TABLE => 'elis_core',
+                        RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis');
 
         return $tables;
     }

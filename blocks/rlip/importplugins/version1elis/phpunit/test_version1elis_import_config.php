@@ -46,13 +46,12 @@ class version1elisImportConfigTest extends rlip_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
-        require_once($file);
         require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
 
         return array(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      field::TABLE => 'elis_core',
                      field_category::TABLE => 'elis_core',
+                     field_contextlevel::TABLE => 'elis_core',
                      'config_plugins' => 'moodle');
     }
 
@@ -90,14 +89,23 @@ class version1elisImportConfigTest extends rlip_test {
      * @param int $categoryid Profile field category id
      * @return int The id of the created profile field
      */
-    private function create_profile_field($name, $datatype, $categoryid) {
+    private function create_profile_field($name, $datatype, $categoryid, $contextlevelname = 'user') {
         global $CFG;
         require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
 
         $field = new field(array('categoryid' => $categoryid,
                                  'shortname' => $name,
                                  'name' => $name));
         $field->save();
+
+        //field contextlevel
+        $contextlevel = context_elis_helper::get_level_from_name($contextlevelname);
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
+                                                           'contextlevel' => $contextlevel));
+
+        $field_contextlevel->save();
 
         return $field->id;
     }
