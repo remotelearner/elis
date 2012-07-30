@@ -47,10 +47,10 @@ class version1ELISClusterFSLogTest extends rlip_test {
     static function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
-        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
+        $tables = array(
                      'user' => 'moodle',
                      'crlm_cluster' => 'elis_program',
                      'crlm_curriculum' => 'elis_program',
@@ -78,10 +78,10 @@ class version1ELISClusterFSLogTest extends rlip_test {
                      //needed for course delete to prevent errors / warnings
                      'course_modules' => 'moodle',
                      'forum' => 'mod_forum',
-                     //RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'elis_scheduled_tasks' => 'elis_core',
                      RLIP_SCHEDULE_TABLE => 'block_rlip',
                      RLIP_LOG_TABLE => 'block_rlip',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      'user' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle',
@@ -235,16 +235,39 @@ class version1ELISClusterFSLogTest extends rlip_test {
     }
 
     /**
+     * Creates an import field mapping record in the database
+     *
+     * @param string $entitytype The type of entity, such as user or course
+     * @param string $standardfieldname The typical import field name
+     * @param string $customfieldname The custom import field name
+     */
+    private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
+        global $DB;
+
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
+        $record = new stdClass;
+        $record->entitytype = $entitytype;
+        $record->standardfieldname = $standardfieldname;
+        $record->customfieldname = $customfieldname;
+        $DB->insert_record(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE, $record);
+    }
+
+    /**
      * Validate that cluster already exists on create
      */
     public function testELISExisitngClusterCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'name', 'customname');
+
         $this->load_csv_data();
 
         $data = array('action' => 'create',
                       'context' => 'cluster',
-                      'name' => 'testcluster');
+                      'customname' => 'testcluster');
 
-        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be created. name value of \"testcluster\" refers to a user set that already exists.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be created. customname value of \"testcluster\" refers to a user set that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -252,11 +275,14 @@ class version1ELISClusterFSLogTest extends rlip_test {
      * Validate that cluster doesn't exist on delete
      */
     public function testELISInvalidClusterDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'name', 'customname');
+
         $data = array('action' => 'delete',
                       'context' => 'cluster',
-                      'name' => 'invalidtestcluster');
+                      'customname' => 'invalidtestcluster');
 
-        $expected_error = "[userset.csv line 2] User set with name \"invalidtestcluster\" could not be deleted. name value of \"invalidtestcluster\" does not refer to a valid user set.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"invalidtestcluster\" could not be deleted. customname value of \"invalidtestcluster\" does not refer to a valid user set.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -264,11 +290,14 @@ class version1ELISClusterFSLogTest extends rlip_test {
      * Validate that cluster doesn't exist on update
      */
     public function testELISInvalidClusterUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'name', 'customname');
+
         $data = array('action' => 'update',
                       'context' => 'cluster',
-                      'name' => 'invalidtestcluster');
+                      'customname' => 'invalidtestcluster');
 
-        $expected_error = "[userset.csv line 2] User set with name \"invalidtestcluster\" could not be updated. name value of \"invalidtestcluster\" does not refer to a valid user set.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"invalidtestcluster\" could not be updated. customname value of \"invalidtestcluster\" does not refer to a valid user set.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -276,14 +305,17 @@ class version1ELISClusterFSLogTest extends rlip_test {
      * Validate recursive validation on cluster delete
      */
     public function testELISClusterRecursiveDelete() {
+        //create mapping record
+        $this->create_mapping_record('course', 'recursive', 'customrecursive');
+
         $this->load_csv_data();
 
         $data = array('action' => 'delete',
                       'context' => 'cluster',
                       'name' => 'testcluster',
-                      'recursive' => 2);
+                      'customrecursive' => 2);
 
-        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be deleted. recursive value of \"2\" is not one of the available options (0, 1).\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be deleted. customrecursive value of \"2\" is not one of the available options (0, 1).\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -291,12 +323,15 @@ class version1ELISClusterFSLogTest extends rlip_test {
      * Validate invalid parent on cluster creation
      */
     public function testELISClusterInvalidParentCreate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'parent', 'customparent');
+
         $data = array('action' => 'create',
                       'context' => 'cluster',
                       'name' => 'testcluster',
-                      'parent' => 'invalidparent');
+                      'customparent' => 'invalidparent');
 
-        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be created. parent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be created. customparent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -304,14 +339,17 @@ class version1ELISClusterFSLogTest extends rlip_test {
      * Validate invalid parent on cluster update
      */
     public function testELISClusterInvalidParentUpdate() {
+        //create mapping record
+        $this->create_mapping_record('course', 'parent', 'customparent');
+
         $this->load_csv_data();
 
         $data = array('action' => 'update',
                       'context' => 'cluster',
                       'name' => 'testcluster',
-                      'parent' => 'invalidparent');
+                      'customparent' => 'invalidparent');
 
-        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be updated. parent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testcluster\" could not be updated. customparent value of \"invalidparent\" should refer to a valid user set, or be set to \"top\" to place this user set at the top level.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -319,39 +357,48 @@ class version1ELISClusterFSLogTest extends rlip_test {
     public function testClusterInvalidIdentifyingFieldsOnCreate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'context', 'customcontext');
+
         $data = array(
             'action' => 'create'
         );
-        $expected_error = "[userset.csv line 1] Import file userset.csv was not processed because it is missing the following required column: context. Please fix the import file and re-upload it.\n";
+        $expected_error = "[userset.csv line 1] Import file userset.csv was not processed because it is missing the following required column: customcontext. Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'create',
-            'context' => ''
+            'customcontext' => ''
         );
         $expected_error = "[userset.csv line 2] Entity could not be created.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => '',
-            'context' => ''
+            'customcontext' => ''
         );
         $expected_error = "[userset.csv line 2] Entity could not be processed.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
-        $data = array(
-            'action' => '',
-            'context' => 'cluster'
-        );
-        $expected_error = "[userset.csv line 2] User set could not be processed. Required field action is unspecified or empty.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        //create mapping record
+        $this->create_mapping_record('course', 'action', 'customaction');
 
         $data = array(
-            'action' => 'create',
-            'context' => 'cluster',
-            'name' => '',
+            'customaction' => '',
+            'customcontext' => 'cluster'
         );
-        $expected_error = "[userset.csv line 2] User set could not be created. Required field name is unspecified or empty.\n";
+        $expected_error = "[userset.csv line 2] User set could not be processed. Required field customaction is unspecified or empty.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'course');
+
+        //create mapping record
+        $this->create_mapping_record('course', 'name', 'customname');
+
+        $data = array(
+            'customaction' => 'create',
+            'customcontext' => 'cluster',
+            'customname' => '',
+        );
+        $expected_error = "[userset.csv line 2] User set could not be created. Required field customname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -359,20 +406,23 @@ class version1ELISClusterFSLogTest extends rlip_test {
     public function testTrackInvalidIdentifyingFieldsOnUpdate() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'name', 'customname');
+
         $data = array(
             'action' => 'update',
             'context' => 'cluster',
-            'name' => '',
+            'customname' => '',
         );
-        $expected_error = "[userset.csv line 2] User set could not be updated. Required field name is unspecified or empty.\n";
+        $expected_error = "[userset.csv line 2] User set could not be updated. Required field customname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'update',
             'context' => 'cluster',
-            'name' => 'testname',
+            'customname' => 'testname',
         );
-        $expected_error = "[userset.csv line 2] User set with name \"testname\" could not be updated. name value of \"testname\" does not refer to a valid user set.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testname\" could not be updated. customname value of \"testname\" does not refer to a valid user set.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
@@ -380,20 +430,23 @@ class version1ELISClusterFSLogTest extends rlip_test {
     public function testTrackInvalidIdentifyingFieldsOnDelete() {
         global $CFG, $DB;
 
+        //create mapping record
+        $this->create_mapping_record('course', 'name', 'customname');
+
         $data = array(
             'action' => 'delete',
             'context' => 'cluster',
-            'name' => '',
+            'customname' => '',
         );
-        $expected_error = "[userset.csv line 2] User set could not be deleted. Required field name is unspecified or empty.\n";
+        $expected_error = "[userset.csv line 2] User set could not be deleted. Required field customname is unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
 
         $data = array(
             'action' => 'delete',
             'context' => 'cluster',
-            'name' => 'testname',
+            'customname' => 'testname',
         );
-        $expected_error = "[userset.csv line 2] User set with name \"testname\" could not be deleted. name value of \"testname\" does not refer to a valid user set.\n";
+        $expected_error = "[userset.csv line 2] User set with name \"testname\" could not be deleted. customname value of \"testname\" does not refer to a valid user set.\n";
         $this->assert_data_produces_error($data, $expected_error, 'course');
     }
 
