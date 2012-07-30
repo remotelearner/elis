@@ -37,6 +37,12 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
     $dbman = $DB->get_manager();
 
     if ($result && $oldversion < 2012020900) {
+        // Determine if the CM / PM tables had been previously set up in 1.9
+        // Note that this is done in the block upgrade because it runs before the
+        // "elis_program" install, while the rlip plugins run afterwards
+        $cm_table = new xmldb_table('crlm_user');
+        $cm_installed = $dbman->table_exists($cm_table);
+        set_config('cm_upgraded_from_19', (int)$cm_installed, 'block_rlip');
 
         // Define table block_rlip_summary_log to be created
         $table = new xmldb_table('block_rlip_summary_log');
@@ -512,7 +518,8 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
                 $emails = array();
 
                 foreach ($emailids as $id) {
-                    if ($moodleuser = $DB->get_record(user::TABLE, array('idnumber' => $id), 'id, email')) {
+                    //need to use Moodle user table because PM tables may not be set up yet
+                    if ($moodleuser = $DB->get_record('user', array('idnumber' => $id), 'id, email')) {
                         $emails[]   = $moodleuser->email;
                     }
                 }
