@@ -128,7 +128,7 @@ class usersetclassification extends elis_data_object {
 
         $context = context_elis_userset::instance($cluster);
         $value = field_data::get_for_context_and_field($context, USERSET_CLASSIFICATION_FIELD);
-        if ($value->valid()) {
+        if ($value && $value->valid()) {
             $value = $value->current();
             $name = $value->data;
             $newusersetclassification = usersetclassification::find(new field_filter('shortname', $name));

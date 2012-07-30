@@ -199,7 +199,7 @@ class user extends data_object_with_custom_fields {
             $data->username = $data->idnumber;
         }
         if (!empty($data->username)) {
-            $data->username = moodle_strtolower($data->username);
+            $data->username = textlib::strtolower($data->username);
         }
         $this->_load_data_from_record($data, true);
     }
