@@ -27,3 +27,50 @@
 $subplugins = array('rlipimport' => 'blocks/rlip/importplugins',
                     'rlipexport' => 'blocks/rlip/exportplugins',
                     'rlipfile' => 'blocks/rlip/fileplugins');
+
+if (!class_exists('plugininfo_rlipfile')) {
+    require_once(dirname(__FILE__) .'/../../../config.php');
+    global $CFG;
+    require_once("{$CFG->dirroot}/lib/pluginlib.php");
+    class plugininfo_rlipfile extends plugininfo_base {
+        static function get_plugins($plugintype, $plugintyperootdir, $plugintypeclass) {
+            global $CFG, $DB;
+            $subplugins = parent::get_plugins($plugintype, $plugintyperootdir, $plugintypeclass);
+            $csvclass = new $plugintypeclass();
+            $csvclass->type = $plugintype;
+            $csvclass->typerootdir = $plugintyperootdir;
+            $csvclass->name = 'rlipfile_csv';
+            $csvclass->rootdir = "{$CFG->dirroot}/blocks/rlip/fileplugins/csv";
+            $csvclass->displayname = get_string('pluginname', 'rlipfile_csv');
+            $csvversiondb = $DB->get_field('config_plugins', 'value',
+                                           array('plugin' => $csvclass->name,
+                                                 'name'   => 'version'));
+            $csvclass->versiondb = ($csvversiondb !== false) ? $csvversiondb : null;
+            $plugin = new stdClass;
+            include("{$csvclass->rootdir}/version.php");
+            $csvclass->versiondisk = $plugin->version;
+            $csvclass->init_is_standard(); // TBD
+
+            $logclass = new $plugintypeclass();
+            $logclass->type = $plugintype;
+            $logclass->typerootdir = $plugintyperootdir;
+            $logclass->name = 'rlipfile_log';
+            $logclass->rootdir = "{$CFG->dirroot}/blocks/rlip/fileplugins/log";
+            $logclass->displayname = get_string('pluginname', 'rlipfile_log');
+            $logversiondb = $DB->get_field('config_plugins', 'value',
+                                           array('plugin' => $logclass->name,
+                                                 'name'   => 'version'));
+            $logclass->versiondb = ($logversiondb !== false) ? $logversiondb : null;
+            $plugin = new stdClass;
+            include("{$logclass->rootdir}/version.php");
+            $logclass->versiondisk = $plugin->version;
+            $logclass->init_is_standard(); // TBD
+
+            //mtrace("plugininfo_rlipfile::get_plugins({$plugintype}, {$plugintyperootdir}, {$plugintypeclass})");
+            return array($csvclass->name => $csvclass,
+                         $logclass->name => $logclass
+                   );
+        }
+    }
+}
+

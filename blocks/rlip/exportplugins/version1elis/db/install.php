@@ -69,14 +69,14 @@ function xmldb_rlipexport_version1elis_install() {
              * Only the first profile field will be copied and the rest will be ignored
              */
             $params = array('fieldid' => $customfield->id);
-            if (!$DB->record_exists('rlipexport_version1elis_field', $params)) {
+            if (!$DB->record_exists('rlipexport_version1elis_fld', $params)) {
                 // Does not already exists, so create it
                 $data = array(
                     'fieldid'    => $customfield->id,
                     'header'     => $fieldmap->fieldmap,
                     'fieldorder' => $fieldmap->fieldorder
                 );
-                $DB->insert_record('rlipexport_version1elis_field', $data);
+                $DB->insert_record('rlipexport_version1elis_fld', $data);
             }
 
         }
@@ -85,11 +85,11 @@ function xmldb_rlipexport_version1elis_install() {
     // Fix the field order because duplicate removal may have created gaps
     $fieldorder = 1;
 
-    if ($newmappings = $DB->get_recordset('rlipexport_version1elis_field', NULL, 'fieldorder')) {
+    if ($newmappings = $DB->get_recordset('rlipexport_version1elis_fld', NULL, 'fieldorder')) {
         foreach ($newmappings as $newmapping) {
             // Set the field order to the appropriate sequential number 
             $newmapping->fieldorder = $fieldorder;
-            $DB->update_record('rlipexport_version1elis_field', $newmapping);
+            $DB->update_record('rlipexport_version1elis_fld', $newmapping);
 
             $fieldorder++;
         }

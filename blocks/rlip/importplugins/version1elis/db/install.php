@@ -71,7 +71,7 @@ function xmldb_rlipimport_version1elis_install() {
                         'entitytype' => $entitytype,
                         'standardfieldname' => $fieldname
                     );
-                    if ($record = $DB->get_record('rlipimport_version1elis_mapping', $params)) {
+                    if ($record = $DB->get_record('rlipimport_version1elis_map', $params)) {
                         // A mapping exists, so update it
                         $data = array(
                             'id'                => $record->id,
@@ -79,7 +79,7 @@ function xmldb_rlipimport_version1elis_install() {
                             'standardfieldname' => $fieldname,
                             'customfieldname'   => $fieldmap->fieldmap
                         );
-                        $DB->update_record('rlipimport_version1elis_mapping', $data);
+                        $DB->update_record('rlipimport_version1elis_map', $data);
                     } else {
                         // No mapping exists, so create it
                         $data = array(
@@ -87,7 +87,7 @@ function xmldb_rlipimport_version1elis_install() {
                             'standardfieldname' => $fieldname,
                             'customfieldname'   => $fieldmap->fieldmap
                         );
-                        $DB->insert_record('rlipimport_version1elis_mapping', $data);
+                        $DB->insert_record('rlipimport_version1elis_map', $data);
                     }
                 }
             }
@@ -117,7 +117,7 @@ function xmldb_rlipimport_version1elis_install() {
                     'entitytype' => 'course',
                     'standardfieldname' => $course_fieldname
                 );
-                if ($record = $DB->get_record('rlipimport_version1elis_mapping', $params)) {
+                if ($record = $DB->get_record('rlipimport_version1elis_map', $params)) {
                     // A mapping exists, so update it
                     $data = array(
                         'id'                => $record->id,
@@ -125,7 +125,7 @@ function xmldb_rlipimport_version1elis_install() {
                         'standardfieldname' => $course_fieldname,
                         'customfieldname'   => $old_mapping->fieldmap
                     );
-                    $DB->update_record('rlipimport_version1elis_mapping', $data);
+                    $DB->update_record('rlipimport_version1elis_map', $data);
                 } else {
                     // No mapping exists, so create it
                     $data = array(
@@ -133,7 +133,7 @@ function xmldb_rlipimport_version1elis_install() {
                         'standardfieldname' => $course_fieldname,
                         'customfieldname'   => $old_mapping->fieldmap
                     );
-                    $DB->insert_record('rlipimport_version1elis_mapping', $data);
+                    $DB->insert_record('rlipimport_version1elis_map', $data);
                 }
 
                 break;

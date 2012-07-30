@@ -613,10 +613,11 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
     /**
      * Hook run after a file header is read
      *
-     * @param string $entity The type of entity
-     * @param array $header The header record
+     * @param string $entity   The type of entity
+     * @param array  $header   The header record
+     * @param string $filename ?
      */
-    function header_read_hook($entity, $header) {
+    function header_read_hook($entity, $header, $filename) {
         //by default, nothing to do
     }
 
