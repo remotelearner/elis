@@ -77,6 +77,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -87,6 +89,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         return array(
             'config_plugins'  => 'moodle',
             RLIP_LOG_TABLE    => 'block_rlip',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
             course::TABLE     => 'elis_program',
             curriculum::TABLE => 'elis_program',
             field::TABLE      => 'elis_core',
@@ -364,7 +367,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->assignment = 'testprogramidnumber';
         $record->idnumber = str_repeat('a', 100);
         $record->name = str_repeat('a', 255);
-        
+
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->track_create($record, 'bogus');
@@ -393,7 +396,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->context = 'track';
         $record->idnumber = 'testtrackidnumber';
         $record->name = str_repeat('a', 255);
-        
+
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->track_update($record, 'bogus');
@@ -421,7 +424,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->context = 'class';
         $record->assignment = 'testcourseidnumber';
         $record->idnumber = str_repeat('a', 100);
-        
+
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_create($record, 'bogus');
@@ -1045,7 +1048,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
      *                            or NULL if not applicable
-     * @dataProvider usersetCreateFieldProvider 
+     * @dataProvider usersetCreateFieldProvider
      */
     public function testUsersetCreateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
         global $CFG, $DB;
