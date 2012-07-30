@@ -144,6 +144,9 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
+
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
         require_once(elispm::lib('data/course.class.php'));
@@ -164,7 +167,9 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
             course::TABLE => 'elis_program',
             coursetemplate::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
-            'user_enrolments' => 'moodle'
+            student::TABLE => 'elis_program',
+            'user_enrolments' => 'moodle',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
         );
     }
 
@@ -221,7 +226,7 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/course.class.php'));
 
         //make sure $USER is set up for backup/restore
-        $USER->id = $DB->get_field_select('user', 'id', "username != 'guest'", array(), IGNORE_MULTIPLE); 
+        $USER->id = $DB->get_field_select('user', 'id', "username != 'guest'", array(), IGNORE_MULTIPLE);
 
         //need the moodle/backup:backupcourse capability
         $guestroleid = create_role('guestrole', 'guestrole', 'guestrole');
@@ -303,7 +308,7 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
 
         //make sure $USER is set up for backup/restore
-        $USER->id = $DB->get_field_select('user', 'id', "username != 'guest'", array(), IGNORE_MULTIPLE); 
+        $USER->id = $DB->get_field_select('user', 'id', "username != 'guest'", array(), IGNORE_MULTIPLE);
 
         //need the moodle/backup:backupcourse capability
         $guestroleid = create_role('guestrole', 'guestrole', 'guestrole');

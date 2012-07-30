@@ -45,6 +45,8 @@ class elis_userset_import_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/clustercurriculum.class.php'));
         require_once(elispm::lib('data/clustertrack.class.php'));
@@ -70,6 +72,7 @@ class elis_userset_import_test extends elis_database_test {
                      usermoodle::TABLE => 'elis_program',
                      userset::TABLE => 'elis_program',
                      userset_profile::TABLE => 'elis_program',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
                      'user' => 'moodle');
     }
 

@@ -91,6 +91,8 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -121,6 +123,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
             track::TABLE            => 'elis_program',
             trackassignment::TABLE  => 'elis_program',
             curriculumcourse::TABLE => 'elis_program',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
         );
     }
 

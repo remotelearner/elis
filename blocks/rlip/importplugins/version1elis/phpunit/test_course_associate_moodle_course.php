@@ -45,6 +45,8 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
     static protected function get_overlay_tables() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($file);
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/coursetemplate.class.php'));
 
@@ -52,7 +54,8 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
                      'course_categories' => 'moodle',
                      field::TABLE => 'elis_core',
                      course::TABLE => 'elis_program',
-                     coursetemplate::TABLE => 'elis_program');
+                     coursetemplate::TABLE => 'elis_program',
+                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis');
     }
 
     /**

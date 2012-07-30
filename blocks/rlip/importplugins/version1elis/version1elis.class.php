@@ -1629,7 +1629,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         if (isset($record->link)) {
             if ($record->link == 'auto') {
-                print_object("\n trying to attach class: $classid");
                 moodle_attach_class($classid, 0, '', true, true, true);
             } else {
                 $moodlecourseid = $DB->get_field('course', 'id', array('shortname' => $record->link));
@@ -1845,6 +1844,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     function get_available_fields($entitytype) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
         require_once(elis::lib('data/customfield.class.php'));
 
         if ($this->plugin_supports($entitytype) !== false) {
@@ -1852,14 +1852,37 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
             $result = array_merge(array('action'), static::$$attribute);
 
-            //add ELIS custom fields
-            if ($fields = $DB->get_recordset(field::TABLE)) {
+            // enrolments do not have custom fields
+            if ($entitytype == 'enrolment') {
+                return $result;
+            }
+
+            if (!is_numeric($entitytype)) {
+                $entitytype = context_elis_helper::get_level_from_name($entitytype);
+            }
+
+            // courses get all custom fields except user custom fields
+            if ($entitytype == CONTEXT_ELIS_COURSE) {
+                $contextsql = "ctx.contextlevel != ".CONTEXT_ELIS_USER;
+            } else if ($entitytype == CONTEXT_ELIS_USER) {
+                $contextsql = "ctx.contextlevel = $entitytype";
+            } else {
+                // unsupported entity type
+                return $result;
+            }
+
+            //add ELIS custom fields - get by context
+            $sql = "SELECT field.shortname
+                      FROM {".field::TABLE."} field
+                      JOIN {".field_contextlevel::TABLE."} ctx ON ctx.fieldid = field.id AND ".$contextsql;
+            if ($fields = $DB->get_recordset_sql($sql)) {
                 foreach ($fields as $field) {
                     $result[] = $field->shortname;
                 }
             }
 
-            return $result;
+            // make sure there are no duplicate field shortnames returned
+            return array_unique($result);
         } else {
             return false;
         }
