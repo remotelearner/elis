@@ -41,8 +41,9 @@ function xmldb_rlipexport_version1elis_install() {
 
     // Skip this work if we should be using Moodle-only IP
     $pm_installed = file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
+    $cm_upgraded_from_19 = get_config('block_rlip', 'cm_upgraded_from_19');
     $ip_basic_enabled = !empty($CFG->block_rlip_overrideelisip);
-    $init_pm_plugins = $pm_installed && !$ip_basic_enabled;
+    $init_pm_plugins = $pm_installed && !empty($cm_upgraded_from_19) && !$ip_basic_enabled;
 
     if (!$init_pm_plugins) {
         return true;
@@ -61,7 +62,8 @@ function xmldb_rlipexport_version1elis_install() {
     foreach ($export_fieldmap as $fieldmap) {
         $fldname = substr($fieldmap->fieldname, $prefix_length); // eg. get "fld" from "profile_field_fld"
 
-        if ($customfield = field::get_for_context_level_with_name('user', $fldname)) {
+        if ($customfield = field::get_for_context_level_with_name('user', $fldname) and
+            isset($customfield->id)) {
             /*
              * RLIP 1.9 allows for multiple profile fields with the same name, while RLIP 2 does not
              * Only the first profile field will be copied and the rest will be ignored

@@ -41,8 +41,9 @@ function xmldb_rlipimport_version1elis_install() {
 
     // Skip this work if we should be using Moodle-only IP
     $pm_installed = file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
+    $cm_upgraded_from_19 = get_config('block_rlip', 'cm_upgraded_from_19');
     $ip_basic_enabled = !empty($CFG->block_rlip_overrideelisip);
-    $init_pm_plugins = $pm_installed && !$ip_basic_enabled;
+    $init_pm_plugins = $pm_installed && !empty($cm_upgraded_from_19) && !$ip_basic_enabled;
 
     if (!$init_pm_plugins) {
         return true;
