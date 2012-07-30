@@ -67,7 +67,7 @@ abstract class rlip_importprovider {
      * @param  integer $starttime the time used in the filename
      * @return object the fslogger
      */
-    function get_fslogger($plugin, $entity, $manual = false, $starttime = 0) {
+    function get_fslogger($plugin, $entity = '', $manual = false, $starttime = 0) {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
         //set up the file-system logger

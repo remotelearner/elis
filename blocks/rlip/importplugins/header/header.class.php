@@ -38,10 +38,11 @@ class rlip_importplugin_header extends rlip_importplugin_sample {
     /**
      * Hook run after a file header is read
      *
-     * @param string $entity The type of entity
-     * @param array $header The header record
+     * @param string $entity   The type of entity
+     * @param array  $header   The header record
+     * @param string $filename ?
      */
-    function header_read_hook($entity, $header) {
+    function header_read_hook($entity, $header, $filename) {
         $this->hook_called = true;
     }
 
