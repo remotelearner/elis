@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="rlipexport_version1elis_field" COMMENT="Custom fields used by version 1 elis export plugin">
+    <TABLE NAME="rlipexport_version1elis_fld" COMMENT="Custom fields used by version 1 elis export plugin">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="fieldid"/>
         <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The id of the ELIS custom field" PREVIOUS="id" NEXT="header"/>

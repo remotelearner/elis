@@ -206,6 +206,7 @@ class version1CreateorupdateTest extends rlip_test {
             'user' => 'moodle',
             'course' => 'moodle',
             'course_categories' => 'moodle',
+            'course_sections_availability' => 'moodle',
             'context' => 'moodle',
             'enrol' => 'moodle',
             'grade_categories' => 'moodle',

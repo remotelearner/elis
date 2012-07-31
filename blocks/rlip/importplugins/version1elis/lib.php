@@ -25,8 +25,8 @@
  */
 
 //database table constants
-define('RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE', 'rlipimport_version1elis_mapping');
-define('RLIPIMPORT_VERSION1ELIS_FIELD_TABLE', 'rlipimport_version1elis_field');
+define('RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE', 'rlipimport_version1elis_map');
+define('RLIPIMPORT_VERSION1ELIS_FIELD_TABLE',   'rlipimport_version1elis_fld');
 
 /**
  * Performs page setup work needed on the page for configuring field mapping

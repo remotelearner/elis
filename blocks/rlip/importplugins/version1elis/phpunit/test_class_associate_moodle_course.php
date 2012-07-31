@@ -156,8 +156,9 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         return array(
             'backup_controllers' => 'moodle',
             'course' => 'moodle',
-            field::TABLE => 'elis_core',
             'course_categories' => 'moodle',
+            'course_modules' => 'moodle',
+            field::TABLE => 'elis_core',
             'grade_categories' => 'moodle',
             'grade_items' => 'moodle',
             'role' => 'moodle',

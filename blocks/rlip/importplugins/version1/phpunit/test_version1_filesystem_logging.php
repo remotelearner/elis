@@ -240,6 +240,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'config_plugins' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
+                     'course_sections_availability' => 'moodle',
                      'role' => 'moodle',
                      'role_context_levels' => 'moodle',
                      'role_assignments' => 'moodle',

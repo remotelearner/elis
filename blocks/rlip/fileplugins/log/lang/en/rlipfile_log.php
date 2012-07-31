@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    rlip
- * @subpackage blocks_rlip
+ * @subpackage importplugins_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,7 +26,4 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-
-$plugin->version = 2012072600;
-$plugin->release = '2.2.0.x (Build: 20120615)';
-
+$string['pluginname'] = 'RLIP fileplugin: log';

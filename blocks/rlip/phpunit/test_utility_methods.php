@@ -77,6 +77,7 @@ class utilityMethodTest extends rlip_test {
                      RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      'elis_scheduled_tasks' => 'elis_core',
                      'config_plugins' => 'moodle',
+                     'log' => 'moodle',
                      RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'config' => 'moodle',

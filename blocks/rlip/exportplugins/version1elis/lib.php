@@ -28,7 +28,7 @@ require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('data/customfield.class.php'));
 
 //database table constants
-define('RLIPEXPORT_VERSION1ELIS_FIELD_TABLE', 'rlipexport_version1elis_field');
+define('RLIPEXPORT_VERSION1ELIS_FIELD_TABLE', 'rlipexport_version1elis_fld');
 
 /**
  * Helper class that is used for configuring the Version 1 ELIS format export
