@@ -354,6 +354,11 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
             }
         }
 
+        // remove html from text
+//        $value .= $this->controls[$fieldid];
+        if ($this->controls[$fieldid] == 'text' || $this->controls[$fieldid] == 'textarea') {
+            $value = trim(html_to_text($value),"\n\r");
+        }
         return $value;
     }
 
