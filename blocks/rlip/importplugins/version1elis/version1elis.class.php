@@ -1551,6 +1551,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $context = $record->context;
         }
 
+        //to support ELIS IP1.9, we map 'curr' to 'curriculum' if it is used
+        if ($context == 'curr') {
+            $context = 'curriculum';
+        }
+
         if (!in_array($context, $valid_contexts)) {
             if (in_array($action, $valid_actions)) {
                 $message = "Entity could not be {$record->action}d.";
