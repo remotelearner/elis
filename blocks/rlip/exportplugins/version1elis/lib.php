@@ -26,6 +26,7 @@
 
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('data/customfield.class.php'));
+require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
 //database table constants
 define('RLIPEXPORT_VERSION1ELIS_FIELD_TABLE', 'rlipexport_version1elis_fld');
@@ -116,10 +117,10 @@ class rlipexport_version1elis_config {
                     FROM {".field::TABLE."} field
                     RIGHT JOIN {". field_contextlevel::TABLE ."} fc
                        ON fc.fieldid = field.id
-                    WHERE fc.contextlevel = ". $context."
+                    WHERE fc.contextlevel = ?
                     AND export.fieldid = field.id
                   ) AND export.fieldorder {$comparrison_symbol} ?";
-        $neworder = $DB->get_field_sql($sql, array($currentorder));
+        $neworder = $DB->get_field_sql($sql, array($context, $currentorder));
 
         //change the fieldorder on the record being moved
         $params = array('id' => $exportid);
