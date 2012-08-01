@@ -52,13 +52,28 @@ class elis_user_student_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array('config' => 'moodle',
+                     'cache_flags' => 'moodle',
+                     'forum' => 'mod_forum',
+                     'forum_subscriptions' => 'mod_forum',
+                     'forum_read' => 'mod_forum',
+                     'forum_track_prefs' => 'mod_forum',
+                     'groups' => 'moodle',
+                     'groups_members' => 'moodle',
+                     'role_assignments' => 'moodle',
+                     'role' => 'moodle',
+                     'role_context_levels' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'user_enrolments' => 'moodle',
+                     'user_lastaccess' => 'moodle',
                      course::TABLE => 'elis_program',
                      pmclass::TABLE => 'elis_program',
                      field::TABLE => 'elis_core',
                      student::TABLE => 'elis_program',
                      student_grade::TABLE => 'elis_program',
                      user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+                     usermoodle::TABLE => 'elis_program',
+                     waitlist::TABLE => 'elis_program');
     }
 
     /**
@@ -449,7 +464,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $class->save();
 
         $student = new student(array('userid' => $user->id,
-                                     'classid' => $class->id));
+                                     'classid' => $class->id,
+                                     'enrolmenttime' => 0));
         $student->save();
 
         //validate setup
@@ -508,7 +524,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $class->save();
 
         $student = new student(array('userid' => $user->id,
-                                     'classid' => $class->id));
+                                     'classid' => $class->id,
+                                     'enrolmenttime' => 0));
         $student->save();
 
         //validate setup
@@ -585,7 +602,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $class->save();
 
         $student = new student(array('userid' => $user->id,
-                                     'classid' => $class->id));
+                                     'classid' => $class->id,
+                                     'enrolmenttime' => 0));
         $student->save();
 
         //validate setup
