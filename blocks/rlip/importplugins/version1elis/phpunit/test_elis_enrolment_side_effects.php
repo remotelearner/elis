@@ -76,7 +76,10 @@ class elis_enrolment_side_effects_test extends elis_database_test {
                      user::TABLE => 'elis_program',
                      usermoodle::TABLE => 'elis_program',
                      userset::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program');
+                     usertrack::TABLE => 'elis_program',
+                     'cache_flags' => 'moodle',
+                     'role_assignments' => 'moodle',
+                     'user_enrolments' => 'moodle');
     }
 
     /**
