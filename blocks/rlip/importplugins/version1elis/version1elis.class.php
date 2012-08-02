@@ -1059,10 +1059,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        if ($user = $DB->get_record('user', $params)) {
-            user_delete_user($user);
-        }
-
         if ($user = $DB->get_record('crlm_user', $params)) {
             $user = new user($user);
             $user->delete();
@@ -1549,6 +1545,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $context = '';
         if (isset($record->context)) {
             $context = $record->context;
+        }
+
+        //to support ELIS IP1.9, we map 'curr' to 'curriculum' if it is used
+        if ($context == 'curr') {
+            $context = 'curriculum';
         }
 
         if (!in_array($context, $valid_contexts)) {
@@ -4198,7 +4199,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //string to describe the user
         $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
 
-        if ($DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
+        if (!$DB->record_exists(instructor::TABLE, array('classid' => $crsid, 'userid' => $userid))) {
             $this->fslogger->log_failure("User with {$user_descriptor} is not enrolled in " .
                                          "class instance \"{$idnumber}\" as instructor.", 0, $filename, $this->linenumber, $record, "enrolment");
             return false;

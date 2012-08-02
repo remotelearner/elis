@@ -73,6 +73,7 @@ class elis_entity_import_test extends elis_database_test {
 
     var $context_to_table = array(
         'course'     => 'crlm_course',
+        'curr'       => 'crlm_curriculum',
         'curriculum' => 'crlm_curriculum',
         'track'      => 'crlm_track',
         'class'      => 'crlm_class',
@@ -492,6 +493,18 @@ class elis_entity_import_test extends elis_database_test {
             ),
             array(TEST_SETUP_CURRICULUM),
             ELIS_ENTITY_DOESNOT_EXIST
+        );
+
+        // curriculum as curr create - ok!
+        $testdata[] = array(
+            'create',
+            'curr',
+            array(
+                'idnumber'    => 'programidnumber',
+                'name'        => 'programname',
+            ),
+            $NO_TEST_SETUP,
+            ELIS_ENTITY_EXISTS
         );
 
         // track create - no assignment
