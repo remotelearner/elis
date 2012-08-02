@@ -33,7 +33,7 @@ function xmldb_rlipexport_version1elis_upgrade($oldversion=0) {
 
     $dbman = $DB->get_manager();
 
-    if ($result && $oldversion < 2012073000) {
+    if ($result && $oldversion < 2012071200) {
         // Define table rlipexport_version1elis_fld to be created
         $table = new xmldb_table('rlipexport_version1elis_field');
 
@@ -55,7 +55,7 @@ function xmldb_rlipexport_version1elis_upgrade($oldversion=0) {
         }
 
         // plugin savepoint reached
-        upgrade_plugin_savepoint(true, 2012073000, 'rlipexport', 'version1elis');
+        upgrade_plugin_savepoint(true, 2012071200, 'rlipexport', 'version1elis');
     }
 
     if ($result && $oldversion < 2012080100) {
