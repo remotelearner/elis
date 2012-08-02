@@ -88,6 +88,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                     WHERE data1.contextid = data2.contextid
                     AND data1.contextid IS NOT NULL
                     AND data1.fieldid = data2.fieldid
+                    AND data1.id != data2.id
                     AND data1.fieldid = ?
                 )";
         $params = array($fieldid);
