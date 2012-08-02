@@ -51,6 +51,7 @@ class generalized_filter_custom_field_text extends generalized_filter_text {
         'bool' => 'int',
         'char' => 'char',
         'int'  => 'int',
+        'datetime'  => 'int',
         'num'  => 'num',
         'text' => 'text'
     );

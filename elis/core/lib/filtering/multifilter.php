@@ -313,6 +313,10 @@ class generalized_filter_multifilter {
              switch ($params['control']) {
                 case 'datetime':
                     // TBD - options required for datetime fields?
+                    $this->_choices[$field_identifier] =
+                            array('startyear' => $params['startyear'],
+                                  'stopyear'  => $params['stopyear'],
+                                  'inctime'   => $params['inctime']);
                     break;
 
                 case 'checkbox':
