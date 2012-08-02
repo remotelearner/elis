@@ -1059,10 +1059,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        if ($user = $DB->get_record('user', $params)) {
-            user_delete_user($user);
-        }
-
         if ($user = $DB->get_record('crlm_user', $params)) {
             $user = new user($user);
             $user->delete();
