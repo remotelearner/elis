@@ -279,8 +279,8 @@ class elis_userset_course_groups_test extends elis_database_test {
             //the "cluster-profile" association
             $userset_profile = new userset_profile(array('clusterid' => $userset->id,
                                                          'fieldid' => 1,
-                                                         'value' => 1));
-            $userset_profile->save();            
+                                                         'value' => true));
+            $userset_profile->save();
         }
 
         //enrol the user in the Moodle course

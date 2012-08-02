@@ -247,12 +247,12 @@ class version1DatabaseLoggingTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
-        return array(RLIP_LOG_TABLE => 'block_rlip',
+        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
                      'user' => 'moodle',
                      'context' => 'moodle',
                      'user_enrolments' => 'moodle',
@@ -290,11 +290,11 @@ class version1DatabaseLoggingTest extends rlip_test {
                      'course_modules_completion' => 'moodle',
                      'course_modules' => 'moodle',
                      'course_modules_availability' => 'moodle',
+                     'course_sections_availability' => 'moodle',
                      'modules' => 'moodle',
                      'groupings' => 'moodle',
                      'groupings_groups' => 'moodle',
                      'groups' => 'moodle',
-                     'course_display' => 'moodle',
                      'backup_courses' => 'moodle',
                      'backup_logs' => 'moodle',
                      'role' => 'moodle',
@@ -306,6 +306,11 @@ class version1DatabaseLoggingTest extends rlip_test {
                      RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
                      //this prevents createorupdate from being used
                      'config_plugins' => 'moodle');
+
+        if ($DB->get_manager()->table_exists('course_display')) {
+            $tables['course_display'] = 'moodle';
+        }
+        return $tables;
     }
 
     /**

@@ -17,11 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    rlip
- * @subpackage blocks_rlip
+ * @subpackage rlipexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-$plugin->version  = 2012071200;
+$plugin->version  = 2012080100;

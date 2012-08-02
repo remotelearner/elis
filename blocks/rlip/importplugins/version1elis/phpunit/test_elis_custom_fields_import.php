@@ -102,9 +102,7 @@ class elis_user_custom_fields_test extends elis_database_test {
                      RLIP_LOG_TABLE     => 'block_rlip',
                      'files'            => 'moodle',
                      'external_tokens'  => 'moodle',
-                     'external_services_users'      => 'moodle',
-                     'external_tokens'              => 'moodle',
-                     'external_services_users'      => 'moodle');
+                     'external_services_users' => 'moodle');
     }
 
     /**
@@ -577,13 +575,28 @@ class elis_user_custom_fields_test extends elis_database_test {
             $datatype = 'int';
         }
 
-        if ($control == "textarea") {
-            $exists = $DB->record_exists_select('elis_field_data_text', "fieldid=:fieldid AND contextid=:contextid AND ".$DB->sql_compare_text('data').'=:data',
-                                                array('fieldid'=> $fieldid, 'contextid'=> $usercontextid, 'data' => $expected));
-            $this->assertTrue($exists);
+        $params = array('fieldid'   => $fieldid,
+                        'contextid' => $usercontextid);
+        $select = 'fieldid = :fieldid AND contextid = :contextid';
+        $olddatatype = '';
+        if ($control == 'textarea' || $datatype == 'text') { // TBD
+            $olddatatype = " ({$datatype})";
+            $datatype = 'text';
+            $select .= ' AND '. $DB->sql_compare_text('data') .' = :data';
+            $params['data'] = substr($expected, 0, 32);
         } else {
-            $this->assertTrue($DB->record_exists('elis_field_data_' . $datatype, array('fieldid' => $fieldid, 'contextid' => $usercontextid, 'data' => $expected)));
+            $params['data'] = $expected;
         }
+
+        ob_start();
+        var_dump($DB->get_records('elis_field_data_'. $datatype));
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        $msg = "No field data for {$control}: type = {$datatype}{$olddatatype}, fieldid = {$fieldid}, contextid = {$usercontextid}, data = {$expected}\n elis_field_data_{$datatype} => {$tmp}\n";
+
+        $this->assertTrue($DB->record_exists_select(
+                               'elis_field_data_'. $datatype, $select, $params),
+                          $msg);
     }
 
 }
