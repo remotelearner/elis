@@ -79,7 +79,7 @@ class block_rlip extends block_base {
 
     // Removes RLIP tables and data on uninstall
     public function before_delete() {
-        global $DB;
+        global $DB, $OUTPUT;
 
         $dbman = $DB->get_manager();
 
@@ -87,42 +87,31 @@ class block_rlip extends block_base {
         $DB->delete_records('elis_scheduled_tasks',
                             array('plugin' => 'block_rlip'));
 
-        $rlipexporttbl = new xmldb_table(RLIPEXPORT_VERSION1_FIELD_TABLE);
-        if ($dbman->table_exists($rlipexporttbl)) {
-            $dbman->drop_table($rlipexporttbl);
-        }
+        //delegate to sub-plugins
+        $subplugintypes = array('rlipimport', 'rlipexport', 'rlipfile');
+        foreach ($subplugintypes as $subplugintype) {
+            $subplugins = get_plugin_list($subplugintype);
 
-        $rlipimporttbl = new xmldb_table(RLIPIMPORT_VERSION1_MAPPING_TABLE);
-        if ($dbman->table_exists($rlipimporttbl)) {
-            $dbman->drop_table($rlipimporttbl);
-        }
+            //go through the subplugins for this type
+            foreach ($subplugins as $subpluginname => $subpluginpath) {
+                $uninstalllib = $subpluginpath.'/db/uninstall.php';
 
-        // and same for elis versions
-        $rlipexporttbl = new xmldb_table(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE);
-        if ($dbman->table_exists($rlipexporttbl)) {
-            $dbman->drop_table($rlipexporttbl);
-        }
+                if (file_exists($uninstalllib)) {
+                    //we have an unstall db file
+                    require_once($uninstalllib);
+                    $uninstallfunction = 'xmldb_'.$subplugintype.'_'.$subpluginname.'_uninstall';
 
-        $rlipimporttbl = new xmldb_table(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE);
-        if ($dbman->table_exists($rlipimporttbl)) {
-            $dbman->drop_table($rlipimporttbl);
-        }
-
-        $rliptypes = array('rlipimport', 'rlipexport');
-        $rlipplugins = array('block_rlip');
-        foreach ($rliptypes as $rliptype) {
-            $subplugins = array_keys(get_plugin_list($rliptype));
-            array_walk($subplugins, 'array_prepend_to_values', $rliptype);
-            $rlipplugins = array_merge($rlipplugins, $subplugins);
-        }
-        //echo "block_rlip::before_delete(): plugin IN ('". implode("', '", $rlipplugins) ."')";
-        $DB->delete_records_select('config_plugins',
-                "plugin IN ('". implode("', '", $rlipplugins) ."')");
+                    if (function_exists($uninstallfunction)) {
+                        //we have an uninstall function, so run it
+                        if (!$uninstallfunction()) {
+                            echo $OUTPUT->notification('Encountered a problem running uninstall function for '.
+                                                       $subplugintype.'_'.$subpluginname);
+                        }
+                    }
+                }
+            }
+        } 
     }
 
-}
-
-function array_prepend_to_values(&$item, $key, $prefix) {
-    $item = $prefix .'_'. $item;
 }
 
