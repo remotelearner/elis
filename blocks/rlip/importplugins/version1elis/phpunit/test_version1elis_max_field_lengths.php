@@ -88,11 +88,13 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
 
         return array(
             'config_plugins'  => 'moodle',
+            'user'            => 'moodle',
+            'user_info_field' => 'moodle',
             RLIP_LOG_TABLE    => 'block_rlip',
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            field::TABLE      => 'elis_core',
             course::TABLE     => 'elis_program',
             curriculum::TABLE => 'elis_program',
-            field::TABLE      => 'elis_core',
             pmclass::TABLE    => 'elis_program',
             track::TABLE      => 'elis_program',
             user::TABLE       => 'elis_program',
@@ -112,7 +114,6 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
 
         return array(
             'context'                => 'moodle',
-            'user'                   => 'moodle',
             coursetemplate::TABLE    => 'elis_program',
             curriculumstudent::TABLE => 'elis_program'
         );
@@ -139,7 +140,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->password = 'A'.str_repeat('a', 22).'!0';
         $record->mi = str_repeat('a', 100);
         $record->email2 = str_repeat('a', 45).'@'.str_repeat('a', 50).'.com';
-        $record->address = str_repeat('a', 100);
+        $record->address = str_repeat('a', 70); // ELIS-6795 -- mdl_user.address is only 70 characters long
         $record->address2 = str_repeat('a', 100);
         $record->city = str_repeat('a', 100);
         $record->state = str_repeat('a', 100);
@@ -198,7 +199,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->password = 'A'.str_repeat('a', 22).'!0';
         $record->mi = str_repeat('a', 100);
         $record->email2 = str_repeat('a', 45).'@'.str_repeat('a', 50).'.com';
-        $record->address = str_repeat('a', 100);
+        $record->address = str_repeat('a', 70); // ELIS-6795 -- mdl_user.address is only 70 characters long
         $record->address2 = str_repeat('a', 100);
         $record->city = str_repeat('a', 100);
         $record->state = str_repeat('a', 100);

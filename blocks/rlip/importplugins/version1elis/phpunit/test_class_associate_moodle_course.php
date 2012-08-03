@@ -155,31 +155,35 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
 
         $tables = array(
             'backup_controllers' => 'moodle',
+            'config' => 'moodle',
+            'context' => 'moodle',
+            'context_temp' => 'moodle',
             'course' => 'moodle',
             'course_categories' => 'moodle',
             'course_modules' => 'moodle',
-            field::TABLE => 'elis_core',
             'grade_categories' => 'moodle',
             'grade_items' => 'moodle',
+            'groups' => 'moodle',
             'role' => 'moodle',
             'role_assignments' => 'moodle',
             'role_capabilities' => 'moodle',
+            'user_enrolments' => 'moodle',
+            field::TABLE => 'elis_core',
             classmoodlecourse::TABLE => 'elis_program',
             course::TABLE => 'elis_program',
             coursetemplate::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
             student::TABLE => 'elis_program',
-            'user_enrolments' => 'moodle',
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
         );
-        if ($DB->get_manager()->table_exists('backup_ids_temp'))
-        {
+
+        if ($DB->get_manager()->table_exists('backup_ids_temp')) {
             $tables['backup_ids_temp'] = 'moodle';
         }
-        if ($DB->get_manager()->table_exists('backup_files_temp'))
-        {
+        if ($DB->get_manager()->table_exists('backup_files_temp')) {
             $tables['backup_files_temp'] = 'moodle';
         }
+
         return $tables;
     }
 
@@ -187,16 +191,16 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('block_instances' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'config' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'context' => 'moodle',
-                     'course_sections' => 'moodle',
-                     'enrol' => 'moodle',
-                     'grade_categories_history' => 'moodle',
-                     'grade_items_history' => 'moodle',
-                     'log' => 'moodle');
+        return array(
+            'block_instances' => 'moodle',
+            'cache_flags' => 'moodle',
+            'config_plugins' => 'moodle',
+            'course_sections' => 'moodle',
+            'enrol' => 'moodle',
+            'grade_categories_history' => 'moodle',
+            'grade_items_history' => 'moodle',
+            'log' => 'moodle'
+        );
     }
 
     public static function setUpBeforeClass() {
@@ -207,6 +211,29 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
                                                                               static::get_ignored_tables());
     }
 
+    public function setUp() {
+        parent::setUp();
+
+        $DB = self::$overlaydb;
+
+        $sysctx = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_SYSTEM));
+        if (!empty($sysctx)) {
+            $DB->import_record('context', $sysctx);
+        }
+
+        $syscrsctx = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE, 'instanceid' => SITEID));
+        if (!empty($syscrsctx)) {
+            $DB->import_record('context', $syscrsctx);
+        }
+
+        $syscrs = self::$origdb->get_record('course', array('id' => SITEID));
+        if (!empty($syscrs)) {
+            $DB->import_record('course', $syscrs);
+        }
+
+        accesslib_clear_all_caches(true);
+    }
+
     /**
      * Data provider for testing various linking scenarios
      *
@@ -214,9 +241,10 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
      */
     function link_course_provider() {
         return array(//use CD template course to auto-create template course
-                     array('auto'),
-                     //link to a specific Moodle course
-                     array('testcourseshortname'));
+            array('auto'),
+            //link to a specific Moodle course
+            array('testcourseshortname')
+        );
     }
 
     /**
@@ -236,7 +264,8 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/course.class.php'));
 
         //make sure $USER is set up for backup/restore
-        $USER->id = $DB->get_field_select('user', 'id', "username != 'guest'", array(), IGNORE_MULTIPLE);
+        $USER = $DB->get_record_select('user', "username != 'guest' and DELETED = 0", array(), '*', IGNORE_MULTIPLE);
+        $GLOBAL['USER'] = $USER;
 
         //need the moodle/backup:backupcourse capability
         $guestroleid = create_role('guestrole', 'guestrole', 'guestrole');
@@ -248,14 +277,13 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         assign_capability('moodle/backup:backupcourse', CAP_ALLOW, $roleid, $systemcontext->id);
         role_assign($roleid, $USER->id, $systemcontext->id);
 
-        //set up the site course record
-        $DB->execute("INSERT INTO {course}
-                      SELECT * FROM ".self::$origdb->get_prefix()."course
-                      WHERE id = ?", array(SITEID));
+        set_config('siteadmins', $USER->id);
 
         $coursecategory = new stdClass;
         $coursecategory->name = 'testcoursecategoryname';
         $coursecategory->id = $DB->insert_record('course_categories', $coursecategory);
+
+        context_coursecat::instance($coursecategory->id);
 
         $moodlecourse = new stdClass;
         $moodlecourse->category = $coursecategory->id;
@@ -318,7 +346,7 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
 
         //make sure $USER is set up for backup/restore
-        $USER->id = $DB->get_field_select('user', 'id', "username != 'guest'", array(), IGNORE_MULTIPLE);
+        $USER->id = $DB->get_field_select('user', 'id', "username != 'guest' AND deleted = 0", array(), IGNORE_MULTIPLE);
 
         //need the moodle/backup:backupcourse capability
         $guestroleid = create_role('guestrole', 'guestrole', 'guestrole');
@@ -331,9 +359,9 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         role_assign($roleid, $USER->id, $systemcontext->id);
 
         //set up the site course record
-        $DB->execute("INSERT INTO {course}
-                      SELECT * FROM ".self::$origdb->get_prefix()."course
-                      WHERE id = ?", array(SITEID));
+//        $DB->execute("INSERT INTO {course}
+//                      SELECT * FROM ".self::$origdb->get_prefix()."course
+//                      WHERE id = ?", array(SITEID));
 
         $coursecategory = new stdClass;
         $coursecategory->name = 'testcoursecategoryname';

@@ -49,16 +49,19 @@ class elis_user_sync_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
-        return array(field::TABLE => 'elis_core',
-                     field_contextlevel::TABLE => 'elis_core',
-                     field_owner::TABLE => 'elis_core',
-                     field_category::TABLE => 'elis_core',
-                     field_data_int::TABLE => 'elis_core',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     'user' => 'moodle',
-                     'user_info_field' => 'moodle',
-                     'user_info_data' => 'moodle');
+        return array(
+            'context' => 'moodle',
+            'user' => 'moodle',
+            'user_info_field' => 'moodle',
+            'user_info_data' => 'moodle',
+            field::TABLE => 'elis_core',
+            field_contextlevel::TABLE => 'elis_core',
+            field_owner::TABLE => 'elis_core',
+            field_category::TABLE => 'elis_core',
+            field_data_int::TABLE => 'elis_core',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+        );
     }
 
     /**
@@ -121,6 +124,7 @@ class elis_user_sync_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
+        require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
         require_once(elispm::file('accesslib.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once($CFG->dirroot.'/user/profile/lib.php');

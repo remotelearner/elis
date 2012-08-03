@@ -49,13 +49,15 @@ class version1elisScheduledImportTest extends rlip_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array(
+            'config'               => 'moodle',
+            'config_plugins'       => 'moodle',
+            'user'                 => 'moodle',
+            'user_info_field'      => 'moodle',
+            'elis_scheduled_tasks' => 'elis_core',
             user::TABLE            => 'elis_program',
             usermoodle::TABLE      => 'elis_program',
             RLIP_LOG_TABLE         => 'block_rlip',
             RLIP_SCHEDULE_TABLE    => 'block_rlip',
-            'config'               => 'moodle',
-            'config_plugins'       => 'moodle',
-            'elis_scheduled_tasks' => 'elis_core',
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
         );
     }
@@ -66,7 +68,6 @@ class version1elisScheduledImportTest extends rlip_test {
     static protected function get_ignored_tables() {
         return array(
             'context' => 'moodle',
-            'user'   => 'moodle'
         );
     }
 
@@ -95,10 +96,8 @@ class version1elisScheduledImportTest extends rlip_test {
         $taskid = rlip_schedule_add_job($data);
 
         //set next runtime values to a known state
-        $DB->execute("UPDATE {elis_scheduled_tasks}
-                          SET nextruntime = ?", array(1));
-        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."}
-                      SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {elis_scheduled_tasks} SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."} SET nextruntime = ?", array(1));
 
         //run the import
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
@@ -143,10 +142,8 @@ class version1elisScheduledImportTest extends rlip_test {
         $taskid = rlip_schedule_add_job($data);
 
         //set next runtime values to a known state
-        $DB->execute("UPDATE {elis_scheduled_tasks}
-                          SET nextruntime = ?", array(1));
-        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."}
-                      SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {elis_scheduled_tasks} SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."} SET nextruntime = ?", array(1));
 
         //put the import in a particular state
         $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('plugin' => 'rlipimport_version1elis'));

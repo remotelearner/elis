@@ -57,22 +57,25 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array('config_plugins' => 'moodle',
-                     'context' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-                     course::TABLE => 'elis_program',
-                     curriculum::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     field_contextlevel::TABLE => 'elis_core',
-                     field_category::TABLE => 'elis_core',
-                     field_data_text::TABLE => 'elis_core',
-                     field_owner::TABLE => 'elis_core',
-                     pmclass::TABLE => 'elis_program',
-                     track::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program');
+        return array(
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'user' => 'moodle',
+            RLIP_LOG_TABLE => 'block_rlip',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            course::TABLE => 'elis_program',
+            curriculum::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            field_contextlevel::TABLE => 'elis_core',
+            field_category::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core',
+            field_owner::TABLE => 'elis_core',
+            pmclass::TABLE => 'elis_program',
+            track::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program'
+        );
     }
 
     /**
@@ -84,9 +87,10 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/curriculumstudent.class.php'));
 
-        return array('user' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program',
-                     curriculumstudent::TABLE => 'elis_program');
+        return array(
+            coursetemplate::TABLE => 'elis_program',
+            curriculumstudent::TABLE => 'elis_program'
+        );
     }
 
     /**

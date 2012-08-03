@@ -81,6 +81,7 @@ class databaseLoggingTest extends rlip_test {
             RLIP_LOG_TABLE => 'block_rlip',
             'config_plugins' => 'moodle',
             'files' => 'moodle',
+            'user_info_field' => 'moodle',
             //prevent unexpected errors due to field re-mappings
             RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1'
         );

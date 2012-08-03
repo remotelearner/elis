@@ -61,32 +61,34 @@ class rlip_importprovider_mockuser extends rlip_importprovider_mock {
  */
 class elis_user_field_mappings_test extends elis_database_test {
     //store the mapping we will use
-    private $mapping = array('action' => 'customaction',
-                             'username' => 'customusername',
-                             'password' => 'custompassword',
-                             'idnumber' => 'customidnumber',
-                             'firstname' => 'customfirstname',
-                             'lastname' => 'customlastname',
-                             'mi' => 'custommi',
-                             'email' => 'customemail',
-                             'email2' => 'customemail2',
-                             'address' => 'customaddress',
-                             'address2' => 'customaddress2',
-                             'city' => 'customcity',
-                             'state' => 'customstate',
-                             'postalcode' => 'custompostalcode',
-                             'country' => 'customcountry',
-                             'phone' => 'customphone',
-                             'phone2' => 'customphone2',
-                             'fax' => 'customfax',
-                             'birthdate' => 'custombirthdate',
-                             'gender' => 'customgender',
-                             'language' => 'customlanguage',
-                             'transfercredits' => 'customtransfercredits',
-                             'comments' => 'customcomments',
-                             'notes' => 'customnotes',
-                             'inactive' => 'custominactive',
-                             'testfieldshortname' => 'customtestfieldshortname');
+    private $mapping = array(
+        'action' => 'customaction',
+        'username' => 'customusername',
+        'password' => 'custompassword',
+        'idnumber' => 'customidnumber',
+        'firstname' => 'customfirstname',
+        'lastname' => 'customlastname',
+        'mi' => 'custommi',
+        'email' => 'customemail',
+        'email2' => 'customemail2',
+        'address' => 'customaddress',
+        'address2' => 'customaddress2',
+        'city' => 'customcity',
+        'state' => 'customstate',
+        'postalcode' => 'custompostalcode',
+        'country' => 'customcountry',
+        'phone' => 'customphone',
+        'phone2' => 'customphone2',
+        'fax' => 'customfax',
+        'birthdate' => 'custombirthdate',
+        'gender' => 'customgender',
+        'language' => 'customlanguage',
+        'transfercredits' => 'customtransfercredits',
+        'comments' => 'customcomments',
+        'notes' => 'customnotes',
+        'inactive' => 'custominactive',
+        'testfieldshortname' => 'customtestfieldshortname'
+    );
 
     /**
      * Return the list of tables that should be overlayed.
@@ -100,18 +102,23 @@ class elis_user_field_mappings_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
-        return array('context' => 'moodle',
-                     //prevent events functionality
-                     'events_handlers' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-                     field::TABLE => 'elis_core',
-                     field_category::TABLE => 'elis_core',
-                     field_contextlevel::TABLE => 'elis_core',
-                     field_data_int::TABLE => 'elis_core',
-                     student::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+        return array(
+            'context' => 'moodle',
+            //prevent events functionality
+            'events_handlers' => 'moodle',
+            'role_assignments' => 'moodle',
+            'user' => 'moodle',
+            'user_info_field' => 'moodle',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            field::TABLE => 'elis_core',
+            field_category::TABLE => 'elis_core',
+            field_contextlevel::TABLE => 'elis_core',
+            field_data_int::TABLE => 'elis_core',
+            field_owner::TABLE => 'elis_core',
+            student::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program'
+        );
     }
 
     /**
@@ -129,27 +136,42 @@ class elis_user_field_mappings_test extends elis_database_test {
         require_once(elispm::lib('data/usertrack.class.php'));
         require_once(elispm::lib('data/waitlist.class.php'));
 
-        return array('cohort_members' => 'moodle',
-                     'external_services_users' => 'moodle',
-                     'external_tokens' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'log' => 'moodle',
-                     'sessions' => 'moodle',
-                     'user' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     'user_lastaccess' => 'moodle',
-                     'user_preferences' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     clusterassignment::TABLE => 'elis_program',
-                     curriculumstudent::TABLE => 'elis_program',
-                     field_data_char::TABLE => 'elis_core',
-                     field_data_num::TABLE => 'elis_core',
-                     field_data_text::TABLE => 'elis_core',
-                     instructor::TABLE => 'elis_program',
-                     student_grade::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program',
-                     waitlist::TABLE => 'elis_program');
+        return array(
+            'cohort_members' => 'moodle',
+            'external_services_users' => 'moodle',
+            'external_tokens' => 'moodle',
+            'groups_members' => 'moodle',
+            'log' => 'moodle',
+            'sessions' => 'moodle',
+            'user_enrolments' => 'moodle',
+            'user_info_data' => 'moodle',
+            'user_lastaccess' => 'moodle',
+            'user_preferences' => 'moodle',
+            RLIP_LOG_TABLE => 'block_rlip',
+            clusterassignment::TABLE => 'elis_program',
+            curriculumstudent::TABLE => 'elis_program',
+            field_data_char::TABLE => 'elis_core',
+            field_data_num::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core',
+            instructor::TABLE => 'elis_program',
+            student_grade::TABLE => 'elis_program',
+            usertrack::TABLE => 'elis_program',
+            waitlist::TABLE => 'elis_program'
+        );
+    }
+
+    public function setUp() {
+        global $DB, $USER;
+
+        parent::setUp();
+
+        $DB = self::$origdb;
+
+        $admin = get_admin();
+        $USER = $admin;
+        $GLOBALS['USER'] = $USER;
+
+        $DB = self::$overlaydb;
     }
 
     /**
@@ -259,28 +281,31 @@ class elis_user_field_mappings_test extends elis_database_test {
         $this->run_user_import((array)$record);
 
         //validation
-        $data = array('username' => 'testuserusername',
-                      'password' => hash_internal_user_password('Testpassword!0'),
-                      'idnumber' => 'testuseridnumber',
-                      'firstname' => 'testuserfirstname',
-                      'lastname' => 'testuserlastname',
-                      'mi' => 'testusermi',
-                      'email' => 'testuser@email.com',
-                      'email2' => 'testuser@email2.com',
-                      'address' => 'testuseraddress',
-                      'address2' => 'testuseraddress2',
-                      'city' => 'testusercity',
-                      'state' => 'testuserstate',
-                      'postalcode' => 'testuserpostalcode',
-                      'country' => 'CA',
-                      'phone' => 'testuserphone',
-                      'phone2' => 'testuserphone2',
-                      'fax' => 'testuserfax',
-                      'birthdate' => '2012/01/01',
-                      'gender' => 'M',
-                      'language' => 'en',
-                      'transfercredits' => 1,
-                      'inactive' => 0);
+        $data = array(
+            'username' => 'testuserusername',
+            'password' => hash_internal_user_password('Testpassword!0'),
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'mi' => 'testusermi',
+            'email' => 'testuser@email.com',
+            'email2' => 'testuser@email2.com',
+            'address' => 'testuseraddress',
+            'address2' => 'testuseraddress2',
+            'city' => 'testusercity',
+            'state' => 'testuserstate',
+            'postalcode' => 'testuserpostalcode',
+            'country' => 'CA',
+            'phone' => 'testuserphone',
+            'phone2' => 'testuserphone2',
+            'fax' => 'testuserfax',
+            'birthdate' => '2012/01/01',
+            'gender' => 'M',
+            'language' => 'en',
+            'transfercredits' => 1,
+            'inactive' => 0
+        );
+
         $this->assertTrue($DB->record_exists(user::TABLE, $data));
 
         $record = $DB->get_record(user::TABLE, array('username' => 'testuserusername'));
@@ -346,28 +371,30 @@ class elis_user_field_mappings_test extends elis_database_test {
         $this->run_user_import((array)$record);
 
         //validation
-        $data = array('username' => 'testuserusername',
-                      'password' => hash_internal_user_password('updatedTestpassword!0'),
-                      'idnumber' => 'testuseridnumber',
-                      'firstname' => 'updatedtestuserfirstname',
-                      'lastname' => 'updatedtestuserlastname',
-                      'mi' => 'updatedtestusermi',
-                      'email' => 'testuser@email.com',
-                      'email2' => 'updatedtestuser@email2.com',
-                      'address' => 'updatedtestuseraddress',
-                      'address2' => 'updatedtestuseraddress2',
-                      'city' => 'updatedtestusercity',
-                      'state' => 'updatedtestuserstate',
-                      'postalcode' => 'updatedtestuserpostalcode',
-                      'country' => 'FR',
-                      'phone' => 'updatedtestuserphone',
-                      'phone2' => 'updatedtestuserphone2',
-                      'fax' => 'updatedtestuserfax',
-                      'birthdate' => '2012/01/02',
-                      'gender' => 'F',
-                      'language' => 'fr',
-                      'transfercredits' => 2,
-                      'inactive' => 1);
+        $data = array(
+            'username' => 'testuserusername',
+            'password' => hash_internal_user_password('updatedTestpassword!0'),
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'updatedtestuserfirstname',
+            'lastname' => 'updatedtestuserlastname',
+            'mi' => 'updatedtestusermi',
+            'email' => 'testuser@email.com',
+            'email2' => 'updatedtestuser@email2.com',
+            'address' => 'updatedtestuseraddress',
+            'address2' => 'updatedtestuseraddress2',
+            'city' => 'updatedtestusercity',
+            'state' => 'updatedtestuserstate',
+            'postalcode' => 'updatedtestuserpostalcode',
+            'country' => 'FR',
+            'phone' => 'updatedtestuserphone',
+            'phone2' => 'updatedtestuserphone2',
+            'fax' => 'updatedtestuserfax',
+            'birthdate' => '2012/01/02',
+            'gender' => 'F',
+            'language' => 'fr',
+            'transfercredits' => 2,
+            'inactive' => 1
+        );
         $this->assertTrue($DB->record_exists(user::TABLE, $data));
 
         $record = $DB->get_record(user::TABLE, array('username' => 'testuserusername'));

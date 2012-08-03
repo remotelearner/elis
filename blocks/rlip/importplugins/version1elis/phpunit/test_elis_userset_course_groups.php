@@ -58,38 +58,41 @@ class elis_userset_course_groups_test extends elis_database_test {
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        return array('config' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'context' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'enrol' => 'moodle',
-                     'groups' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'role' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'user' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'user_info_field' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     classmoodlecourse::TABLE => 'elis_program',
-                     clusterassignment::TABLE => 'elis_program',
-                     clustertrack::TABLE => 'elis_program',
-                     curriculum::TABLE => 'elis_program',
-                     course::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     field_category::TABLE => 'elis_core',
-                     field_contextlevel::TABLE => 'elis_core',
-                     field_data_int::TABLE => 'elis_core',
-                     field_owner::TABLE => 'elis_core',
-                     pmclass::TABLE => 'elis_program',
-                     track::TABLE => 'elis_program',
-                     trackassignment::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program',
-                     userset_profile::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program');
+        return array(
+            'config' => 'moodle',
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            'enrol' => 'moodle',
+            'groups' => 'moodle',
+            'groups_members' => 'moodle',
+            'role' => 'moodle',
+            'role_assignments' => 'moodle',
+            'user' => 'moodle',
+            'user_enrolments' => 'moodle',
+            'user_info_field' => 'moodle',
+            'user_info_data' => 'moodle',
+            classmoodlecourse::TABLE => 'elis_program',
+            clusterassignment::TABLE => 'elis_program',
+            clustertrack::TABLE => 'elis_program',
+            curriculum::TABLE => 'elis_program',
+            course::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            field_category::TABLE => 'elis_core',
+            field_contextlevel::TABLE => 'elis_core',
+            field_data_int::TABLE => 'elis_core',
+            field_owner::TABLE => 'elis_core',
+            pmclass::TABLE => 'elis_program',
+            student::TABLE => 'elis_program',
+            track::TABLE => 'elis_program',
+            trackassignment::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program',
+            userset_profile::TABLE => 'elis_program',
+            usertrack::TABLE => 'elis_program'
+        );
     }
 
     /**
@@ -101,12 +104,13 @@ class elis_userset_course_groups_test extends elis_database_test {
         require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
-        return array('block_instances' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'course_sections' => 'moodle',
-                     'log' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program');
+        return array(
+            'block_instances' => 'moodle',
+            'cache_flags' => 'moodle',
+            'course_sections' => 'moodle',
+            'log' => 'moodle',
+            coursetemplate::TABLE => 'elis_program'
+        );
     }
 
     /**
