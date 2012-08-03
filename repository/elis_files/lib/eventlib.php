@@ -58,8 +58,9 @@ function elis_files_user_deleted($user) {
 function elis_files_role_unassigned($ra) {
     global $DB;
 
-    // Only proceed here if the Alfresco plug-in is actually enabled.
-    if (!($repo = repository_factory::factory('elis_files'))) {
+    // Only proceed here if we have valid userid,contextid & the Alfresco plug-in is actually enabled.
+    if (empty($ra->userid) || empty($ra->contextid) ||
+        !($repo = repository_factory::factory('elis_files'))) {
         return true;
     }
 
@@ -161,12 +162,12 @@ function elis_files_role_unassigned($ra) {
                     AND rc.permission = :perm';
 
             $params = array(
-                'userid'     => $ra->userid,
-                'capability' => 'repository/elis_files:viewsitecontent',
-                'perm'       => CAP_ALLOW
+                'userid' => $ra->userid,
+                'cap'    => 'repository/elis_files:viewsitecontent',
+                'perm'   => CAP_ALLOW
             );
 
-            if (!$DB->record_exists_sql($sql, array('userid' => $ra->userid))) {
+            if (!$DB->record_exists_sql($sql, $params)) {
                 if ($permissions = elis_files_get_permissions($root->uuid, $username)) {
                     foreach ($permissions as $permission) {
                         elis_files_set_permission($username, $root->uuid, $permission, ELIS_FILES_CAPABILITY_DENIED);
@@ -253,8 +254,9 @@ function elis_files_role_unassigned($ra) {
 function elis_files_userset_assigned($usersetinfo) {
     global $DB;
 
-    // Only proceed here if the Alfresco plug-in is actually enabled.
-    if (!$repo = repository_factory::factory('elis_files')) {
+    // Only proceed here if we have valid userid, clusterid & the Alfresco plug-in is actually enabled.
+    if (empty($usersetinfo->userid) || empty($usersetinfo->clusterid) ||
+        !($repo = repository_factory::factory('elis_files'))) {
         return true;
     }
 
@@ -356,8 +358,9 @@ function elis_files_userset_assigned($usersetinfo) {
 function elis_files_userset_deassigned($usersetinfo) {
     global $DB;
 
-    // Only proceed here if the Alfresco plug-in is actually enabled.
-    if (!$repo = repository_factory::factory('elis_files')) {
+    // Only proceed here if we have valid userid,clusterid & the Alfresco plug-in is actually enabled.
+    if (empty($usersetinfo->userid) || empty($usersetinfo->clusterid) ||
+        !($repo = repository_factory::factory('elis_files'))) {
         return true;
     }
 
