@@ -33,29 +33,42 @@ function xmldb_rlipexport_version1elis_upgrade($oldversion=0) {
 
     $dbman = $DB->get_manager();
 
-    if ($result && $oldversion < 2012073000) {
+    if ($result && $oldversion < 2012071200) {
         // Define table rlipexport_version1elis_fld to be created
-        $table = new xmldb_table('rlipexport_version1elis_fld');
+        $table = new xmldb_table('rlipexport_version1elis_field');
 
-        // Adding fields to table rlipexport_version1elis_fld
+        // Adding fields to table rlipexport_version1elis_field
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
         $table->add_field('header', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
         $table->add_field('fieldorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
 
-        // Adding keys to table rlipexport_version1elis_fld
+        // Adding keys to table rlipexport_version1elis_field
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
 
-        // Adding indexes to table rlipexport_version1elis_fld
+        // Adding indexes to table rlipexport_version1elis_field
         $table->add_index('fieldid_ix', XMLDB_INDEX_UNIQUE, array('fieldid'));
 
-        // Conditionally launch create table for rlipexport_version1elis_fld
+        // Conditionally launch create table for rlipexport_version1elis_field
         if (!$dbman->table_exists($table)) {
             $dbman->create_table($table);
         }
 
-        // block rlip savepoint reached
-        upgrade_block_savepoint(true, 2012073000, 'rlipexport');
+        // plugin savepoint reached
+        upgrade_plugin_savepoint(true, 2012071200, 'rlipexport', 'version1elis');
     }
+
+    if ($result && $oldversion < 2012080100) {
+        $table = new xmldb_table('rlipexport_version1elis_field');
+        $result = $result && !empty($table) && $dbman->table_exists($table);
+        if ($result) {
+            $dbman->rename_table($table, 'rlipexport_version1elis_fld');
+            $result = $dbman->table_exists('rlipexport_version1elis_fld');
+        }
+
+        // plugin savepoint reached
+        upgrade_plugin_savepoint($result, 2012080100, 'rlipexport', 'version1elis');
+    }
+
     return $result;
 }

@@ -240,12 +240,14 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'config_plugins' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
+                     'course_sections' => 'moodle',
                      'course_sections_availability' => 'moodle',
                      'role' => 'moodle',
                      'role_context_levels' => 'moodle',
                      'role_assignments' => 'moodle',
                      'user_enrolments' => 'moodle',
                      'groups_members' => 'moodle',
+                     'block' => 'moodle',
                      'block_positions' => 'moodle',
                      'events_queue_handlers' => 'moodle',
                      'events_queue' => 'moodle',
@@ -270,6 +272,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'user' => 'moodle',
                      'user_info_category' => 'moodle',
                      'user_info_field' => 'moodle',
+                     'user_preferences' => 'moodle',
                      'role_capabilities' => 'moodle',
                      'message_working' => 'moodle');
 
@@ -279,6 +282,10 @@ class version1FilesystemLoggingTest extends rlip_test {
             require_once(elispm::lib('data/user.class.php'));
             require_once(elispm::lib('data/usermoodle.class.php'));
 
+            $tables['elis_field'] = 'elis_core';
+            $tables['elis_field_categories'] = 'elis_core';
+            $tables['elis_field_contextlevels'] = 'elis_core';
+            $tables['elis_field_owner'] = 'elis_core';
             $tables[user::TABLE] = 'elis_program';
             $tables[usermoodle::TABLE] = 'elis_program';
         }
@@ -304,7 +311,6 @@ class version1FilesystemLoggingTest extends rlip_test {
                      'message_read'       => 'moodle',
                      'message_working'    => 'moodle',
                      'cohort_members' => 'moodle',
-                     'user_preferences' => 'moodle',
                      'user_info_data' => 'moodle',
                      'user_lastaccess' => 'moodle',
                      'filter_active' => 'moodle',
@@ -372,6 +378,12 @@ class version1FilesystemLoggingTest extends rlip_test {
         static::get_csv_files();
         static::get_logfilelocation_files();
         static::get_zip_files();
+    }
+
+    public function setUp() {
+        parent::setUp();
+        set_config('defaultblocks_override', ' ');
+        //'activity_modules,recent_activity,search_forums:participants'
     }
 
     /**

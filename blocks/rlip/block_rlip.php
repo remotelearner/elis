@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlip
+ * @subpackage block_rlip
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,9 @@
  */
 
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
+require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
 
 /**
  * The main Integration Point block class
@@ -91,6 +93,17 @@ class block_rlip extends block_base {
         }
 
         $rlipimporttbl = new xmldb_table(RLIPIMPORT_VERSION1_MAPPING_TABLE);
+        if ($dbman->table_exists($rlipimporttbl)) {
+            $dbman->drop_table($rlipimporttbl);
+        }
+
+        // and same for elis versions
+        $rlipexporttbl = new xmldb_table(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE);
+        if ($dbman->table_exists($rlipexporttbl)) {
+            $dbman->drop_table($rlipexporttbl);
+        }
+
+        $rlipimporttbl = new xmldb_table(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE);
         if ($dbman->table_exists($rlipimporttbl)) {
             $dbman->drop_table($rlipimporttbl);
         }

@@ -143,7 +143,7 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        global $CFG;
+        global $CFG, $DB;
         $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
@@ -153,7 +153,7 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
 
-        return array(
+        $tables = array(
             'backup_controllers' => 'moodle',
             'course' => 'moodle',
             'course_categories' => 'moodle',
@@ -172,6 +172,15 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
             'user_enrolments' => 'moodle',
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
         );
+        if ($DB->get_manager()->table_exists('backup_ids_temp'))
+        {
+            $tables['backup_ids_temp'] = 'moodle';
+        }
+        if ($DB->get_manager()->table_exists('backup_files_temp'))
+        {
+            $tables['backup_files_temp'] = 'moodle';
+        }
+        return $tables;
     }
 
     /**

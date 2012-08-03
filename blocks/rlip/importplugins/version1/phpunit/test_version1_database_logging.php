@@ -247,70 +247,72 @@ class version1DatabaseLoggingTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
-        $tables = array(
-            RLIP_LOG_TABLE => 'block_rlip',
-            'user' => 'moodle',
-            'context' => 'moodle',
-            'user_enrolments' => 'moodle',
-            'cohort_members' => 'moodle',
-            'groups_members' => 'moodle',
-            'user_preferences' => 'moodle',
-            'user_info_data' => 'moodle',
-            'user_lastaccess' => 'moodle',
-            'block_instances' => 'moodle',
-            'block_positions' => 'moodle',
-            'filter_active' => 'moodle',
-            'filter_config' => 'moodle',
-            'comments' => 'moodle',
-            'rating' => 'moodle',
-            'role_assignments' => 'moodle',
-            'role_capabilities' => 'moodle',
-            'role_names' => 'moodle',
-            'cache_flags' => 'moodle',
-            'events_handlers' => 'moodle',
-            'course_categories' => 'moodle',
-            'course' => 'moodle',
-            'course_sections' => 'moodle',
-            'enrol' => 'moodle',
-            'course_completion_criteria' => 'moodle',
-            'course_completion_aggr_methd' => 'moodle',
-            'course_completions' => 'moodle',
-            'course_completion_crit_compl' => 'moodle',
-            'grade_categories' => 'moodle',
-            'grade_categories_history' => 'moodle',
-            'grade_items' => 'moodle',
-            'grade_items_history' => 'moodle',
-            'grade_outcomes_courses' => 'moodle',
-            'grade_settings' => 'moodle',
-            'grade_letters' => 'moodle',
-            'course_modules_completion' => 'moodle',
-            'course_modules' => 'moodle',
-            'course_modules_availability' => 'moodle',
-            'modules' => 'moodle',
-            'groupings' => 'moodle',
-            'groupings_groups' => 'moodle',
-            'groups' => 'moodle',
-            'course_display' => 'moodle',
-            'backup_courses' => 'moodle',
-            'backup_logs' => 'moodle',
-            'role' => 'moodle',
-            'role_context_levels' => 'moodle',
-            'files' => 'moodle',
-            'config' => 'moodle',
-            RLIP_SCHEDULE_TABLE => 'block_rlip',
-            'elis_scheduled_tasks' => 'elis_core',
-            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
-            //this prevents createorupdate from being used
-            'config_plugins' => 'moodle'
-        );
+        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
+                     'user' => 'moodle',
+                     'context' => 'moodle',
+                     'user_enrolments' => 'moodle',
+                     'cohort_members' => 'moodle',
+                     'groups_members' => 'moodle',
+                     'user_preferences' => 'moodle',
+                     'user_info_data' => 'moodle',
+                     'user_lastaccess' => 'moodle',
+                     'block_instances' => 'moodle',
+                     'block_positions' => 'moodle',
+                     'filter_active' => 'moodle',
+                     'filter_config' => 'moodle',
+                     'comments' => 'moodle',
+                     'rating' => 'moodle',
+                     'role_assignments' => 'moodle',
+                     'role_capabilities' => 'moodle',
+                     'role_names' => 'moodle',
+                     'cache_flags' => 'moodle',
+                     'events_handlers' => 'moodle',
+                     'course_categories' => 'moodle',
+                     'course' => 'moodle',
+                     'course_sections' => 'moodle',
+                     'enrol' => 'moodle',
+                     'course_completion_criteria' => 'moodle',
+                     'course_completion_aggr_methd' => 'moodle',
+                     'course_completions' => 'moodle',
+                     'course_completion_crit_compl' => 'moodle',
+                     'grade_categories' => 'moodle',
+                     'grade_categories_history' => 'moodle',
+                     'grade_items' => 'moodle',
+                     'grade_items_history' => 'moodle',
+                     'grade_outcomes_courses' => 'moodle',
+                     'grade_settings' => 'moodle',
+                     'grade_letters' => 'moodle',
+                     'course_modules_completion' => 'moodle',
+                     'course_modules' => 'moodle',
+                     'course_modules_availability' => 'moodle',
+                     'course_sections_availability' => 'moodle',
+                     'modules' => 'moodle',
+                     'groupings' => 'moodle',
+                     'groupings_groups' => 'moodle',
+                     'groups' => 'moodle',
+                     'backup_courses' => 'moodle',
+                     'backup_logs' => 'moodle',
+                     'role' => 'moodle',
+                     'role_context_levels' => 'moodle',
+                     'files' => 'moodle',
+                     'config' => 'moodle',
+                     RLIP_SCHEDULE_TABLE => 'block_rlip',
+                     'elis_scheduled_tasks' => 'elis_core',
+                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+                     //this prevents createorupdate from being used
+                     'config_plugins' => 'moodle');
 
         // We are deleting a course, so we need to add a lot of plugin tables here
         $tables = array_merge($tables, self::load_plugin_xmldb('course/format'));
+
+        if ($DB->get_manager()->table_exists('course_display')) {
+            $tables['course_display'] = 'moodle';
+        }
 
         return $tables;
     }

@@ -170,6 +170,7 @@ class version1CreateorupdateTest extends rlip_test {
     private function init_contexts_and_site_course() {
         global $DB;
 
+        $siteid = SITEID ? SITEID : 1; // TBD
         $prefix = self::$origdb->get_prefix();
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
@@ -178,9 +179,10 @@ class version1CreateorupdateTest extends rlip_test {
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
                       {$prefix}context
-                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, $siteid));
         //set up the site course record
-        if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
+        if ($record = self::$origdb->get_record('course',
+                                                array('id' => $siteid))) {
             unset($record->id);
             $DB->insert_record('course', $record);
         }
@@ -206,6 +208,7 @@ class version1CreateorupdateTest extends rlip_test {
             'user' => 'moodle',
             'course' => 'moodle',
             'course_categories' => 'moodle',
+            'course_sections' => 'moodle',
             'course_sections_availability' => 'moodle',
             'context' => 'moodle',
             'enrol' => 'moodle',
@@ -221,7 +224,8 @@ class version1CreateorupdateTest extends rlip_test {
             field_data_text::TABLE => 'elis_core',
             'config' => 'moodle',
             //prevent problems with events
-            'events_queue_handlers' => 'moodle'
+            'events_queue_handlers' => 'moodle',
+            'user_lastaccess' => 'moodle'
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
@@ -265,7 +269,6 @@ class version1CreateorupdateTest extends rlip_test {
                      'course_modules' => 'moodle',
                      'course_modules_availability' => 'moodle',
                      'course_modules_completion' => 'moodle',
-                     'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
                      'event' => 'moodle',
                      'events_queue' => 'moodle',
@@ -302,7 +305,6 @@ class version1CreateorupdateTest extends rlip_test {
                      'role_names' => 'moodle',
                      'user_enrolments' => 'moodle',
                      'user_info_data' => 'moodle',
-                     'user_lastaccess' => 'moodle',
                      'user_preferences' => 'moodle',
                      'url' => 'moodle',
                      'sessions' => 'moodle');

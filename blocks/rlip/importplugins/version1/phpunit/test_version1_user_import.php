@@ -68,7 +68,7 @@ class version1UserImportTest extends elis_database_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        global $CFG;
+        global $CFG, $DB;
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
@@ -101,6 +101,7 @@ class version1UserImportTest extends elis_database_test {
             'course_sections' => 'moodle',
             'course_categories' => 'moodle',
             'enrol' => 'moodle',
+            'external_tokens' => 'moodle',
             'role' => 'moodle',
             'role_context_levels' => 'moodle',
             'message' => 'moodle',
@@ -132,9 +133,28 @@ class version1UserImportTest extends elis_database_test {
             require_once($CFG->dirroot.'/elis/program/lib/setup.php');
             require_once(elispm::lib('data/user.class.php'));
             require_once(elispm::lib('data/usermoodle.class.php'));
+            require_once(elispm::lib('data/clusterassignment.class.php'));
+            require_once(elispm::lib('data/clustercurriculum.class.php'));
+            require_once(elispm::lib('data/clustertrack.class.php'));
+            require_once(elispm::lib('data/curriculumstudent.class.php'));
+            require_once(elispm::lib('data/track.class.php'));
+            require_once(elispm::lib('data/usertrack.class.php'));
+            require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
 
+            $tables[clusterassignment::TABLE] = 'elis_program';
+            $tables[clustercurriculum::TABLE] = 'elis_program';
+            $tables[clustertrack::TABLE] = 'elis_program';
+            $tables[curriculumstudent::TABLE] = 'elis_program';
+            $tables[track::TABLE] = 'elis_program';
+            $tables[trackassignment::TABLE] = 'elis_program';
             $tables[user::TABLE] = 'elis_program';
             $tables[usermoodle::TABLE] = 'elis_program';
+            $tables[userset_profile::TABLE] = 'elis_program';
+            $tables[usertrack::TABLE] = 'elis_program';
+        }
+
+        if ($DB->get_manager()->table_exists('external_services_users')) {
+            $tables['external_services_users'] = 'moodle';
         }
 
         return $tables;
@@ -148,12 +168,11 @@ class version1UserImportTest extends elis_database_test {
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         return array('log' => 'moodle',
-                     'crlm_user' => 'elis_program',
-                     'crlm_user_moodle' => 'elis_program',
                      RLIP_LOG_TABLE => 'block_rlip',
+                     'events_handlers' => 'moodle',
+                     //'external_tokens' => 'moodle',
+                     //'external_services_users' => 'moodle',
                      'files' => 'moodle',
-                     'external_tokens' => 'moodle',
-                     'external_services_users' => 'moodle',
                      'sessions' => 'moodle',
                      'forum_subscriptions' => 'moodle',
                      'forum_track_prefs' => 'moodle',
@@ -252,7 +271,15 @@ class version1UserImportTest extends elis_database_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
-        $this->assertEquals($exists, true);
+        $tmp = '';
+        if (!$exists) {
+            ob_start();
+            var_dump($params);
+            var_dump($DB->get_records($table));
+            $tmp = ob_get_contents();
+            ob_end_clean();
+        }
+        $this->assertTrue($exists, "Error: record should exist in {$table} => params/DB = {$tmp}\n");
     }
 
     /**
@@ -262,6 +289,7 @@ class version1UserImportTest extends elis_database_test {
     private function init_contexts_and_site_course() {
         global $DB;
 
+        $siteid = SITEID ? SITEID : 1; // TBD
         $prefix = self::$origdb->get_prefix();
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
@@ -270,13 +298,12 @@ class version1UserImportTest extends elis_database_test {
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
                       {$prefix}context
-                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, $siteid));
         //set up the site course record
-        if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
+        if ($record = self::$origdb->get_record('course', array('id' => $siteid))) {
             unset($record->id);
             $DB->insert_record('course', $record);
         }
-
         build_context_path();
     }
 
@@ -1302,7 +1329,7 @@ class version1UserImportTest extends elis_database_test {
         $data['maildisplay'] = 1;
         $data['mailformat'] = 0;
         $data['htmleditor'] = 0;
-        $data['ajax'] = 0;
+        //$data['ajax'] = 0;
         $data['descriptionformat'] = FORMAT_WIKI;
         $this->run_core_user_import($data);
 
@@ -1311,14 +1338,12 @@ class version1UserImportTest extends elis_database_test {
                    maildisplay = :maildisplay AND
                    mailformat = :mailformat AND
                    htmleditor = :htmleditor AND
-                   ajax = :ajax AND
                    descriptionformat = :descriptionformat";
         $params = array('username' => 'rlipusername',
                         'mnethostid' => $CFG->mnet_localhost_id,
                         'maildisplay' => 2,
                         'mailformat' => 1,
                         'htmleditor' => 1,
-                        'ajax' => 1,
                         'descriptionformat' => FORMAT_HTML);
 
         //make sure that a record exists with the default data rather than with the
@@ -1358,14 +1383,12 @@ class version1UserImportTest extends elis_database_test {
                    maildisplay = :maildisplay AND
                    mailformat = :mailformat AND
                    htmleditor = :htmleditor AND
-                   ajax = :ajax AND
                    descriptionformat = :descriptionformat";
         $params = array('username' => 'rlipusername',
                         'mnethostid' => $CFG->mnet_localhost_id,
                         'maildisplay' => 2,
                         'mailformat' => 1,
                         'htmleditor' => 1,
-                        'ajax' => 1,
                         'descriptionformat' => FORMAT_HTML);
 
         //make sure that a record exists with the default data rather than with the
@@ -1492,7 +1515,7 @@ class version1UserImportTest extends elis_database_test {
         $this->create_profile_field('rlipcheckbox', 'checkbox', $category->id);
         $this->create_profile_field('rlipdatetime', 'datetime', $category->id);
         $this->create_profile_field('rliplegacydatetime', 'datetime', $category->id);
-        $this->create_profile_field('rlipmenu', 'menu', $category->id, 'rlipoption1');
+        $this->create_profile_field('rlipmenu', 'menu', $category->id, "rlipoption1\nrlipoption2");
         $this->create_profile_field('rliptextarea', 'textarea', $category->id);
         $this->create_profile_field('rliptext', 'text', $category->id);
 
@@ -1545,7 +1568,7 @@ class version1UserImportTest extends elis_database_test {
         $this->create_profile_field('rlipcheckbox', 'checkbox', $category->id);
         $this->create_profile_field('rlipdatetime', 'datetime', $category->id);
         $this->create_profile_field('rliplegacydatetime', 'datetime', $category->id);
-        $this->create_profile_field('rlipmenu', 'menu', $category->id, 'rlipoption1');
+        $this->create_profile_field('rlipmenu', 'menu', $category->id, "rlipoption1\nrlipoption2");
         $this->create_profile_field('rliptextarea', 'textarea', $category->id);
         $this->create_profile_field('rliptext', 'text', $category->id);
 
@@ -1600,7 +1623,7 @@ class version1UserImportTest extends elis_database_test {
         $this->run_core_user_import(array('profile_field_rlipdatetime' => '1000000000'));
         $this->assert_core_user_does_not_exist();
 
-        $this->create_profile_field('rlipmenu', 'menu', $category->id, 'rlipoption1');
+        $this->create_profile_field('rlipmenu', 'menu', $category->id, "rlipoption1\nrlipoption1B");
         $this->run_core_user_import(array('profile_field_rlipmenu' => 'rlipoption2'));
         $this->assert_core_user_does_not_exist();
     }
@@ -1645,7 +1668,7 @@ class version1UserImportTest extends elis_database_test {
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), false);
 
         //try to insert bogus menu data
-        $this->create_profile_field('rlipmenu', 'menu', $category->id, 'rlipoption1');
+        $this->create_profile_field('rlipmenu', 'menu', $category->id, "rlipoption1\nrlipoption1B");
         $params = array('action' => 'update',
                         'username' => 'rlipusername',
                         'profile_field_rlipmenu' => 'rlipoption2');
@@ -2348,7 +2371,7 @@ class version1UserImportTest extends elis_database_test {
         //create profile field data - don't both with the API here because it's a bit unwieldy
         $userinfodata = new stdClass;
         $userinfodata->fieldid = 1;
-        $userinfodata->data ='bogus';
+        $userinfodata->data = 'bogus';
         $userinfodata->userid = $userid;
         $DB->insert_record('user_info_data', $userinfodata);
 

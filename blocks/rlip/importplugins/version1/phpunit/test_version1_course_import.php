@@ -156,10 +156,13 @@ class overlay_course_database extends overlay_database {
 class version1CourseImportTest extends rlip_test {
     protected $backupGlobalsBlacklist = array('DB', 'USER');
 
+    protected $coursedisplay = false;
+
     /**
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
+        global $DB;
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
@@ -168,6 +171,7 @@ class version1CourseImportTest extends rlip_test {
             'course' => 'moodle',
             'block_instances' => 'moodle',
             'course_sections' => 'moodle',
+            'course_sections_availability' => 'moodle',
             'cache_flags' => 'moodle',
             'context' => 'moodle',
             'context_temp' => 'moodle',
@@ -205,7 +209,6 @@ class version1CourseImportTest extends rlip_test {
             'question_truefalse' => 'qtype_truefalse',
             'config' => 'moodle',
             'config_plugins' => 'moodle',
-            'course_display' => 'moodle',
             'backup_logs' => 'moodle',
             'backup_courses' => 'moodle',
             'block_positions' => 'moodle',
@@ -232,6 +235,11 @@ class version1CourseImportTest extends rlip_test {
         );
 
         $tables = array_merge($tables, self::load_plugin_xmldb('course/format'));
+
+        if ($DB->get_manager()->table_exists('course_display')) {
+            $this->coursedisplay = true;
+            $tables['course_display'] = 'moodle';
+        }
 
         return $tables;
     }
@@ -2894,8 +2902,10 @@ class version1CourseImportTest extends rlip_test {
                                      'format' => FORMAT_HTML);
         $question = question_bank::get_qtype('truefalse')->save_question($question, $form);
 
-        //set a "course display" setting
-        course_set_display($courseid, 1);
+        if (function_exists('course_set_display')) {
+            //set a "course display" setting
+            course_set_display($courseid, 1);
+        }
 
         //make a bogus backup record
         $backupcourse = new stdClass;
@@ -2941,7 +2951,9 @@ class version1CourseImportTest extends rlip_test {
         $initial_num_course_sections = $DB->count_records('course_sections');
         $initial_num_question_categories = $DB->count_records('question_categories');
         $initial_num_question = $DB->count_records('question');
-        $initial_num_course_display = $DB->count_records('course_display');
+        if ($this->coursedisplay) {
+            $initial_num_course_display = $DB->count_records('course_display');
+        }
         $initial_num_backup_courses = $DB->count_records('backup_courses');
         $initial_num_user_lastaccess = $DB->count_records('user_lastaccess');
         $initial_num_backup_logs = $DB->count_records('backup_logs');
@@ -2979,7 +2991,9 @@ class version1CourseImportTest extends rlip_test {
         $this->assertEquals($DB->count_records('course_sections'), $initial_num_course_sections - 1);
         $this->assertEquals($DB->count_records('question_categories'), $initial_num_question_categories - 1);
         $this->assertEquals($DB->count_records('question'), $initial_num_question - 1);
-        $this->assertEquals($DB->count_records('course_display'), $initial_num_course_display - 1);
+        if ($this->coursedisplay) {
+            $this->assertEquals($DB->count_records('course_display'), $initial_num_course_display - 1);
+        }
         $this->assertEquals($DB->count_records('backup_courses'), $initial_num_backup_courses - 1);
         $this->assertEquals($DB->count_records('user_lastaccess'), $initial_num_user_lastaccess - 1);
         //$this->assertEquals($DB->count_records('backup_logs'), $initial_num_backup_logs - 1);

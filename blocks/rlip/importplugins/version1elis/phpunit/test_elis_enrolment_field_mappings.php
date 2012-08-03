@@ -98,6 +98,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         return array('context' => 'moodle',
                      'role' => 'moodle',
                      'role_assignments' => 'moodle',
+                     'role_capabilities' => 'moodle',
                      'user' => 'moodle',
                      RLIP_LOG_TABLE => 'block_rlip',
                      RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
