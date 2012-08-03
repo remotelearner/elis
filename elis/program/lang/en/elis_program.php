@@ -428,6 +428,7 @@ $string['field_confirm_force_resync'] = 'Are you sure you want to force re-synch
 $string['field_datatype'] = 'Data type';
 $string['field_datatype_bool'] = 'Boolean (yes/no)';
 $string['field_datatype_char'] = 'Short text';
+$string['field_datatype_datetime'] = 'Date/Time';
 $string['field_datatype_int'] = 'Integer';
 $string['field_datatype_num'] = 'Decimal number';
 $string['field_datatype_text'] = 'Long text';
