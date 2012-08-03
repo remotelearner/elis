@@ -194,7 +194,7 @@ class version1CreateorupdateTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        global $CFG;
+        global $CFG, $DB;
 
         //custom fields in "elis core"
         require_once($CFG->dirroot.'/elis/core/lib/setup.php');
@@ -209,7 +209,6 @@ class version1CreateorupdateTest extends rlip_test {
             'course' => 'moodle',
             'course_categories' => 'moodle',
             'course_sections' => 'moodle',
-            'course_sections_availability' => 'moodle',
             'context' => 'moodle',
             'enrol' => 'moodle',
             'grade_categories' => 'moodle',
@@ -237,6 +236,15 @@ class version1CreateorupdateTest extends rlip_test {
             $tables[user::TABLE] = 'elis_program';
             $tables[usermoodle::TABLE] = 'elis_program';
         }
+
+        $manager = $DB->get_manager();
+        if ($manager->table_exists('course_sections_availability')) {
+            $tables['course_sections_availability'] = 'moodle';
+        }
+
+        // We are deleting a course, so we need to add a lot of plugin tables here
+        $tables = array_merge($tables, self::load_plugin_xmldb('mod'));
+        $tables = array_merge($tables, self::load_plugin_xmldb('course/format'));
 
         return $tables;
     }

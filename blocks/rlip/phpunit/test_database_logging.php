@@ -76,11 +76,23 @@ class databaseLoggingTest extends rlip_test {
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
-        return array(RLIP_LOG_TABLE => 'block_rlip',
-                     'files' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     //prevent unexpected errors due to field re-mappings
-                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1');
+        $tables =  array(
+            RLIP_LOG_TABLE => 'block_rlip',
+            'config_plugins' => 'moodle',
+            'files' => 'moodle',
+            'user_info_field' => 'moodle',
+            //prevent unexpected errors due to field re-mappings
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1'
+        );
+
+        $dbman = $DB->get_manager();
+
+        if ($dbman->table_exists(new xmldb_table('crlm_user'))) {
+            $tables['crlm_user'] = 'elis_program';
+            $tables['crlm_user_moodle'] = 'elis_program';
+        }
+
+        return $tables;
     }
 
     /**

@@ -56,18 +56,21 @@ class elis_createorupdate_test extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array('config_plugins' => 'moodle',
-                     'context' => 'moodle',
-                     course::TABLE => 'elis_program',
-                     curriculum::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     instructor::TABLE => 'elis_program',
-                     pmclass::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program',
-                     track::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program');
+        return array(
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'user' => 'moodle',
+            course::TABLE => 'elis_program',
+            curriculum::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            instructor::TABLE => 'elis_program',
+            pmclass::TABLE => 'elis_program',
+            student::TABLE => 'elis_program',
+            track::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program'
+        );
     }
 
     /**
@@ -80,10 +83,11 @@ class elis_createorupdate_test extends elis_database_test {
         require_once(elispm::lib('data/curriculumcourse.class.php'));
         require_once(elispm::lib('data/curriculumstudent.class.php'));
         
-        return array('user' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program',
-                     curriculumcourse::TABLE => 'elis_program',
-                     curriculumstudent::TABLE => 'elis_program');
+        return array(
+            coursetemplate::TABLE => 'elis_program',
+            curriculumcourse::TABLE => 'elis_program',
+            curriculumstudent::TABLE => 'elis_program'
+        );
     }
 
     /**
@@ -111,10 +115,14 @@ class elis_createorupdate_test extends elis_database_test {
         $importplugin->process_record('user', $record, 'bogus');
 
         //validation
-        $this->assertTrue($DB->record_exists(user::TABLE, array('username' => 'testuserusername',
-                                                                'email' => 'test@useremail.com',
-                                                                'idnumber' => 'testuseridnumber',
-                                                                'firstname' => 'testuserfirstname')));
+        $params = array(
+            'username'  => 'testuserusername',
+            'email'     => 'test@useremail.com',
+            'idnumber'  => 'testuseridnumber',
+            'firstname' => 'testuserfirstname'
+        );
+
+        $this->assertTrue($DB->record_exists(user::TABLE, $params));
     }
 
     /**

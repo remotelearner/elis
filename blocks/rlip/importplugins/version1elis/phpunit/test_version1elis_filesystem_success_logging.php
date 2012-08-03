@@ -139,6 +139,20 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
         );
     }
 
+    public function setUp() {
+        global $DB, $USER;
+
+        parent::setUp();
+
+        $DB = self::$origdb;
+
+        $admin = get_admin();
+        $USER = $admin;
+        $GLOBALS['USER'] = $USER;
+
+        $DB = self::$overlaydb;
+    }
+
     /**
      * Validates that the supplied data produces the expected message
      *
