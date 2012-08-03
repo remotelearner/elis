@@ -28,49 +28,64 @@ $subplugins = array('rlipimport' => 'blocks/rlip/importplugins',
                     'rlipexport' => 'blocks/rlip/exportplugins',
                     'rlipfile' => 'blocks/rlip/fileplugins');
 
+//include guard
 if (!class_exists('plugininfo_rlipfile')) {
     require_once(dirname(__FILE__) .'/../../../config.php');
     global $CFG;
     require_once("{$CFG->dirroot}/lib/pluginlib.php");
-    if (class_exists('pluginfo_base')) { // Moodle 2.3 only!
+
+    //check to see if we have the base class that defined plugin info structure
+    if (class_exists('plugininfo_base')) { // Moodle 2.3 only!
+
+        //custom class that handles the versioning structure for RLIP file plugins
         class plugininfo_rlipfile extends plugininfo_base {
+
+            /**
+             * Gathers and returns the information about all plugins of the given type
+             *
+             * @param string $type the name of the plugintype, eg. mod, auth or workshopform
+             * @param string $typerootdir full path to the location of the plugin dir
+             * @param string $typeclass the name of the actually called class
+             * @return array of plugintype classes, indexed by the plugin name
+             */
             static function get_plugins($plugintype, $plugintyperootdir, $plugintypeclass) {
                 global $CFG, $DB;
-                $subplugins = parent::get_plugins($plugintype, $plugintyperootdir, $plugintypeclass);
-                $csvclass = new $plugintypeclass();
-                $csvclass->type = $plugintype;
-                $csvclass->typerootdir = $plugintyperootdir;
-                $csvclass->name = 'rlipfile_csv';
-                $csvclass->rootdir = "{$CFG->dirroot}/blocks/rlip/fileplugins/csv";
-                $csvclass->displayname = get_string('pluginname', 'rlipfile_csv');
-                $csvversiondb = $DB->get_field('config_plugins', 'value',
-                                               array('plugin' => $csvclass->name,
-                                                     'name'   => 'version'));
-                $csvclass->versiondb = ($csvversiondb !== false) ? $csvversiondb : null;
-                $plugin = new stdClass;
-                include("{$csvclass->rootdir}/version.php");
-                $csvclass->versiondisk = $plugin->version;
-                $csvclass->init_is_standard(); // TBD
 
-                $logclass = new $plugintypeclass();
-                $logclass->type = $plugintype;
-                $logclass->typerootdir = $plugintyperootdir;
-                $logclass->name = 'rlipfile_log';
-                $logclass->rootdir = "{$CFG->dirroot}/blocks/rlip/fileplugins/log";
-                $logclass->displayname = get_string('pluginname', 'rlipfile_log');
-                $logversiondb = $DB->get_field('config_plugins', 'value',
-                                               array('plugin' => $logclass->name,
-                                                     'name'   => 'version'));
-                $logclass->versiondb = ($logversiondb !== false) ? $logversiondb : null;
-                $plugin = new stdClass;
-                include("{$logclass->rootdir}/version.php");
-                $logclass->versiondisk = $plugin->version;
-                $logclass->init_is_standard(); // TBD
+                //track our method result
+                $result = array();
 
-                //mtrace("plugininfo_rlipfile::get_plugins({$plugintype}, {$plugintyperootdir}, {$plugintypeclass})");
-                return array($csvclass->name => $csvclass,
-                             $logclass->name => $logclass
-                       );
+                //obtain the list of all file plugins
+                $fileplugins = get_plugin_list('rlipfile');
+
+                foreach ($fileplugins as $pluginname => $pluginpath) {
+                    if ($pluginname == 'phpunit') {
+                        //phpunit directory is a false-positive
+                        continue;
+                    }
+
+                    //set up the main plugin information
+                    $instance = new $plugintypeclass();
+                    $instance->type = $plugintype;
+                    $instance->typerootdir = $plugintyperootdir;
+                    $instance->name = 'rlipfile_'.$pluginname;
+                    $instance->rootdir = $pluginpath;
+                    $instance->displayname = get_string('pluginname', $instance->name);
+
+                    //track the current database version
+                    $versiondb = get_config($instance->name, 'version');
+                    $instance->versiondb = ($versiondb !== false) ? $versiondb : NULL;
+
+                    //track the proposed new version
+                    $plugin = new stdClass;
+                    include("{$instance->rootdir}/version.php");
+                    $instance->versiondisk = $plugin->version;
+                    $instance->init_is_standard(); //is this really needed?
+
+                    //append to results
+                    $result[$instance->name] = $instance;
+                }
+
+                return $result;
             }
         }
     }
