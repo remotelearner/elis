@@ -133,11 +133,14 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
             field_contextlevel::TABLE => 'elis_core',
             field_data_int::TABLE => 'elis_core',
             field_owner::TABLE => 'elis_core',
+            instructor::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
             student::TABLE => 'elis_program',
             track::TABLE => 'elis_program',
             trackassignment::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program'
+            userset::TABLE => 'elis_program',
+            usertrack::TABLE => 'elis_program',
+            waitlist::TABLE => 'elis_program'
         );
     }
 
@@ -175,7 +178,6 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
             'role_capabilities' => 'moodle',
             'role_names' => 'moodle',
             'user_preferences' => 'moodle',
-            //RLIP_LOG_TABLE => 'block_rlip',
             clusterassignment::TABLE => 'elis_program',
             clustercurriculum::TABLE => 'elis_program',
             clustertrack::TABLE => 'elis_program',
@@ -183,11 +185,8 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
             field_data_char::TABLE => 'elis_core',
             field_data_num::TABLE => 'elis_core',
             field_data_text::TABLE => 'elis_core',
-            instructor::TABLE => 'elis_program',
             student_grade::TABLE => 'elis_program',
             userset_profile::TABLE => 'elis_program',
-            usertrack::TABLE => 'elis_program',
-            waitlist::TABLE => 'elis_program'
         );
     }
 

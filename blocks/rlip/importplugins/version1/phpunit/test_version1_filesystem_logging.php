@@ -4469,17 +4469,19 @@ class version1FilesystemLoggingTest extends rlip_test {
         //create mapping record
         $this->create_mapping_record('user', 'password', 'custompassword');
 
-        $data = array('action' => 'create',
-                      'username' => 'testusername',
-                      'custompassword' => 'invalidpassword',
-                      'firstname' => 'rlipfirstname',
-                      'lastname' => 'test@user.com',
-                      'email' => 'bogusemail',
-                      'city' => 'Waterloo',
-                      'country' => 'CA',
-                      'idnumber' => 'idnumber');
+        $data = array(
+            'action' => 'create',
+            'username' => 'testusername',
+            'custompassword' => 'invalidpassword',
+            'firstname' => 'rlipfirstname',
+            'lastname' => 'rliplastname',
+            'email' => 'test@user.com',
+            'city' => 'Waterloo',
+            'country' => 'CA',
+            'idnumber' => 'idnumber'
+        );
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"bogusemail\", idnumber \"idnumber\" could not be created. custompassword value of \"invalidpassword\" does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"idnumber\" could not be created. custompassword value of \"invalidpassword\" does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 

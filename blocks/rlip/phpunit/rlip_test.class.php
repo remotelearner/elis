@@ -224,11 +224,12 @@ abstract class rlip_test extends elis_database_test {
 
                 $xmldb_file->loadXMLStructure();
                 $xmldb_structure = $xmldb_file->getStructure();
+                $xmldb_tables    = $xmldb_structure->getTables();
 
-                if (isset($xmldb_structure->tables)) {
-                    foreach ($xmldb_structure->tables as $table) {
+                if (!empty($xmldb_tables)) {
+                    foreach ($xmldb_tables as $xmldb_table) {
                         // Add each table to the list of overlay tables
-                        $tables[$table->name] = $prefix.$plugin;
+                        $tables[$xmldb_table->getName()] = $prefix.$plugin;
                     }
                 }
             }
