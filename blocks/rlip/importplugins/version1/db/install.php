@@ -30,13 +30,22 @@ require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
 
 function xmldb_rlipimport_version1_install() {
-
-    global $DB;
+    global $CFG, $DB;
 
     $dbman = $DB->get_manager();
     if (!$dbman->table_exists('block_rlip_fieldmap')) {
         //this is a fresh install with no previous 1.9-version IP set up
         //so no need to migrate data
+        return true;
+    }
+
+    // Skip this work if we should be using ELIS IP
+    $pm_installed = file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
+    $cm_upgraded_from_19 = get_config('block_rlip', 'cm_upgraded_from_19');
+    $ip_basic_enabled = !empty($CFG->block_rlip_overrideelisip);
+    $init_moodle_plugins = !$pm_installed || empty($cm_upgraded_from_19) || $ip_basic_enabled;
+
+    if (!$init_moodle_plugins) {
         return true;
     }
 

@@ -37,6 +37,12 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
     $dbman = $DB->get_manager();
 
     if ($result && $oldversion < 2012020900) {
+        // Determine if the CM / PM tables had been previously set up in 1.9
+        // Note that this is done in the block upgrade because it runs before the
+        // "elis_program" install, while the rlip plugins run afterwards
+        $cm_table = new xmldb_table('crlm_user');
+        $cm_installed = $dbman->table_exists($cm_table);
+        set_config('cm_upgraded_from_19', (int)$cm_installed, 'block_rlip');
 
         // Define table block_rlip_summary_log to be created
         $table = new xmldb_table('block_rlip_summary_log');
@@ -238,13 +244,18 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
 
     // This performs the RLIP 1.9 upgrade to RLIP 2
     if ($result && $oldversion < 2012041700) {
+        //skip this work if we should be using ELIS IP
+        $pm_installed = file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
+        $ip_basic_enabled = !empty($CFG->block_rlip_overrideelisip);
+        $init_moodle_plugins = !$pm_installed || $ip_basic_enabled;
+
 	    $rlipexporttbl = new xmldb_table('block_rlip_export_fieldmap');
 
         /* One way to determine if this is an RLIP 1.9 upgrade is to check for tables that only
          * exist in that version. block_rlip_export_fieldmap is one such table that only exists
          * in RLIP 1.9
          */
-        if ($dbman->table_exists($rlipexporttbl)) {
+        if ($init_moodle_plugins && $dbman->table_exists($rlipexporttbl)) {
             if (isset($CFG->block_rlip_creategroups)) {
                 set_config('creategroupsandgroupings', $CFG->block_rlip_creategroups, 'rlipimport_version1');
                 unset_config('block_rlip_creategroups');
@@ -417,5 +428,180 @@ function xmldb_block_rlip_upgrade($oldversion=0) {
         }
         upgrade_block_savepoint(true, 2012050200, 'rlip');
     }
+
+    if ($result && $oldversion < 2012072600) {
+        //skip this work if we should be using Moodle-only IP
+        $pm_installed = file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
+        $ip_basic_enabled = !empty($CFG->block_rlip_overrideelisip);
+        $init_pm_plugins = $pm_installed && !$ip_basic_enabled;
+
+        if ($init_pm_plugins) {
+            //import settings
+            $mapping = array(
+                'impuser_filename'      => 'user_schedule_file',
+                'impcourse_filename'    => 'course_schedule_file',
+                'impenrolment_filename' => 'enrolment_schedule_file'
+            );
+
+            foreach ($mapping as $old => $new) {
+                $old_name = 'block_rlip_'.$old;
+                if (isset($CFG->$old_name)) {
+                    set_config($new, $CFG->$old_name, 'rlipimport_version1elis');
+                    unset_config($old_name);
+                }
+            }
+
+            if (isset($CFG->block_rlip_filelocation)) {
+                if (($relativepath = rlip_data_root_path_translation($CFG->block_rlip_filelocation)) !== false) {
+                    set_config('schedule_files_path', $relativepath, 'rlipimport_version1elis');
+                }
+
+                unset_config('block_rlip_filelocation');
+            }
+
+            //export settings
+            $mapping = array(
+                'exportfiletimestamp' => 'export_file_timestamp',
+                'exportallhistorical' => 'nonincremental'
+            );
+
+            foreach ($mapping as $old => $new) {
+                $old_name = 'block_rlip_'.$old;
+                if (isset($CFG->$old_name)) {
+                    set_config($new, $CFG->$old_name, 'rlipexport_version1elis');
+                    unset_config($old_name);
+                }
+            }
+
+            if (isset($CFG->block_rlip_exportfilelocation)) {
+                if ($relativepath = rlip_data_root_path_translation($CFG->block_rlip_exportfilelocation)) {
+                    $path_parts = pathinfo($relativepath);
+                    //just want an empty path if there is no parent folder
+                    if ($path_parts['dirname'] == '.' || $path_parts['dirname'] == DIRECTORY_SEPARATOR) {
+                        $path_parts['dirname'] = '';
+                    }
+                    set_config('export_path', $path_parts['dirname'], 'rlipexport_version1elis');
+                    set_config('export_file', $path_parts['basename'], 'rlipexport_version1elis');
+                } else {
+                    //try to validate that the setting resembles a path
+                    $separator_pos = strrpos($CFG->block_rlip_exportfilelocation, DIRECTORY_SEPARATOR);
+                    if ($separator_pos !== false) {
+                        //not using basename because it handles trailing slashes strangely
+                        $export_filename = substr($CFG->block_rlip_exportfilelocation, $separator_pos + 1);
+                        if ($export_filename !== '' && $export_filename !== false) {
+                            //set just the filename and use the default path
+                            set_config('export_file', $export_filename, 'rlipexport_version1elis');
+                        }
+                    }
+                }
+            }
+
+            //settings that apply to the import and the export
+            if (isset($CFG->block_rlip_logfilelocation)) {
+                if (($relativepath = rlip_data_root_path_translation($CFG->block_rlip_logfilelocation)) !== false) {
+                    set_config('logfilelocation', $relativepath, 'rlipimport_version1elis');
+                    set_config('logfilelocation', $relativepath, 'rlipexport_version1elis');
+                }
+
+                unset_config('block_rlip_logfilelocation');
+            }
+
+            /*
+             * RLIP 1.9 uses ID numbers for sending emails while RLIP 2 uses actual email addresses
+             * ID numbers will be used to retrieve an corresponding email
+             */
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/user.class.php'));
+
+            if (isset($CFG->block_rlip_emailnotification)) {
+                $emailids = explode(',', $CFG->block_rlip_emailnotification);
+                $emails = array();
+
+                foreach ($emailids as $id) {
+                    //need to use Moodle user table because PM tables may not be set up yet
+                    if ($moodleuser = $DB->get_record('user', array('idnumber' => $id), 'id, email')) {
+                        $emails[]   = $moodleuser->email;
+                    }
+                }
+
+                $configemails = implode(',', $emails);
+                /*
+                 * Save the emails in both the import and export configuration
+                 * RLIP 1.9 only has email notifications in its import configuration
+                 */
+                set_config('emailnotification', $configemails, 'rlipimport_version1elis');
+                set_config('emailnotification', $configemails, 'rlipexport_version1elis');
+
+                unset_config('block_rlip_emailnotification');
+            }
+
+            //general settings
+            if (isset($CFG->block_rlip_nocron)) {
+                set_config('disableincron', $CFG->block_rlip_nocron, 'block_rlip');
+                unset_config('block_rlip_nocron');
+            }
+
+            unset_config('block_rlip_exportfilelocation');
+
+            $admin = get_admin();
+
+            // Handle import scheduling
+            if (isset($CFG->block_rlip_importperiod)) {
+                $value = rlip_sanitize_time_string($CFG->block_rlip_importperiod, '1d');
+                /* RLIP 1.9 has no label for scheduling so the plugin name will be used instead
+                 * More plugins other than version1 may need to be handled for updates in the future
+                 */
+                $data = array(
+                    'plugin' => 'rlipimport_version1elis',
+                    'period' => $value,
+                    'userid' => $admin->id,
+                    'label'  => 'rlipimport_version1elis',
+                    'type'   => 'rlipimport'
+                );
+
+                if ($dbman->table_exists('elis_scheduled_tasks')) {
+                    rlip_schedule_add_job($data);
+                }
+                unset_config('block_rlip_importperiod');
+            }
+
+            // Handle export scheduling
+            if (isset($CFG->block_rlip_exportperiod)) {
+                $value = rlip_sanitize_time_string($CFG->block_rlip_exportperiod, '1d');
+                $data = array(
+                    'plugin' => 'rlipexport_version1elis',
+                    'period' => $value,
+                    'userid' => $admin->id,
+                    'label'  => 'rlipexport_version1elis',
+                    'type'   => 'rlipexport'
+                );
+
+                if ($dbman->table_exists('elis_scheduled_tasks')) {
+                    rlip_schedule_add_job($data);
+                }
+                unset_config('block_rlip_exportperiod');
+            }
+
+            // Remove any potential config values that may be set in the DB from RLIP 1.9 as well
+            $fields = array(
+                'block_rlip_creategroups',
+                'block_rlip_dateformat',
+                'block_rlip_impcourse_filetype',
+                'block_rlip_impenrolment_filetype',
+                'block_rlip_impuser_filetype',
+                'block_rlip_last_export_cron',
+                'block_rlip_last_import_cron'
+            );
+
+            foreach ($fields as $field) {
+                if (isset($CFG->$field)) {
+                    unset_config($field);
+                }
+            }
+        }
+
+        upgrade_block_savepoint(true, 2012072600, 'rlip');
+    }
+
     return $result;
 }

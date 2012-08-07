@@ -170,6 +170,7 @@ class version1CreateorupdateTest extends rlip_test {
     private function init_contexts_and_site_course() {
         global $DB;
 
+        $siteid = SITEID ? SITEID : 1; // TBD
         $prefix = self::$origdb->get_prefix();
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
@@ -178,9 +179,10 @@ class version1CreateorupdateTest extends rlip_test {
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
                       {$prefix}context
-                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
+                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, $siteid));
         //set up the site course record
-        if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
+        if ($record = self::$origdb->get_record('course',
+                                                array('id' => $siteid))) {
             unset($record->id);
             $DB->insert_record('course', $record);
         }
@@ -192,7 +194,7 @@ class version1CreateorupdateTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        global $CFG;
+        global $CFG, $DB;
 
         //custom fields in "elis core"
         require_once($CFG->dirroot.'/elis/core/lib/setup.php');
@@ -206,20 +208,24 @@ class version1CreateorupdateTest extends rlip_test {
             'user' => 'moodle',
             'course' => 'moodle',
             'course_categories' => 'moodle',
+            'course_sections' => 'moodle',
             'context' => 'moodle',
+            'enrol' => 'moodle',
             'grade_categories' => 'moodle',
             'grade_items' => 'moodle',
             'role' => 'moodle',
             'role_capabilities' => 'moodle',
             'role_context_levels' => 'moodle',
             'role_assignments' => 'moodle',
-            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+            'config' => 'moodle',
+            //prevent problems with events
+            'events_queue_handlers' => 'moodle',
+            'user_lastaccess' => 'moodle',
+            'resource' => 'mod_resource',
             field_data_int::TABLE => 'elis_core',
             field_data_char::TABLE => 'elis_core',
             field_data_text::TABLE => 'elis_core',
-            'config' => 'moodle',
-            //prevent problems with events
-            'events_queue_handlers' => 'moodle'
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1'
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
@@ -231,6 +237,15 @@ class version1CreateorupdateTest extends rlip_test {
             $tables[user::TABLE] = 'elis_program';
             $tables[usermoodle::TABLE] = 'elis_program';
         }
+
+        $manager = $DB->get_manager();
+        if ($manager->table_exists('course_sections_availability')) {
+            $tables['course_sections_availability'] = 'moodle';
+        }
+
+        // We are deleting a course, so we need to add a lot of plugin tables here
+        $tables = array_merge($tables, self::load_plugin_xmldb('mod'));
+        $tables = array_merge($tables, self::load_plugin_xmldb('course/format'));
 
         return $tables;
     }
@@ -259,9 +274,7 @@ class version1CreateorupdateTest extends rlip_test {
                      'course_modules' => 'moodle',
                      'course_modules_availability' => 'moodle',
                      'course_modules_completion' => 'moodle',
-                     'course_sections' => 'moodle',
                      'cache_flags' => 'moodle',
-                     'enrol' => 'moodle',
                      'event' => 'moodle',
                      'events_queue' => 'moodle',
                      'events_queue_handlers' => 'moodle',
@@ -297,7 +310,6 @@ class version1CreateorupdateTest extends rlip_test {
                      'role_names' => 'moodle',
                      'user_enrolments' => 'moodle',
                      'user_info_data' => 'moodle',
-                     'user_lastaccess' => 'moodle',
                      'user_preferences' => 'moodle',
                      'url' => 'moodle',
                      'sessions' => 'moodle');
@@ -590,12 +602,16 @@ class version1CreateorupdateTest extends rlip_test {
      * actions can create enrolments
      */
     public function testVersion1CreateorupdateCreatesEnrolmentFromCreateAction() {
-        global $DB;
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/lib/enrollib.php');
 
         //set up initial conditions
         set_config('createorupdate', 1, 'rlipimport_version1');
         set_config('gradebookroles', '');
         $this->init_contexts_and_site_course();
+
+        set_config('defaultenrol', 1, 'enrol_manual');
+        set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
 
         //initial data setup
         $userid = $this->create_test_user();

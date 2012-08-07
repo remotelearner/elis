@@ -116,13 +116,21 @@ function rlip_admintree_setup(&$adminroot) {
         if ($plugins = get_plugin_list($plugintype)) {
             ksort($plugins);
 
-            foreach ($plugins as $plugin => $path) {
+            foreach ($plugins as $p => $path) {
+                //NOTE: do not use $plugin here because elis/core/lib/setup will
+                //overwrite this value if included below
                 $plugsettings = $path.'/settings.php';
 
                 if (file_exists($plugsettings)) {
+                    //skip if the plugin is not available
+                    $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$p}");
+                    if (!$instance->is_available()) {
+                        continue;
+                    }
+
                     //the plugin has a settings file, so add it to the tree
-                    $name = "rlipsetting{$plugintype}_{$plugin}";
-                    $displaystring = get_string('pluginname', "{$plugintype}_$plugin");
+                    $name = "rlipsetting{$plugintype}_{$p}";
+                    $displaystring = get_string('pluginname', "{$plugintype}_$p");
                     $settings = new rlip_category_settingpage($name, $displaystring);
 
                     //add the actual settings to the list
@@ -130,8 +138,7 @@ function rlip_admintree_setup(&$adminroot) {
                     $adminroot->add('rlipmanageplugins', $settings);
 
                     //perform any customization required by the plugin
-                    $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$plugin}");
-                    $instance->admintree_setup($adminroot, "rlipsetting{$plugintype}_{$plugin}");
+                    $instance->admintree_setup($adminroot, "rlipsetting{$plugintype}_{$p}");
                 }
             }
         }
@@ -956,23 +963,29 @@ function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
         $plugins = get_plugin_list($plugintype);
 
         foreach ($plugins as $name => $path) {
-            //skip plugins used for testing only
+            //skip plugins used for testing only / ones that are not available
             $instance = rlip_dataplugin_factory::factory("{$plugintype}_{$name}");
-            if ($instance->is_test_plugin()) {
+            if (!$instance->is_available()) {
                 continue;
             }
 
             //get the display name from the plugin-specific language string
             $plugin_name = "{$plugintype}_{$name}";
+
+            //figure out the location (directory) configured for log file storage
             $logfilelocation = get_config($plugin_name, 'logfilelocation');
-            $logfilelocation = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR)  . RLIP_DEFAULT_LOG_PATH .
-                               DIRECTORY_SEPARATOR . trim($logfilelocation, DIRECTORY_SEPARATOR);
+            if (empty($logfilelocation)) {
+                $logfilelocation = RLIP_DEFAULT_LOG_PATH;
+            }
+
+            $logfilelocation = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.
+                               trim($logfilelocation, DIRECTORY_SEPARATOR);
             $logfileprefix = "{$pluginvalue}_{$name}";
             $logfiledate = $timestamp;
 
             //do a glob of all log files of this plugin name and of the previous day's date
             $files = array();
-            foreach (glob("{$logfilelocation}/{$logfileprefix}*{$logfiledate}*.log") as $file) {
+            foreach (glob("{$logfilelocation}/{$logfileprefix}_*{$logfiledate}*.log") as $file) {
                 $files[] = $file;
             }
 
@@ -1164,7 +1177,7 @@ function rlip_send_log_email($plugin, $recipient, $archive_name) {
     //obtain email contents
     $plugindisplay = get_string('pluginname', $plugin);
     $subject = get_string('notificationemailsubject', 'block_rlip', $plugindisplay);
-    $message = get_string('notificationemailmessage', 'block_rlip');
+    $message = get_string('notificationemailmessage', 'block_rlip', $plugindisplay);
 
     //send the email
     email_to_user($recipient, $admin, $subject, $message, '', $archive_name, $archive_name);

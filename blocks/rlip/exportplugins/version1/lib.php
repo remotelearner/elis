@@ -151,7 +151,7 @@ class rlipexport_version1_config {
             foreach ($data as $key => $value) {
                 if (strpos($key, 'header_') === 0) {
                     $recordid = substr($key, strlen('header_'));
-                    self::update_field_header($recordid, $value); 
+                    self::update_field_header($recordid, $value);
                 }
             }
         }

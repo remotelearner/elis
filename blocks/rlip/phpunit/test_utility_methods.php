@@ -34,6 +34,11 @@ require_once($CFG->dirroot .'/blocks/rlip/lib.php');
 require_once($CFG->dirroot .'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot .'/elis/core/lib/testlib.php');
 
+require_once($CFG->dirroot .'/blocks/rlip/exportplugins/version1/lib.php');
+require_once($CFG->dirroot .'/blocks/rlip/importplugins/version1/lib.php');
+require_once($CFG->dirroot .'/blocks/rlip/exportplugins/version1elis/lib.php');
+require_once($CFG->dirroot .'/blocks/rlip/importplugins/version1elis/lib.php');
+
 /**
  * An overlay database that allows for deleted tables
  */
@@ -70,20 +75,23 @@ class utilityMethodTest extends rlip_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
-        require_once($CFG->dirroot .'/blocks/rlip/exportplugins/version1/lib.php');
-        require_once($CFG->dirroot .'/blocks/rlip/importplugins/version1/lib.php');
-        return array(RLIP_SCHEDULE_TABLE => 'block_rlip',
-                     RLIPEXPORT_VERSION1_FIELD_TABLE => 'rlipexport_version1',
-                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
-                     'elis_scheduled_tasks' => 'elis_core',
-                     'config_plugins' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     'user' => 'moodle',
-                     'config' => 'moodle',
-                     'grade_grades' => 'moodle',
-                     'grade_items' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle');
+        return array(
+            RLIP_SCHEDULE_TABLE => 'block_rlip',
+            RLIPEXPORT_VERSION1_FIELD_TABLE => 'rlipexport_version1',
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+            RLIPEXPORT_VERSION1ELIS_FIELD_TABLE => 'rlipexport_version1elis',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            'elis_scheduled_tasks' => 'elis_core',
+            'config_plugins' => 'moodle',
+            'log' => 'moodle',
+            RLIP_LOG_TABLE => 'block_rlip',
+            'user' => 'moodle',
+            'config' => 'moodle',
+            'grade_grades' => 'moodle',
+            'grade_items' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle'
+        );
     }
 
     /**
@@ -1287,15 +1295,16 @@ class utilityMethodTest extends rlip_test {
         require_once($CFG->dirroot .'/blocks/rlip/db/tasks.php');
 
         // setup some bogus config_plugins settings and elis_scheduled_tasks
-        set_config('bogus1', 1, 'block_rlip');
-        set_config('bogus2', 1, 'rlipexport_version1');
-        set_config('bogus3', 1, 'rlipimport_version1');
+        set_config('bogus1', 1, 'rlipexport_version1');
+        set_config('bogus2', 1, 'rlipimport_version1');
 
         // add some bogus RLIP scheduled tasks
-        $est_data = array('type'   => 'rlipimport',
-                          'plugin' => 'rlipimport_version1',
-                          'period' => '15m',
-                          'label'  => 'bogus');
+        $est_data = array(
+            'type'   => 'rlipimport',
+            'plugin' => 'rlipimport_version1',
+            'period' => '15m',
+            'label'  => 'bogus'
+        );
         rlip_schedule_add_job($est_data);
         rlip_schedule_add_job($est_data);
         $est_data['type'] = 'rlipexport';
@@ -1330,9 +1339,23 @@ class utilityMethodTest extends rlip_test {
             $this->recreate_table('rlipimport_version1', RLIPIMPORT_VERSION1_MAPPING_TABLE);
         }
 
+        try {
+            $DB->count_records(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE);
+            $this->assertTrue(false);
+        } catch (Exception $e) {
+            ; // expected exception table not found!
+            $this->recreate_table('rlipexport_version1elis', RLIPEXPORT_VERSION1ELIS_FIELD_TABLE);
+        }
+        try {
+            $DB->count_records(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE);
+            $this->assertTrue(false);
+        } catch (Exception $e) {
+            ; // expected exception table not found!
+            $this->recreate_table('rlipimport_version1elis', RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE);
+        }
+
         // test RLIP elis schedule task deleted
-        $iprecs = $DB->get_records_select('elis_scheduled_tasks',
-                           "taskname LIKE 'ipjob_%'");
+        $iprecs = $DB->get_records_select('elis_scheduled_tasks', "taskname LIKE 'ipjob_%'");
         $this->assertTrue(empty($iprecs));
 
         $iprecs = $DB->get_records('elis_scheduled_tasks', array('plugin' => 'block_rlip'));
@@ -1342,9 +1365,8 @@ class utilityMethodTest extends rlip_test {
         $this->assertTrue(empty($iprecs));
 
         // test RLIP config settings deleted
-        $this->assertFalse(get_config('block_rlip', 'bogus1'));
-        $this->assertFalse(get_config('rlipexport_version1', 'bogus2'));
-        $this->assertFalse(get_config('rlipimport_version1', 'bogus3'));
+        $this->assertFalse(get_config('rlipexport_version1', 'bogus1'));
+        $this->assertFalse(get_config('rlipimport_version1', 'bogus2'));
     }
 
     /**
@@ -1596,6 +1618,43 @@ class utilityMethodTest extends rlip_test {
         $this->assertFalse($zipfilename);
     }
 
+    /**
+     * Validate that, if the setting for disabling the internal Moodle cron is
+     * enabled, tasks do not run in the internal cron
+     */
+    function testRunIpjobSkipsJobsIfDisabledInCronEnabled() {
+        global $DB;
+
+        //set up the export file name
+        set_config('export_file', 'export.csv', 'rlipexport_version1');
+
+        //disable running in the standard cron
+        set_config('disableincron', '1', 'block_rlip');
+
+        //create the job (doesn't really matter which plugin)
+        $data = array('plugin' => 'rlipexport_version1',
+                      'period' => '5m',
+                      'type' => 'rlipexport');
+        $taskid = rlip_schedule_add_job($data);
+
+        //set up the job to run on the next "cron"
+        $DB->execute("UPDATE {elis_scheduled_tasks}
+                          SET nextruntime = ?", array(0));
+        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."}
+                      SET nextruntime = ?", array(0));
+
+        //run the export
+        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        run_ipjob($taskname);
+
+        //validate that tasks are not run by checking that their next runtime values
+        //have not been changed
+        $exists = $DB->record_exists('elis_scheduled_tasks', array('nextruntime' => 0));
+        $this->assertTrue($exists);
+
+        $exists = $DB->record_exists(RLIP_SCHEDULE_TABLE, array('nextruntime' => 0));
+        $this->assertTrue($exists);
+    }
 
     public function data_root_paths_provider() {
         global $CFG;
