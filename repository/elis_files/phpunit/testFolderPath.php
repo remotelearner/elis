@@ -175,6 +175,9 @@ class folderPathTest extends elis_database_test {
             $this->markTestSkipped();
         }
 
+        // set up the storage for the full path of the path's UUIDs to validate against
+        $expected_path = array();
+
         // create folder, get uuid, get path via get_parent_path and elis_files_folder structure
         //for first folder, create under moodle, then create under the previous folder...
         $parent_folder_uuid = $repo->elis_files->get_root()->uuid;
@@ -184,18 +187,34 @@ class folderPathTest extends elis_database_test {
 
             $current_folder_uuid = $repo->elis_files->create_dir($current_folder,$parent_folder_uuid, '', true);
 
+            // add the parent folder to our expected sequence of UUIDs
+            $expected_path[] = repository_elis_files::build_encodedpath($parent_folder_uuid);
+
             // get_parent recursive  get_parent_path test
             $starttime = microtime();
             $recursive_path = array();
             $repo->get_parent_path($current_folder_uuid,$recursive_path, 0, 0, 0, 0,'parent');
             $recursive_time = microtime_diff($starttime, microtime());
 
-            $times[] = "Folder: $current_folder and time: $recursive_time";
+            // validate the count
+            $this->assertEquals($i, count($recursive_path));
+            // validate the encoded folder UUIDs
+
+            // look over the expected path parts
+            foreach ($expected_path as $path_index => $expected_part) {
+                // obtain the matching part from the actual return value
+                $result_part = $recursive_path[$path_index];
+                $this->assertEquals($expected_part, $result_part['path']);
+            }
+
+            //NOTE: add this back in if we are testing performance
+            //$times[] = "Folder: $current_folder and time: $recursive_time";
             //for nested folders
             $parent_folder_uuid = $current_folder_uuid;
         }
 
-        $this->markTestIncomplete("These are the times for get_parent_path_from_parent \n".implode("\n",$times));
+        //NOTE: use this instead of an actual assert if we want to check performance
+        //$this->markTestIncomplete("These are the times for get_parent_path_from_parent \n".implode("\n",$times));
     }
 
     /**
@@ -225,6 +244,9 @@ class folderPathTest extends elis_database_test {
             $this->markTestSkipped();
         }
 
+        // set up the storage for the full path of the path's UUIDs to validate against
+        $expected_path = array();
+
         // create folder, get uuid, get path via get_parent_path and elis_files_folder structure
         //for first folder, create under moodle, then create under the previous folder...
         $parent_folder_uuid = $repo->elis_files->get_root()->uuid;
@@ -234,6 +256,9 @@ class folderPathTest extends elis_database_test {
 
             $current_folder_uuid = $repo->elis_files->create_dir($current_folder,$parent_folder_uuid, '', true);
 
+            // add the parent folder to our expected sequence of UUIDs
+            $expected_path[] = repository_elis_files::build_encodedpath($parent_folder_uuid);
+
             // elis_files_folder_structure get_parent_path test
             $starttime = microtime();
             $folders = elis_files_folder_structure();
@@ -242,12 +267,25 @@ class folderPathTest extends elis_database_test {
             $end_time = time();
             $structure_time = microtime_diff($starttime, microtime());
 
+            // validate the count
+            $this->assertEquals($i, count($alt_recursive_path));
+            // validate the encoded folder UUIDs
+
+            // look over the expected path parts
+            foreach ($expected_path as $path_index => $expected_part) {
+                // obtain the matching part from the actual return value
+                $result_part = $alt_recursive_path[$path_index];
+                $this->assertEquals($expected_part, $result_part['path']);
+            }
+
+            //NOTE: add this back in if we are testing performance
             $times[] = $times[] = "Folder: $current_folder and time: $structure_time";
 
             //for nested folders
             $parent_folder_uuid = $current_folder_uuid;
         }
 
-        $this->markTestIncomplete("These are the times for get_parent_path_from_tree \n".implode("\n",$times));
+        //NOTE: use this instead of an actual assert if we want to check performance
+        //$this->markTestIncomplete("These are the times for get_parent_path_from_tree \n".implode("\n",$times));
     }
 }
