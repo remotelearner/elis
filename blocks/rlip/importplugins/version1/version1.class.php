@@ -697,22 +697,34 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         }
 
         //uniqueness checks
-        if ($DB->record_exists('user', array('username' => $record->username,
-                                             'mnethostid'=> $CFG->mnet_localhost_id))) {
-            $identifier = $this->mappings['username'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->username}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
-            return false;
-        }
-
-        if ($DB->record_exists('user', array('email' => $record->email))) {
-            $identifier = $this->mappings['email'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->email}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
-            return false;
-        }
+        // ELIS-6881 -- refactored to make this a single query as opposed to up to three queries to determine if a user record
+        //              exists or not.
+        $select = '(username = :username AND mnethostid = :mnethostid) OR (email = :email)';
+        $params = array(
+            'username'   => $record->username,
+            'mnethostid' => $CFG->mnet_localhost_id,
+            'email'      => $record->email,
+        );
 
         if (isset($record->idnumber)) {
-            if ($DB->record_exists('user', array('idnumber' => $record->idnumber))) {
-            $identifier = $this->mappings['idnumber'];
+             $select            .= ' OR (idnumber = :idnumber)';
+             $params['idnumber'] = $record->idnumber;
+        }
+
+        $existing_user = $DB->get_record_select('user', $select, $params, 'username, email, idnumber', IGNORE_MISSING);
+
+        if ($existing_user !== false) {
+            if ($existing_user->username == $record->username)  {
+                $identifier = $this->mappings['username'];
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->username}\" refers to a user that already exists.",
+                                             0, $filename, $this->linenumber, $record, "user");
+                return false;
+            } else if ($existing_user->email == $record->email) {
+                $identifier = $this->mappings['email'];
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->email}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
+                return false;
+            } else if (isset($record->idnumber) && $existing_user->idnumber == $record->idnumber) {
+                $identifier = $this->mappings['idnumber'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
             }
