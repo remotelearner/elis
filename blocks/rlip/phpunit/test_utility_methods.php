@@ -75,21 +75,23 @@ class utilityMethodTest extends rlip_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
-        return array(RLIP_SCHEDULE_TABLE => 'block_rlip',
-                     RLIPEXPORT_VERSION1_FIELD_TABLE => 'rlipexport_version1',
-                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
-                     RLIPEXPORT_VERSION1ELIS_FIELD_TABLE => 'rlipexport_version1elis',
-                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-                     'elis_scheduled_tasks' => 'elis_core',
-                     'config_plugins' => 'moodle',
-                     'log' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     'user' => 'moodle',
-                     'config' => 'moodle',
-                     'grade_grades' => 'moodle',
-                     'grade_items' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle');
+        return array(
+            RLIP_SCHEDULE_TABLE => 'block_rlip',
+            RLIPEXPORT_VERSION1_FIELD_TABLE => 'rlipexport_version1',
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+            RLIPEXPORT_VERSION1ELIS_FIELD_TABLE => 'rlipexport_version1elis',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            'elis_scheduled_tasks' => 'elis_core',
+            'config_plugins' => 'moodle',
+            'log' => 'moodle',
+            RLIP_LOG_TABLE => 'block_rlip',
+            'user' => 'moodle',
+            'config' => 'moodle',
+            'grade_grades' => 'moodle',
+            'grade_items' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle'
+        );
     }
 
     /**
@@ -1293,15 +1295,16 @@ class utilityMethodTest extends rlip_test {
         require_once($CFG->dirroot .'/blocks/rlip/db/tasks.php');
 
         // setup some bogus config_plugins settings and elis_scheduled_tasks
-        set_config('bogus1', 1, 'block_rlip');
-        set_config('bogus2', 1, 'rlipexport_version1');
-        set_config('bogus3', 1, 'rlipimport_version1');
+        set_config('bogus1', 1, 'rlipexport_version1');
+        set_config('bogus2', 1, 'rlipimport_version1');
 
         // add some bogus RLIP scheduled tasks
-        $est_data = array('type'   => 'rlipimport',
-                          'plugin' => 'rlipimport_version1',
-                          'period' => '15m',
-                          'label'  => 'bogus');
+        $est_data = array(
+            'type'   => 'rlipimport',
+            'plugin' => 'rlipimport_version1',
+            'period' => '15m',
+            'label'  => 'bogus'
+        );
         rlip_schedule_add_job($est_data);
         rlip_schedule_add_job($est_data);
         $est_data['type'] = 'rlipexport';
@@ -1352,8 +1355,7 @@ class utilityMethodTest extends rlip_test {
         }
 
         // test RLIP elis schedule task deleted
-        $iprecs = $DB->get_records_select('elis_scheduled_tasks',
-                           "taskname LIKE 'ipjob_%'");
+        $iprecs = $DB->get_records_select('elis_scheduled_tasks', "taskname LIKE 'ipjob_%'");
         $this->assertTrue(empty($iprecs));
 
         $iprecs = $DB->get_records('elis_scheduled_tasks', array('plugin' => 'block_rlip'));
@@ -1363,9 +1365,8 @@ class utilityMethodTest extends rlip_test {
         $this->assertTrue(empty($iprecs));
 
         // test RLIP config settings deleted
-        $this->assertFalse(get_config('block_rlip', 'bogus1'));
-        $this->assertFalse(get_config('rlipexport_version1', 'bogus2'));
-        $this->assertFalse(get_config('rlipimport_version1', 'bogus3'));
+        $this->assertFalse(get_config('rlipexport_version1', 'bogus1'));
+        $this->assertFalse(get_config('rlipimport_version1', 'bogus2'));
     }
 
     /**
