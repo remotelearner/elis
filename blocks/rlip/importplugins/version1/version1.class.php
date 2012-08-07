@@ -825,8 +825,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $params = array();
         $usernameid = 0;
         if (isset($record->username)) {
-            $params['username'] = $record->username;
-            $updateusername = $DB->get_record('user', array('username' => $params['username']));
+            $params['username']   = $record->username;
+            $params['mnethostid'] = $CFG->mnet_localhost_id;
+            $updateusername = $DB->get_record('user', $params);
             if (!$updateusername) {
                 $identifier = $this->mappings['username'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
@@ -917,8 +918,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $params = array();
         $usernameid = 0;
         if (isset($record->username)) {
-            $params['username'] = $record->username;
-            $updateusername = $DB->get_record('user', array('username' => $params['username']));
+            $params['username']   = $record->username;
+            $params['mnethostid'] = $CFG->mnet_localhost_id;
+            $updateusername = $DB->get_record('user', $params);
             if (!$updateusername) {
                 $identifier = $this->mappings['username'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
@@ -1799,7 +1801,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         if (isset($record->username)) {
             $num_identifiers++;
-            $params['username'] = $record->username;
+            $params['username']   = $record->username;
             $params['mnethostid'] = $CFG->mnet_localhost_id;
         }
         if (isset($record->email)) {
