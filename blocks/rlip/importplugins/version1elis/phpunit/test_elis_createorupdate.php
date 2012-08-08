@@ -799,4 +799,77 @@ class elis_createorupdate_test extends elis_database_test {
         $params['completetime'] = mktime(0, 0, 0, 1, 2, 2012);
         $this->assertTrue($DB->record_exists(instructor::TABLE, $params));
     }
+
+    /**
+     * Validate that createorupdate still works when the class idnumber contains
+     * an underscore
+     */
+    public function testELISCreateorupdateSupportsUnderscores() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/student.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        // Set up initial conditions
+        set_config('createorupdate', 1, 'rlipimport_version1elis');
+
+        // Create the test course
+        $course = new course(array(
+            'name'     => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
+        $course->save();
+
+        // Create the test class
+        $class = new pmclass(array(
+            'courseid' => $course->id,
+            //idnumber has an underscore in it
+            'idnumber' => 'testclass_idnumber'
+        ));
+        $class->save();
+
+        // Create the test user
+        $user = new user(array(
+            'username'  => 'testuserusername',
+            'email'     => 'test@useremail.com',
+            'idnumber'  => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'country'   => 'CA'
+        ));
+        $user->save();
+
+        // Set up an existing enrolment
+        $student = new student(array(
+            'userid'           => $user->id,
+            'classid'          => $class->id,
+            'completestatusid' => student::STUSTATUS_FAILED
+        ));
+        $student->save();
+
+        // Import the record, with create acting as an update
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->context = 'class_testclass_idnumber';
+        $record->user_idnumber = 'testuseridnumber';
+        $record->completestatusid = student::STUSTATUS_PASSED;
+
+        $importplugin->process_record('enrolment', $record, 'bogus');
+
+        // Validation
+        $this->assertEquals(1, $DB->count_records(student::TABLE));
+        $params = array(
+            'userid' => $user->id,
+            'classid' => $class->id,
+            'completestatusid' => student::STUSTATUS_PASSED
+        );
+        $exists = $DB->record_exists(student::TABLE, $params);
+        $this->assertTrue($exists);
+    }
 }
