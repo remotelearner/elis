@@ -211,5 +211,61 @@ class elis_user_program_enrolment_test extends elis_database_test {
         $this->assertFalse($DB->record_exists('crlm_curriculum_assignment', array('userid' => $userid)));
     }
 
+    /**
+     * Validate that enrolments still work when the entity's identifier contains
+     * an underscore
+     */
+    function testEnrolmentInstanceSupportsUnderscores() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elispm::lib('data/curriculum.class.php'));
+        require_once(elispm::lib('data/curriculumstudent.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        //set up required data
+        $program = new curriculum(array(
+            //idnumber has an underscore in it
+            'idnumber' => 'testprogram_idnumber'
+        ));
+        $program->save();
+
+        $user = new user(array(
+            'idnumber'  => 'testuseridnumber',
+            'username'  => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'email'     => 'testuser@email.com',
+            'country'   => 'CA'
+        ));
+        $user->save();
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(NULL);
+
+        //create action
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->context = 'curriculum_testprogram_idnumber';
+        $record->user_idnumber = 'testuseridnumber';
+
+        $importplugin->process_record('enrolment', $record, 'bogus');
+
+        //validation for create action
+        $params = array(
+            'userid'       => $user->id,
+            'curriculumid' => $program->id
+        );
+        $exists = $DB->record_exists(curriculumstudent::TABLE, $params);
+        $this->assertTrue($exists);
+
+        //delete action
+        $record->action = 'delete';
+
+        $importplugin->process_record('enrolment', $record, 'bogus');
+
+        //validation for delete action
+        $this->assertEquals(0, $DB->count_records(curriculumstudent::TABLE));
+    }
+
 }
 
