@@ -38,10 +38,11 @@ class rlip_importplugin_header extends rlip_importplugin_sample {
     /**
      * Hook run after a file header is read
      *
-     * @param string $entity The type of entity
-     * @param array $header The header record
+     * @param string $entity   The type of entity
+     * @param array  $header   The header record
+     * @param string $filename ?
      */
-    function header_read_hook($entity, $header) {
+    function header_read_hook($entity, $header, $filename) {
         $this->hook_called = true;
     }
 
@@ -55,10 +56,12 @@ class rlip_importplugin_header extends rlip_importplugin_sample {
     }
 
     /**
-     * Specifies flag for indicating that this plugin is for testing only
+     * Specifies flag for indicating whether this plugin is actually available
+     * on the current system, particularly for viewing in the UI and running
+     * scheduled tasks
      */
-    function is_test_plugin() {
+    function is_available() {
         //this plugin is for testing only
-        return true;
+        return false;
     }
 }

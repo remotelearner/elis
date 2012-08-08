@@ -72,9 +72,12 @@ class rlip_importprovider_mock extends rlip_importprovider {
     /**
      * Valid fslogger required for phpunit tests
      * @param string  $plugin
+     * @param  string $entity    the entity type
+     * @param boolean $manual    Set to true if a manual run
+     * @param integer $starttime the time used in the filename
      * @return object The fslogger instance
      */
-    function get_fslogger($plugin) {
+    function get_fslogger($plugin, $entity = '', $manual = false, $starttime = 0) {
         $fileplugin = rlip_fileplugin_factory::factory('/dev/null', NULL, true);
         $entity = '';
         return rlip_fslogger_factory::factory($plugin, $fileplugin, $entity);
@@ -166,9 +169,12 @@ class rlip_importprovider_multi_mock extends rlip_importprovider {
     /**
      * Valid fslogger required for phpunit tests
      * @param string  $plugin
+     * @param  string $entity    the entity type
+     * @param boolean $manual    Set to true if a manual run
+     * @param integer $starttime the time used in the filename
      * @return object The fslogger instance
      */
-    function get_fslogger($plugin) {
+    function get_fslogger($plugin, $entity = '', $manual = false, $starttime = 0) {
         $fileplugin = rlip_fileplugin_factory::factory('/dev/null', NULL, true);
         $entity = '';
         return rlip_fslogger_factory::factory($plugin, $fileplugin, $entity);

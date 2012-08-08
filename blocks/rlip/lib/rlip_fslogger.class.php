@@ -116,7 +116,11 @@ class rlip_fslogger {
         //look up timezone by name
         $tzrecord = $DB->get_record_sql('SELECT * FROM {timezone}
                                          WHERE name = ? ORDER BY year DESC', array($timezone), true);
-        return (float)$tzrecord->gmtoff / HOURMINS;
+        if ($tzrecord) {
+            return (float)$tzrecord->gmtoff / HOURMINS;
+        } else {
+            return 0.0;
+        }
     }
 
     /**

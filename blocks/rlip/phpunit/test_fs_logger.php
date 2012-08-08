@@ -131,21 +131,28 @@ class fsLoggerTest extends rlip_test {
 
     protected function assert_file_contents_equal($filename, $data) {
         //make sure the number of rows is correct
-        $this->assertEquals(count(file($filename)), count($data));
-
-        //track status
-        $result = true;
+        $fdata = file($filename);
+        $flcnt = count($fdata);
+        $datacnt = count($data);
+        $this->assertEquals($flcnt, $datacnt,
+               "# of file lines ({$flcnt}) doesn't match with data ({$datacnt})");
 
         //compare all lines
-        $pointer = fopen($filename, 'r');
+        $result = true;
+        $linenum = 0;
+        $line = reset($fdata);
         foreach ($data as $datum) {
-            $line = fgets($pointer);
-            $result = $result && ($line == $datum);
+            ++$linenum;
+            $msg = "\nFile {$filename}:{$linenum} - content error - '{$line}' != '{$datum}'\n";
+            if ($line != $datum) {
+                $result = false;
+                break;
+            }
+            $line = next($fdata);
         }
-        fclose($pointer);
 
         //assert that all lines were successful
-        $this->assertTrue($result);
+        $this->assertTrue($result, $msg);
     }
 
     /**

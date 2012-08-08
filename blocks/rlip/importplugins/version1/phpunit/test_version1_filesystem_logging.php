@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
 
 /**
@@ -229,45 +229,50 @@ class version1FilesystemLoggingTest extends rlip_test {
      */
     static function get_overlay_tables() {
         global $CFG;
+
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
-        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
-                     'user' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'role' => 'moodle',
-                     'role_context_levels' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'events_queue_handlers' => 'moodle',
-                     'events_queue' => 'moodle',
-                     'grade_categories' => 'moodle',
-                     'groupings' => 'moodle',
-                     'groupings_groups' => 'moodle',
-                     'groups' => 'moodle',
-                     'grade_items' => 'moodle',
-                     'context' => 'moodle',
-                     'config' => 'moodle',
-                     'backup_controllers' => 'moodle',
-                     'backup_courses' => 'moodle',
-                     'enrol' => 'moodle',
-                     //needed for course delete to prevent errors / warnings
-                     'course_modules' => 'moodle',
-                     'forum' => 'mod_forum',
-                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
-                     'elis_scheduled_tasks' => 'elis_core',
-                     RLIP_SCHEDULE_TABLE => 'block_rlip',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     'user' => 'moodle',
-                     'user_info_category' => 'moodle',
-                     'user_info_field' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'message_working' => 'moodle');
+        $tables = array(
+            'backup_controllers' => 'moodle',
+            'backup_courses' => 'moodle',
+            'block' => 'moodle',
+            'block_positions' => 'moodle',
+            'config' => 'moodle',
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            //needed for course delete to prevent errors / warnings
+            'course_modules' => 'moodle',
+            'course_sections' => 'moodle',
+            'enrol' => 'moodle',
+            'events_queue_handlers' => 'moodle',
+            'events_queue' => 'moodle',
+            'forum' => 'mod_forum',
+            'grade_categories' => 'moodle',
+            'grade_items' => 'moodle',
+            'groupings' => 'moodle',
+            'groupings_groups' => 'moodle',
+            'groups' => 'moodle',
+            'groups_members' => 'moodle',
+            'tag_instance' => 'moodle',
+            'user' => 'moodle',
+            'user_enrolments' => 'moodle',
+            'user_info_category' => 'moodle',
+            'user_info_field' => 'moodle',
+            'user_preferences' => 'moodle',
+            'role' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'message_working' => 'moodle',
+            'elis_scheduled_tasks' => 'elis_core',
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+            RLIP_SCHEDULE_TABLE => 'block_rlip',
+            RLIP_LOG_TABLE => 'block_rlip'
+        );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
         if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
@@ -275,8 +280,20 @@ class version1FilesystemLoggingTest extends rlip_test {
             require_once(elispm::lib('data/user.class.php'));
             require_once(elispm::lib('data/usermoodle.class.php'));
 
+            $tables['elis_field'] = 'elis_core';
+            $tables['elis_field_categories'] = 'elis_core';
+            $tables['elis_field_contextlevels'] = 'elis_core';
+            $tables['elis_field_owner'] = 'elis_core';
             $tables[user::TABLE] = 'elis_program';
             $tables[usermoodle::TABLE] = 'elis_program';
+        }
+
+        // We are deleting a course, so we need to add a lot of plugin tables here
+        $tables = array_merge($tables, self::load_plugin_xmldb('mod'));
+        $tables = array_merge($tables, self::load_plugin_xmldb('course/format'));
+
+        if ($DB->get_manager()->table_exists('course_sections_availability')) {
+            $tables['course_sections_availability'] = 'moodle';
         }
 
         return $tables;
@@ -286,67 +303,68 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        global $DB;
-        $tables = array('block_instances' => 'moodle',
-                     'course_sections' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'log' => 'moodle',
-                     'message'            => 'moodle',
-                     'message_read'       => 'moodle',
-                     'message_working'    => 'moodle',
-                     'cohort_members' => 'moodle',
-                     'user_preferences' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     'user_lastaccess' => 'moodle',
-                     'filter_active' => 'moodle',
-                     'filter_config' => 'moodle',
-                     'comments' => 'moodle',
-                     'rating' => 'moodle',
-                     'files' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'role_names' => 'moodle',
-                     'course_completion_criteria' => 'moodle',
-                     'course_completion_aggr_methd' => 'moodle',
-                     'course_completions' => 'moodle',
-                     'course_completion_crit_compl' => 'moodle',
-                     '_categories_history' => 'moodle',
-                     //'grade_items' => 'moodle',
-                     'grade_items_history' => 'moodle',
-                     'grade_outcomes_courses' => 'moodle',
-                     'grade_categories_history' => 'moodle',
-                     'grade_settings' => 'moodle',
-                     'grade_letters' => 'moodle',
-                     'course_modules_completion' => 'moodle',
-                     'course_modules_availability' => 'moodle',
-                     'feedback_items' => 'moodle',
-                     'feedback_template' => 'moodle',
-                     'course_modules' => 'moodle',
-                     'event' => 'moodle',
-                     'course_display' => 'moodle',
-                     'backup_log' => 'moodle',
-                     'external_tokens' => 'moodle',
-                     'forum' => 'mod_forum',
-                     'forum_subscriptions' => 'mod_forum',
-                     'forum_read' => 'mod_forum',
-                     'external_services_users' => 'moodle',
-                     'grade_grades' => 'moodle',
-                     'grade_grades_history' => 'moodle',
-                     'external_services_users' => 'moodle',
-                     'quiz_attempts' => 'mod_quiz',
-                     'quiz_grades' => 'mod_quiz',
-                     'quiz_question_instances' => 'mod_quiz',
-                     'quiz_feedback' => 'mod_quiz',
-                     'quiz' => 'mod_quiz',
-                     'url' => 'moodle',
-                     'assignment' => 'moodle',
-                     'assignment_submissions' => 'moodle',
-                     'forum_track_prefs' => 'moodle',
-                     'sessions' => 'moodle');
+        global $CFG, $DB;
 
-        if ($DB->record_exists("block", array("name" => "curr_admin"))) {
+        $tables = array(
+            'assignment' => 'moodle',
+            'assignment_submissions' => 'moodle',
+            'backup_log' => 'moodle',
+            'block_instances' => 'moodle',
+            'cache_flags' => 'moodle',
+            'cohort_members' => 'moodle',
+            'course_display' => 'moodle',
+            'course_sections' => 'moodle',
+            'filter_active' => 'moodle',
+            'filter_config' => 'moodle',
+            'forum' => 'mod_forum',
+            'forum_read' => 'mod_forum',
+            'forum_subscriptions' => 'mod_forum',
+            'forum_track_prefs' => 'moodle',
+            'comments' => 'moodle',
+            'rating' => 'moodle',
+            'files' => 'moodle',
+            'course_completion_criteria' => 'moodle',
+            'course_completion_aggr_methd' => 'moodle',
+            'course_completions' => 'moodle',
+            'course_completion_crit_compl' => 'moodle',
+            'course_modules' => 'moodle',
+            'course_modules_availability' => 'moodle',
+            'course_modules_completion' => 'moodle',
+            'event' => 'moodle',
+            'external_services_users' => 'moodle',
+            'external_tokens' => 'moodle',
+            'feedback_items' => 'moodle',
+            'feedback_template' => 'moodle',
+            //'grade_items' => 'moodle',
+            'grade_categories_history' => 'moodle',
+            'grade_grades' => 'moodle',
+            'grade_grades_history' => 'moodle',
+            'grade_items_history' => 'moodle',
+            'grade_letters' => 'moodle',
+            'grade_outcomes_courses' => 'moodle',
+            'grade_settings' => 'moodle',
+            'log' => 'moodle',
+            'message'            => 'moodle',
+            'message_read'       => 'moodle',
+            'message_working'    => 'moodle',
+            'quiz_attempts' => 'mod_quiz',
+            'quiz_grades' => 'mod_quiz',
+            'quiz_question_instances' => 'mod_quiz',
+            'quiz_feedback' => 'mod_quiz',
+            'quiz' => 'mod_quiz',
+            'role_capabilities' => 'moodle',
+            'role_names' => 'moodle',
+            'sessions' => 'moodle',
+            'url' => 'moodle',
+            'user_info_data' => 'moodle',
+            'user_lastaccess' => 'moodle'
+        );
+
+        if ($DB->record_exists('block', array('name' => 'curr_admin')) && file_exists($CFG->dirroot.'/elis/program/setup.php')) {
             $tables['crlm_user_moodle'] = 'elis_program';
             $tables['crlm_user'] = 'elis_program';
         }
+
         return $tables;
     }
 
@@ -362,6 +380,12 @@ class version1FilesystemLoggingTest extends rlip_test {
         static::get_csv_files();
         static::get_logfilelocation_files();
         static::get_zip_files();
+    }
+
+    public function setUp() {
+        parent::setUp();
+        set_config('defaultblocks_override', ' ');
+        //'activity_modules,recent_activity,search_forums:participants'
     }
 
     /**
@@ -1576,7 +1600,7 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment create action on courses
      */
     public function testVersion1ImportLogsSuccesfulCourseRoleAssignmentCreate() {
-        global $DB, $CFG, $UNITTEST;
+        global $CFG, $DB, $UNITTEST;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         $UNITTEST = new stdClass;
@@ -1589,8 +1613,8 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $roleid = $this->create_test_role();
         $syscontext = context_system::instance();
+        $roleid = $this->create_test_role();
 
         set_config('siteguest', '');
 
@@ -3246,7 +3270,7 @@ class version1FilesystemLoggingTest extends rlip_test {
 
     /**
      * Validate that approval messages still work when roles do not have the
-     * standard Moodle "view course" capability 
+     * standard Moodle "view course" capability
      */
     public function testVersion1ImportLogsSuccessWhenMissingCourseViewCapability() {
         //set up dependencies
@@ -4440,22 +4464,24 @@ class version1FilesystemLoggingTest extends rlip_test {
      */
     public function testVersion1ImportLogsInvalidPasswordOnUserCreate() {
         set_config('passwordpolicy', 1);
-        set_config('digits', 1);
+        set_config('minpassworddigits', 1);
 
         //create mapping record
         $this->create_mapping_record('user', 'password', 'custompassword');
 
-        $data = array('action' => 'create',
-                      'username' => 'testusername',
-                      'custompassword' => 'invalidpassword',
-                      'firstname' => 'rlipfirstname',
-                      'lastname' => 'test@user.com',
-                      'email' => 'bogusemail',
-                      'city' => 'Waterloo',
-                      'country' => 'CA',
-                      'idnumber' => 'idnumber');
+        $data = array(
+            'action' => 'create',
+            'username' => 'testusername',
+            'custompassword' => 'invalidpassword',
+            'firstname' => 'rlipfirstname',
+            'lastname' => 'rliplastname',
+            'email' => 'test@user.com',
+            'city' => 'Waterloo',
+            'country' => 'CA',
+            'idnumber' => 'idnumber'
+        );
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"bogusemail\", idnumber \"idnumber\" could not be created. custompassword value of \"invalidpassword\" does not conform to your site's password policy.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\", idnumber \"idnumber\" could not be created. custompassword value of \"invalidpassword\" does not conform to your site's password policy.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -6040,7 +6066,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $testdir = $CFG->dataroot . $file_path;
         @mkdir($testdir, 0777, true);
         @copy(dirname(__FILE__) ."/{$file_name}", $testdir . $file_name);
-        $provider = new rlip_importprovider_userfile_delay($CFG->dataroot . $file_path . $file_name);
+        $provider = new rlip_importprovider_file_delay($CFG->dataroot . $file_path . $file_name, 'user');
 
         //run the import
         $manual = true;
@@ -6111,7 +6137,7 @@ class version1FilesystemLoggingTest extends rlip_test {
                       array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'));
 
         //import provider that creates an instance of a file plugin that delays two seconds
-        //between reading the third and fourth entry 
+        //between reading the third and fourth entry
         $provider = new rlip_importprovider_delay_after_three_users($data);
         $manual = true;
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
@@ -6624,67 +6650,6 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         //validation
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
-    }
-
-    /*
-     * Validate that all log files from the previous day are bundled into a zip file
-     * and named with the previous day's date
-     */
-    function testVersion1ImportLogZipsDaily() {
-        global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->libdir .'/filestorage/zip_archive.php');
-
-        // clean-up any existing log & zip files
-        self::cleanup_log_files();
-        self::cleanup_zip_files();
-
-        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
-
-        $plugin_type = 'import';
-        $plugin = 'rlipimport_version1';
-        $format = get_string('logfile_timestamp','block_rlip');
-
-        $USER->timezone = 99;
-        // create some log files to be zipped by the cron job
-        // Way earlier then any real existing files!
-        $starttime = make_timestamp(1971, 1, 3);
-        $filenames = array();
-        for ($i = 0; $i < 10; ++$i) {
-            $filenames[$i] = rlip_log_file_name($plugin_type, $plugin, '', 'user',
-                                           false, $starttime + $i * 3600);
-            //write out a line to the logfile
-            $logfile = new rlip_fileplugin_log($filenames[$i]);
-            $logfile->open(RLIP_FILE_WRITE);
-            $logfile->write(array('test entry'));
-            $logfile->close();
-        }
-
-        //call cron job that zips the specified day's log files
-        $zipfiles = rlip_compress_logs_cron('bogus', 0, $starttime);
-        $this->assertTrue(!empty($zipfiles));
-
-        //was a zip file created?
-        //verify that the compressed file exists
-        $exists = file_exists($zipfiles[0]);
-        $this->assertTrue($exists);
-
-        //open zip_archive and verify all logs included
-        $zip = new zip_archive();
-        $result = $zip->open($zipfiles[0]);
-        $this->assertTrue($result);
-        $this->assertEquals(10, $zip->count());
-        $zip->close();
-
-        //verify that the log files created are gone...
-        for ($i = 0; $i < 10; ++$i) {
-            $exists = file_exists($filenames[$i]);
-            $this->assertFalse($exists);
-        }
-
-        // delete the test zip
-        @unlink($zipfiles[0]);
     }
 
     /**

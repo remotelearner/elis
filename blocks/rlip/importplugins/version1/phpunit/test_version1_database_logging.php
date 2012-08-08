@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/userfile_delay.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -196,7 +196,7 @@ class rlip_importprovider_loguser_dynamic extends rlip_importprovider_loguser {
     }
 }
 
-class rlip_importprovider_userfile extends rlip_importprovider {
+class rlip_importprovider_file extends rlip_importprovider {
     var $filename;
 
     function __construct($filename) {
@@ -220,7 +220,7 @@ class rlip_importprovider_userfile extends rlip_importprovider {
 }
 
 class rlip_importprovider_manual_delay
-      extends rlip_importprovider_userfile_delay {
+      extends rlip_importprovider_file_delay {
 
     /**
      * Provides the object used to log information to the database to the
@@ -247,79 +247,97 @@ class version1DatabaseLoggingTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     static protected function get_overlay_tables() {
-        global $CFG;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
-        return array(RLIP_LOG_TABLE => 'block_rlip',
-                     'user' => 'moodle',
-                     'context' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'cohort_members' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'user_preferences' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     'user_lastaccess' => 'moodle',
-                     'block_instances' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'filter_active' => 'moodle',
-                     'filter_config' => 'moodle',
-                     'comments' => 'moodle',
-                     'rating' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'role_names' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'events_handlers' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'course' => 'moodle',
-                     'course_sections' => 'moodle',
-                     'enrol' => 'moodle',
-                     'course_completion_criteria' => 'moodle',
-                     'course_completion_aggr_methd' => 'moodle',
-                     'course_completions' => 'moodle',
-                     'course_completion_crit_compl' => 'moodle',
-                     'grade_categories' => 'moodle',
-                     'grade_categories_history' => 'moodle',
-                     'grade_items' => 'moodle',
-                     'grade_items_history' => 'moodle',
-                     'grade_outcomes_courses' => 'moodle',
-                     'grade_settings' => 'moodle',
-                     'grade_letters' => 'moodle',
-                     'course_modules_completion' => 'moodle',
-                     'course_modules' => 'moodle',
-                     'course_modules_availability' => 'moodle',
-                     'modules' => 'moodle',
-                     'groupings' => 'moodle',
-                     'groupings_groups' => 'moodle',
-                     'groups' => 'moodle',
-                     'course_display' => 'moodle',
-                     'backup_courses' => 'moodle',
-                     'backup_logs' => 'moodle',
-                     'role' => 'moodle',
-                     'role_context_levels' => 'moodle',
-                     'files' => 'moodle',
-                     'config' => 'moodle',
-                     RLIP_SCHEDULE_TABLE => 'block_rlip',
-                     'elis_scheduled_tasks' => 'elis_core',
-                     RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
-                     //this prevents createorupdate from being used
-                     'config_plugins' => 'moodle');
+        $tables = array(
+            'backup_courses' => 'moodle',
+            'backup_logs' => 'moodle',
+            'block_instances' => 'moodle',
+            'block_positions' => 'moodle',
+            'cache_flags' => 'moodle',
+            'cohort_members' => 'moodle',
+            'config' => 'moodle',
+            //this prevents createorupdate from being used
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'comments' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            'course_completion_aggr_methd' => 'moodle',
+            'course_completion_crit_compl' => 'moodle',
+            'course_completion_criteria' => 'moodle',
+            'course_completions' => 'moodle',
+            'course_modules' => 'moodle',
+            'course_modules_availability' => 'moodle',
+            'course_modules_completion' => 'moodle',
+            'course_sections' => 'moodle',
+            'enrol' => 'moodle',
+            'events_handlers' => 'moodle',
+            'files' => 'moodle',
+            'filter_active' => 'moodle',
+            'filter_config' => 'moodle',
+            'grade_categories' => 'moodle',
+            'grade_categories_history' => 'moodle',
+            'grade_items' => 'moodle',
+            'grade_items_history' => 'moodle',
+            'grade_letters' => 'moodle',
+            'grade_outcomes_courses' => 'moodle',
+            'grade_settings' => 'moodle',
+            'groupings' => 'moodle',
+            'groupings_groups' => 'moodle',
+            'groups' => 'moodle',
+            'groups_members' => 'moodle',
+            'modules' => 'moodle',
+            'rating' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_names' => 'moodle',
+            'role' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'user' => 'moodle',
+            'user_enrolments' => 'moodle',
+            'user_info_data' => 'moodle',
+            'user_lastaccess' => 'moodle',
+            'user_preferences' => 'moodle',
+            'elis_scheduled_tasks' => 'elis_core',
+            RLIP_LOG_TABLE => 'block_rlip',
+            RLIP_SCHEDULE_TABLE => 'block_rlip',
+            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
+        );
+
+        $manager = $DB->get_manager();
+
+        // We are deleting a course, so we need to add a lot of plugin tables here
+        $tables = array_merge($tables, self::load_plugin_xmldb('course/format'));
+
+        if ($manager->table_exists('course_display')) {
+            $tables['course_display'] = 'moodle';
+        }
+
+        if ($manager->table_exists('course_sections_availability')) {
+            $tables['course_sections_availability'] = 'moodle';
+        }
+
+        return $tables;
     }
 
     /**
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        return array('log' => 'moodle',
-                     'event' => 'moodle',
-                     'external_tokens' => 'moodle',
-                     //usually written to during course delete
-                     'grade_grades' => 'moodle',
-                     'grade_grades_history' => 'moodle',
-                     'external_services_users' => 'moodle',
-                     'sessions' => 'moodle');
+        return array(
+            'external_services_users' => 'moodle',
+            'external_tokens' => 'moodle',
+            'event' => 'moodle',
+            //usually written to during course delete
+            'grade_grades' => 'moodle',
+            'grade_grades_history' => 'moodle',
+            'log' => 'moodle',
+            'sessions' => 'moodle'
+        );
     }
 
     /**
@@ -866,7 +884,7 @@ class version1DatabaseLoggingTest extends rlip_test {
                       SELECT * FROM
                       {$prefix}context
                       WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
-        
+
         //set up the site course context
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
@@ -1136,7 +1154,7 @@ class version1DatabaseLoggingTest extends rlip_test {
         $file = $tempdir .'userfile.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
-        $provider = new rlip_importprovider_userfile($file);
+        $provider = new rlip_importprovider_file($file, 'user');
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);
@@ -1159,6 +1177,9 @@ class version1DatabaseLoggingTest extends rlip_test {
      */
     public function testVersion1ManualImportObeysMaxRunTime() {
         global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //set the log file name to a fixed value
         $filepath = $CFG->dataroot;
@@ -1169,7 +1190,7 @@ class version1DatabaseLoggingTest extends rlip_test {
         $file = $tempdir .'userfile2.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
-        $provider = new rlip_importprovider_manual_delay($file);
+        $provider = new rlip_importprovider_manual_delay($file, 'user');
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider, true);
@@ -1191,6 +1212,8 @@ class version1DatabaseLoggingTest extends rlip_test {
      */
     public function testVersion1ScheduledImportObeysMaxRunTime() {
         global $CFG, $DB;
+        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($file);
 
         //set the log file name to a fixed value
         $filepath = $CFG->dataroot;
@@ -1202,7 +1225,7 @@ class version1DatabaseLoggingTest extends rlip_test {
         $file = $tempdir .'userfile2.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
-        $provider = new rlip_importprovider_userfile_delay($file);
+        $provider = new rlip_importprovider_file_delay($file,'user');
 
         //run the import
         $importplugin = new rlip_importplugin_version1($provider);
@@ -1609,5 +1632,124 @@ class version1DatabaseLoggingTest extends rlip_test {
         //clean-up data file & test dir
         @unlink($testdir . $file_name);
         @rmdir($testdir);
+    }
+
+    /**
+     * Validation for log end times
+     */
+
+    /**
+     * Validate that summary log end time is set when an invalid folder is set
+     * for the file system log
+     */
+    public function testNonWritableLogPathLogsCorrectEndTime() {
+        global $DB;
+
+        set_config('logfilelocation', 'adirectorythatshouldnotexist', 'rlipimport_version1');
+
+        $data = array(
+            'action'    => 'create',
+            'username'  => 'testuserusername',
+            'password'  => 'Testpassword!0',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'email'     => 'test@useremail.com',
+            'city'      => 'testcity',
+            'country'   => 'CA'
+        );
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when the action column is not
+     * specified in the import
+     */
+    public function testMissingActionColumnLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array('idnumber' => 'testuseridnumber');
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when a required column is not
+     * specified in the import
+     */
+    public function testMissingRequiredColumnLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array('action' => 'create');
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when maximum runtime is exceeded
+     * when running the import
+     */
+    public function testMaxRuntimeExceededLogsCorrectEndTime() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
+
+        $import_file = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/userfiledelay.csv';
+        $provider = new rlip_importprovider_file_delay($import_file, 'user');
+
+        //run the import
+        $mintime = time();
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin->run(0, 0, 1);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
+    }
+
+    /**
+     * Validate that summary log end time is set when successfully processing an
+     * import file
+     */
+    public function testSuccessfulProcessingLogsCorrectEndTime() {
+        global $DB;
+
+        $data = array(
+            'action'    => 'create',
+            'username'  => 'testuserusername',
+            'password'  => 'Testpassword!0',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'email'     => 'test@useremail.com',
+            'city'      => 'testcity',
+            'country'   => 'CA'
+        );
+
+        $mintime = time();
+        $this->run_user_import($data);
+        $maxtime = time();
+
+        $record = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
+        $this->assertGreaterThanOrEqual($mintime, $record->endtime);
+        $this->assertLessThanOrEqual($maxtime, $record->endtime);
     }
 }
