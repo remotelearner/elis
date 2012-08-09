@@ -1960,6 +1960,11 @@ class ELIS_files {
             return false;
         }
 
+        if ($this->is_company_home($node->uuid)) {
+            //this is the root "Company Home" node
+            return '/';
+        }
+
         if ($node->type == self::$type_folder) {
             array_push($stack, $node->title);
         } else if ($node->type !== self::$type_document) {

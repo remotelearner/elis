@@ -1380,24 +1380,132 @@ function elis_files_get_config() {
  * structure usable in Moodle.
  *
  * @param SimpleXMLElement $sxml A folder-level SimpleXMLElement object.
+ * @param boolean $check_permissions Set to true to require "create" permissions
+ *                                   on returned folders
+ * @param string $path_prefix A prefix to use for the path, in case the parent
+ *                            node is not accessible
+ * @param string $parent_uuid The uuid of the parent node relative to the top of
+ *                            the XML structure
+ * @param int $courseid The id of the course whose area we are in, or the site id
+ *                      if not in a particular course's area
+ * @param boolean $shared Set to true if we are in the shared space
+ * @param int $oid The id of the user set whose area we are in, if applicable
+ * @param int $uid The id of the user whose area we are in, if applicable
+ * @param object $repo The repository object, or NULL if we need to obtain it
  * @return array An array of folder information.
  */
-function elis_files_process_folder_structure($sxml) {
+function elis_files_process_folder_structure($sxml, $check_permissions = false, $path_prefix = '', $parent_uuid = '',
+                                             $courseid = SITEID, $shared = false, $oid = 0, $uid = 0, $repo = NULL) {
+    global $DB, $USER;
+
     $return = array();
+
+    // Data needed by the repository object
+    $params = array(
+        'ajax' => false,
+        'name' => '',
+        'type' =>'elis_files'
+    );
+
+    // Create the repository object
+    if ($repo == NULL) {
+        $sql = "SELECT MIN(ri.id)
+                FROM {repository} r
+                JOIN {repository_instances} ri
+                  ON r.id = ri.typeid
+                WHERE r.type = ?";
+        $instanceid = $DB->get_field_sql($sql, array('elis_files'));
+
+        $repo = new repository_elis_files($instanceid, SYSCONTEXTID, $params);
+    }
 
     if (!empty($sxml->folder)) {
         foreach ($sxml->folder as $folder) {
+            // Track values specifically for this node, i.e. not for other folders
+            // at the same level
+            $node_courseid = $courseid;
+            $node_shared = $shared;
+            $node_oid = $oid;
+            $node_uid = $uid;
+
+            if ($check_permissions) {
+                // The course id if we are at a specific course node, or the site id
+                // otherwise
+                if ($node_courseid == SITEID && $parent_uuid == $repo->elis_files->cuuid) {
+                    $params = array(
+                        'uuid' => "$folder->uuid"
+                    );
+                    $tempcourseid = $DB->get_field('elis_files_course_store', 'courseid', $params);
+                    if ($tempcourseid) {
+                        $node_courseid = $tempcourseid;
+                    }
+                }
+
+                // Flag indicating whether the node is the main shared folder
+                if (!$node_shared) {
+                    $node_shared = $folder->uuid == $repo->elis_files->suuid;
+                }
+
+                // The organization id if we are at a specific organization node, or
+                // an empty value otherwise
+                if ($node_oid == 0 && $parent_uuid == $repo->elis_files->ouuid) {
+                    $params = array(
+                        'uuid' => "$folder->uuid"
+                    );            
+                    $node_oid = $DB->get_field('elis_files_userset_store', 'usersetid', $params);
+                }
+
+                // The user id if we are at the node for the curent user, or an empty
+                // value otherwise
+                if ($node_uid == 0) {
+                    $node_uid = $folder->uuid == $repo->elis_files->uuuid ? $USER->id : 0;
+                }
+
+                // Determine whether the current user has the edit permission on this folder
+                $has_permissions = $repo->check_editing_permissions($node_courseid, $node_shared, $node_oid,
+                                                                    $folder->uuid, $node_uid);
+            } else {
+                // Allow access
+                $has_permissions = true;
+            }
+
             $cat = array(
                 'uuid'     => "$folder->uuid",
-                'name'     => "$folder->name",
+                // Append the path prefix
+                'name'     => "{$path_prefix}{$folder->name}",
                 'children' => array()
             );
 
+            // Calculate the list of children
+            $children = array();
             if (!empty($folder->folders)) {
-                $cat['children'] = elis_files_process_folder_structure($folder->folders);
+                // Calculate the start of the child path
+                $child_path_prefix = $path_prefix;
+                if (!$has_permissions) {
+                    // Will not be inhereted from this node, so add the prefix
+                    $child_path_prefix .= $folder->name.'/';
+                } else {
+                    // We just want the last piece
+                    $child_path_prefix = '';
+                }
+
+                // Recurse, passing along information about the area we are in
+                $new_parent_uuid = "$folder->uuid";
+                $children = elis_files_process_folder_structure($folder->folders, $check_permissions, $child_path_prefix,
+                                                                $new_parent_uuid, $node_courseid, $node_shared, $node_oid,
+                                                                $node_uid, $repo);
             }
 
-            $return[] = $cat;
+            if ($has_permissions) {
+                // Current node will be included, so append the children
+                $cat['children'] = $children;
+                $return[] = $cat;
+            } else {
+                // Current node will not be included, so include children at this level
+                foreach ($children as $child) {
+                    $return[] = $child;
+                }
+            }
         }
     }
 
@@ -1408,10 +1516,11 @@ function elis_files_process_folder_structure($sxml) {
 /**
  * Get a hierarchical folder structure from the Alfresco server.
  *
- * @param none
+ * @param boolean $check_permissions Set to true to require "create" permissions
+ *                                   on returned folders
  * @return array A nested array of folder node data.
  */
-function elis_files_folder_structure() {
+function elis_files_folder_structure($check_permissions = false) {
     $response = elis_files_request('/moodle/folders');
 
     $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
@@ -1422,7 +1531,7 @@ function elis_files_folder_structure() {
     }
 
     if (!empty($sxml->folder)) {
-        return elis_files_process_folder_structure($sxml);
+        return elis_files_process_folder_structure($sxml, $check_permissions);
     }
 
     return array();

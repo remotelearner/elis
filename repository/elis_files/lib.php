@@ -1121,13 +1121,22 @@ class repository_elis_files extends repository {
             }
         }
 
-        // Now build the entire folder tree ...
-        $folders = elis_files_folder_structure();
+        // Now build the entire folder tree, respecting "create" permissions ...
+        $folders = elis_files_folder_structure(true);
         $foldertree = array();
         repository_elis_files::folder_tree_to_fm($foldertree, $folders,
                                                  $companyhomefolder['textpath']);
+
         // Must add missing 'ELIS Files' & 'Company Home' locations to tree
-        if (!empty($companyhomefolder)) {
+        // if permissions allow
+
+        // For this, we care about the "root" node
+        $root_uuid = $this->elis_files->get_root()->uuid;
+        // Validate whether the current user has proper "site-level create" permissions
+        $access_permitted = $this->check_editing_permissions(SITEID, 0, 0, $root_uuid, 0);
+
+        if (!empty($companyhomefolder) && $access_permitted) {
+            // We have access to 'Company Home'
             $companyhomefolder['children'] = $foldertree;
             $foldertree = array($companyhomefolder);
         }
