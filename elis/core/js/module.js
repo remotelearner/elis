@@ -477,6 +477,11 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 	 */
 	render: function() {
 	    var pickerid = this.options.id + '_picker';
+        // Detect if the panel has already been added and remove it -- ELIS-5956
+        obj = document.getElementById(pickerid);
+        if (obj) {
+            obj.parentNode.removeChild(obj);
+        }
 	    var pickernode = Y.Node.create('<div class="custom-field-picker" id="'+pickerid+'"></div>');
 	    Y.one(document.body).appendChild(pickernode);
 	    var panel = new YAHOO.widget.Panel(pickerid, {
