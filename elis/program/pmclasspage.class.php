@@ -142,27 +142,6 @@ class pmclasspage extends managementpage {
         return has_capability($capability, $context);
     }
 
-    public function _get_page_context() {
-        global $DB;
-
-        $id = $this->optional_param('id', 0, PARAM_INT);
-
-        $action = $this->optional_param('action', 'default', PARAM_ACTION);
-
-        if ($id) {
-            if ($action == 'default') {
-                // ELIS-4089 -- if action = 'default' and id > 0, the id is actually a classid (strange, I know) - JJF
-                if ($courseid = $DB->get_field(pmclass::TABLE, 'courseid', array('id' => $id))) {
-                    return context_elis_course::instance($courseid);
-                }
-            } else {
-                return context_elis_class::instance($id);
-            }
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
     public function _get_page_params() {
         return parent::_get_page_params();
     }

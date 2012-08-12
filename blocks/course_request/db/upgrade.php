@@ -109,7 +109,10 @@ function xmldb_block_course_request_upgrade($oldversion = 0) {
 
     if ($result && $oldversion < 2011051800) {
         //make sure the custom context libraries are loaded
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+
+        //set all existing records to use the class context level
+        $context_level = context_level_base::get_custom_context_level('class', 'elis_program');
 
         //our listing of available fields needs to track context levels now
         $table = new xmldb_table('block_course_request_fields');
@@ -120,7 +123,7 @@ function xmldb_block_course_request_upgrade($oldversion = 0) {
 
         //set all values to the class context level (update condition is always true but needed
         //to prevent warnings)
-        $DB->set_field('block_course_request_fields', 'contextlevel', CONTEXT_ELIS_CLASS, array('contextlevel' => '0'));
+        $DB->set_field('block_course_request_fields', 'contextlevel', $context_level, array('contextlevel' => '0'));
 
         //our individual request data need to track context levels as well
         $table = new xmldb_table('block_course_request_data');

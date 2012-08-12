@@ -338,29 +338,34 @@ class userset extends data_object_with_custom_fields {
         //get the clusters and check the context against them
         $cluster_context_instance = context_elis_userset::instance($clusterid);
 
-        $path = $DB->sql_concat('ctxt.path', "'/%'");
+        // ELIS-3848 -- Use named parameters otherwise array += array doesn't work correctly
+        $path = $DB->sql_concat('ctxt.path', ':pathwildcard');
 
         //query to get parent cluster contexts
         $cluster_permissions_sql = 'SELECT clst.*
                                     FROM {' . self::TABLE . "} clst
                                     JOIN {context} ctxt
                                          ON clst.id = ctxt.instanceid
-                                         AND ctxt.contextlevel = ?
-                                         AND ? LIKE {$path} ";
+                                         AND ctxt.contextlevel = :ctxlevel
+                                         AND :ctxpath LIKE {$path} ";
 
-        $params = array(CONTEXT_ELIS_USERSET, $cluster_context_instance->path);
+        $params = array(
+            'ctxlevel'     => CONTEXT_ELIS_USERSET,
+            'ctxpath'      => $cluster_context_instance->path,
+            'pathwildcard' => '/%'
+        );
 
         // filter out the records that the user can't see
         $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
-        $filtersql = $context->get_filter('id')->get_sql(true, 'clst');
+        $filtersql = $context->get_filter('id')->get_sql(true, 'clst', SQL_PARAMS_NAMED);
 
         if (isset($filtersql['join'])) {
-            $cluster_permission_sql .= $filtersql['join'];
-            $params += $filtersql['join_params'];
+            $cluster_permissions_sql .= $filtersql['join'];
+            $params = array_merge($params, $filtersql['join_params']);
         }
         if (isset($filtersql['where'])) {
             $cluster_permissions_sql .= ' WHERE ' . $filtersql['where'];
-            $params += $filtersql['where_parameters'];
+            $params = array_merge($params, $filtersql['where_parameters']);
         }
 
         $allowed_clusters = $DB->get_records_sql($cluster_permissions_sql, $params);
@@ -553,7 +558,6 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
             $sql_condition = new select_filter('TRUE');
         } else {
             //user does not have capability at system level, so filter
-
             $viewable_clusters = userset::get_viewable_clusters();
 
             if (empty($viewable_clusters)) {
@@ -567,7 +571,7 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
                 list($IN, $inparams) = $DB->get_in_or_equal($viewable_clusters);
 
                 $sql_condition = new select_filter(
-                    "id IN (SELECT parent_context.instanceid
+                    "clst.id IN (SELECT parent_context.instanceid
                               FROM {context} parent_context
                               JOIN {context} child_context
                                 ON child_context.path LIKE {$path}

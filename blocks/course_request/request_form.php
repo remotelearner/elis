@@ -50,8 +50,7 @@ class current_form extends moodleform {
             $mform->addElement('static', 'static_title', get_string('current_classes', 'block_course_request'));
 
             foreach ($user_classes as $uc) {
-                // TODO: is this used for anything?
-                context_elis_class::instance($uc->id);
+                $context = get_context_instance(context_level_base::get_custom_context_level('class', 'elis_program'), $uc->id);
 
                 //this points to the page that displays the specific class
                 $target = new pmclasspage(array('id'     => $uc->id,
@@ -238,7 +237,7 @@ class create_form extends moodleform {
         global $CFG, $DB;
         $mform = &$this->_form;
 
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevel_name);
+        $contextlevel = context_level_base::get_custom_context_level($contextlevel_name, 'elis_program');
 
         //track whether we have already displayed a section header
         $header_displayed = false;
@@ -401,7 +400,7 @@ class define_request_form {
         $fields = $fields ? $fields : array();
 
         //only retrieve fields for the specified context level
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevel_name);
+        $contextlevel = context_level_base::get_custom_context_level($contextlevel_name, 'elis_program');
         $questions = $DB->get_records('block_course_request_fields', array('contextlevel' => $contextlevel));
 
         print '<fieldset class="hidden">';

@@ -57,15 +57,6 @@ class studentcurriculumpage extends associationpage2 {
         parent::__construct($params);
     }
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        if ($id) {
-            return context_elis_user::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
     public function _get_page_params() {
         $params = parent::_get_page_params();
 
@@ -169,6 +160,7 @@ class studentcurriculumpage extends associationpage2 {
     }
 
     protected function process_assignment($data) {
+        $this->session_selection_deletion();
         $userid  = $data->id;
         foreach ($data->_selection as $curid) {
             $stucur = new curriculumstudent(array('userid' => $userid,
@@ -183,6 +175,7 @@ class studentcurriculumpage extends associationpage2 {
     }
 
     protected function process_unassignment($data) {
+        $this->session_selection_deletion();
         $userid  = $data->id;
         foreach ($data->_selection as $associd) {
             $curstu = new curriculumstudent($associd);
@@ -377,7 +370,7 @@ class studentcurriculumpage extends associationpage2 {
 
     protected function create_selection_table($records, $baseurl) {
         $records = $records ? $records : array();
-        $columns = array('_selection' => array('header' => ''),
+        $columns = array('_selection' => array('header' => get_string('select')),
                          'idnumber' => array('header' => get_string('idnumber','elis_program')),
                          'name' => array('header' => get_string('name','elis_program')),
                          'description' => array('header' => get_string('description','elis_program')),
@@ -500,15 +493,6 @@ class curriculumstudentpage extends associationpage2 {
         $this->context = parent::_get_page_context();
         $this->params = $this->_get_page_params();
         parent::__construct($params);
-    }
-
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-        if ($id) {
-            return context_elis_program::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
     }
 
     public function _get_page_params() {

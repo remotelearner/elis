@@ -171,7 +171,7 @@ class usertrackpage extends usertrackbasepage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        $items = usertrack::get_tracks($id);
+        $items = usertrack::get_tracks($id, $sort, $dir);
 
         $this->print_list_view($items, $columns, 'tracks');
 
@@ -240,12 +240,6 @@ class trackuserpage extends usertrackbasepage {
         $dir     = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
         $page    = $this->optional_param('page', 0, PARAM_INT);
         $perpage = $this->optional_param('perpage', 30, PARAM_INT);
-
-        if (!empty($id)) {
-            //print curriculum tabs if viewing from the curriculum view
-            $trackpage = new userpage(array('id' => $id));
-            //$trackpage->print_tabs('trackuserpage', array('id' => $id));
-        }
 
         $columns = array(
                 'idnumber' => array('header' => get_string('student_idnumber', 'elis_program'),

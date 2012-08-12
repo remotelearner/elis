@@ -42,13 +42,12 @@ class duplicateTest extends elis_database_test {
      * Return the list of tables that should be ignored for writes.
      */
     static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
-        return array('crlm_coursetemplate' => 'elis_program');
+        return array('crlm_coursetemplate' => 'elis_program',
+                     'crlm_user_track' => 'elis_program'
+               );
     }
 
-	protected static function get_overlay_tables() {
+    protected static function get_overlay_tables() {
         return array(
             'course' => 'moodle',
             'context' => 'moodle',
@@ -70,7 +69,7 @@ class duplicateTest extends elis_database_test {
             curriculum::TABLE => 'elis_program',
             curriculumcourse::TABLE => 'elis_program'
         );
-	}
+    }
 
     protected function load_csv_data() {
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
@@ -325,5 +324,80 @@ class duplicateTest extends elis_database_test {
 
        //we want to validate that the  unique idnumber is "test-test.2"
        $this->assertEquals($expectedvalue, $return->idnumber);
+    }
+
+    /**
+     * Test to ensure that the auto-generated class ID number values do not overflow the maximum length of the
+     * crlm_class.idnumber field
+     */
+    public function testTrackAutoCreateValidationDoesNotOverflowIdNumberField() {
+        global $DB;
+
+        $this->load_csv_data();
+
+        //need track and userset
+        $userset = new stdClass();
+        $userset->id = 1;
+        $userset->name = 'test';
+
+        //set values required for auto create
+        $track = new track(5);
+        $track->load();
+
+        //testing track auto create
+        $track->track_auto_create();
+
+        //nothing is returned, so get most recent class created
+        $records = $DB->get_records('crlm_class', null, "id DESC");
+        foreach($records as $record) {
+            $return = $record;
+            break;
+        }
+        $expectedvalue = substr('test-'.$track->idnumber, 0, 95);
+
+       //we want to validate that the  unique idnumber is "test-test.2"
+       $this->assertEquals($expectedvalue, $return->idnumber);
+    }
+
+    /**
+     * Test to ensure that the auto-generated class ID number values do not overflow the maximum length of the
+     * crlm_class.idnumber field when multiple copies of the same class are created which require an incrementing iterator
+     * to be appended to the idnumber value are used.
+     */
+    public function testTrackAutoCreateValidationDoesNotOverflowIdNumberFieldWithIterators() {
+        global $DB;
+
+        $this->load_csv_data();
+
+        //need track and userset
+        $userset = new stdClass();
+        $userset->id = 1;
+        $userset->name = 'test';
+
+        //set values required for auto create
+        $track = new track(5);
+        $track->load();
+
+        //testing track auto create
+        $track->track_auto_create();
+
+        // Force duplicate classes to be created which should have a unique iterator added to the idnumber field and
+        // still be within the allowable field size
+        $track->track_auto_create();
+        $track->track_auto_create();
+
+        // Get most recent class records created
+        $records = $DB->get_records('crlm_class', array(), "id DESC", 'id, idnumber', 0, 3);
+
+        // We want to test in the order they were created
+        $records = array_reverse($records);
+
+        $expectedvalue = substr('test-'.$track->idnumber, 0, 95);
+        $iterator      = 0;
+
+        foreach($records as $record) {
+            $this->assertEquals($expectedvalue.($iterator > 0 ? '.'.$iterator : ''), $record->idnumber);
+            $iterator++;
+        }
     }
 }

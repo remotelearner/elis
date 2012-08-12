@@ -3,7 +3,7 @@
  * Form used for editing / displaying a class record.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,16 +68,27 @@ class pmclassform extends cmform {
             empty($this->_customdata['obj']->id)) {
             $courses = array();
             if (!empty($USER->id)) {
-                $contexts = get_contexts_by_capability_for_user(
-                                'course', 'elis/program:class_create',
-                                $USER->id);
+                // This is necessary for creating a new class instance but will prevent a parent course from appearing
+                // when the user has class edit permissions but not class creation permission -- ELIS-5954
+                $contexts = get_contexts_by_capability_for_user('course', 'elis/program:class_create', $USER->id);
                 // get listing of available ELIS courses
-                $courses = course_get_listing('name', 'ASC', 0, 0, '', '',
-                                              $contexts);
+                $courses = course_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
+
+                // Detect if we are editing an existing class instance by checking for an value in the 'id' element
+                $elm = $mform->_elements[$mform->_elementIndex['id']];
+                $id  = $elm->getValue();
+
+                if (!empty($id)) {
+                    // Make sure that the parent course for this class is always included otherwise the display is messed up
+                    // and hitting the form Cancel button causes a DB error -- ELIS-5954
+                    $pmclass = new pmclass($id);
+
+                    $courses = array_merge($courses, course_get_listing('name', 'ASC', 0, 0, $pmclass->course->idnumber));
+                }
             }
 
             // Add course select
-            $attributes = array('onchange'=>'update_trk_multiselect(); ');
+            $attributes = array('onchange' => 'update_trk_multiselect(); update_crs_template();');
 
             $selections = array();
             if (!empty($courses)) {
@@ -190,26 +201,7 @@ class pmclassform extends cmform {
         $mform->addHelpButton('enrol_from_waitlist', 'pmclassform:waitlistenrol', 'elis_program');
 
         // custom fields
-        $fields = field::get_for_context_level('class');
-        $fields = $fields ? $fields : array();
-
-        $lastcat = null;
-        $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? context_elis_class::instance($this->_customdata['obj']->id)
-            : context_system::instance();
-        require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
-
-        foreach ($fields as $rec) {
-            $field = new field($rec);
-            if (!isset($field->owners['manual'])) {
-                continue;
-            }
-            if ($lastcat != $rec->categoryid) {
-                $lastcat = $rec->categoryid;
-                $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
-            }
-            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field);
-        }
+        $this->add_custom_fields('class','elis/program:class_edit', 'elis/program:class_view', 'course');
 
         $this->add_action_buttons();
     }
@@ -315,19 +307,56 @@ class pmclassform extends cmform {
 
         $mform =& $this->_form;
 
+        $mform->addElement('html', '
+<script type="text/javascript">
+//<![CDATA[
+    function update_crs_template() {
+        var crselem = document.getElementById("id_courseid");
+        var mdlcrselem = document.getElementById("id_moodleCourses_moodlecourseid");
+        if (mdlcrselem && crselem && crselem.value) {
+
+            var crstmpl_failure = function(o) {
+                mdlcrselem.selectedIndex = 0;
+            }
+
+            var set_crs_tmpl = function(o) {
+                var i;
+                var mdlcrs = parseInt(o.responseText);
+                mdlcrselem.selectedIndex = 0;
+                for (i = 0; i < mdlcrselem.options.length; ++i) {
+                    if (mdlcrs == mdlcrselem.options[i].value) {
+                        mdlcrselem.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            var callback = {
+                success:set_crs_tmpl,
+                failure:crstmpl_failure
+            }
+
+            YAHOO.util.Connect.asyncRequest("GET", "coursetemplateid.php?courseid=" + crselem.value, callback, null);
+        }
+    }
+//]]>
+</script>
+');
+
         $select = 'id != \'' . SITEID . '\' AND fullname NOT LIKE \'.%\'';
 
         $cselect = array(get_string('none', 'elis_program'));
-
-        $crss = $DB->get_recordset_select('course', $select, null, 'fullname', 'id, fullname');
-        if(!empty($crss)) {
+        $crss = $DB->get_recordset_select('course', $select, null, 'fullname',
+                                          'id, fullname');
+        if (!empty($crss) && $crss->valid()) {
             foreach ($crss as $crs) {
                 $cselect[$crs->id] = $crs->fullname;
             }
+            $crss->close();
         }
 
         $moodleCourses = array();
-        if (count($cselect) != 1) {
+        if (count($cselect) > 1) {
             $moodleCourses[] = $mform->createElement('select', 'moodlecourseid', get_string('moodlecourse', 'elis_program'), $cselect);
         } else {
             $mform->addElement('static', 'no_moodle_courses', get_string('moodlecourse', 'elis_program') . ':', get_string('no_moodlecourse', 'elis_program'));
@@ -335,7 +364,7 @@ class pmclassform extends cmform {
         }
 
         // Add auto create checkbox if CM course uses a template
-        if(empty($this->_customdata['obj']->courseid)) {
+        if (empty($this->_customdata['obj']->courseid)) {
             $courseid = 0;
         } else {
             $courseid = $this->_customdata['obj']->courseid;
@@ -351,10 +380,14 @@ class pmclassform extends cmform {
             $moodleCourses[] = $mform->createElement('checkbox', 'autocreate', '', get_string('autocreate', 'elis_program'));
         }
 
-        if(count($cselect) != 1) {
+        if (count($cselect) > 1) {
             $mform->addGroup($moodleCourses, 'moodleCourses', get_string('moodlecourse', 'elis_program') . ':');
             $mform->disabledIf('moodleCourses', 'moodleCourses[autocreate]', 'checked');
             $mform->addHelpButton('moodleCourses', 'pmclassform:moodlecourse', 'elis_program');
+            if (!empty($template->location)) {
+                //error_log("pmclassform::add_moodle_course_select() course template = {$template->location}");
+                $mform->setDefault('moodleCourses[moodlecourseid]', $template->location);
+            }
         }
     }
 

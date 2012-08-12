@@ -65,10 +65,10 @@ class trackform extends cmform {
         $curs = array();
         if (!empty($USER->id)) {
             // TBD: and/or capability 'elis/program:track_edit|view' ?
-            $contexts = get_contexts_by_capability_for_user('curriculum',
-                            'elis/program:track_create', $USER->id);
-            $curs = curriculum_get_listing('name', 'ASC', 0, 0, '', '',
-                        $contexts);
+            // This is necessary for creating a new track but will prevent a parent programs from appearing
+            // when the user has track edit permissions but not track creation permission -- ELIS-5954
+            $contexts = get_contexts_by_capability_for_user('curriculum', 'elis/program:track_create', $USER->id);
+            $curs = curriculum_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
         }
         if (empty($this->_customdata['obj']->id)) {
             $curid_options = array();
@@ -82,6 +82,12 @@ class trackform extends cmform {
             $mform->addRule('curid', get_string('required'), 'required', NULL, 'client');
             $mform->addHelpButton('curid','trackform:curriculum_curid', 'elis_program');
         } else { // Track editing, do not allow the user to change curriculum
+            // Make sure that the parent program for this track is always included otherwise the display is messed up
+            // and hitting the form Cancel button causes a DB error -- ELIS-5954
+            $track = new track($this->_customdata['obj']->id);
+
+            $curs = curriculum_get_listing('name', 'ASC', 0, 0, $track->curriculum->name);
+
             $mform->addElement('static', 'curidstatic', get_string('curriculum', 'elis_program') . ':', $curs[$this->_customdata['obj']->curid]->name);
             $mform->addHelpButton('curidstatic', 'trackform:curriculum_curidstatic', 'elis_program');
 
@@ -119,26 +125,7 @@ class trackform extends cmform {
         }
 
         // custom fields
-        $fields = field::get_for_context_level('track');
-        $fields = $fields ? $fields : array();
-
-        $lastcat = null;
-        $context = isset($this->_customdata['obj']) && isset($this->_customdata['obj']->id)
-            ? context_elis_track::instance($this->_customdata['obj']->id)
-            : context_system::instance();
-        require_once(elis::plugin_file('elisfields_manual', 'custom_fields.php'));
-
-        foreach ($fields as $rec) {
-            $field = new field($rec);
-            if (!isset($field->owners['manual'])) {
-                continue;
-            }
-            if ($lastcat != $rec->categoryid) {
-                $lastcat = $rec->categoryid;
-                $mform->addElement('header', "category_{$lastcat}", htmlspecialchars($rec->categoryname));
-            }
-            manual_field_add_form_element($this, $mform, $context, $this->_customdata, $field);
-        }
+        $this->add_custom_fields('track', 'elis/program:track_edit', 'elis/program:track_view', 'curriculum');
 
         $this->add_action_buttons();
     }

@@ -508,7 +508,7 @@ class cmEngineForm extends cmform {
                   FROM {'. field::TABLE .'} f
             RIGHT JOIN {'. field_contextlevel::TABLE .'} fc
                     ON fc.fieldid = f.id
-                 WHERE fc.contextlevel = '. $userlevel;
+                 WHERE fc.contextlevel = '. CONTEXT_ELIS_USER;
 
         $rows = $DB->get_records_sql($sql);
         foreach ($rows as $row) {

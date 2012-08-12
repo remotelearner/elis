@@ -305,7 +305,7 @@ class usertrack extends elis_data_object {
      * @uses $CURMAN
      * @param int $userid The cluster id.
      */
-    public static function get_tracks($userid = 0) {
+    public static function get_tracks($userid = 0, $sort, $dir) {
         global $DB;
 
         if (empty($DB)) {
@@ -324,7 +324,7 @@ class usertrack extends elis_data_object {
             'ON trkcls.trackid = trk.id ';
         $where   = 'WHERE usrtrk.userid = ? ';
         $group   = 'GROUP BY usrtrk.id ';
-        $sort    = 'ORDER BY trk.idnumber ASC ';
+        $sort    = "ORDER BY {$sort} {$dir} ";
 
         $params = array($userid);
 

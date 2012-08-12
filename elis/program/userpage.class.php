@@ -96,18 +96,26 @@ class userpage extends managementpage {
         return has_capability($capability, $this->context);
     }
 
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-
-        if ($id) {
-            return context_elis_user::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
-    }
-
     public function __construct(array $params=null) {
         global $CFG;
+
+        //tab for the Individual User report
+        //permissions checking happens in the link page
+        if (file_exists($CFG->dirroot.'/blocks/php_report/render_report_page.php')) {
+            $report_tab = array(
+                'tab_id' => 'report',
+                'page' => 'linkpage',
+                'params' => array(
+                    'linkurl' => 'blocks/php_report/render_report_page.php',
+                    'linkparams' => 'report,userid',
+                    'report' => 'individual_user',
+                    'userid' => '=id'
+                ),
+                'name' => get_string('report', 'elis_program'),
+                'showbutton' => true,
+                'image' => 'report'
+            );
+        }
 
         $this->tabs = array(
             array('tab_id' => 'view', 'page' => 'userpage', 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
@@ -290,5 +298,5 @@ class induserlinkpage extends linkpage {
         $upage = new usersetpage();
         return $upage->_has_capability('block/php_report:view', $id);
     }
-    
+
 }

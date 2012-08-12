@@ -83,14 +83,20 @@ class usersetpage extends managementpage {
             return true;
         }
 
+      /* TBD: the folowing commented-out code was removed for ELIS-3846
         $cluster = new userset($clusterid);
-        if(!empty($cluster->parent)) {
+        $cluster->load();  // ELIS-3848 Needed otherwise the 'parent' property is not set =(
+
+        if (!empty($cluster->parent)) {
             //check to see if the current user has the secondary capability anywhere up the cluster tree
             $contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
             return $contexts->context_allowed($clusterid, 'cluster');
         }
+      */
 
-        return false;
+        //check to see if the current user has the secondary capability anywhere up the cluster tree
+        $contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
+        return $contexts->context_allowed($clusterid, 'cluster');
     }
 
     /**
@@ -104,16 +110,6 @@ class usersetpage extends managementpage {
         }
         $context = context_elis_userset::instance($id);
         return has_capability($capability, $context);
-    }
-
-    public function _get_page_context() {
-        $id = $this->optional_param('id', 0, PARAM_INT);
-
-        if ($id) {
-            return context_elis_userset::instance($id);
-        } else {
-            return parent::_get_page_context();
-        }
     }
 
     public function __construct(array $params=null) {
@@ -487,10 +483,10 @@ class usersetpage extends managementpage {
 
                     //default groups and groupings settings
                     if ($classification->param_autoenrol_groups) {
-                        $obj->field_cluster_group = $classification->param_autoenrol_groups;
+                        $obj->field_userset_group = $classification->param_autoenrol_groups;
                     }
                     if ($classification->param_autoenrol_groupings) {
-                        $obj->field_cluster_groupings = $classification->param_autoenrol_groupings;
+                        $obj->field_userset_groupings = $classification->param_autoenrol_groupings;
                     }
                 }
             }
@@ -515,7 +511,7 @@ class usersetpage extends managementpage {
            && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_cluster_role_id))) {
 
             //get the context instance for capability checking
-            context_elis_userset::instance($cm_entity->id);
+            $context_instance = context_elis_userset::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
             if (!has_capability('elis/program:userset_edit', $context_instance)) {

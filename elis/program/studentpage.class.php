@@ -65,6 +65,11 @@ class studentpage extends associationpage {
         parent::__construct($params);
     }
 
+    // Store checkbox data into session
+    function do_checkbox_selection_session() {
+        parent::checkbox_selection_session($this->pagename);
+    }
+
     function _get_page_context() { // TBD
         return parent::_get_page_context();
     }
@@ -246,6 +251,9 @@ class studentpage extends associationpage {
     }
 
     private function attempt_enrol($classid, $users) {
+        // Delete/reset checkbox selection for add action
+        session_selection_deletion('add');
+
         foreach ($users as $uid => $user) {
             if (!empty($user['enrol'])) {
                 $newstu = $this->build_student($uid, $classid, $user);
@@ -288,7 +296,7 @@ class studentpage extends associationpage {
         global $DB;
         $stuid = $this->required_param('association_id', PARAM_INT);
         $clsid = $this->required_param('id', PARAM_INT);
-        $users = $this->required_param('users');
+        $users = pm_process_user_enrolment_data();
         //error_log("studentpage::do_update() stuid = {$stuid} clsid = {$clsid} ...");
         $uid   = key($users);
         $user  = current($users);
@@ -324,8 +332,8 @@ class studentpage extends associationpage {
         /// Check for grade records...
         $element = cm_get_param('element', array());
         $newelement = cm_get_param('newelement', array());
-        $timegraded = cm_get_param('timegraded', array());
-        $newtimegraded = cm_get_param('newtimegraded', array());
+        $timegraded = $this->optional_param_array('timegraded', array(), PARAM_CLEAN);
+        $newtimegraded = $this->optional_param_array('newtimegraded', array(), PARAM_CLEAN);
         $completionid = cm_get_param('completionid', array());
         $newcompletionid = cm_get_param('newcompletionid', array());
         $grade = cm_get_param('grade', array());
@@ -374,6 +382,9 @@ class studentpage extends associationpage {
         global $DB;
         $clsid = $this->required_param('id', PARAM_INT);
         $users = pm_process_user_enrolment_data();  // ELIS-4089 -- JJF
+
+        // Delete/reset checkbox selection for bulkedit action
+        session_selection_deletion('bulkedit');
 
         foreach($users as $uid => $user) {
             $sturecord            = array();
@@ -432,7 +443,7 @@ class studentpage extends associationpage {
      *                          (needed to prevent redirects in unit testing)
      */
     public function do_waitlistconfirm($redirect = true) { // action_waitlistconfirm
-        $id = $this->required_param('userid', PARAM_INT);
+        $id = $this->required_param_array('userid', PARAM_INT);
 
         $form_url = new moodle_url(null, array('s'       => $this->pagename,
                                                'section' => $this->section,
@@ -490,7 +501,7 @@ class studentpage extends associationpage {
             } else {
                 $target_id = $id;
             }
-    
+
             $target = $this->get_new_page(array('action' => 'default', 'id' => $this->required_param('id', PARAM_INT)));
             redirect($target->url);
         }
