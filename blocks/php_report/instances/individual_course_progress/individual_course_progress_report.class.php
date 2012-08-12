@@ -33,6 +33,12 @@ class individual_course_progress_report extends table_report {
     var $custom_joins = array();
     var $lang_file = 'rlreport_individual_course_progress';
 
+    var $nopermission  = false;  // Set to TRUE if the user has no permission to view the request report
+
+    var $preposttest_columns;
+    var $los_columns;
+    var $totalscore_column;
+
     var $field_default = array();
 
     /**
@@ -102,6 +108,10 @@ class individual_course_progress_report extends table_report {
 
         $header_array = array();
 
+        if ($this->nopermission) {
+            return $header_array;
+        }
+
         $cm_user_id = php_report_filtering_get_active_filter_values(
                           $this->get_report_shortname(), 'userid', $this->filter);
 
@@ -109,6 +119,7 @@ class individual_course_progress_report extends table_report {
         // Find all the clusters this user is in
         if (!empty($cm_user_id[0]['value'])) {
             $userid = (int)$cm_user_id[0]['value'];
+
             $user_obj = new user($userid);
             $user_obj->load();
 
@@ -170,6 +181,56 @@ class individual_course_progress_report extends table_report {
     }
 
     /**
+     * Gets the chosen userid from the filter information
+     *
+     * @return int the user id
+     */
+    function get_chosen_userid() {
+        $chosen_userid = '';
+
+        $report_filters = php_report_filtering_get_user_preferences($this->get_report_shortname());
+        if (!empty($report_filters) && is_array($report_filters)) {
+            foreach ($report_filters as $filter => $val) {
+                if ($filter === 'php_report_'.$this->get_report_shortname().'/'.'userid') {
+                    $chosen_userid = $val;
+                }
+            }
+        }
+
+        if (!empty($chosen_userid) && is_numeric($chosen_userid)) {
+            return $chosen_userid;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Gets the permissions restriction for the current user
+     *
+     * @param string $dbfield the field to restrict on
+     * @param boolean $true_if_user If true, always allow the user to view their own info
+     * @return string The SQL fragment to be used as a permissions restriction
+     */
+    public function get_user_permissions_filter($dbfield, $true_if_user = true) {
+        global $USER;
+
+        $cm_user_id   = cm_get_crlmuserid($USER->id);
+        $filter_array = php_report_filtering_get_active_filter_values($this->get_report_shortname(), 'userid',$this->filter);
+        $filter_user_id = (isset($filter_array[0]['value'])) ? $filter_array[0]['value'] : 0;
+
+        if ($filter_user_id == $cm_user_id && $this->execution_mode == php_report::EXECUTION_MODE_INTERACTIVE && $true_if_user === true) {
+            // always allow the user to see their own report but not necessarily schedule it
+            $permissions_filter = 'TRUE';
+        } else {
+            // obtain all course contexts where this user can view reports
+            $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
+            $permissions_filter = $contexts->get_filter($dbfield, 'user');
+        }
+
+        return $permissions_filter;
+    }
+
+    /**
      * Specifies available report filters
      * (empty by default but can be implemented by child class)
      *
@@ -179,56 +240,73 @@ class individual_course_progress_report extends table_report {
      * @return  array                The list of available filters
      */
     function get_filters($init_data = true) {
-        global $CFG;
+        global $CFG, $USER;
 
         $filters = array();
-        $users = array();
 
-        if ($init_data) {
-            $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
-            $user_objects = usermanagement_get_users_recordset('name', 'ASC', 0, 0, '', $contexts);
+        // ELIS-5807 - Add the autocomplete user search filter
+        $autocomplete_opts = array(
+            'report' => $this->get_report_shortname(),
+            'table' => 'crlm_user',
+            'popup_title' => 'Select a User',
+            'label_template' => '[[firstname]] [[lastname]]',
+            'fields' => array('username', 'firstname', 'lastname', 'idnumber'),
+            'selection_enabled' => false,
+            'restriction_sql' => '',
+            'help' => array(
+                'individual_user_report',
+                get_string('displayname', $this->lang_file),
+                'rlreport_individual_user'
+            )
+        );
 
-            // If in interactive mode, user should have access to at least their own info
-            if ($this->execution_mode == php_report::EXECUTION_MODE_INTERACTIVE) {
-                $cm_user_id = cm_get_crlmuserid($this->userid);
-                $user_object = new user($cm_user_id);
-                $users[$user_object->id] = fullname($user_object) .' ('. $user_object->idnumber .')';
-            }
+        $permissions_filter = $this->get_user_permissions_filter('id', false);
+        $autocomplete_opts['selection_enabled'] = (!isset($permissions_filter->select) || $permissions_filter->select != 'FALSE') ? true : false;
+        $autocomplete_opts['restriction_sql'] = $permissions_filter;
 
-            if (!empty($user_objects)) {
-                // Create a list of users this user has permissions to view
-                foreach ($user_objects as $user_object) {
-                    $users[$user_object->id] = $user_object->name .' ('.
-                                               $user_object->idnumber .')';
-                }
-                $user_objects->close();
-            }
+        $last_user = $this->get_chosen_userid();
+        if (empty($last_user)) {
+            $cm_user_id = cm_get_crlmuserid($USER->id);
+            $autocomplete_opts ['defaults'] = array('label' => $USER->firstname.' '.$USER->lastname, 'id' => $cm_user_id);
         }
 
-        $filters[] = new generalized_filter_entry('userid', 'crlmuser', 'id',
-                             get_string('filter_user', $this->lang_file),
-                             false, 'simpleselect',
-                             array('choices' => $users,
-                                   'numeric' => true,
-                                   'noany'   => true,
-                             'help' => array('individual_course_progress_user',
+        $filters[] = new generalized_filter_entry('userid', 'crlmuser', 'id', get_string('filter_user', $this->lang_file),
+                                                  false, 'autocomplete', $autocomplete_opts);
+
+        $field_list = array(
+            'block_instance'   => $this->id,  // Add block id to field list array
+            'reportname'       => $this->get_report_shortname(),
+            'field_exceptions' => array(
+                '_elis_course_pretest',
+                '_elis_course_posttest'
+            ),
+            'help'             => array(  // Need help text
+                'individual_course_progress_field',
+                get_string('displayname', $this->lang_file),
+                $this->lang_file
+            )
+        );
+
+        $filters[] = new generalized_filter_entry('field'. $this->id, 'field'. $this->id, 'id',
+                                                  get_string('selectcustomfields', $this->lang_file), false,
+                                                  'custom_field_multiselect_values', $field_list);
+
+        // column selection checkboxes
+        $filters[] = new generalized_filter_entry('optional_columns', '', '',
+                             get_string('columns_options_heading', $this->lang_file),
+                             false, 'checkboxes',
+                             array('choices' => array(
+                                       'los' => get_string('los_label', $this->lang_file),
+                                       'totalscore' => get_string('totalscore_label', $this->lang_file),
+                                       'preposttest' => get_string('preposttest_label', $this->lang_file)),
+                                    'checked' => array('preposttest'),
+                                    'allowempty' => true,
+                                    'heading' => get_string('columns_options_heading', $this->lang_file),
+                                    'nofilter' => true,
+                                    'help' => array('optional_columns',
                                              get_string('displayname', $this->lang_file),
                                              $this->lang_file)
-                                                       )
-                         );
-
-        $field_list = array();
-        // Add block id to field list array
-        $field_list['block_instance'] = $this->id;
-        $field_list['reportname'] = $this->get_report_shortname();
-        $field_list['field_exceptions'] = array('_elis_course_pretest',
-                                                '_elis_course_posttest');
-        // Need help text
-        $field_list['help'] = array('individual_course_progress_field',
-                                    get_string('displayname', $this->lang_file),
-                                    $this->lang_file);
-
-        $filters[] = new generalized_filter_entry('field'. $this->id, 'field'. $this->id, 'id', get_string('selectcustomfields', $this->lang_file), false, 'custom_field_multiselect_values', $field_list);
+                             ));
 
         return $filters;
     }
@@ -288,9 +366,11 @@ class individual_course_progress_report extends table_report {
      * Method that specifies the report's columns
      * (specifies various fields involving user info, clusters, class enrolment, and module information)
      *
+     * @uses    $DB
      * @return  table_report_column array  The list of report columns
      */
     function get_columns() {
+        global $DB;
         $columns = array();
         $columns[] = new table_report_column('crs.name',
                                              get_string('column_course', $this->lang_file),
@@ -301,7 +381,7 @@ class individual_course_progress_report extends table_report {
                                              'cssclass', 'left', true);
 
        $filter_params = php_report_filtering_get_active_filter_values(
-                            $this->get_report_shortname(), 'field'. $this->get_report_shortname());
+                            $this->get_report_shortname(), 'field'. $this->get_report_shortname(), $this->filter);
 
        $filter_params = $filter_params[0]['value'];
        $filter_params = $filter_params ? explode(',', $filter_params) : array();
@@ -398,13 +478,50 @@ class individual_course_progress_report extends table_report {
                              get_string('column_end_date', $this->lang_file),
                              'cssend_date', 'center', true);
 
-        $columns[] = new table_report_column('pretest.score AS pretestscore',
-                             get_string('column_pretest_score', $this->lang_file),
-                             'csspretest_score', 'center', true);
+        $optional_columns_ppt = php_report_filtering_get_active_filter_values(
+                                    $this->get_report_shortname(),
+                                    'optional_columns_preposttest', $this->filter);
+        $optional_columns_los = php_report_filtering_get_active_filter_values(
+                                    $this->get_report_shortname(),
+                                    'optional_columns_los', $this->filter);
+        $optional_columns_totscore = php_report_filtering_get_active_filter_values(
+                                        $this->get_report_shortname(),
+                                        'optional_columns_totalscore', $this->filter);
 
-        $columns[] = new table_report_column('posttest.score AS posttestscore',
-                             get_string('column_posttest_score', $this->lang_file),
-                             'cssposttest_score', 'center', true);
+        $this->preposttest_columns = false;
+        $this->los_columns = false;
+        $this->totalscore_column = false;
+
+        if (!empty($optional_columns_ppt) && !empty($optional_columns_ppt['0']['value'])) {
+            $columns[] = new table_report_column('pretest.score AS pretestscore',
+                                 get_string('column_pretest_score', $this->lang_file),
+                                 'csspretest_score', 'center', true);
+
+            $columns[] = new table_report_column('posttest.score AS posttestscore',
+                                 get_string('column_posttest_score', $this->lang_file),
+                                 'cssposttest_score', 'center', true);
+            $this->preposttest_columns = true;
+        }
+
+        if (!empty($optional_columns_los) && !empty($optional_columns_los['0']['value'])) {
+            $max_los_sql = 'SELECT courseid, COUNT(\'x\') AS count FROM {'. coursecompletion::TABLE .'} GROUP BY courseid ORDER BY count DESC';
+            $max_los = $DB->get_records_sql($max_los_sql, null, 0, 1);
+            $max_los = empty($max_los) ? 0: current($max_los)->count;
+            for ($i = 1; $i <= $max_los; ++$i) {
+                $columns[] = new table_report_column("'".
+                                     addslashes(get_string('na', $this->lang_file)) ."' AS lo{$i}",
+                                     get_string('column_los_prefix', $this->lang_file) ."{$i}",
+                                     'csslos_columns', 'center', false);
+            }
+            $this->los_columns = true;
+        }
+
+        if (!empty($optional_columns_totscore) && !empty($optional_columns_totscore['0']['value'])) {
+            $columns[] = new table_report_column('enrol.grade AS elisgrade',
+                             get_string('column_totalscore', $this->lang_file),
+                             'csstotal_score', 'center', true);
+            $this->totalscore_column = true;
+        }
 
         // discussion posts
         $columns[] = new table_report_column(
@@ -499,15 +616,25 @@ class individual_course_progress_report extends table_report {
                           : -1; // ELIS-4699: so not == to invalid cm/pm userid
 
         $permissions_filter = 'TRUE';
-        if ($filter_user_id != $cm_user_id || $this->execution_mode != php_report::EXECUTION_MODE_INTERACTIVE) {
+
+        // ELIS-3993 -- Do not display any results if no user ID was supplied by the filter
+        if ($filter_user_id == -1) {
+            $permissions_filter = ' FALSE';
+        } else if ($filter_user_id != $cm_user_id || $this->execution_mode != php_report::EXECUTION_MODE_INTERACTIVE) {
             // obtain all course contexts where this user can view reports
             $contexts = get_contexts_by_capability_for_user('user', $this->access_capability, $this->userid);
             //$permissions_filter = $contexts->sql_filter_for_context_level('crlmuser.id', 'user');
-            $filter_obj = $contexts->get_filter('crlmuser.id', 'user');
+            $filter_obj = $contexts->get_filter('id', 'user');
             $filter_sql = $filter_obj->get_sql(false, 'crlmuser', SQL_PARAMS_NAMED);
             if (isset($filter_sql['where'])) {
-                $permissions_filter = $filter_sql['where'];
-                $params = $filter_sql['where_parameters'];
+                if ($filter_sql['where'] == 'FALSE') {
+                    // This user does not have permission to view the requested data
+                    $this->nopermission = true;
+                    $permissions_filter = ' FALSE';
+                } else {
+                    $permissions_filter = $filter_sql['where'];
+                    $params             = $filter_sql['where_parameters'];
+                }
             }
         }
 
@@ -528,18 +655,22 @@ class individual_course_progress_report extends table_report {
             GROUP BY cls.id, stu.userid
              ';
 
-        //gets the pretest score for this user
-        $pretest_query = $this->get_max_test_score_sql('_elis_course_pretest');
+        if ($this->preposttest_columns) {
+            //gets the pretest score for this user
+            $pretest_query = $this->get_max_test_score_sql('_elis_course_pretest');
 
-        //gets the posttest score for this user
-        $posttest_query = $this->get_max_test_score_sql('_elis_course_posttest');
+            //gets the posttest score for this user
+            $posttest_query = $this->get_max_test_score_sql('_elis_course_posttest');
+        }
 
         //main query
         $sql = "SELECT {$columns}, crs.id AS courseid,
                        cls.starttimehour AS starttimehour,
                        cls.starttimeminute AS starttimeminute,
                        cls.endtimehour AS endtimehour,
-                       cls.endtimeminute AS endtimeminute
+                       cls.endtimeminute AS endtimeminute,
+                       cls.id AS classid,
+                       crlmuser.id AS userid
                  FROM {". pmclass::TABLE .'} cls
                  JOIN {'. student::TABLE .'} enrol
                    ON enrol.classid = cls.id
@@ -549,8 +680,11 @@ class individual_course_progress_report extends table_report {
                    ON user.idnumber = crlmuser.idnumber
             LEFT JOIN {'. classmoodlecourse::TABLE .'} clsmdl
                    ON clsmdl.classid = cls.id
-            LEFT JOIN {'. course::TABLE ."} crs
-                   ON crs.id = cls.courseid
+            LEFT JOIN {'. course::TABLE .'} crs
+                   ON crs.id = cls.courseid ';
+
+        if ($this->preposttest_columns) {
+            $sql .= "
             LEFT JOIN ({$pretest_query}) pretest
                    ON pretest.classid = cls.id
                   AND pretest.userid = crlmuser.id
@@ -558,6 +692,7 @@ class individual_course_progress_report extends table_report {
                    ON posttest.classid = cls.id
                   AND posttest.userid = crlmuser.id
                ";
+        }
 
         // add custom field joins if they exist
         if (!empty($this->custom_joins)) {
@@ -618,11 +753,11 @@ class individual_course_progress_report extends table_report {
      *
      * @param   stdClass  $record         The current report record
      * @param   string    $export_format  The format being used to render the report
-     *
+     * @uses    $DB
      * @return  stdClass                  The reformatted record
      */
     function transform_record($record, $export_format) {
-
+        global $DB;
         $record->startdate = ($record->startdate == 0)
                              ? get_string('na', $this->lang_file)
                              : $this->pmclassdate($record, 'start');
@@ -656,22 +791,55 @@ class individual_course_progress_report extends table_report {
            $record->numresources = 0;
         }
 
-        if (!empty($record->pretestscore)) {
-            $record->pretestscore = pm_display_grade($record->pretestscore);
-            if ($export_format != php_report::$EXPORT_FORMAT_CSV) {
-                $record->pretestscore .= get_string('percent_symbol', $this->lang_file);
+        if ($this->preposttest_columns) {
+            if (!empty($record->pretestscore)) {
+                $record->pretestscore = pm_display_grade($record->pretestscore);
+                if ($export_format != php_report::$EXPORT_FORMAT_CSV) {
+                    $record->pretestscore .= get_string('percent_symbol', $this->lang_file);
+                }
+            } else {
+                $record->pretestscore = get_string('no_test_symbol', $this->lang_file);
             }
-        } else {
-            $record->pretestscore = get_string('no_test_symbol', $this->lang_file);
+
+            if (!empty($record->posttestscore)) {
+                $record->posttestscore = pm_display_grade($record->posttestscore);
+                if ($export_format != php_report::$EXPORT_FORMAT_CSV) {
+                    $record->posttestscore .= get_string('percent_symbol', $this->lang_file);
+                }
+            } else {
+                $record->posttestscore = get_string('no_test_symbol', $this->lang_file);
+            }
         }
 
-        if (!empty($record->posttestscore)) {
-            $record->posttestscore = pm_display_grade($record->posttestscore);
-            if ($export_format != php_report::$EXPORT_FORMAT_CSV) {
-                $record->posttestscore .= get_string('percent_symbol', $this->lang_file);
+        if ($this->los_columns) {
+            $los = $DB->get_records(coursecompletion::TABLE,
+                                    array('courseid' => $record->courseid), '',
+                                    'id, name');
+            $fid = 1;
+            foreach ($los as $lo) {
+                $elem = "lo{$fid}";
+                $lograde = $DB->get_field(student_grade::TABLE, 'grade',
+                                    array('userid'       => $record->userid,
+                                          'classid'      => $record->classid,
+                                          'completionid' => $lo->id));
+                                          // TBD: locked?
+                if (!is_numeric($lograde)) {
+                    $lograde = '-'; // TBD
+                }
+                $record->$elem = $lo->name .': '. pm_display_grade($lograde);
+                if (is_numeric($lograde) && $export_format != php_report::$EXPORT_FORMAT_CSV) {
+                    $record->$elem .= get_string('percent_symbol', $this->lang_file);
+                }
+                //error_log("ICPR::xform_rec(): record->{$elem} => {$record->$elem}");
+                ++$fid;
             }
-        } else {
-            $record->posttestscore = get_string('no_test_symbol', $this->lang_file);
+        }
+
+        if ($this->totalscore_column) {
+            $record->elisgrade = pm_display_grade($record->elisgrade);
+            if (is_numeric($record->elisgrade) && $export_format != php_report::$EXPORT_FORMAT_CSV) {
+                $record->elisgrade .= get_string('percent_symbol', $this->lang_file);
+            }
         }
 
         if (empty($record->numposts)) {
