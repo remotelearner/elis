@@ -2929,7 +2929,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
 
         //split "context" into level and instance
-        list($context, $instance) = explode('_', $record->context);
+        $pos = strpos($record->context, "_");
+        $context = substr($record->context, 0, $pos);
+        $instance = substr($record->context, $pos + 1);
 
         //user-related fields
         $username_set = isset($record->user_username) && $record->user_username != '';
@@ -2988,19 +2990,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $action = isset($record->action) ? $record->action : '';
         }
 
-        $context = '';
-        if (isset($record->context)) {
-            $parts = explode('_', $record->context);
-            if (count($parts) == 2) {
-                $context = reset($parts);
-            }
-        }
-
         //remove empty fields
         $record = $this->remove_empty_fields($record);
 
         $pos = strpos($record->context, "_");
-        $entity = substr($record->context, 0, $pos);
+        $context = substr($record->context, 0, $pos);
         $idnumber = substr($record->context, $pos + 1);
 
         $valid_contexts = array(
@@ -3052,7 +3046,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        $method = "{$entity}_enrolment_{$action}";
+        $method = "{$context}_enrolment_{$action}";
         if (method_exists($this, $method)) {
             return $this->$method($record, $filename, $idnumber);
         } else {
