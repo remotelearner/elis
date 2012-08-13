@@ -4985,6 +4985,8 @@ class version1FilesystemLoggingTest extends rlip_test {
         //create mapping record
         $this->create_mapping_record('user', 'password', 'custompassword');
 
+        set_config('minpasswordlower', 1);
+
         $this->load_csv_data();
         $data = array('action' => 'update',
                       'username' => 'testusername',
