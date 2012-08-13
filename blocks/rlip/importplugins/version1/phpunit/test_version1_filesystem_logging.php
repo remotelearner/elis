@@ -228,7 +228,7 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     static function get_overlay_tables() {
-        global $CFG;
+        global $CFG, $DB;
 
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
@@ -4418,21 +4418,25 @@ class version1FilesystemLoggingTest extends rlip_test {
         //create mapping record
         $this->create_mapping_record('user', 'email', 'customemail');
 
-        $data = array('action' => 'create',
-                      'username' => 'testusername',
-                      'password' => 'Rlippassword!0',
-                      'firstname' => 'rlipfirstname',
-                      'lastname' => 'rliplastname',
-                      'customemail' => 'bogusemail',
-                      'city' => 'Waterloo',
-                      'country' => 'CA');
-
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"bogusemail\" could not be created. customemail value of \"bogusemail\" is not a valid email address.\n";
+        $data = array(
+            'action'      => 'create',
+            'username'    => 'testusername',
+            'password'    => 'Rlippassword!0',
+            'firstname'   => 'rlipfirstname',
+            'lastname'    => 'rliplastname',
+            'customemail' => 'bogusemail',
+            'city'        => 'Waterloo',
+            'country'     => 'CA'
+        );
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"bogusemail\" could not be created.".
+                          " customemail value of \"bogusemail\" is not a valid email address.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
 
         $this->load_csv_data();
+        $data['username']    = 'validusername';
         $data['customemail'] = 'test@user.com';
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"test@user.com\" could not be created. customemail value of \"test@user.com\" refers to a user that already exists.\n";
+        $expected_error = "[user.csv line 2] User with username \"validusername\", email \"test@user.com\" could not be ".
+                          "created. customemail value of \"test@user.com\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4777,10 +4781,13 @@ class version1FilesystemLoggingTest extends rlip_test {
     }
 
     protected function load_csv_data() {
+        global $CFG;
+
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable('user', dirname(__FILE__).'/usertable.csv');
         $dataset->addTable('user_info_field', dirname(__FILE__).'/user_info_field.csv');
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
+        $dataset->addFullReplacement('##MNET_LOCALHOST_ID##', $CFG->mnet_localhost_id);
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
 
@@ -4789,12 +4796,15 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_mapping_record('user', 'email', 'customemail');
 
         $this->load_csv_data();
-        $data = array('action' => 'update',
-                      'username' => 'testusername',
-                      'customemail' => 'testinvalid@user.com',
-                      'city' => 'Waterloo');
+        $data = array(
+            'action'      => 'update',
+            'username'    => 'testusername',
+            'customemail' => 'testinvalid@user.com',
+            'city'        => 'Waterloo'
+        );
 
-        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be updated. customemail value of \"testinvalid@user.com\" does not refer to a valid user.\n";
+        $expected_error = "[user.csv line 2] User with username \"testusername\", email \"testinvalid@user.com\" could not be".
+                          " updated. customemail value of \"testinvalid@user.com\" does not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
@@ -4974,6 +4984,8 @@ class version1FilesystemLoggingTest extends rlip_test {
     public function testVersion1ImportLogsUpdatePassword() {
         //create mapping record
         $this->create_mapping_record('user', 'password', 'custompassword');
+
+        set_config('minpasswordlower', 1);
 
         $this->load_csv_data();
         $data = array('action' => 'update',

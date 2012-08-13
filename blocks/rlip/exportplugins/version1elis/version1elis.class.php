@@ -27,7 +27,6 @@
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
 require_once($CFG->dirroot.'/lib/gradelib.php');
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
 
 /**
  * PM class instance grade export compatible with the original PM grade
