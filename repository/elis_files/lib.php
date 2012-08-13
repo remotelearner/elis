@@ -115,6 +115,34 @@ class repository_elis_files extends repository {
     }
 
     /**
+     * Build a list of "unbiased" encoded UUIDs, starting from the top "ELIS Files"
+     * node, up to an including the specified node
+     *
+     * @param array $parent_path Top-down list of parent UUIDs, not including
+     *                           the current node, encoded
+     * @param string $uuid The UUID of the current node, not encoded
+     * @return array An array of encoded UUIDs, starting from the top, down to the
+     *               specified node
+     */
+    static function encode_path_uuids($parent_path, $uuid) {
+        //TODO: add some way to encode the parent path items, if needed later
+        global $CFG;
+        require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+
+        $result = array();
+
+        // Include parent items
+        foreach ($parent_path as $path_item) {
+            $result[] = $path_item['path'];
+        }
+
+        // Add the encoded version of the current node
+        $result[] = repository_elis_files::build_encodedpath($uuid, 0, 0, 0, false);
+
+        return $result;
+    }
+
+    /**
      * Get a file list from alfresco
      *
      * @param string $encodedpath base64 encoded and serialized arry of path(uuid), shared(shared flag), oid(userset id), cid(course id) and uid(user id)
@@ -230,6 +258,10 @@ class repository_elis_files extends repository {
         // Unserialized array of path/shared/oid
         $ret['thisuuid'] = $params;
         $ret['thisuuid']['encodedpath'] = $encodedpath;
+
+        //proper parent path containing delimeted UUIDs
+        $ret['parentpath'] = self::encode_path_uuids($return_path, $uuid);
+
 //print_object($ret['thisuuid']);
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
@@ -1121,13 +1153,22 @@ class repository_elis_files extends repository {
             }
         }
 
-        // Now build the entire folder tree ...
-        $folders = elis_files_folder_structure();
+        // Now build the entire folder tree, respecting "create" permissions ...
+        $folders = elis_files_folder_structure(true);
         $foldertree = array();
         repository_elis_files::folder_tree_to_fm($foldertree, $folders,
                                                  $companyhomefolder['textpath']);
+
         // Must add missing 'ELIS Files' & 'Company Home' locations to tree
-        if (!empty($companyhomefolder)) {
+        // if permissions allow
+
+        // For this, we care about the "root" node
+        $root_uuid = $this->elis_files->get_root()->uuid;
+        // Validate whether the current user has proper "site-level create" permissions
+        $access_permitted = $this->check_editing_permissions(SITEID, 0, 0, $root_uuid, 0);
+
+        if (!empty($companyhomefolder) && $access_permitted) {
+            // We have access to 'Company Home'
             $companyhomefolder['children'] = $foldertree;
             $foldertree = array($companyhomefolder);
         }

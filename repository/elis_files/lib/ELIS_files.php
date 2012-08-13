@@ -1960,6 +1960,11 @@ class ELIS_files {
             return false;
         }
 
+        if ($this->is_company_home($node->uuid)) {
+            //this is the root "Company Home" node
+            return '/';
+        }
+
         if ($node->type == self::$type_folder) {
             array_push($stack, $node->title);
         } else if ($node->type !== self::$type_document) {
@@ -2506,8 +2511,21 @@ class ELIS_files {
                                 'cid'=>(int)$cid,
                                 'uid'=>0);
                 $encodedpath = base64_encode(serialize($params));
+
+                // Calculate "unbiased" parameters, that use the default flag values
+                // for comparrison with paths on the Javascript side
+                $unbiasedparams = array(
+                    'path'   => $uuid,
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
+
                 $opts[] = array('name'=> get_string('repositorysitefiles','repository_elis_files'),
-                            'path'=> $encodedpath);
+                                'path'=> $encodedpath,
+                                'unbiasedpath' => $unbiasedpath);
             }
 
         } else if ($cid != SITEID && $viewalfcourse) {
@@ -2538,8 +2556,21 @@ class ELIS_files {
                                 'cid'=>(int)$cid,
                                 'uid'=>0);
                 $encodedpath = base64_encode(serialize($params));
+
+                // Calculate "unbiased" parameters, that use the default flag values
+                // for comparrison with paths on the Javascript side
+                $unbiasedparams = array(
+                    'path'   => $uuid,
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
+
                 $opts[] = array('name'=> get_string('repositorycoursefiles','repository_elis_files'),
-                                'path'=> $encodedpath);
+                                'path'=> $encodedpath,
+                                'unbiasedpath' => $unbiasedpath);
             }
         }
 
@@ -2565,8 +2596,21 @@ class ELIS_files {
                                 'cid'=>(int)0,
                                 'uid'=>(int)0);
                 $encodedpath = base64_encode(serialize($params));
+
+                // Calculate "unbiased" parameters, that use the default flag values
+                // for comparrison with paths on the Javascript side
+                $unbiasedparams = array(
+                    'path'   => $this->suuid,
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
+
                 $opts[] = array('name'=> get_string('repositoryserverfiles','repository_elis_files'),
-                                'path'=> $encodedpath);
+                                'path'=> $encodedpath,
+                                'unbiasedpath'=> $unbiasedpath);
             }
         }
 
@@ -2580,8 +2624,21 @@ class ELIS_files {
                                 'cid'=>(int)0,
                                 'uid'=>(int)$USER->id);
                 $encodedpath = base64_encode(serialize($params));
+
+                // Calculate "unbiased" parameters, that use the default flag values
+                // for comparrison with paths on the Javascript side
+                $unbiasedparams = array(
+                    'path'   => $this->get_user_store($USER->id),
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
+
                 $opts[] = array('name'=> get_string('repositoryuserfiles','repository_elis_files'),
-                                'path'=> $encodedpath);
+                                'path'=> $encodedpath,
+                                'unbiasedpath'=>$unbiasedpath);
             }
         }
 
@@ -2725,8 +2782,18 @@ class ELIS_files {
                                 'cid'=>0,
                                 'uid'=>0);
                 $encodedpath = base64_encode(serialize($params));
+
+                $unbiasedparams = array(
+                    'path'   => $uuid,
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
                 $opts[] = array('name'=> $cluster->name,
-                                'path'=> $encodedpath
+                                'path'=> $encodedpath,
+                                'unbiasedpath'=> $unbiasedpath
                                 );
             }
         }
