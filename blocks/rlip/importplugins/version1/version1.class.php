@@ -718,16 +718,17 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                 $identifier = $this->mappings['username'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->username}\" refers to a user that already exists.",
                                              0, $filename, $this->linenumber, $record, "user");
-                return false;
             } else if ($existing_user->email == $record->email) {
                 $identifier = $this->mappings['email'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->email}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->email}\" refers to a user that already exists.",
+                                             0, $filename, $this->linenumber, $record, "user");
             } else if (isset($record->idnumber) && $existing_user->idnumber == $record->idnumber) {
                 $identifier = $this->mappings['idnumber'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" refers to a user that already exists.",
+                                             0, $filename, $this->linenumber, $record, "user");
             }
+
+            return false;
         }
 
         //final data sanitization

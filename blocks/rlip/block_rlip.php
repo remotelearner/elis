@@ -24,10 +24,6 @@
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
 
 /**
  * The main Integration Point block class
