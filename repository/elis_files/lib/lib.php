@@ -747,6 +747,61 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     return $properties;
 }
 
+/**
+ * Check if a given file is already in the repo listing
+ *
+ * @param   object  $saveas_path    The path to the file
+ * @param   string  $page           The name of the page
+ * $param   object  $repo           The repo object
+ * $filename    string  $filename   The name of the file
+ * @return bool If file exists, return true
+ */
+function elis_files_file_exists($saveas_path, $page, $repo, $filename) {
+    // Get a list of all the files for the given path
+    $listing = repository::prepare_listing($repo->get_listing($saveas_path, $page));
+
+    if (is_array($listing)) {
+        if (isset($listing['list'])) {
+            foreach ($listing['list'] as $list) {
+                if (isset($list['title'])) {
+                    // A match is found
+                    if (strcmp($list['title'], $filename) == 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Generate a unique file name
+ *
+ * @param   string  $filename The name of the file
+ * @return  string  The unique file name
+*/
+function elis_files_generate_unique_filename($filename) {
+    $pathinfo = pathinfo($filename);
+
+    $filename = $pathinfo['filename'];
+    $basename = preg_replace('/\.[0-9]+$/', '', $filename);
+    $number = 1;
+
+    if ($hasnumber = preg_match("/^(.*)_(\d+)$/", $filename, $matches)) {
+        $number = (int) ($matches[2] + 1);
+        $basename = $matches[1];
+    }
+
+    if (empty($pathinfo['extension'])) {
+        $newfilename = $basename . '_' . $number;
+    } else {
+        $newfilename = $basename . '_' . $number . '.' . $pathinfo['extension'];
+    }
+
+    return $newfilename;
+}
 
 /**
  * Upload a file into the repository.
