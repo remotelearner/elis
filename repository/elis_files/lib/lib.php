@@ -748,6 +748,60 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     return $properties;
 }
 
+/**
+ * Check if a given file is already in the listing
+ *
+ * @param   string  $filename   The name of the file
+ * @param   array   $listing    The listing to compare against
+ * @return  bool                If file exists, return true
+ */
+function elis_files_file_exists($filename, $listing) {
+    if (is_array($listing)) {
+        if (isset($listing['list'])) {
+            foreach ($listing['list'] as $list) {
+                if (isset($list['title'])) {
+                    // A match is found
+                    if (strcmp($list['title'], $filename) == 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Generate a unique file name
+ *
+ * @param   string  $filename   The name of the file
+ * @param   array   $listing    The listing to compare against
+ * @return  string              The unique file name
+*/
+function elis_files_generate_unique_filename($filename, $listing) {
+    $pathinfo = pathinfo($filename);
+
+    $filename = $pathinfo['filename'];
+    $basename = preg_replace('/\.[0-9]+$/', '', $filename);
+    $number = 0;
+
+    if ($hasnumber = preg_match("/^(.*)_(\d+)$/", $filename, $matches)) {
+        $number = (int) $matches[2];
+        $basename = $matches[1];
+    }
+
+    do {
+        $number++;
+        if (empty($pathinfo['extension'])) {
+            $newfilename = $basename . '_' . $number;
+        } else {
+            $newfilename = $basename . '_' . $number . '.' . $pathinfo['extension'];
+        }
+    } while (elis_files_file_exists($newfilename, $listing));
+
+    return $newfilename;
+}
 
 /**
  * Upload a file into the repository.
