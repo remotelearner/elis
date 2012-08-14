@@ -26,6 +26,11 @@
  *
  */
 
+
+if (!defined('CLI_SCRIPT')) {
+    define('CLI_SCRIPT', true);
+}
+
 require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
