@@ -30,6 +30,7 @@ require_once dirname(__FILE__). '/ELIS_files.php';
 require_once dirname(__FILE__). '/../ELIS_files_factory.class.php';
 require_once dirname(dirname(dirname(dirname(__FILE__)))). '/elis/core/lib/setup.php';
 require_once dirname(__FILE__) . '/cmis-php/cmis_repository_wrapper.php';
+require_once(dirname(__FILE__).'/elis_files_logger.class.php');
 
 /**
  * Send a GET request to the Alfresco repository.
@@ -1058,17 +1059,29 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
 
     $config = get_config('elis_files');
 
+    // Obtain the logger object in a clean state, in case we need it
+    $logger = elis_files_logger::instance();
+    $logger->flush();
+
     // We need to get just the hostname out of the configured host URL
     $uri = parse_url($config->server_host);
 
     if (!($ftp = ftp_connect($uri['host'], $config->ftp_port, 5))) {
         error_log('Could not connect to Alfresco FTP server '.$uri['host'].$config->ftp_port);
+
+        // Signal an FTP failure
+        $logger->signal_error(ELIS_FILES_ERROR_FTP);
+
         return false;
     }
 
     if (!ftp_login($ftp, $config->server_username, $config->server_password)) {
         error_log('Could not authenticate to Alfresco FTP server');
         ftp_close($ftp);
+
+        // Signal an FTP failure
+        $logger->signal_error(ELIS_FILES_ERROR_FTP);
+
         return false;
     }
 
@@ -1092,6 +1105,10 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
         error_log('Could not upload file '.$filepath.' to Alfresco: '.$repo_path.'/'.$filename);
         mtrace('$res = '.$res);
         ftp_close($ftp);
+
+        // Signal an FTP failure
+        $logger->signal_error(ELIS_FILES_ERROR_FTP);
+
         return false;
     }
 
