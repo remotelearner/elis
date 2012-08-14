@@ -35,28 +35,37 @@ class fileRenameTest extends PHPUnit_Framework_TestCase {
 
     /**
      * Data provider for validating that files are properly renamed
+     * The first set is the filename to be transformed and the second set is the result
+     * The third set contains the filenames that already exist
      *
      * @return array data needed for testing
      */
     public function file_rename_provider() {
-        return array(array('file_1.txt', 'file_2.txt'),
-                     array('file_1_1.txt', 'file_1_2.txt'),
-                     array('file1_1.txt', 'file1_2.txt'),
-                     array('file_1_1_1.txt', 'file_1_1_2.txt'),
-                     array('file_2.txt', 'file_3.txt'),
-                     array('file_1', 'file_2'),
-                     array('file_10', 'file_11'),
-                     array('file_1_1', 'file_1_2'),
-                     array('file', 'file_1'),
-                     array('file2', 'file2_1'),
-                     array('file2_a_1_b', 'file2_a_1_b_1'),
-                     array('file_a_b', 'file_a_b_1'),
-                     array('file_a_b.txt', 'file_a_b_1.txt'),
-                     array('file_a_b_.txt', 'file_a_b__1.txt'),
-                     array('file_a_b_', 'file_a_b__1'),
-                     array('_file_a', '_file_a_1'),
-                     array('_file_a.txt', '_file_a_1.txt'),
-                     array('__file_a_1.txt', '__file_a_2.txt')
+        return array(array('file_1.txt', 'file_2.txt', array()),
+                     array('file_1_1.txt', 'file_1_2.txt', array()),
+                     array('file1_1.txt', 'file1_2.txt', array()),
+                     array('file_1_1_1.txt', 'file_1_1_2.txt', array()),
+                     array('file_2.txt', 'file_3.txt', array()),
+                     array('file_1', 'file_2', array()),
+                     array('file_10', 'file_11', array()),
+                     array('file_1_1', 'file_1_2', array()),
+                     array('file', 'file_1', array()),
+                     array('file2', 'file2_1', array()),
+                     array('file2_a_1_b', 'file2_a_1_b_1', array()),
+                     array('file_a_b', 'file_a_b_1', array()),
+                     array('file_a_b.txt', 'file_a_b_1.txt', array()),
+                     array('file_a_b_.txt', 'file_a_b__1.txt', array()),
+                     array('file_a_b_', 'file_a_b__1', array()),
+                     array('_file_a', '_file_a_1', array()),
+                     array('_file_a.txt', '_file_a_1.txt', array()),
+                     array('__file_a_1.txt', '__file_a_2.txt', array()),
+                     array('file_1', 'file_3', array('list' => array(array('title' => 'file_2')))),
+                     array('file_1.txt', 'file_3.txt', array('list' => array(array('title' => 'file_2.txt')))),
+                     array('file', 'file_2', array('list' => array(array('title' => 'file_1'), array('title' => 'file_3')))),
+                     array('file_1_1.txt', 'file_1_3.txt', array('list' => array(array('title' => 'file_1_2.txt')))),
+                     array('file_1_1.txt', 'file_1_4.txt', array('list' => array(array('title' => 'file_1_2.txt'), array('title' => 'file_1_3.txt')))),
+                     array('file_1', 'file_5', array('list' => array(array('title' => 'file_3'), array('title' => 'file_2'), array('title' => 'file_4')))),
+                     array('_file', '_file_2', array('list' => array(array('title' => '_file_1'))))
             );
     }
 
@@ -64,10 +73,10 @@ class fileRenameTest extends PHPUnit_Framework_TestCase {
      * Validate that files are renamed properly
      * @dataProvider file_rename_provider
      */
-    public function testFileRename($actual, $expected) {
+    public function testFileRename($actual, $expected, $listing) {
         global $CFG;
         require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
-        $result = elis_files_generate_unique_filename($actual);
+        $result = elis_files_generate_unique_filename($actual, $listing);
         $this->assertEquals($expected, $result);
     }
 
