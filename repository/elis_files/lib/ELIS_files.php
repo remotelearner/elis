@@ -1508,6 +1508,11 @@ class ELIS_files {
 
         $this->errormsg = '';
 
+        // ELIS-6920 Remove invalid characters that can't be in a node's title property
+        $strip_chars = array( '&', '*', '\\', '|', ':', '"', '/', '?');
+        $name = str_replace($strip_chars, ' ', $name);
+        $name = rtrim($name); // Trim whitespace from the end of the folder name
+
         if (self::is_version('3.2')) {
             if ($node = elis_files_create_dir($name, $uuid, $description, $useadmin)) {
                 if (ELIS_FILES_DEBUG_TIME) {
@@ -1707,9 +1712,7 @@ class ELIS_files {
             return false;
         }
 
-        if ($node = elis_files_create_dir($userset->name, $this->ouuid, $userset->display)) {
-            $uuid = $node->uuid;
-
+        if ($uuid = $this->create_dir($userset->name, $this->ouuid, $userset->display)) {
             // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
             // reset by the code elsewhere.
             $this->node_inherit($uuid, false);
