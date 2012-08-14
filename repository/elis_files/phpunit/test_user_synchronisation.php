@@ -26,8 +26,7 @@
  *
  */
 
-
-if (!defined('CLI_SCRIPT')) {
+if (!isset($_SERVER['HTTP_USER_AGENT'])) {
     define('CLI_SCRIPT', true);
 }
 
