@@ -27,6 +27,7 @@
 // Constants for error states
 define('ELIS_FILES_ERROR_NONE', 0);
 define('ELIS_FILES_ERROR_FTP', 1);
+define('ELIS_FILES_ERROR_WS', 2);
 
 /**
  * Class for storing a single ELIS Files error state, and polling the message
@@ -86,6 +87,9 @@ class elis_files_logger {
                 $a = $uri['host'].':'.$config->ftp_port;
 
                 return get_string('errorftpinvalidport', 'repository_elis_files', $a);
+                break;
+            case ELIS_FILES_ERROR_WS:
+                return get_string('errorupload', 'repository_elis_files');
                 break;
         }
 

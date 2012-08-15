@@ -906,6 +906,10 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid = '', $useadmin = true) {
     global $USER;
 
+    // Obtain the logger object in a clean state, in case we need it
+    $logger = elis_files_logger::instance();
+    $logger->flush();
+
     $chunksize = 8192;
 
 /// We need to write the XML structure for the upload out to a file on disk to accomdate large files
@@ -1082,7 +1086,10 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
 //
 //        } else
     if ($code != 200 && $code != 201 && $code != 304) {
-        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
+        if (ELIS_FILES_DEBUG_TRACE) {
+            debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
+        }
+        $logger->signal_error(ELIS_FILES_ERROR_WS);
         return false;
     }
 
