@@ -242,6 +242,10 @@ class repository_elis_files extends repository {
         $ret['path'] = $return_path;
 
         $this->current_node = $this->elis_files->get_info($uuid);
+        if (!$this->current_node) {
+            return false;
+        }
+
         $ret['parent'] = $this->current_node; // elis_files_get_parent($uuid);
 
         // Add current node to the return path
