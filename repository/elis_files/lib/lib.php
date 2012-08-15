@@ -831,13 +831,17 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
     //get overwrite flag
     $overwriteexisting = optional_param('overwrite', false, PARAM_BOOL);
+    $saveas_filename = optional_param('title', '', PARAM_FILE);     // save as file name
+
+    //default to use the saveas filename
+    $filename = $saveas_filename;
 
     if (!empty($upload)) {
         if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
             return false;
         }
 
-        $filename = $_FILES[$upload]['name'];
+        $filename = (empty($filename)) ? $_FILES[$upload]['name']: $filename;
         $filepath = $_FILES[$upload]['tmp_name'];
         $filemime = $_FILES[$upload]['type'];
         $filesize = $_FILES[$upload]['size'];
@@ -847,7 +851,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
             return false;
         }
 
-        $filename = basename($path);
+        $filename = (empty($filename)) ? basename($path): $filename;
         $filepath = $path;
         $filemime = mimeinfo('type', $filename);
         $filesize = filesize($path);

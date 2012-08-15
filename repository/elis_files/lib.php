@@ -299,7 +299,7 @@ class repository_elis_files extends repository {
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
                         'name'=>$child->title,
-                        'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
+                        'thumbnail'=>$OUTPUT->pix_url('f/folder-64') . '',
                         'author' => $owner,
                         'datemodified' => $modified,
                         'datecreated' => $created,
@@ -332,7 +332,7 @@ class repository_elis_files extends repository {
                 $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
-                        'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 32))->out(false),
+                        'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 90))->out(false),
                         'size' => $filesize,
                         'author' => $owner,
                         'datemodified' => $modified,
@@ -725,9 +725,9 @@ class repository_elis_files extends repository {
 
                     $alfresco_version = elis_files_get_repository_version();
                     if ($alfresco_version == '3.2.1') {
-                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false);
+                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->filename, 90))->out(false);
                     } else {
-                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->icon, 32))->out(false);
+                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->icon, 90))->out(false);
                     }
                     $ret['list'][] = array('title'=>$file_object->title,
                                            'path'=>$encodedpath,
@@ -1015,7 +1015,7 @@ class repository_elis_files extends repository {
             $parent = repository_elis_files::build_encodedpath($listing->parent->uuid);
         }
 
-        $defaultfoldericon = $OUTPUT->pix_url(file_folder_icon(24))->out(false);
+        $defaultfoldericon = $OUTPUT->pix_url(file_folder_icon(64))->out(false);
         // prepare $listing['path'] or $listing->path
         if (is_array($listing) && isset($listing['path']) && is_array($listing['path'])) {
             $path = &$listing['path'];
@@ -1152,7 +1152,7 @@ class repository_elis_files extends repository {
                 if ($isfolder) {
                     $file['icon'] = $defaultfoldericon;
                 } else if ($filename) {
-                    $file['icon'] = $OUTPUT->pix_url(file_extension_icon($filename, 24))->out(false);
+                    $file['icon'] = $OUTPUT->pix_url(file_extension_icon($filename, 90))->out(false);
                 }
             }
             if ($converttoobject) {
@@ -1427,7 +1427,7 @@ class repository_elis_files extends repository {
                 $str .= self::printfilelist($subfilelist, $filelist, false);
             } else {
 
-                $icon = $OUTPUT->pix_url(file_extension_icon($file->icon, 32));
+                $icon = $OUTPUT->pix_url(file_extension_icon($file->icon, 90));
                 $filename = $file->filename;
                 $str .="<img src=\"{$icon}\"  height=\"16\" width=\"16\" alt=\"\" /> " .
                      $file->filename . "<br />";
