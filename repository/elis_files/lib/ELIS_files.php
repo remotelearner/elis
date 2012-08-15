@@ -1508,6 +1508,11 @@ class ELIS_files {
 
         $this->errormsg = '';
 
+        // ELIS-6920 Remove invalid characters that can't be in a node's title property
+        $strip_chars = array( '&', '*', '\\', '|', ':', '"', '/', '?', '`', '~', '!', '@');
+        $name = str_replace($strip_chars, ' ', $name);
+        $name = trim($name); // Trim whitespace from the end of the folder name
+
         if (self::is_version('3.2')) {
             if ($node = elis_files_create_dir($name, $uuid, $description, $useadmin)) {
                 if (ELIS_FILES_DEBUG_TIME) {
@@ -1555,7 +1560,7 @@ class ELIS_files {
         elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
         if (self::is_version('3.2')) {
-            return (true === alfresco_send(alfresco_get_uri($uuid, 'delete'), array(), 'DELETE'));
+            return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
         } else if (self::is_version('3.4')) {
             if ($this->is_dir($uuid)) {
                 if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
@@ -1707,9 +1712,7 @@ class ELIS_files {
             return false;
         }
 
-        if ($node = elis_files_create_dir($userset->name, $this->ouuid, $userset->display)) {
-            $uuid = $node->uuid;
-
+        if ($uuid = $this->create_dir($userset->name, $this->ouuid, $userset->display)) {
             // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
             // reset by the code elsewhere.
             $this->node_inherit($uuid, false);

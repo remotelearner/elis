@@ -807,9 +807,12 @@ class repository_elis_files extends repository {
         $mform->addElement('static', 'file_transfer_method_default', '', get_string('filetransfermethoddefault', 'repository_elis_files'));
         $mform->addElement('static', 'file_transfer_method_desc', '', get_string('filetransfermethoddesc', 'repository_elis_files'));
 
+        // Add a green checkmark if FTP connection works, red X on failure
+        // (only if transfer method is set to ftp)
+        $ftp_indicator = self::get_ftp_config_indicator();
         $mform->addElement('text', 'ftp_port', get_string('ftpport', 'repository_elis_files'), array('size' => '30'));
         $mform->setDefault('ftp_port', '21');
-        $mform->addElement('static', 'ftp_port_default', '', get_string('ftpportdefault', 'repository_elis_files'));
+        $mform->addElement('static', 'ftp_port_default', '', $ftp_indicator.'&nbsp'.get_string('ftpportdefault', 'repository_elis_files'));
         $mform->addElement('static', 'ftp_port_desc', '', get_string('ftpportdesc', 'repository_elis_files'));
 
         // Check for installed categories table or display 'plugin not yet installed'
@@ -1252,6 +1255,54 @@ class repository_elis_files extends repository {
         }
 
         return $valid;
+    }
+
+    /**
+     * Obtains the HTML content of a visual indicator used to indicate whether
+     * FTP connectivity has been established based on the configured values
+     *
+     * @return string The HTML representation of the status indicator, or the
+     *                empty string if not applicable
+     */
+    private static function get_ftp_config_indicator() {
+        $config = get_config('elis_files');
+
+        $result = '';
+
+        // Only care to show an indicator if we are actually using FTP
+        if ($config->file_transfer_method == ELIS_FILES_XFER_FTP) {
+            // Assume connection is valid until we discover otherwise
+            $connection_valid = true;
+
+            if (empty($config->ftp_port)) {
+                // Port is not properly configured, so we can't connect
+                $connection_valid = false;
+            } else {
+                $uri = parse_url($config->server_host);
+
+                if (!($ftp = ftp_connect($uri['host'], $config->ftp_port, 5))) {
+                    // Can't connect
+                    $connection_valid = false;
+                } else if (!ftp_login($ftp, $config->server_username, $config->server_password)) {
+                    // Can't log in
+                    $connection_valid = false;
+                    ftp_close($ftp);
+                } else {
+                    // Successfully connected
+                    ftp_close($ftp);
+                }
+            }
+
+            if ($connection_valid) {
+                // Success
+                $result = '<span class="pathok" style="color:green;">&#x2714;</span>';
+            } else {
+                // Failure
+                $result = '<span class="patherror" style="color:red;">&#x2718;</span>';
+            }
+        }
+
+        return $result;
     }
 
     function get_full_name() {
