@@ -157,6 +157,9 @@ class repository_elis_files extends repository {
             return false;
         }
 
+        // Track the current UUID
+        $uuid = false;
+
         // Check for a TRUE value in the encodedpath and retrieve the location
         // If we don't have something explicitly to load and we didn't get here from the drop-down...
         if ($encodedpath === true || empty($encodedpath)) {
@@ -207,6 +210,12 @@ class repository_elis_files extends repository {
                     $uuid = $duuid;
                 }
             }
+        }
+
+        if ($uuid == false) {
+            //TODO: error handling for case other than being stuck in the Moodle
+            //files area
+            return;
         }
 
         $ret = array();

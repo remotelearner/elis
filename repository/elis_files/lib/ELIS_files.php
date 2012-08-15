@@ -3405,17 +3405,25 @@ class ELIS_files {
                     }
 
                 case ELIS_FILES_BROWSE_USER_FILES:
-                    if (empty($this->uuuid)) {
-                        $this->uuuid = $this->elis_files_userdir($USER->username);
-                    }
-                    if (($uuid = $this->uuuid) !== false) {
-                        $shared = 0;
-                        $uid    = $USER->id;
-                        $cid    = 0;
-                        return $uuid;
+                    if (has_capability('repository/elis_files:viewowncontent', $context) ||
+                        has_capability('repository/elis_files:createowncontent', $context)) {
+
+                        if (empty($this->uuuid)) {
+                            $this->uuuid = $this->elis_files_userdir($USER->username);
+                        }
+                        if (($uuid = $this->uuuid) !== false) {
+                            $shared = 0;
+                            $uid    = $USER->id;
+                            $cid    = 0;
+                            return $uuid;
+                        }
                     }
 
                 default:
+                    //TODO: consider scenarios where the user has a "view" or "create"
+                    //capability at a higher level than the configured location, e.g.
+                    //default location of user files, and capability at the shared files level
+
                     return false;
             }
         }

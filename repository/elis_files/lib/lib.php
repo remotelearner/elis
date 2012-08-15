@@ -3049,6 +3049,66 @@ function elis_files_node_path($uuid, $path = '') {
     }
 }
 
+/**
+ * Obtain the current (i.e. "default") path for the provided course, depending
+ * on the configured default browse location
+ *
+ * @param int $courseid The id of the course whose file picker view we are currently
+ *                      on, or SITEID if we are viewing private files
+ * @return string The encoded path corresponding to the current location
+ */
+function elis_files_get_current_path_for_course($courseid) {
+    global $CFG, $DB, $USER;
+    require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+
+    // Default to the Moodle area
+    $currentpath = '/';
+
+    // Initialize repository plugin
+    $sql = 'SELECT i.name, i.typeid, r.type
+            FROM {repository} r, {repository_instances} i
+            WHERE r.type=?
+              AND i.typeid=r.id';
+    $repository = $DB->get_record_sql($sql, array('elis_files'));
+
+    if ($repository) {
+        // Need this context to construct the repository_elis_files object
+        $user_context = get_context_instance(CONTEXT_USER, $USER->id);
+        $params = array(
+            'ajax' => false,
+            'name' => $repository->name,
+            'type' => 'elis_files'
+        );
+
+        try {
+            $repo = @new repository_elis_files('elis_files', $user_context, $params);
+
+            if (!empty($repo)) {
+                // TBD: Is the following required???
+                //$listing = (object)$repo->get_listing(true);
+                //$uuid = $repo->elis_files->get_course_store($courseid);
+
+                // Determine the default browsing location
+                $cid = $courseid;
+                $uid = 0;
+                $shared = 0;
+                $oid = 0;
+                $uuid = $repo->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid);
+
+                if ($uuid != false) {
+                    // Encode the UUID
+                    $currentpath = repository_elis_files::build_encodedpath($uuid, 0, $cid);
+                }
+            }
+        } catch (Exception $e) {
+            // The parent "repository" class may throw exceptions
+            error_log('/repository/filemanager.php: Exception: '.$e->getMessage());
+        }
+    }
+
+    return $currentpath;
+}
+
 // ELIS-6620,ELIS-6630: glob_recursive require by /repository/draftfiles_ajax.php
 if (!function_exists('glob_recursive')) {
     // NOTE: does not support flag GLOB_BRACE
