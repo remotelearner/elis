@@ -1610,13 +1610,9 @@ class ELIS_files {
         // Look at all of the course directories that exist for our course ID.
         if (!empty($dir->folders)) {
             foreach ($dir->folders as $folder) {
-
-                if (!empty($uuid)) {
-                    continue;
-                }
-
                 if ($folder->title == $course->shortname) {
                     $uuid = $folder->uuid;
+                    break;
                 }
             }
         }

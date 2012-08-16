@@ -216,6 +216,37 @@ class repository_elis_files extends repository {
         $this->current_node = $this->elis_files->get_info($uuid);
         $ret['parent'] = $this->current_node; // elis_files_get_parent($uuid);
 
+        $admin_username = trim(get_config('admin_username','elis_files'));
+        $check_node = $this->current_node;
+        $prev_node = $this->current_node;
+        $uid = $cid = $oid = $shared = 0;
+        while (!$uid && !$cid && !$oid && !$shared &&
+               ($check_node = $this->elis_files->get_parent($check_node->uuid))
+               && !empty($check_node->uuid)) {
+            $folder_name = !empty($prev_node->title) ? $prev_node->title : '';
+            $check_uuid = $check_node->uuid;
+            if ($check_uuid == $this->elis_files->cuuid) {
+                $cid = $DB->get_field('elis_files_course_store',
+                                      'courseid',
+                                      array('uuid' => $prev_node->uuid));
+            } else if ($check_uuid == $this->elis_files->ouuid) {
+                $oid = $DB->get_field('elis_files_userset_store',
+                                      'usersetid',
+                                      array('uuid' => $prev_node->uuid));
+            } else if ($check_uuid == $this->elis_files->suuid) {
+                $shared = true;
+            } else if ($check_uuid == $this->elis_files->uuuid) {
+                if ($folder_name == $admin_username) {
+                    $uid = $DB->get_field('user', 'id', array('username' => 'admin'));
+                    //error_log("ELIS Files: matches admin user with folder = {$folder_name} ($uid)");
+                } else {
+                    $username = str_replace('_AT_', '@', $folder_name);
+                    $uid = $DB->get_field('user', 'id', array('username' => $username));
+                }
+            }
+            $prev_node = $check_node;
+        }
+
         // Add current node to the return path
         // Include shared and oid parameters
         $params = array('path'=>$uuid,
@@ -245,13 +276,42 @@ class repository_elis_files extends repository {
                     continue;
                 }
 
-                // Include shared and oid parameters
-//                $params = array('path'=>$child->uuid,
-//                                'shared'=>(boolean)$shared,
-//                                'oid'=>(int)$oid,
-//                                'cid'=>(int)$cid,
-//                                'uid'=>(int)$uid);
-//                $encodedpath = base64_encode(serialize($params));
+                // Get path parameters!
+                if (!empty($uuid)) {
+                    $uid = 0;
+                    $cid = 0;
+                    $oid = 0;
+                    $shared = false;
+                    $parent_node = $this->current_node;
+                    $prev_node = $child;
+                    do {
+                        $check_uuid = $parent_node->uuid;
+                        $folder_name = !empty($prev_node->title)
+                                       ? $prev_node->title : '';
+                        if ($check_uuid == $this->elis_files->cuuid) {
+                            $cid = $DB->get_field('elis_files_course_store',
+                                                  'courseid',
+                                                  array('uuid' => $prev_node->uuid));
+                        } else if ($check_uuid == $this->elis_files->ouuid) {
+                            $oid = $DB->get_field('elis_files_userset_store',
+                                                  'usersetid',
+                                                  array('uuid' => $prev_node->uuid));
+                        } else if ($check_uuid == $this->elis_files->suuid) {
+                            $shared = true;
+                        } else if ($check_uuid == $this->elis_files->uuuid) {
+                            if ($folder_name == $admin_username) {
+                                $uid = $DB->get_field('user', 'id', array('username' => 'admin'));
+                                //error_log("ELIS Files: matches admin user with folder = {$folder_name} ($uid)");
+                            } else {
+                                $username = str_replace('_AT_', '@', $folder_name);
+                                $uid = $DB->get_field('user', 'id', array('username' => $username));
+                            }
+                        }
+                        $prev_node = $parent_node;
+                    } while (!$uid && !$cid && !$oid && !$shared &&
+                             ($parent_node = $this->elis_files->get_parent($check_uuid))
+                             && !empty($parent_node->uuid));
+                }
                 if (isset($child->uuid)) {
                     $info = $this->elis_files->get_info($child->uuid);
                 } else {
@@ -279,12 +339,6 @@ class repository_elis_files extends repository {
                     continue;
                 }
 
-//                $params = array('path'=>$child->uuid,
-//                                'shared'=>(boolean)$shared,
-//                                'oid'=>(int)$oid,
-//                                'cid'=>(int)$cid,
-//                                'uid'=>(int)$uid);
-//                $encodedpath = base64_encode(serialize($params));
                 if (isset($child->uuid)) {
                     $info = $this->elis_files->get_info($child->uuid);
                 } else {
@@ -931,20 +985,52 @@ class repository_elis_files extends repository {
      * @param  array &$output     The output array
      * @param  array $folderentry The input folder structure
      * @param string $path        Top-level path folder name (i.e. 'Company Home' or 'ELIS Files')
+     * @param   int  $puid        Optional parent folder's uuid
+     * @param   int  $uid         Optional user id setting
+     * @param   int  $cid         Optional course id setting
+     * @param   int  $oid         Optional userset/cluster id setting
+     * @param  bool  $shared      Optional shared flag setting
+     * @uses   $DB
      */
-    protected static function folder_tree_to_fm(&$output, $folderentry, $path = '') {
+    protected function folder_tree_to_fm(&$output, $folderentry, $path = '', $puuid = '', $uid = 0, $cid = 0, $oid = 0, $shared = false) {
+        global $DB;
+        $admin_username = trim(get_config('admin_username','elis_files'));
         foreach ($folderentry as $folder) {
+            $_uid = $uid;
+            $_cid = $cid;
+            $_oid = $oid;
+            $_shared = $shared;
+            if (!empty($puuid) && !$uid && !$cid && !$oid && !$shared) {
+                // No flags set check if we need to set them
+                if ($puuid == $this->elis_files->cuuid) {
+                    $_cid = $DB->get_field('elis_files_course_store', 'courseid',
+                                          array('uuid' => $folder['uuid']));
+                } else if ($puuid == $this->elis_files->ouuid) {
+                    $_oid = $DB->get_field('elis_files_userset_store', 'usersetid',
+                                          array('uuid' => $folder['uuid']));
+                } else if ($puuid == $this->elis_files->suuid) {
+                    $_shared = true;
+                } else if ($puuid == $this->elis_files->uuuid) {
+                    if ($folder['name'] == $admin_username) {
+                        $_uid = $DB->get_field('user', 'id', array('username' => 'admin'));
+                        //error_log("ELIS Files: matches admin user with folder = {$folder['name']} ($uid)");
+                    } else {
+                        $username = str_replace('_AT_', '@', $folder['name']);
+                        $_uid = $DB->get_field('user', 'id', array('username' => $username));
+                    }
+                }
+            }
             $entry = array();
-            $entry['filepath'] = repository_elis_files::build_encodedpath($folder['uuid']);
+            $entry['filepath'] = repository_elis_files::build_encodedpath($folder['uuid'], $_uid, $_cid, $_oid, $_shared);
             $entry['textpath'] = $path .'/'. $folder['name'];
             $entry['fullname'] = $folder['name'];
             $entry['id'] = $folder['uuid']; // TBD
             $entry['sortorder'] = 0; // TBD
             $entry['children'] = array();
             if (!empty($folder['children'])) {
-                repository_elis_files::folder_tree_to_fm($entry['children'],
-                                                         $folder['children'],
-                                                         $entry['textpath']);
+                $this->folder_tree_to_fm($entry['children'], $folder['children'],
+                                         $entry['textpath'], $folder['uuid'],
+                                         $_uid, $_cid, $_oid, $_shared);
             }
             $output[] = $entry;
         }
@@ -1027,6 +1113,7 @@ class repository_elis_files extends repository {
                     $companyhomefolder['sortorder'] = 0; // TBD
                     $companyhomefolder['children'] = array();
                 }
+                $textpath .= (!empty($textpath) ? '/' : '') . $pathname;
             }
         }
 
@@ -1124,8 +1211,7 @@ class repository_elis_files extends repository {
         // Now build the entire folder tree, respecting "create" permissions ...
         $folders = elis_files_folder_structure(true);
         $foldertree = array();
-        repository_elis_files::folder_tree_to_fm($foldertree, $folders,
-                                                 $companyhomefolder['textpath']);
+        $this->folder_tree_to_fm($foldertree, $folders, $companyhomefolder['textpath']);
 
         // Must add missing 'ELIS Files' & 'Company Home' locations to tree
         // if permissions allow
