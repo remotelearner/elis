@@ -30,6 +30,7 @@ require_once dirname(__FILE__). '/ELIS_files.php';
 require_once dirname(__FILE__). '/../ELIS_files_factory.class.php';
 require_once dirname(dirname(dirname(dirname(__FILE__)))). '/elis/core/lib/setup.php';
 require_once dirname(__FILE__) . '/cmis-php/cmis_repository_wrapper.php';
+require_once(dirname(__FILE__).'/elis_files_logger.class.php');
 
 /**
  * Send a GET request to the Alfresco repository.
@@ -747,6 +748,68 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
     return $properties;
 }
 
+/**
+ * Check if a given file is already in the listing
+ *
+ * @param   string  $filename   The name of the file
+ * @param   array   $listing    The listing to compare against
+ * @return  mixed                If file exists, return uuid of file
+ */
+function elis_files_file_exists($filename, $listing) {
+    if (is_array($listing)) {
+        if (isset($listing['list'])) {
+            foreach ($listing['list'] as $list) {
+                if (isset($list['title'])) {
+                    // A match is found
+                    if (strcmp($list['title'], $filename) == 0) {
+                        if (isset($list['path'])) {
+                            $params = unserialize(base64_decode($list['path']));
+                            // return the uuid of the file found
+                            // so it can be deleted in the case of an overwrite
+                            $uuid = $params['path'];
+                            return $uuid;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Generate a unique file name
+ *
+ * @param   string  $filename   The name of the file
+ * @param   array   $listing    The listing to compare against
+ * @return  string              The unique file name
+*/
+function elis_files_generate_unique_filename($filename, $listing) {
+    $pathinfo = pathinfo($filename);
+
+    $filename = $pathinfo['filename'];
+    $basename = preg_replace('/\.[0-9]+$/', '', $filename);
+    $number = 0;
+
+    if ($hasnumber = preg_match("/^(.*)_(\d+)$/", $filename, $matches)) {
+        $number = (int) $matches[2];
+        $basename = $matches[1];
+    }
+
+    do {
+        $number++;
+        if (empty($pathinfo['extension'])) {
+            $newfilename = $basename . '_' . $number;
+        } else {
+            $newfilename = $basename . '_' . $number . '.' . $pathinfo['extension'];
+        }
+    } while (elis_files_file_exists($newfilename, $listing));
+
+    return $newfilename;
+}
 
 /**
  * Upload a file into the repository.
@@ -758,19 +821,27 @@ function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin =
  * @param string $uuid     The UUID of the folder where the file is being uploaded to.
  * @param bool   $useadmin Set to false to make sure that the administrative user configured in
  *                         the plug-in is not used for this operation (default: true).
+ * @param mixed  $olduuid  The uuid of the file to be overwritten - false if the file doesn't already exist
  * @return object Node values for the uploaded file.
  */
-function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin = true) {
+function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin = true, $olduuid = false) {
     global $CFG, $USER;
 
     require_once($CFG->libdir.'/filelib.php');
+
+    //get overwrite flag
+    $overwriteexisting = optional_param('overwrite', false, PARAM_BOOL);
+    $saveas_filename = optional_param('title', '', PARAM_FILE);     // save as file name
+
+    //default to use the saveas filename
+    $filename = $saveas_filename;
 
     if (!empty($upload)) {
         if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
             return false;
         }
 
-        $filename = $_FILES[$upload]['name'];
+        $filename = (empty($filename)) ? $_FILES[$upload]['name']: $filename;
         $filepath = $_FILES[$upload]['tmp_name'];
         $filemime = $_FILES[$upload]['type'];
         $filesize = $_FILES[$upload]['size'];
@@ -780,7 +851,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
             return false;
         }
 
-        $filename = basename($path);
+        $filename = (empty($filename)) ? basename($path): $filename;
         $filepath = $path;
         $filemime = mimeinfo('type', $filename);
         $filesize = filesize($path);
@@ -798,6 +869,12 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     //error_log("elis_files_upload_file('$upload', '$path', '$uuid', $useadmin): version = ". ELIS_files::$version);
     if (empty($uuid)) {
         $uuid = $repo->get_root()->uuid;
+    }
+
+    // process overwrite
+    if ($overwriteexisting && $olduuid && ($olduuid !== true)) {
+        // delete file to be overwritten
+        elis_files_delete($olduuid);
     }
 
     $xfermethod = get_config('elis_files', 'file_transfer_method');
@@ -832,6 +909,10 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
  */
 function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid = '', $useadmin = true) {
     global $USER;
+
+    // Obtain the logger object in a clean state, in case we need it
+    $logger = elis_files_logger::instance();
+    $logger->flush();
 
     $chunksize = 8192;
 
@@ -1009,7 +1090,10 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
 //
 //        } else
     if ($code != 200 && $code != 201 && $code != 304) {
-        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
+        if (ELIS_FILES_DEBUG_TRACE) {
+            debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
+        }
+        $logger->signal_error(ELIS_FILES_ERROR_WS);
         return false;
     }
 
@@ -1058,17 +1142,29 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
 
     $config = get_config('elis_files');
 
+    // Obtain the logger object in a clean state, in case we need it
+    $logger = elis_files_logger::instance();
+    $logger->flush();
+
     // We need to get just the hostname out of the configured host URL
     $uri = parse_url($config->server_host);
 
     if (!($ftp = ftp_connect($uri['host'], $config->ftp_port, 5))) {
         error_log('Could not connect to Alfresco FTP server '.$uri['host'].$config->ftp_port);
+
+        // Signal an FTP failure
+        $logger->signal_error(ELIS_FILES_ERROR_FTP);
+
         return false;
     }
 
     if (!ftp_login($ftp, $config->server_username, $config->server_password)) {
         error_log('Could not authenticate to Alfresco FTP server');
         ftp_close($ftp);
+
+        // Signal an FTP failure
+        $logger->signal_error(ELIS_FILES_ERROR_FTP);
+
         return false;
     }
 
@@ -1092,6 +1188,10 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
         error_log('Could not upload file '.$filepath.' to Alfresco: '.$repo_path.'/'.$filename);
         mtrace('$res = '.$res);
         ftp_close($ftp);
+
+        // Signal an FTP failure
+        $logger->signal_error(ELIS_FILES_ERROR_FTP);
+
         return false;
     }
 
@@ -1451,7 +1551,7 @@ function elis_files_process_folder_structure($sxml, $check_permissions = false, 
                 if ($node_oid == 0 && $parent_uuid == $repo->elis_files->ouuid) {
                     $params = array(
                         'uuid' => "$folder->uuid"
-                    );            
+                    );
                     $node_oid = $DB->get_field('elis_files_userset_store', 'usersetid', $params);
                 }
 
@@ -2947,6 +3047,66 @@ function elis_files_node_path($uuid, $path = '') {
         // This node has no parents, we're at the root so prepend a slash and return everything
             return '/'.$path;
     }
+}
+
+/**
+ * Obtain the current (i.e. "default") path for the provided course, depending
+ * on the configured default browse location
+ *
+ * @param int $courseid The id of the course whose file picker view we are currently
+ *                      on, or SITEID if we are viewing private files
+ * @return string The encoded path corresponding to the current location
+ */
+function elis_files_get_current_path_for_course($courseid) {
+    global $CFG, $DB, $USER;
+    require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+
+    // Default to the Moodle area
+    $currentpath = '/';
+
+    // Initialize repository plugin
+    $sql = 'SELECT i.name, i.typeid, r.type
+            FROM {repository} r, {repository_instances} i
+            WHERE r.type=?
+              AND i.typeid=r.id';
+    $repository = $DB->get_record_sql($sql, array('elis_files'));
+
+    if ($repository) {
+        // Need this context to construct the repository_elis_files object
+        $user_context = get_context_instance(CONTEXT_USER, $USER->id);
+        $params = array(
+            'ajax' => false,
+            'name' => $repository->name,
+            'type' => 'elis_files'
+        );
+
+        try {
+            $repo = @new repository_elis_files('elis_files', $user_context, $params);
+
+            if (!empty($repo)) {
+                // TBD: Is the following required???
+                //$listing = (object)$repo->get_listing(true);
+                //$uuid = $repo->elis_files->get_course_store($courseid);
+
+                // Determine the default browsing location
+                $cid = $courseid;
+                $uid = 0;
+                $shared = 0;
+                $oid = 0;
+                $uuid = $repo->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid);
+
+                if ($uuid != false) {
+                    // Encode the UUID
+                    $currentpath = repository_elis_files::build_encodedpath($uuid, 0, $cid);
+                }
+            }
+        } catch (Exception $e) {
+            // The parent "repository" class may throw exceptions
+            error_log('/repository/filemanager.php: Exception: '.$e->getMessage());
+        }
+    }
+
+    return $currentpath;
 }
 
 // ELIS-6620,ELIS-6630: glob_recursive require by /repository/draftfiles_ajax.php

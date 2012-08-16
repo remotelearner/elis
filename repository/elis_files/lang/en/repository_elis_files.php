@@ -138,6 +138,7 @@ $string['elis_files_default_server_host'] = 'Default: http://localhost';
 $string['elis_files_default_server_port'] = 'Default: 8080';
 $string['elis_files_default_server_username'] = 'Default: Empty';
 $string['elis_files_default_user_quota'] = 'Default: Not Set';
+$string['elis_files_folder_not_found'] = 'Folder not found';
 $string['elis_files_root_folder'] = 'The root folder on the repository where this Moodle site will store its files in Alfresco';
 $string['elis_files_server_homedir'] = 'This is home directory (relative to the repository root space) for the user configured to access Alfresco without leading slash (/).<br /><br />Examples:<br /><b>my_home_dir<br />Moodle Users/User A</b>';
 $string['elis_files_server_host'] = 'The URL to your Alfresco server (should be in the following format http://www.myserver.org).';

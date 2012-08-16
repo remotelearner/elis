@@ -1508,6 +1508,11 @@ class ELIS_files {
 
         $this->errormsg = '';
 
+        // ELIS-6920 Remove invalid characters that can't be in a node's title property
+        $strip_chars = array( '&', '*', '\\', '|', ':', '"', '/', '?', '`', '~', '!', '@');
+        $name = str_replace($strip_chars, ' ', $name);
+        $name = trim($name); // Trim whitespace from the end of the folder name
+
         if (self::is_version('3.2')) {
             if ($node = elis_files_create_dir($name, $uuid, $description, $useadmin)) {
                 if (ELIS_FILES_DEBUG_TIME) {
@@ -1555,7 +1560,7 @@ class ELIS_files {
         elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
 
         if (self::is_version('3.2')) {
-            return (true === alfresco_send(alfresco_get_uri($uuid, 'delete'), array(), 'DELETE'));
+            return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
         } else if (self::is_version('3.4')) {
             if ($this->is_dir($uuid)) {
                 if (elis_files_send('/cmis/i/' . $uuid.'/descendants', array(), 'DELETE') === false) {
@@ -1703,9 +1708,7 @@ class ELIS_files {
             return false;
         }
 
-        if ($node = elis_files_create_dir($userset->name, $this->ouuid, $userset->display)) {
-            $uuid = $node->uuid;
-
+        if ($uuid = $this->create_dir($userset->name, $this->ouuid, $userset->display)) {
             // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
             // reset by the code elsewhere.
             $this->node_inherit($uuid, false);
@@ -2507,8 +2510,21 @@ class ELIS_files {
                                 'cid'=>(int)$cid,
                                 'uid'=>0);
                 $encodedpath = base64_encode(serialize($params));
+
+                // Calculate "unbiased" parameters, that use the default flag values
+                // for comparrison with paths on the Javascript side
+                $unbiasedparams = array(
+                    'path'   => $uuid,
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
+
                 $opts[] = array('name'=> get_string('repositorysitefiles','repository_elis_files'),
-                            'path'=> $encodedpath);
+                                'path'=> $encodedpath,
+                                'unbiasedpath' => $unbiasedpath);
             }
 
         } else if ($cid != SITEID && $viewalfcourse) {
@@ -2539,8 +2555,21 @@ class ELIS_files {
                                 'cid'=>(int)$cid,
                                 'uid'=>0);
                 $encodedpath = base64_encode(serialize($params));
+
+                // Calculate "unbiased" parameters, that use the default flag values
+                // for comparrison with paths on the Javascript side
+                $unbiasedparams = array(
+                    'path'   => $uuid,
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
+
                 $opts[] = array('name'=> get_string('repositorycoursefiles','repository_elis_files'),
-                                'path'=> $encodedpath);
+                                'path'=> $encodedpath,
+                                'unbiasedpath' => $unbiasedpath);
             }
         }
 
@@ -2566,8 +2595,21 @@ class ELIS_files {
                                 'cid'=>(int)0,
                                 'uid'=>(int)0);
                 $encodedpath = base64_encode(serialize($params));
+
+                // Calculate "unbiased" parameters, that use the default flag values
+                // for comparrison with paths on the Javascript side
+                $unbiasedparams = array(
+                    'path'   => $this->suuid,
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
+
                 $opts[] = array('name'=> get_string('repositoryserverfiles','repository_elis_files'),
-                                'path'=> $encodedpath);
+                                'path'=> $encodedpath,
+                                'unbiasedpath'=> $unbiasedpath);
             }
         }
 
@@ -2581,8 +2623,21 @@ class ELIS_files {
                                 'cid'=>(int)0,
                                 'uid'=>(int)$USER->id);
                 $encodedpath = base64_encode(serialize($params));
+
+                // Calculate "unbiased" parameters, that use the default flag values
+                // for comparrison with paths on the Javascript side
+                $unbiasedparams = array(
+                    'path'   => $this->get_user_store($USER->id),
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
+
                 $opts[] = array('name'=> get_string('repositoryuserfiles','repository_elis_files'),
-                                'path'=> $encodedpath);
+                                'path'=> $encodedpath,
+                                'unbiasedpath'=>$unbiasedpath);
             }
         }
 
@@ -2726,8 +2781,18 @@ class ELIS_files {
                                 'cid'=>0,
                                 'uid'=>0);
                 $encodedpath = base64_encode(serialize($params));
+
+                $unbiasedparams = array(
+                    'path'   => $uuid,
+                    'shared' => false,
+                    'oid'    => 0,
+                    'cid'    => 0,
+                    'uid'    => 0
+                );
+                $unbiasedpath = base64_encode(serialize($unbiasedparams));
                 $opts[] = array('name'=> $cluster->name,
-                                'path'=> $encodedpath
+                                'path'=> $encodedpath,
+                                'unbiasedpath'=> $unbiasedpath
                                 );
             }
         }
@@ -3336,17 +3401,25 @@ class ELIS_files {
                     }
 
                 case ELIS_FILES_BROWSE_USER_FILES:
-                    if (empty($this->uuuid)) {
-                        $this->uuuid = $this->elis_files_userdir($USER->username);
-                    }
-                    if (($uuid = $this->uuuid) !== false) {
-                        $shared = 0;
-                        $uid    = $USER->id;
-                        $cid    = 0;
-                        return $uuid;
+                    if (has_capability('repository/elis_files:viewowncontent', $context) ||
+                        has_capability('repository/elis_files:createowncontent', $context)) {
+
+                        if (empty($this->uuuid)) {
+                            $this->uuuid = $this->elis_files_userdir($USER->username);
+                        }
+                        if (($uuid = $this->uuuid) !== false) {
+                            $shared = 0;
+                            $uid    = $USER->id;
+                            $cid    = 0;
+                            return $uuid;
+                        }
                     }
 
                 default:
+                    //TODO: consider scenarios where the user has a "view" or "create"
+                    //capability at a higher level than the configured location, e.g.
+                    //default location of user files, and capability at the shared files level
+
                     return false;
             }
         }

@@ -115,6 +115,34 @@ class repository_elis_files extends repository {
     }
 
     /**
+     * Build a list of "unbiased" encoded UUIDs, starting from the top "ELIS Files"
+     * node, up to an including the specified node
+     *
+     * @param array $parent_path Top-down list of parent UUIDs, not including
+     *                           the current node, encoded
+     * @param string $uuid The UUID of the current node, not encoded
+     * @return array An array of encoded UUIDs, starting from the top, down to the
+     *               specified node
+     */
+    static function encode_path_uuids($parent_path, $uuid) {
+        //TODO: add some way to encode the parent path items, if needed later
+        global $CFG;
+        require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+
+        $result = array();
+
+        // Include parent items
+        foreach ($parent_path as $path_item) {
+            $result[] = $path_item['path'];
+        }
+
+        // Add the encoded version of the current node
+        $result[] = repository_elis_files::build_encodedpath($uuid, 0, 0, 0, false);
+
+        return $result;
+    }
+
+    /**
      * Get a file list from alfresco
      *
      * @param string $encodedpath base64 encoded and serialized arry of path(uuid), shared(shared flag), oid(userset id), cid(course id) and uid(user id)
@@ -128,6 +156,9 @@ class repository_elis_files extends repository {
         if (!$this->elis_files || !$this->elis_files->get_defaults()) {
             return false;
         }
+
+        // Track the current UUID
+        $uuid = false;
 
         // Check for a TRUE value in the encodedpath and retrieve the location
         // If we don't have something explicitly to load and we didn't get here from the drop-down...
@@ -181,6 +212,12 @@ class repository_elis_files extends repository {
             }
         }
 
+        if ($uuid == false) {
+            //TODO: error handling for case other than being stuck in the Moodle
+            //files area
+            return;
+        }
+
         $ret = array();
         // Return an array of optional columns from file list to include in the details view
         // Icon and filename are always displayed
@@ -214,6 +251,10 @@ class repository_elis_files extends repository {
         $ret['path'] = $return_path;
 
         $this->current_node = $this->elis_files->get_info($uuid);
+        if (!$this->current_node) {
+            return false;
+        }
+
         $ret['parent'] = $this->current_node; // elis_files_get_parent($uuid);
 
         $admin_username = trim(get_config('admin_username','elis_files'));
@@ -261,6 +302,10 @@ class repository_elis_files extends repository {
         // Unserialized array of path/shared/oid
         $ret['thisuuid'] = $params;
         $ret['thisuuid']['encodedpath'] = $encodedpath;
+
+        //proper parent path containing delimeted UUIDs
+        $ret['parentpath'] = self::encode_path_uuids($return_path, $uuid);
+
 //print_object($ret['thisuuid']);
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
@@ -323,7 +368,7 @@ class repository_elis_files extends repository {
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
                         'name'=>$child->title,
-                        'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
+                        'thumbnail'=>$OUTPUT->pix_url('f/folder-64') . '',
                         'author' => $owner,
                         'datemodified' => $modified,
                         'datecreated' => $created,
@@ -350,7 +395,7 @@ class repository_elis_files extends repository {
                 $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
-                        'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 32))->out(false),
+                        'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 90))->out(false),
                         'size' => $filesize,
                         'author' => $owner,
                         'datemodified' => $modified,
@@ -743,9 +788,9 @@ class repository_elis_files extends repository {
 
                     $alfresco_version = elis_files_get_repository_version();
                     if ($alfresco_version == '3.2.1') {
-                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->filename, 32))->out(false);
+                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->filename, 90))->out(false);
                     } else {
-                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->icon, 32))->out(false);
+                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->icon, 90))->out(false);
                     }
                     $ret['list'][] = array('title'=>$file_object->title,
                                            'path'=>$encodedpath,
@@ -825,9 +870,12 @@ class repository_elis_files extends repository {
         $mform->addElement('static', 'file_transfer_method_default', '', get_string('filetransfermethoddefault', 'repository_elis_files'));
         $mform->addElement('static', 'file_transfer_method_desc', '', get_string('filetransfermethoddesc', 'repository_elis_files'));
 
+        // Add a green checkmark if FTP connection works, red X on failure
+        // (only if transfer method is set to ftp)
+        $ftp_indicator = self::get_ftp_config_indicator();
         $mform->addElement('text', 'ftp_port', get_string('ftpport', 'repository_elis_files'), array('size' => '30'));
         $mform->setDefault('ftp_port', '21');
-        $mform->addElement('static', 'ftp_port_default', '', get_string('ftpportdefault', 'repository_elis_files'));
+        $mform->addElement('static', 'ftp_port_default', '', $ftp_indicator.'&nbsp'.get_string('ftpportdefault', 'repository_elis_files'));
         $mform->addElement('static', 'ftp_port_desc', '', get_string('ftpportdesc', 'repository_elis_files'));
 
         // Check for installed categories table or display 'plugin not yet installed'
@@ -1062,7 +1110,7 @@ class repository_elis_files extends repository {
             $parent = repository_elis_files::build_encodedpath($listing->parent->uuid);
         }
 
-        $defaultfoldericon = $OUTPUT->pix_url(file_folder_icon(24))->out(false);
+        $defaultfoldericon = $OUTPUT->pix_url(file_folder_icon(64))->out(false);
         // prepare $listing['path'] or $listing->path
         if (is_array($listing) && isset($listing['path']) && is_array($listing['path'])) {
             $path = &$listing['path'];
@@ -1200,7 +1248,7 @@ class repository_elis_files extends repository {
                 if ($isfolder) {
                     $file['icon'] = $defaultfoldericon;
                 } else if ($filename) {
-                    $file['icon'] = $OUTPUT->pix_url(file_extension_icon($filename, 24))->out(false);
+                    $file['icon'] = $OUTPUT->pix_url(file_extension_icon($filename, 90))->out(false);
                 }
             }
             if ($converttoobject) {
@@ -1302,6 +1350,54 @@ class repository_elis_files extends repository {
         }
 
         return $valid;
+    }
+
+    /**
+     * Obtains the HTML content of a visual indicator used to indicate whether
+     * FTP connectivity has been established based on the configured values
+     *
+     * @return string The HTML representation of the status indicator, or the
+     *                empty string if not applicable
+     */
+    private static function get_ftp_config_indicator() {
+        $config = get_config('elis_files');
+
+        $result = '';
+
+        // Only care to show an indicator if we are actually using FTP
+        if ($config->file_transfer_method == ELIS_FILES_XFER_FTP) {
+            // Assume connection is valid until we discover otherwise
+            $connection_valid = true;
+
+            if (empty($config->ftp_port)) {
+                // Port is not properly configured, so we can't connect
+                $connection_valid = false;
+            } else {
+                $uri = parse_url($config->server_host);
+
+                if (!($ftp = ftp_connect($uri['host'], $config->ftp_port, 5))) {
+                    // Can't connect
+                    $connection_valid = false;
+                } else if (!ftp_login($ftp, $config->server_username, $config->server_password)) {
+                    // Can't log in
+                    $connection_valid = false;
+                    ftp_close($ftp);
+                } else {
+                    // Successfully connected
+                    ftp_close($ftp);
+                }
+            }
+
+            if ($connection_valid) {
+                // Success
+                $result = '<span class="pathok" style="color:green;">&#x2714;</span>';
+            } else {
+                // Failure
+                $result = '<span class="patherror" style="color:red;">&#x2718;</span>';
+            }
+        }
+
+        return $result;
     }
 
     function get_full_name() {
@@ -1426,7 +1522,7 @@ class repository_elis_files extends repository {
                 $str .= self::printfilelist($subfilelist, $filelist, false);
             } else {
 
-                $icon = $OUTPUT->pix_url(file_extension_icon($file->icon, 32));
+                $icon = $OUTPUT->pix_url(file_extension_icon($file->icon, 90));
                 $filename = $file->filename;
                 $str .="<img src=\"{$icon}\"  height=\"16\" width=\"16\" alt=\"\" /> " .
                      $file->filename . "<br />";
