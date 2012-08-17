@@ -28,6 +28,7 @@
 define('ELIS_FILES_ERROR_NONE', 0);
 define('ELIS_FILES_ERROR_FTP', 1);
 define('ELIS_FILES_ERROR_WS', 2);
+define('ELIS_FILES_ERROR_UPLOAD_PERMS', 3);
 
 /**
  * Class for storing a single ELIS Files error state, and polling the message
@@ -89,6 +90,11 @@ class elis_files_logger {
                 return get_string('errorftpinvalidport', 'repository_elis_files', $a);
                 break;
             case ELIS_FILES_ERROR_WS:
+                return get_string('errorupload', 'repository_elis_files');
+                break;
+            case ELIS_FILES_ERROR_UPLOAD_PERMS:
+                // Insufficient permissions to upload
+                // TODO: use a more specific error message?
                 return get_string('errorupload', 'repository_elis_files');
                 break;
         }

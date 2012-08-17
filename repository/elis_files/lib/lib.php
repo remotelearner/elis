@@ -652,7 +652,7 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
  *                            the plug-in is not used for this operation (default: true).
  * @return object|bool Node information structure on the new folder or, False on error.
  */
-function elis_files_create_dir($name, $uuid = '', $description = '', $useadmin = true) {
+function elis_files_create_dir($name, $uuid, $description = '', $useadmin = true) {
     global $CFG, $USER;
 
     $properties = elis_files_node_properties($uuid);

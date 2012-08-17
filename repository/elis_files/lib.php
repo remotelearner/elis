@@ -160,6 +160,9 @@ class repository_elis_files extends repository {
         // Track the current UUID
         $uuid = false;
 
+        // Track the course id whose context we are currently in
+        $courseid = $COURSE->id;
+
         // Check for a TRUE value in the encodedpath and retrieve the location
         // If we don't have something explicitly to load and we didn't get here from the drop-down...
         if ($encodedpath === true || empty($encodedpath)) {
@@ -199,6 +202,12 @@ class repository_elis_files extends repository {
                 $oid     = empty($params['oid']) ? 0 : clean_param($params['oid'], PARAM_INT);
                 $cid     = empty($params['cid']) ? 0 : clean_param($params['cid'], PARAM_INT);
                 $uid     = empty($params['uid']) ? 0 : clean_param($params['uid'], PARAM_INT);
+
+                if ($cid > 0) {
+                    // Set to a valid course id, in case we are in an AJAX request
+                    // and the $COURSE global is not correct
+                    $courseid = $cid;
+                }
             } else {
                 $cid = 0;
                 $uid = 0;
@@ -238,7 +247,7 @@ class repository_elis_files extends repository {
         $ret['showcurrentactions'] = true;
 
         // Get editing privileges - set canedit flag...
-        $canedit = self::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
+        $canedit = self::check_editing_permissions($courseid, $shared, $oid, $uuid, $uid);
         $ret['canedit'] = $canedit;
         $return_path = array();
 
@@ -1579,6 +1588,41 @@ class repository_elis_files extends repository {
             }
         }
         return $canedit;
+    }
+
+    /**
+     * Check whether the current user has permissions to to edit the node
+     * whose UUID and flags are specified in the provided "decoded path"
+     *
+     * @param array $decodedpath The information about the node, including the UUID
+     *                           and all related flags
+     * @return boolean Whether the user has permissions on the provided node
+     */
+    function can_edit_decoded_path($decodedpath) {
+        $required_properties_set = !empty($decodedpath['path']) && isset($decodedpath['cid']) &&
+                                   isset($decodedpath['shared']) && isset($decodedpath['oid']) &&
+                                   isset($decodedpath['uid']);
+
+        if (!$required_properties_set) {
+            // Missing essential data
+            return false;
+        }
+
+        // Metadata
+        $cid = $decodedpath['cid'];
+        $shared = $decodedpath['shared'];
+        $oid = $decodedpath['oid'];
+        $userid = $decodedpath['uid'];
+
+        // Node UUID
+        $uuid = $decodedpath['path'];
+
+        // Make sure we always have a course id that is valid
+        if ($cid == 0) {
+            $cid = SITEID;
+        }
+
+        return $this->check_editing_permissions($cid, $shared, $oid, $uuid, $userid);
     }
 
     /*
