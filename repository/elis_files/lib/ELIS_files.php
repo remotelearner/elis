@@ -102,7 +102,7 @@ class ELIS_files {
     var $cuuid                   = '';  // Course folder UUID
     var $uuuid                   = '';  // User folder UUID
     var $ouuid                   = '';  // usersets folder UUID
-    var $root                    = '';  // Root folder UUID
+    var $root                    = '';  // Object representation of the root node
     var $config                  = '';  // Config object setting variables for Alfresco
     var $isrunning               = null;
     var $alfresco_username_fix   = ''; // The fixed username for Alfresco where @ is replaced with _AT_
@@ -1844,7 +1844,12 @@ class ELIS_files {
         if (self::is_version('3.2')) {
             return elis_files_get_parent($uuid);
         } else if (self::is_version('3.4')) {
-             if (!$node = $this->cmis->getFolderParent('workspace://SpacesStore/' . $uuid)) {
+            if ($uuid == $this->root->uuid) {
+                // At the top level, so there is no parent
+                return false;
+            }
+
+            if (!$node = $this->cmis->getFolderParent('workspace://SpacesStore/' . $uuid)) {
                 return false;
             }
 
