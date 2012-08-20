@@ -810,6 +810,33 @@ function elis_files_generate_unique_filename($filename, $listing) {
 
     return $newfilename;
 }
+/**
+ * Upload a file into the repository.
+ *
+ * @uses $CFG
+ * @uses $USER
+ * @param string $upload   The array index of the uploaded file.
+ * @param string $path     The full path to the file on the local filesystem.
+ * @param string $uuid     The UUID of the folder where the file is being uploaded to.
+ * @param mixed  $olduuid  The uuid of the file to be overwritten - false if the file doesn't already exist
+ * @param object $filemeta The file meta data of the file to be uploaded when overwriting
+ * @return object Node values for the uploaded file.
+ */
+function elis_files_handle_duplicate_file($upload = '', $path = '', $uuid = '', $olduuid = false, $filemeta = null) {
+    global $USER;
+
+    //pass the new filename
+    $filename = isset($filemeta->newfilename) ? $filemeta->newfilename:'';
+
+//print_object("\n about to try upload: $upload path: $path filename: $filename filemeta: ");
+//print_object($filemeta);
+    $result = elis_files_upload_file($upload, $path, $uuid, true, $filename, $olduuid, $filemeta);
+
+    //clean up temp file after file upload
+    @fulldelete($filemta->filepath);
+
+    return $result;
+}
 
 /**
  * Upload a file into the repository.
@@ -821,22 +848,22 @@ function elis_files_generate_unique_filename($filename, $listing) {
  * @param string $uuid     The UUID of the folder where the file is being uploaded to.
  * @param bool   $useadmin Set to false to make sure that the administrative user configured in
  *                         the plug-in is not used for this operation (default: true).
- * @param mixed  $olduuid  The uuid of the file to be overwritten - false if the file doesn't already exist
+ * @param string $filename The name of the file to be uploaded - used when a duplicate file is to be renamed
+ * @param object $filemeta The file meta data of the file to be uploaded when overwriting
  * @return object Node values for the uploaded file.
  */
-function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin = true, $olduuid = false) {
+function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin = true, $filename = '', $olduuid = false, $filemeta = null) {
     global $CFG, $USER;
 
     require_once($CFG->libdir.'/filelib.php');
 
-    //get overwrite flag
-    $overwriteexisting = optional_param('overwrite', false, PARAM_BOOL);
-    $saveas_filename = optional_param('title', '', PARAM_FILE);     // save as file name
-
-    //default to use the saveas filename
-    $filename = $saveas_filename;
-
-    if (!empty($upload)) {
+    // assign file info from filemeta
+    if ($filemeta) {
+        $filename = (empty($filename)) ? $filemeta->name: $filename;
+        $filepath = $filemeta->filepath.$filename;
+        $filemime = $filemeta->type;
+        $filesize = $filemeta->size;
+    } else if (!empty($upload)) {
         if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
             return false;
         }
@@ -871,13 +898,15 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $uuid = $repo->get_root()->uuid;
     }
 
-    // process overwrite
+    //get overwrite flag
+    $overwriteexisting = optional_param('overwrite', false, PARAM_BOOL);
+
     if ($overwriteexisting && $olduuid && ($olduuid !== true)) {
         // delete file to be overwritten
         elis_files_delete($olduuid);
     }
 
-    $xfermethod = get_config('elis_files', 'file_transfer_method');
+   $xfermethod = get_config('elis_files', 'file_transfer_method');
     switch ($xfermethod) {
         case ELIS_FILES_XFER_WS:
             return elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid, $useadmin);
