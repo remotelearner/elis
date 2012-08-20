@@ -352,8 +352,6 @@ class ELIS_files {
                     $this->suuid = $folder->uuid;
                 } else if ($folder->title == 'course') {
                     $this->cuuid = $folder->uuid;
-                } else if ($folder->title == 'user') {
-                    $this->uuuid = $folder->uuid;
                 } else if ($folder->title == 'userset') {
                     $this->ouuid = $folder->uuid;
                 }
@@ -406,6 +404,7 @@ class ELIS_files {
         if ($username = $DB->get_field('user', 'username', array('id' => $USER->id))) {
             //mtrace("ELIS_files::verify_setup(): username = {$username}\n");
             $this->uuuid = elis_files_get_home_directory($username);
+            //error_log("verify_setup:: elis_files_get_home_directory({$username}) = {$this->uuuid}");
         }
         return true;
     }
