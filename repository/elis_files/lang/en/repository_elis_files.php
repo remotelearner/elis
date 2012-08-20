@@ -161,6 +161,7 @@ $string['errorfilenotmoved'] = 'Error: file not moved';
 $string['errortitlenotmoved'] = 'Error: {$a} not moved';
 $string['erroruploadduplicatefilename'] = 'Error: A file with that name already exists in this directory: {$a}';
 $string['erroruploadingfile'] = 'Error uploading file to Alfresco';
+$string['errorzipemptydirectory'] = 'Could not create a zip file. The directory you have selected is empty.';
 $string['failedtoinvokeservice'] = 'Failed to invoke service {$a->serviceurl} Code: {$a->code}';
 $string['filealreadyexistsinthatlocation'] = '{$a} file already exists in that location';
 $string['filetransfermethod'] = 'File transfer method';
