@@ -1696,16 +1696,21 @@ class repository_elis_files extends repository {
      * @param   int     uid     user id related to node uuid
      * @param   int     shared  shared flag related to node uuid
      * @param   int     oid     user set id related to node uuid
-     * @param   string  end     contextual end of path, e.g. course, user folder - uuid
+     * @param   bool    reset   internal use only!
      * @return  boolean         Return true if uuid is at root = e.g. end = uuid
      */
-    public function get_parent_path_from_tree($uuid, $foldertree, &$resultpath, $cid, $uid, $shared, $oid) {
+    public function get_parent_path_from_tree($uuid, $foldertree, &$resultpath, $cid, $uid, $shared, $oid, $reset = true) {
         static $found_parent = 0;
+        if ($reset) {
+            $found_parent = 0;
+        }
         if (!$found_parent) {
             $found_parent = 1;
             $info = $this->elis_files->get_info($uuid);
-            if ($info->type != ELIS_files::$type_folder) {
-                $uuid = $this->elis_files->get_parent($uuid);
+            if ($info->type != ELIS_files::$type_folder &&
+                ($node = $this->elis_files->get_parent($uuid)) &&
+                !empty($node->uuid)) {
+                $uuid = $node->uuid;
                 $found_parent = 2;
             }
         }
@@ -1721,7 +1726,7 @@ class repository_elis_files extends repository {
                 return true;
             }
             if (!empty($folder['children'])) {
-                if (self::get_parent_path_from_tree($uuid, $folder['children'], $resultpath, $cid, $uid, $shared, $oid)) {
+                if (self::get_parent_path_from_tree($uuid, $folder['children'], $resultpath, $cid, $uid, $shared, $oid, false)) {
                     return true;
                 }
             }

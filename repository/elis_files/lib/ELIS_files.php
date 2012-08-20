@@ -311,6 +311,8 @@ class ELIS_files {
                 foreach ($dir->folders as $folder) {
                     if ($folder->title == 'moodle') {
                         $muuid = $folder->uuid;
+                    } else if ($folder->title == 'User Homes') {
+                        $this->uuuid = $folder->uuid;
                     }
                 }
             }
@@ -1693,12 +1695,9 @@ class ELIS_files {
         // Look at all of the userset directories that exist for our userset ID.
         if (!empty($dir->folders)) {
             foreach ($dir->folders as $folder) {
-                if (!empty($uuid)) {
-                    continue;
-                }
-
                 if ($folder->title == $userset->name) {
                     $uuid = $folder->uuid;
+                    break;
                 }
             }
         }
