@@ -249,7 +249,7 @@ class ELIS_files {
  * @return bool True if setup, False otherwise.
  */
     function verify_setup() {
-        global $CFG, $USER;
+        global $CFG, $DB, $USER;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('verify_setup()');
 
@@ -311,8 +311,6 @@ class ELIS_files {
                 foreach ($dir->folders as $folder) {
                     if ($folder->title == 'moodle') {
                         $muuid = $folder->uuid;
-                    } else if ($folder->title == 'User Homes') {
-                        $this->uuuid = $folder->uuid;
                     }
                 }
             }
@@ -405,6 +403,10 @@ class ELIS_files {
             mkdir($CFG->dataroot . '/temp/alfresco', $CFG->directorypermissions, true);
         }
 
+        if ($username = $DB->get_field('user', 'username', array('id' => $USER->id))) {
+            //mtrace("ELIS_files::verify_setup(): username = {$username}\n");
+            $this->uuuid = elis_files_get_home_directory($username);
+        }
         return true;
     }
 /**

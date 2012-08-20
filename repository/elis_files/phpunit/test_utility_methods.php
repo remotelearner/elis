@@ -28,11 +28,13 @@ define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__) .'/../../../elis/core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot .'/elis/core/lib/setup.php');
+require_once($CFG->dirroot .'/lib/phpunittestlib/testlib.php');
 require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot .'/repository/elis_files/lib.php');
 
 define('ELIS_FILES_PREFIX', 'elis_files_test_utility_methods');
 define('ONE_MB_BYTES', 1048576);
+define('USERS_HOME', 'userhomedir');
 
 /**
  *
@@ -70,16 +72,21 @@ class utilityMethodsTest extends elis_database_test {
 
     protected static function get_overlay_tables() {
         return array(
-            'config_plugins' => 'moodle'
+            'config_plugins' => 'moodle',
+            'user' => 'moodle'
         );
     }
 
     public static function initRepo() {
+        global $USER;
         if (!self::$repo) {
+            $USER = get_test_user('admin');
+            //var_dump($USER);
+
             self::$repo = new repository_elis_files('elis_files', SYSCONTEXTID,
                               array('ajax' => false, 'name' => 'bogus', 'type' =>'elis_files'));
             $filename = generate_temp_file(1);
-            $uploadresponse = elis_files_upload_file('', $filename, self::$repo->elis_files->muuid);
+            $uploadresponse = elis_files_upload_file('', $filename, self::$repo->elis_files->uuuid);
             unlink($filename);
             self::$file_uuid = ($uploadresponse && !empty($uploadresponse->uuid))
                                ? $uploadresponse->uuid : '';
@@ -92,7 +99,6 @@ class utilityMethodsTest extends elis_database_test {
     }
 
     protected function setUp() {
-        global $USER;
         parent::setUp();
 
         $rs = self::$origdb->get_recordset('config_plugins', array('plugin' => 'elis_files'));
@@ -104,17 +110,18 @@ class utilityMethodsTest extends elis_database_test {
             $rs->close();
         }
 
-        $USER = get_admin();
-        //$GLOBALS['USER'] = $USER;
-
         if (!self::$repo) {
             $this->markTestSkipped('Repository not configured or enabled');
         }
     }
 
     public static function cleanupfiles($uuid = '') {
-        if (empty($uuid)) {
-            $uuid = self::$repo->elis_files->muuid;
+        if (empty($uuid) &&
+            ($node = self::$repo->elis_files->get_parent(self::$file_uuid)) &&
+            !empty($node->uuid)) {
+            $uuid = $node->uuid;
+        } else {
+            return;
         }
         if ($dir = elis_files_read_dir($uuid)) {
             foreach ($dir->files as $file) {
@@ -140,9 +147,9 @@ class utilityMethodsTest extends elis_database_test {
             array(self::$repo->elis_files->muuid, 'Company Home'),
             array(self::$repo->elis_files->suuid, 'moodle'),
             array(self::$repo->elis_files->cuuid, 'moodle'),
-            array(self::$repo->elis_files->uuuid, 'Company Home'),
+            array(self::$repo->elis_files->uuuid, 'User Homes'),
             array(self::$repo->elis_files->ouuid, 'moodle'),
-            array(self::$file_uuid, 'moodle'),
+            array(self::$file_uuid, USERS_HOME),
         ); 
     }
 
@@ -151,6 +158,7 @@ class utilityMethodsTest extends elis_database_test {
      * @dataProvider get_parent_dataProvider
      */
     public function test_get_parent($child_uuid, $parent_name) {
+        global $USER;
         // Look for the Company Home folder
         if (empty($child_uuid)) {
             $this->markTestSkipped('Warning: Data provider missing uuid!');
@@ -160,6 +168,9 @@ class utilityMethodsTest extends elis_database_test {
         //mtrace("test_get_parent({$child_uuid}, '{$parent_name}') = ");
         //var_dump($node);
         $this->assertTrue(!empty($node->uuid));
+        if ($parent_name == USERS_HOME) {
+            $parent_name = elis_files_transform_username($USER->username);
+        }
         $this->assertEquals($parent_name, $node->title);
     }
 
@@ -168,6 +179,7 @@ class utilityMethodsTest extends elis_database_test {
      * @dataProvider get_parent_dataProvider
      */
     public function test_get_parent_path_from_tree($child_uuid, $parent_name) {
+        global $USER;
         if (empty($child_uuid)) {
             $this->markTestSkipped('Warning: Data provider missing uuid!');
         }
@@ -180,6 +192,9 @@ class utilityMethodsTest extends elis_database_test {
         //var_dump($result_path);
         if ($parent_name != 'Company Home') {
             $this->assertTrue(!empty($result_path));
+            if ($parent_name == USERS_HOME) {
+                $parent_name = elis_files_transform_username($USER->username);
+            }
             $this->assertEquals($parent_name, $result_path[count($result_path) -1]['name']);
         } else {
             $this->assertTrue(empty($result_path));
