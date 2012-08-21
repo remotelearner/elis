@@ -88,7 +88,7 @@ $string['configpasswordlessusersync'] = 'Your site contains users with an authen
                                         'In order for those users to be able to properly use this plug-in from Moodle, they '.
                                         'need to have Alfresco accounts created with a generated password. You can do this '.
                                         'automatically by running the <em>np_user_sync.php</em> script within the '.
-                                        '<pre>repository/elis_files directory</pre>.';
+                                        '<pre>repository/elis_files directory</pre>';
 $string['configuserquota'] = 'Set the default value for how much storage space all Moodle users on Alfresco can use.  ' .
                              '<b>Select Unlimited for unlimited storage space.</b>';
 $string['configurecategoryfilter'] = 'Configure category filter';
