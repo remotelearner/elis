@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot. '/repository/elis_files/lib/eventlib.php');
+require_once($CFG->dirroot. '/repository/elis_files/lib/lib.php');
 
 class block_repository extends block_base {
 
