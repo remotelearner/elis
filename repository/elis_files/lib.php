@@ -285,7 +285,7 @@ class repository_elis_files extends repository {
                                       array('uuid' => $prev_node->uuid));
             } else if ($check_uuid == $this->elis_files->suuid) {
                 $shared = true;
-            } else if ($check_uuid == $this->elis_files->uuuid) {
+            } else if ($prev_node->uuid == $this->elis_files->uuuid) {
                 if ($folder_name == $admin_username) {
                     $uid = $DB->get_field('user', 'id', array('username' => 'admin'));
                     //error_log("ELIS Files: matches admin user with folder = {$folder_name} ($uid)");
@@ -352,7 +352,7 @@ class repository_elis_files extends repository {
                                                   array('uuid' => $prev_node->uuid));
                         } else if ($check_uuid == $this->elis_files->suuid) {
                             $shared = true;
-                        } else if ($child->uuid == $this->elis_files->uuuid) {
+                        } else if ($prev_node->uuid == $this->elis_files->uuuid) {
                             if ($folder_name == $admin_username) {
                                 $uid = $DB->get_field('user', 'id', array('username' => 'admin'));
                                 //error_log("ELIS Files: matches admin user with folder = {$folder_name} ($uid)");
