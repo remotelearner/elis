@@ -266,7 +266,7 @@ class repository_elis_files extends repository {
 
         $ret['parent'] = $this->current_node; // elis_files_get_parent($uuid);
 
-        $admin_username = trim(get_config('admin_username','elis_files'));
+        $admin_username = trim(get_config('elis_files', 'admin_username'));
         $check_node = $this->current_node;
         $prev_node = $this->current_node;
         $uid = $cid = $oid = $shared = 0;
@@ -989,13 +989,16 @@ class repository_elis_files extends repository {
         $hasadmin = $DB->record_exists('user', array('username'   => 'admin',
                                                      'mnethostid' => $CFG->mnet_localhost_id));
 
-        $admin_username = trim(get_config('admin_username','elis_files'));
+        $admin_username = trim(get_config('elis_files', 'admin_username'));
         if (empty($admin_username)) {
             $adminusername = 'moodleadmin';
             set_config('admin_username', $adminusername, 'elis_files');
         } else {
             $adminusername = $admin_username;
         }
+
+        // Added to prevent an empty value from being stored in the database on form submit
+        $mform->addElement('hidden', 'admin_username', $adminusername);
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
         if (self::is_repo_visible('elis_files')) {
@@ -1051,7 +1054,7 @@ class repository_elis_files extends repository {
      */
     protected function folder_tree_to_fm(&$output, $folderentry, $path = '', $puuid = '', $uid = 0, $cid = 0, $oid = 0, $shared = false) {
         global $DB;
-        $admin_username = trim(get_config('admin_username','elis_files'));
+        $admin_username = trim(get_config('elis_files', 'admin_username'));
         foreach ($folderentry as $folder) {
             $_uid = $uid;
             $_cid = $cid;
