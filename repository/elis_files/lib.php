@@ -421,11 +421,15 @@ class repository_elis_files extends repository {
      *
      * @param string $uuid a unique id of directory in alfresco
      * @param string $path path to a directory
-     * @return array
+     * @return array|null
      */
     public function get_file($uuid, $file = '') {
         //error_log("get_file($uuid, '{$file}');");
         $node = $this->elis_files->get_info($uuid);
+        if (empty($node)) {
+            return null;
+        }
+
         // Test to make sure this works with, say, a teacher or someone non-admin
         $username = '';
 
