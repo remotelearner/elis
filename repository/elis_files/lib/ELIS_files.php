@@ -101,6 +101,7 @@ class ELIS_files {
     var $suuid                   = '';  // Shared folder UUID
     var $cuuid                   = '';  // Course folder UUID
     var $uuuid                   = '';  // User folder UUID
+    var $uhomesuid               = ''; // User Homes folder UUID
     var $ouuid                   = '';  // usersets folder UUID
     var $root                    = '';  // Object representation of the root node
     var $config                  = '';  // Config object setting variables for Alfresco
@@ -316,7 +317,7 @@ class ELIS_files {
             $this->node_inherit($uuid, false);
         }
 
-        // Attempt to find the UUID of the main storage folders within the root.
+        // Attempt to find the UUID of the main storage folders within the "moodle" folder.
         $dir = $this->read_dir($this->muuid, true);
 
         if (!empty($dir->folders)) {
@@ -327,6 +328,17 @@ class ELIS_files {
                     $this->cuuid = $folder->uuid;
                 } else if ($folder->title == 'userset') {
                     $this->ouuid = $folder->uuid;
+                }
+            }
+        }
+
+        // Attemping to find the UUID of any storage folders within the top-level folder.
+        $dir = $this->read_dir($this->root->uuid);
+
+        if (!empty($dir->folders)) {
+            foreach ($dir->folders as $folder) {
+                if ($folder->title == 'User Homes') {
+                    $this->uhomesuid = $folder->uuid;
                 }
             }
         }
