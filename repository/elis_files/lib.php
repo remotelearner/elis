@@ -143,6 +143,57 @@ class repository_elis_files extends repository {
     }
 
     /**
+     * Determine whether the current user has permission to edit the specified node,
+     * making as few database and permissions checking calls as needed based on the parent
+     * and child nodes
+     *
+     * @param string $uuid The unencoded UUID of the parent node
+     * @param object $child The child node object
+     * @param boolean $canedit True of the user has permissions on the parent,
+     *                         otherwise false
+     * @return boolean True if the user can edit the child node, otherwise false
+     */
+    private function can_edit_child($uuid, $child, $canedit) {
+        global $CFG, $DB;
+
+        // Unless a critical transition is happening here, permissions should be the
+        // same as for the parent node
+        $child_canedit = $canedit;
+
+        if ($child->uuid == $this->elis_files->suuid) {
+            // Transition down into the shared space
+            $child_canedit = $this->check_editing_permissions(SITEID, true, 0, $child->uuid, 0);
+        } else if ($uuid == $this->elis_files->uhomesuid) {
+            // Transition down into a user's space
+            require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+            if ($userid = elis_files_folder_to_userid($child->title)) {
+                $child_canedit = $this->check_editing_permissions(SITEID, false, 0, $child->uuid, $userid);
+            }
+        } else if ($uuid == $this->elis_files->cuuid) {
+            // Transition down into a course's space
+            if ($courseid = $DB->get_field('elis_files_course_store', 'courseid', array('uuid' => $child->uuid))) {
+                if ($DB->record_exists('course', array('id' => $courseid))) {
+                    $child_canedit = $this->check_editing_permissions($courseid, false, 0, $child->uuid, 0);
+                }
+            }
+        } else if ($uuid == $this->elis_files->ouuid) {
+            if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+                require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+                require_once(elispm::lib('data/userset.class.php'));
+
+                // Transition down into a user set's space
+                if ($usersetid = $DB->get_field('elis_files_userset_store', 'usersetid', array('uuid' => $child->uuid))) {
+                    if ($DB->record_exists(userset::TABLE, array('id' => $usersetid))) {
+                        $child_canedit = $this->check_editing_permissions(SITEID, false, $usersetid, $child->uuid, 0);
+                    }
+                }
+            }
+        }
+
+        return $child_canedit;
+    }
+
+    /**
      * Get a file list from alfresco
      *
      * @param string $encodedpath base64 encoded and serialized arry of path(uuid), shared(shared flag), oid(userset id), cid(course id) and uid(user id)
@@ -374,6 +425,11 @@ class repository_elis_files extends repository {
                 $created = isset($info->created) ? $info->created : '';
                 $modified = isset($info->modified) ? $info->modified : '';
                 $owner = isset($info->owner) ? $info->owner : '';
+
+                // Handle any parent-to-child transitions that may cause permissions
+                // on the sub-folder to be different from the current folder
+                $child_canedit = $this->can_edit_child($uuid, $child, $canedit);
+
                 $ret['list'][] = array('title'=>$child->title,
                         'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
                         'name'=>$child->title,
@@ -381,7 +437,8 @@ class repository_elis_files extends repository {
                         'author' => $owner,
                         'datemodified' => $modified,
                         'datecreated' => $created,
-                        'children'=>array());
+                        'children'=>array(),
+                        'canedit'=>$child_canedit);
             }
         }
 
@@ -409,7 +466,8 @@ class repository_elis_files extends repository {
                         'author' => $owner,
                         'datemodified' => $modified,
                         'datecreated' => $created,
-                        'source'=>$child->uuid);
+                        'source'=>$child->uuid,
+                        'canedit'=>$canedit);
             }
         }
 

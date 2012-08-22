@@ -3036,6 +3036,36 @@ function elis_files_transform_username($username) {
 }
 
 /**
+ * Convert a folder title to a Moodle userid
+ * @param string $folder The folder title, including _AT_ instead of @,
+ *                       excluding any tenant information
+ * @return mixed The id of the matching Moodle user, or false if none
+ */
+function elis_files_folder_to_userid($folder) {
+    global $CFG, $DB;
+
+    if (strpos($folder, '@') !== false) {
+        // This should never happen
+        return false;
+    }
+
+    // Folder contain _AT_ instead of @
+    $username = str_replace('_AT_', '@', $folder);
+
+    if ($username == elis::$config->elis_files->admin_username) {
+        // This user is the Alfresco administrator
+        $username = 'admin';
+    }
+
+    // Find the user based on their username
+    $params = array(
+        'username' => $username,
+        'mnethostid' => $CFG->mnet_localhost_id
+    );
+    return $DB->get_field('user', 'id', $params);
+}
+
+/**
  * Recursively get the path to a specific node (folder or document) from the root of the repository down.
  *
  * @param string $uuid The UUID of the node we are processing
