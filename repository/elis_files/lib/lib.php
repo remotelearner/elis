@@ -3083,6 +3083,9 @@ function elis_files_node_path($uuid, $path = '') {
     if (empty($path)) {
         $path = '';
         $node = elis_files_node_properties($uuid);
+        if (!$node || !property_exists($node, 'type')) {
+            return ''; // TBD
+        }
         if ($node->type == ELIS_files::$type_folder) {
             $path = $node->title;
         }
