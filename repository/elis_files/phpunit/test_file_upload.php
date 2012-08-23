@@ -72,6 +72,7 @@ function generate_temp_file($mbs) {
 
 
 class file_uploadTest extends elis_database_test {
+    protected $created_uuids = array();
 
     protected static function get_overlay_tables() {
         return array(
@@ -96,6 +97,9 @@ class file_uploadTest extends elis_database_test {
     }
 
     protected function tearDown() {
+        foreach ($this->created_uuids as $uuid) {
+            elis_files_delete($uuid);
+        }
         if ($dir = elis_files_read_dir()) {
             foreach ($dir->files as $file) {
                 if (strpos($file->title, ELIS_FILES_PREFIX) === 0) {
@@ -103,8 +107,18 @@ class file_uploadTest extends elis_database_test {
                 }
             }
         }
-
         parent::tearDown();
+    }
+
+    protected function call_upload_file($repo, $upload, $path, $uuid) {
+        $response = elis_files_upload_file($upload, $path, $uuid);
+        if ($response && !empty($response->uuid)) {
+            $this->created_uuids[] = $response->uuid;
+            $node = elis_files_get_parent($response->uuid);
+            $this->assertTrue($node && !empty($node->uuid));
+            $this->assertEquals($uuid, $node->uuid);
+        }
+        return $response;
     }
 
     public function fileSizeProvider() {
@@ -156,7 +170,7 @@ class file_uploadTest extends elis_database_test {
         $filesize = $mb * ONE_MB_BYTES;
         $filename = generate_temp_file($mb);
 
-        $response = elis_files_upload_file('', $filename);
+        $response = $this->call_upload_file($repo, '', $filename, $repo->root->uuid);
 
         unlink($filename);
 
@@ -178,7 +192,7 @@ class file_uploadTest extends elis_database_test {
 
         $filename = generate_temp_file(1);
 
-        $response = elis_files_upload_file('', $filename);
+        $response = $this->call_upload_file($repo, '', $filename, $repo->root->uuid);
 
         unlink($filename);
 
@@ -198,13 +212,14 @@ class file_uploadTest extends elis_database_test {
         // Explicitly set the file transfer method to FTP
         set_config('file_transfer_method', ELIS_FILES_XFER_FTP, 'elis_files');
 
-        $filename = generate_temp_file(1);
-
-        $response = elis_files_upload_file('', $filename);
-
-        unlink($filename);
-
-        $this->assertNotEquals(false, $response);
-        $this->assertObjectHasAttribute('uuid', $response);
+        $targets = array($repo->root->uuid, $repo->muuid, $repo->suuid, $repo->cuuid,
+                         $repo->uuuid, $repo->ouuid);
+        foreach ($targets as $uuid) {
+            $filename = generate_temp_file(1);
+            $response = $this->call_upload_file($repo, '', $filename, $uuid);
+            unlink($filename);
+            $this->assertNotEquals(false, $response);
+            $this->assertObjectHasAttribute('uuid', $response);
+        }
     }
 }

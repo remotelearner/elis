@@ -1208,7 +1208,13 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
     // explode the path and chdir for each folder
     $path_array = explode('/',$repo_path);
     foreach ($path_array as $path) {
-        $chdir = ftp_chdir($ftp,$path);
+        if (!@ftp_chdir($ftp, $path)) {
+            error_log("elis_files_upload_ftp('{$filename}', '{$filepath}', {$filemime}, {$filesize}, '{$uuid}', {$useadmin}): repo_path = {$repo_path} - couldn't ftp_chdir() to '{$path}'");
+            ftp_close($ftp);
+            // Signal an FTP failure
+            $logger->signal_error(ELIS_FILES_ERROR_FTP);
+            return false;
+        }
     }
 
     $res = ftp_put($ftp, $filename, $filepath, FTP_BINARY);
@@ -3075,6 +3081,7 @@ function elis_files_folder_to_userid($folder) {
 function elis_files_node_path($uuid, $path = '') {
     // If we're starting out and the current node is a folder, include it in the path
     if (empty($path)) {
+        $path = '';
         $node = elis_files_node_properties($uuid);
         if ($node->type == ELIS_files::$type_folder) {
             $path = $node->title;
@@ -3082,30 +3089,13 @@ function elis_files_node_path($uuid, $path = '') {
     }
 
     // Get the parents for the given node
-    $response = elis_files_request('/cmis/i/'.$uuid.'/parents');
-
-
-    if (!empty($response)) {
-        $dom = new DOMDocument();
-        $dom->preserveWhiteSpace = false;
-        $dom->loadXML($response);
-
-        $nodes = $dom->getElementsByTagName('entry');
-
-        if ($nodes->length > 0) {
-            // This node has parents so add this node title to the path and recurse on the parent node
-            $type = '';
-            $node = elis_files_process_node($dom, $nodes->item(0), $type);
-            $path = $node->title.(!empty($path) ? '/'.$path : '');
-            return elis_files_node_path($node->uuid, $path);
-        } else {
-            // This node has no parents, we're at the root so prepend a slash and return everything
-            return '/'.$path;
-        }
-    } else {
-        // This node has no parents, we're at the root so prepend a slash and return everything
-            return '/'.$path;
+    while ($response = elis_files_get_parent($uuid)) {
+        $path = $response->title . (!empty($path) ? '/'. $path : '');
+        $uuid = $response->uuid;
     }
+
+    //error_log("elis_files_node_path() => /{$path}");
+    return '/'. $path;
 }
 
 /**
