@@ -1059,9 +1059,6 @@ class repository_elis_files extends repository {
             $adminusername = $admin_username;
         }
 
-        // Added to prevent an empty value from being stored in the database on form submit
-        $mform->addElement('hidden', 'admin_username', $adminusername);
-
         // Only proceed here if the Alfresco plug-in is actually enabled.
         if (self::is_repo_visible('elis_files')) {
             if ($repo = repository_factory::factory()) {
@@ -1070,6 +1067,9 @@ class repository_elis_files extends repository {
                     $mform->addElement('static', 'admin_username_default', '', get_string('elis_files_default_admin_username', 'repository_elis_files'));
                     $mform->addElement('static', 'admin_username_intro', '', get_string('configadminusername', 'repository_elis_files'));
                 } else {
+                    // Added to prevent an empty value from being stored in the database on form submit
+                    $mform->addElement('hidden', 'admin_username', $adminusername);
+
                     // An Alfresco account with the specified username has been created, check if a Moodle account exists with that
                     // username and display a warning if that is the case.
                     if (($userid = $DB->get_field('user', 'id', array('username'=> $adminusername, 'mnethostid'=> $CFG->mnet_localhost_id))) !== false) {
