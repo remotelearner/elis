@@ -131,15 +131,100 @@ class fileduplicatesTest extends elis_database_test {
         //set overwrite param
         $_POST['overwrite'] = true;
 
+        //setup filemeta
+        $path_parts = pathinfo($filename);
+        $filemeta = new stdClass;
+        $filemeta->name = $path_parts['basename'];
+        $filemeta->filepath = $CFG->dataroot.'/temp/';
+        $filemeta->type = mime_content_type($filename);
+        $filemeta->size = $filesize;
         //we need the uuid of the file to send to the elis_files_handle_duplicate function
-        $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid);
+        $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid, $filemeta);
 
-        unlink($filename);
+        if (file_exists($filename)) {
+            unlink($filename);
+        }
 
         // Verify that we get a valid response
         $this->assertNotEquals(false, $duplicateresponse);
         // Verify that response has a uuid
         $this->assertObjectHasAttribute('uuid', $duplicateresponse);
+
+        // Get info on the uploaded file's uuid...
+        $response = $repo->get_info($duplicateresponse->uuid);
+
+        // Verify that response has a type
+        $this->assertObjectHasAttribute('type', $response);
+        // Verify that type is folder
+        $this->assertEquals(ELIS_files::$type_document, $response->type);
+        // Verify that title is set
+        $this->assertObjectHasAttribute('title', $response);
+        // Verify that created is set
+        $this->assertObjectHasAttribute('created', $response);
+        // Verify that modified is set
+        $this->assertObjectHasAttribute('modified', $response);
+        // Verify that summary is set
+        $this->assertObjectHasAttribute('summary', $response);
+        // Verify that Owner is set
+        $this->assertObjectHasAttribute('owner', $response);
+    }
+
+    /**
+     * Test that uploading a duplicate file handles overwrites
+     */
+    public function testRenameDuplicate() {
+        global $CFG, $_POST;
+
+        // Check if Alfresco is enabled, configured and running first
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped();
+        }
+
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('Repository not configured or enabled');
+        }
+
+        // Generate a file
+        $filesize = 1 * ONE_MB_BYTES;
+        $filename = generate_temp_file(1);
+
+
+        $uploadresponse = elis_files_upload_file('',$filename);
+
+        //setup filemeta
+        $path_parts = pathinfo($filename);
+        $filemeta = new stdClass;
+        $filemeta->name = $path_parts['basename'];
+        $filemeta->filepath = $CFG->dataroot.'/temp/';
+        $filemeta->type = mime_content_type($filename);
+        $filemeta->size = $filesize;
+        // Generate a duplicate filename
+        $listing = array();
+        $listing['list'] = array();
+        $listing['list'][0]['title'] = $filemeta->name;
+        $listing['list'][0]['path'] = base64_encode(serialize($uploadresponse->uuid));
+
+        $filemeta->newfilename =  elis_files_generate_unique_filename($filemeta->name, $listing);
+
+        //we need the uuid of the file to send to the elis_files_handle_duplicate function
+        $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid, $filemeta);
+
+        if (file_exists($filename)) {
+            unlink($filename);
+        }
+        if (file_exists($filemeta->filepath.$filemeta->newfilename)) {
+            unlink($filemeta->filepath.$filemeta->newfilename);
+        }
+        // Verify that we get a valid response
+        $this->assertNotEquals(false, $duplicateresponse);
+        // Verify that response has a uuid
+        $this->assertObjectHasAttribute('uuid', $duplicateresponse);
+
+        // Check that the uuid returned exists
+        $node = elis_files_node_properties($duplicateresponse->uuid);
+
+        //Verify that the node title is the same as the new filename
+        $this->assertEquals($filemeta->newfilename,$node->title);
 
         // Get info on the uploaded file's uuid...
         $response = $repo->get_info($duplicateresponse->uuid);

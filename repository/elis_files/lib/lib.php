@@ -828,12 +828,10 @@ function elis_files_handle_duplicate_file($upload = '', $path = '', $uuid = '', 
     //pass the new filename
     $filename = isset($filemeta->newfilename) ? $filemeta->newfilename:'';
 
-//print_object("\n about to try upload: $upload path: $path filename: $filename filemeta: ");
-//print_object($filemeta);
     $result = elis_files_upload_file($upload, $path, $uuid, true, $filename, $olduuid, $filemeta);
 
     //clean up temp file after file upload
-    @fulldelete($filemta->filepath);
+    @fulldelete($filemeta->filepath);
 
     return $result;
 }
@@ -860,9 +858,10 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     // assign file info from filemeta
     if ($filemeta) {
         $filename = (empty($filename)) ? $filemeta->name: $filename;
-        $filepath = $filemeta->filepath.$filename;
+        $filepath = $filemeta->filepath.$filemeta->name;
         $filemime = $filemeta->type;
         $filesize = $filemeta->size;
+
     } else if (!empty($upload)) {
         if (!isset($_FILES[$upload]) || !empty($_FILES[$upload]->error)) {
             return false;
@@ -893,7 +892,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     if (!(ELIS_files::$version = elis_files_get_repository_version())) {
         return false;
     }
-    //error_log("elis_files_upload_file('$upload', '$path', '$uuid', $useadmin): version = ". ELIS_files::$version);
+//    error_log("elis_files_upload_file('$upload', '$path', '$uuid', $useadmin): version = ". ELIS_files::$version);
     if (empty($uuid)) {
         $uuid = $repo->get_root()->uuid;
     }
@@ -906,7 +905,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         elis_files_delete($olduuid);
     }
 
-   $xfermethod = get_config('elis_files', 'file_transfer_method');
+    $xfermethod = get_config('elis_files', 'file_transfer_method');
     switch ($xfermethod) {
         case ELIS_FILES_XFER_WS:
             return elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid, $useadmin);
