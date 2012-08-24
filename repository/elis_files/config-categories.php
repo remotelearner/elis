@@ -31,6 +31,7 @@ require_once dirname(__FILE__) . '/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
 require_once $CFG->dirroot . '/repository/elis_files/ELIS_files_factory.class.php';
 //require_once $CFG->dirroot . '/repository/lib.php';
 require_once $CFG->dirroot . '/repository/elis_files/tree_menu_lib.php';
+require_once $CFG->dirroot . '/repository/elis_files/lib/lib.php';
 
 global $DB, $OUTPUT;
 
@@ -54,9 +55,12 @@ if (($data = data_submitted($CFG->wwwroot . '/repository/elis_files/config-categ
     confirm_sesskey()) {
 
     if (isset($data->reset)) {
-        set_config('cron', 0, 'elis_files');
         $DB->delete_records('elis_files_categories');
-        $repo->cron();
+
+        // Perform the back-end category refresh
+        $categories = elis_files_get_categories();
+        $uuids = array();
+        $repo->process_categories($uuids, $categories);
     } else if (isset($data->categories)) {
         set_config('catfilter', serialize($data->categories), 'elis_files');
     } else {

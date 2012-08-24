@@ -2313,7 +2313,7 @@ class ELIS_files {
  * @param int $catid The category database record ID.
  * @return array An array of category objects.
  */
-    function category_get_children($catid) {
+    static function category_get_children($catid) {
         global $DB;
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('category_get_children(' . $catid . ')');
@@ -2942,7 +2942,7 @@ class ELIS_files {
 
         if (ELIS_FILES_DEBUG_TRACE) mtrace('migrate_all_users(' . $limit . ')');
 
-        $dir = $this->read_dir($this->uuuid);
+        $dir = $this->read_dir($this->uhomesuid);
 
         if (!empty($dir->folders)) {
             foreach ($dir->folders as $folder) {
@@ -2960,9 +2960,12 @@ class ELIS_files {
                         }
 
                     // If this user account in Moodle is deleted, then we will remove their Alfresco storage.
-                    } else if ($DB->record_exists('user', 'id', $uid, 'deleted', 1)) {
-                        if (!afresco_delete($dir->uuid, true)) {
-                            debugging(get_string('couldnotdeletefile', 'repository_elis_files', $dir->title));
+                    } else if ($user = $DB->get_record('user', array('id' => $uid, 'deleted' => 1))) {
+                        // The user's directory should have been deleted but their legacy directory may still
+                        // be hanging around
+                        // TODO: respect the "delete home directories" setting?
+                        if (!elis_files_delete($folder->uuid, true)) {
+                            debugging(get_string('couldnotdeletefile', 'repository_elis_files', $folder->title));
                         }
                     }
                 }
