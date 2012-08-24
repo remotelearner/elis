@@ -139,7 +139,7 @@ class fileduplicatesTest extends elis_database_test {
         $filemeta->type = mime_content_type($filename);
         $filemeta->size = $filesize;
         //we need the uuid of the file to send to the elis_files_handle_duplicate function
-        $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid, $filemeta);
+        $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid, '', $filemeta);
 
         if (file_exists($filename)) {
             unlink($filename);
@@ -204,16 +204,16 @@ class fileduplicatesTest extends elis_database_test {
         $listing['list'][0]['title'] = $filemeta->name;
         $listing['list'][0]['path'] = base64_encode(serialize($uploadresponse->uuid));
 
-        $filemeta->newfilename =  elis_files_generate_unique_filename($filemeta->name, $listing);
+        $newfilename =  elis_files_generate_unique_filename($filemeta->name, $listing);
 
         //we need the uuid of the file to send to the elis_files_handle_duplicate function
-        $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid, $filemeta);
+        $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid, $newfilename, $filemeta);
 
         if (file_exists($filename)) {
             unlink($filename);
         }
-        if (file_exists($filemeta->filepath.$filemeta->newfilename)) {
-            unlink($filemeta->filepath.$filemeta->newfilename);
+        if (file_exists($filemeta->filepath.$newfilename)) {
+            unlink($filemeta->filepath.$newfilename);
         }
         // Verify that we get a valid response
         $this->assertNotEquals(false, $duplicateresponse);
@@ -224,7 +224,7 @@ class fileduplicatesTest extends elis_database_test {
         $node = elis_files_node_properties($duplicateresponse->uuid);
 
         //Verify that the node title is the same as the new filename
-        $this->assertEquals($filemeta->newfilename,$node->title);
+        $this->assertEquals($newfilename,$node->title);
 
         // Get info on the uploaded file's uuid...
         $response = $repo->get_info($duplicateresponse->uuid);

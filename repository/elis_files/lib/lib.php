@@ -819,14 +819,15 @@ function elis_files_generate_unique_filename($filename, $listing) {
  * @param string $path     The full path to the file on the local filesystem.
  * @param string $uuid     The UUID of the folder where the file is being uploaded to.
  * @param mixed  $olduuid  The uuid of the file to be overwritten - false if the file doesn't already exist
+ * @param string $newfilename The new name of a file when duplicate
  * @param object $filemeta The file meta data of the file to be uploaded when overwriting
  * @return object Node values for the uploaded file.
  */
-function elis_files_handle_duplicate_file($upload = '', $path = '', $uuid = '', $olduuid = false, $filemeta = null) {
+function elis_files_handle_duplicate_file($upload = '', $path = '', $uuid = '', $olduuid = false, $newfilename = '', $filemeta = null) {
     global $USER;
 
     //pass the new filename
-    $filename = isset($filemeta->newfilename) ? $filemeta->newfilename:'';
+    $filename = isset($newfilename) ? $newfilename:'';
 
     $result = elis_files_upload_file($upload, $path, $uuid, true, $filename, $olduuid, $filemeta);
 
