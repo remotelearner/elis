@@ -1693,7 +1693,8 @@ class ELIS_files {
             return false;
         }
 
-        if ($uuid = $this->create_dir($userset->name, $this->ouuid, $userset->display)) {
+        // Create directory only if it doesn't already exist
+        if (empty($uuid) && ($uuid = $this->create_dir($userset->name, $this->ouuid, $userset->display))) {
             // Disable inheriting parent space permissions.  This can be disabled in Alfresco without being
             // reset by the code elsewhere.
             $this->node_inherit($uuid, false);

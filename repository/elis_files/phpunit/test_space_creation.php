@@ -246,4 +246,20 @@ class test_space_creation extends elis_database_test {
         $this->assertTrue($DB->record_exists('elis_files_userset_store', array('usersetid' => $usersetid, 'uuid' => $uuid)));
         $repo->delete($uuid);
     }
+
+    // Validate duplicate user set creation
+    function testDuplicateUsersetCreation() {
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('ELIS Files is not configured or running');
+        }
+
+        $userset = new userset(array('name' => 'testuserset'));
+        $userset->save();
+
+        $uuid = $repo->get_userset_store($userset->id);
+        $uuidduplicate = $repo->get_userset_store($userset->id);
+
+        $this->assertEquals($uuidduplicate, $uuid);
+    }
+
 }
