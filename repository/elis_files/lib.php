@@ -317,7 +317,6 @@ class repository_elis_files extends repository {
 
         $ret['parent'] = $this->current_node; // elis_files_get_parent($uuid);
 
-        $admin_username = trim(get_config('elis_files', 'admin_username'));
         $check_node = $this->current_node;
         $prev_node = $this->current_node;
         $uid = $cid = $oid = $shared = 0;
@@ -337,13 +336,7 @@ class repository_elis_files extends repository {
             } else if ($check_uuid == $this->elis_files->suuid) {
                 $shared = true;
             } else if ($prev_node->uuid == $this->elis_files->uuuid) {
-                if ($folder_name == $admin_username) {
-                    $uid = $DB->get_field('user', 'id', array('username' => 'admin'));
-                    //error_log("ELIS Files: matches admin user with folder = {$folder_name} ($uid)");
-                } else {
-                    $username = str_replace('_AT_', '@', $folder_name);
-                    $uid = $DB->get_field('user', 'id', array('username' => $username));
-                }
+                $uid = elis_files_folder_to_userid($folder_name);
             }
             $prev_node = $check_node;
         }
@@ -404,13 +397,7 @@ class repository_elis_files extends repository {
                         } else if ($check_uuid == $this->elis_files->suuid) {
                             $shared = true;
                         } else if ($prev_node->uuid == $this->elis_files->uuuid) {
-                            if ($folder_name == $admin_username) {
-                                $uid = $DB->get_field('user', 'id', array('username' => 'admin'));
-                                //error_log("ELIS Files: matches admin user with folder = {$folder_name} ($uid)");
-                            } else {
-                                $username = str_replace('_AT_', '@', $folder_name);
-                                $uid = $DB->get_field('user', 'id', array('username' => $username));
-                            }
+                            $uid = elis_files_folder_to_userid($folder_name);
                         }
                         $prev_node = $parent_node;
                     } while (!$uid && !$cid && !$oid && !$shared &&
@@ -1150,7 +1137,6 @@ class repository_elis_files extends repository {
      */
     protected function folder_tree_to_fm(&$output, $folderentry, $path = '', $puuid = '', $uid = 0, $cid = 0, $oid = 0, $shared = false) {
         global $DB;
-        $admin_username = trim(get_config('elis_files', 'admin_username'));
         foreach ($folderentry as $folder) {
             $_uid = $uid;
             $_cid = $cid;
@@ -1167,13 +1153,7 @@ class repository_elis_files extends repository {
                 } else if ($puuid == $this->elis_files->suuid) {
                     $_shared = true;
                 } else if ($folder['uuid'] == $this->elis_files->uuuid) {
-                    if ($folder['name'] == $admin_username) {
-                        $_uid = $DB->get_field('user', 'id', array('username' => 'admin'));
-                        //error_log("ELIS Files: matches admin user with folder = {$folder['name']} ($uid)");
-                    } else {
-                        $username = str_replace('_AT_', '@', $folder['name']);
-                        $_uid = $DB->get_field('user', 'id', array('username' => $username));
-                    }
+                    $_uid = elis_files_folder_to_userid($folder['name']);
                 }
             }
             $entry = array();
