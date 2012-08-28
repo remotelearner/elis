@@ -298,6 +298,15 @@ class repository_elis_files extends repository {
         $ret['showselectedactions'] = true;
         $ret['showcurrentactions'] = true;
 
+        // Signal that this plugin triggers the display of the refresh icon's tooltip
+        $ret['refreshtooltip'] = true;
+
+        // Signal that this plugin supports the "advanced search" functionality
+        $ret['advancedsearch'] = true;
+
+        // Signal that this plugin should display a button for executing a search
+        $ret['executesearch'] = true;
+
         // Get editing privileges - set canedit flag...
         $canedit = self::check_editing_permissions($courseid, $shared, $oid, $uuid, $uid);
         $ret['canedit'] = $canedit;
