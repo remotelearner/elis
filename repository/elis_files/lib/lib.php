@@ -3115,7 +3115,7 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
     require_once($CFG->dirroot.'/repository/elis_files/lib.php');
 
     // Default to the Moodle area
-    $currentpath = '/';
+    $currentpath = '';
 
     // Initialize repository plugin
     $sql = 'SELECT i.name, i.typeid, r.type
