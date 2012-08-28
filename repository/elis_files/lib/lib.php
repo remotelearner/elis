@@ -3117,36 +3117,38 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
     // Default to the Moodle area
     $currentpath = '/';
 
-    // Initialize repository plugin
+    // Determine if the ELIS Files repository is enabled
     $sql = 'SELECT i.name, i.typeid, r.type
-            FROM {repository} r, {repository_instances} i
-            WHERE r.type=?
-              AND i.typeid=r.id';
-    $repository = $DB->get_record_sql($sql, array('elis_files'));
+            FROM {repository} r
+            JOIN {repository_instances} i
+            WHERE r.type = ?
+            AND i.typeid = r.id';
+
+    $repository = $DB->get_record_sql($sql, array('elis_files'), IGNORE_MISSING);
 
     if ($repository) {
-        // Need this context to construct the repository_elis_files object
-        $user_context = get_context_instance(CONTEXT_USER, $USER->id);
-        $params = array(
-            'ajax' => false,
-            'name' => $repository->name,
-            'type' => 'elis_files'
-        );
-
+        // Initialize repository plugin
         try {
-            $repo = @new repository_elis_files('elis_files', $user_context, $params);
+            $ctx = context_user::instance($USER->id);
+            $options = array(
+                'ajax' => false,
+                'name' => $repository->name,
+                'type' => 'elis_files'
+            );
+            $repo = @new repository_elis_files('elis_files', $ctx, $options);
 
-            if (!empty($repo)) {
+            if (!empty($repo->elis_files)) {
                 // TBD: Is the following required???
                 //$listing = (object)$repo->get_listing(true);
                 $uuid = ($courseid == SITEID)
                          ? false // No Site course folder, use default location
                          : $repo->elis_files->get_course_store($courseid);
+
                 // Determine the default browsing location
-                $cid = $courseid;
-                $uid = 0;
-                $shared = 0;
-                $oid = 0;
+                $cid    = $courseid;
+                $uid    = $USER->id;
+                $shared = false;
+                $oid    = 0;
                 if ($default || empty($uuid)) {
                     $uuid = $repo->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid);
                 }
