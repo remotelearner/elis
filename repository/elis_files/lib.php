@@ -222,8 +222,9 @@ class repository_elis_files extends repository {
             $referer = get_referer(false);
             if ($referer !== false) {
                 $fromelisfilescoursepage  = stristr($referer, $CFG->wwwroot . '/repository/filemanager.php') !== false;
-                $fromcoursepage           = stristr($referer, $CFG->wwwroot . '/course/modedit.php') !== false;
-                $fromuserpage             = stristr($referer, $CFG->wwwroot . '/user/filesedit.php') !== false;
+                $fromcoursepage = (
+                    stristr($referer, $CFG->wwwroot .'/course/modedit.php') !== false || stristr($referer, $CFG->wwwroot .'/course/view.php') !== false);
+                $fromuserpage = stristr($referer, $CFG->wwwroot . '/user/files.php') !== false;
                 if (($fromelisfilescoursepage || $fromcoursepage) && $COURSE->id != SITEID) {
                     list($context, $course, $cm) = get_context_info_array($this->context->id);
                 }

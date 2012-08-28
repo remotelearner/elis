@@ -3340,12 +3340,14 @@ class ELIS_files {
             if (empty($cid)) {
                 $cid = $COURSE->id;
             }
-            if ($cid == SITEID && empty($context)) {
-                $context = get_context_instance(CONTEXT_SYSTEM);
+            $syscontext = get_context_instance(CONTEXT_SYSTEM);
+            if ($cid == SITEID) {
+                $context = $syscontext;
             } else {
                 $context = get_context_instance(CONTEXT_COURSE, $cid);
             }
 
+         /* **** Disable following block for ELIS-7127 ****
             // If on ELIS Files page or in course context - default to course page if we have access to it
             if ($cid != SITEID && (has_capability('repository/elis_files:viewcoursecontent', $context) ||
                 has_capability('repository/elis_files:createcoursecontent', $context))) {
@@ -3362,13 +3364,15 @@ class ELIS_files {
                         return $root->uuid;
                     }
             }
+         **** END Disable block for ELIS-7127 **** */
 
             // If a user does not have permission to access the default location, fall through to the next
             // lower level to see if they can access that location.
+            // TBD: MUST CHECK FOR CAPABILITIES AY ANY CONTEXT LEVEL!!!
             switch ($this->config->default_browse) {
                 case ELIS_FILES_BROWSE_SITE_FILES:
-                    if ($cid == SITEID && (has_capability('repository/elis_files:viewsitecontent', $context) ||
-                        has_capability('repository/elis_files:createsitecontent', $context))) {
+                    if (has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
+                        has_capability('repository/elis_files:createsitecontent', $syscontext)) {
 
                         $root = $this->get_root();
 
@@ -3380,14 +3384,18 @@ class ELIS_files {
                     }
 
                 case ELIS_FILES_BROWSE_SHARED_FILES:
-                    if (has_capability('repository/elis_files:viewsharedcontent', $context) ||
-                        has_capability('repository/elis_files:createsharedcontent', $context)) {
+                    if (has_capability('repository/elis_files:viewsharedcontent', $syscontext) ||
+                        has_capability('repository/elis_files:createsharedcontent', $syscontext)) {
                             $shared = true;
                             $uid    = 0;
                             return $this->suuid;
                     }
 
                 case ELIS_FILES_BROWSE_COURSE_FILES:
+                    if ($cid == SITEID && $COURSE->id != SITEID) {
+                        $cid = $COURSE->id;
+                        $context = get_context_instance(CONTEXT_COURSE, $cid);
+                    }
                     if ($cid != SITEID && (has_capability('repository/elis_files:viewcoursecontent', $context) ||
                         has_capability('repository/elis_files:createcoursecontent', $context))) {
                             $shared = 0;
@@ -3396,7 +3404,10 @@ class ELIS_files {
                     }
 
                 case ELIS_FILES_BROWSE_USER_FILES:
-                    if (has_capability('repository/elis_files:viewowncontent', $context) ||
+                    $context = get_context_instance(CONTEXT_USER, $USER->id);
+                    if (has_capability('repository/elis_files:viewowncontent', $syscontext) ||
+                        has_capability('repository/elis_files:createowncontent', $syscontext) ||
+                        has_capability('repository/elis_files:viewowncontent', $context) ||
                         has_capability('repository/elis_files:createowncontent', $context)) {
 
                         if (empty($this->uuuid)) {
