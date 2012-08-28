@@ -2470,10 +2470,12 @@ class ELIS_files {
         $viewalfcourse         = has_capability('repository/elis_files:viewcoursecontent', $context);
 
         // Get the non context based permissions
-        $capabilities = array('repository/elis_files:viewowncontent'=> false,
-                              'repository/elis_files:createowncontent'=> false,
-                              'repository/elis_files:viewsharedcontent'=> false,
-                              'repository/elis_files:createsharedcontent'=> false);
+        $capabilities = array(
+            'repository/elis_files:viewowncontent'      => false,
+            'repository/elis_files:createowncontent'    => false,
+            'repository/elis_files:viewsharedcontent'   => false,
+            'repository/elis_files:createsharedcontent' => false
+        );
 
         $this->get_other_capabilities($USER, $capabilities);
 
@@ -3099,25 +3101,41 @@ class ELIS_files {
         return ($sxml->uuid == $uuid && ($inherit && $sxml->enabled == 'true' || !$inherit && $sxml->enabled == 'false'));
     }
 
-  /**
- * Find personal and shared repository capabilities
- *
- * @uses $CFG, $DB
- * @param object $user
- * @param array  $capabilities
- * @param int    $editalfpersonal
- * @param int    $viewalfshared
- * @param int    $editalfshared
- * @return none
- */
-    function get_other_capabilities($user,&$capabilities) {
-        global $CFG, $DB, $USER;
+    /**
+     * Find personal and shared repository capabilities
+     *
+     * @uses $DB
+     * @param object $user
+     * @param array  $capabilities
+     * @return none
+     */
+    function get_other_capabilities($user, &$capabilities) {
+        global $DB;
 
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        // Site administrators can do anything
+        if (is_siteadmin($user->id)) {
+            foreach ($capabilities as $capability => $value) {
+                $capabilities[$capability] = true;
+            }
+            return;
+        }
 
-        // Since these permissions/capabilities are technically in the system context, use has_capability
-        foreach ($capabilities as $capability=>$value) {
-            if (has_capability($capability,$context)) {
+        // Look for these permissions anywhere in the system
+        foreach ($capabilities as $capability => $value) {
+            $sql = "SELECT ra.*
+                    FROM {role_assignments} ra
+                    INNER JOIN {role_capabilities} rc ON rc.roleid = ra.roleid
+                    WHERE ra.userid = :userid
+                    AND rc.capability = :capability
+                    AND rc.permission = :permission";
+
+            $params = array(
+                'userid'     => $user->id,
+                'capability' => $capability,
+                'permission' => CAP_ALLOW
+            );
+
+            if ($DB->record_exists_sql($sql, $params)) {
                 $capabilities[$capability] = true;
             }
         }
