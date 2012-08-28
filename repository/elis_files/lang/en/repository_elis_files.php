@@ -28,6 +28,7 @@
 $string['actions'] = 'Actions';
 $string['adminusername'] = 'Admin username override';
 $string['advanced'] = 'Advanced';
+$string['advancedsearch'] = 'Advanced search';
 $string['alfheader'] = 'Alfresco multimedia filters';
 $string['alfheaderintro'] = 'To customize the media dimetions add &d=WIDTHxHEIGHT to the end of the URL.  Width and height also accept a percent.';
 $string['alfmediapluginavi'] = 'Enable .avi filter';

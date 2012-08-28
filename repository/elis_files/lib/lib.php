@@ -3107,9 +3107,10 @@ function elis_files_node_path($uuid, $path = '') {
  *
  * @param int $courseid The id of the course whose file picker view we are currently
  *                      on, or SITEID if we are viewing private files
+ * @param bool $default True if desire default browsing location
  * @return string The encoded path corresponding to the current location
  */
-function elis_files_get_current_path_for_course($courseid) {
+function elis_files_get_current_path_for_course($courseid, $default = false) {
     global $CFG, $DB, $USER;
     require_once($CFG->dirroot.'/repository/elis_files/lib.php');
 
@@ -3138,14 +3139,17 @@ function elis_files_get_current_path_for_course($courseid) {
             if (!empty($repo)) {
                 // TBD: Is the following required???
                 //$listing = (object)$repo->get_listing(true);
-                //$uuid = $repo->elis_files->get_course_store($courseid);
-
+                $uuid = ($courseid == SITEID)
+                         ? false // No Site course folder, use default location
+                         : $repo->elis_files->get_course_store($courseid);
                 // Determine the default browsing location
                 $cid = $courseid;
                 $uid = 0;
                 $shared = 0;
                 $oid = 0;
-                $uuid = $repo->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid);
+                if ($default || empty($uuid)) {
+                    $uuid = $repo->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid);
+                }
 
                 if ($uuid != false) {
                     // Encode the UUID
@@ -3154,7 +3158,7 @@ function elis_files_get_current_path_for_course($courseid) {
             }
         } catch (Exception $e) {
             // The parent "repository" class may throw exceptions
-            error_log('/repository/filemanager.php: Exception: '.$e->getMessage());
+            error_log("/repository/elis_files/lib/lib.php::elis_files_get_current_path_for_course({$courseid}): Exception: ". $e->getMessage());
         }
     }
 

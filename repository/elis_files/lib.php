@@ -222,8 +222,9 @@ class repository_elis_files extends repository {
             $referer = get_referer(false);
             if ($referer !== false) {
                 $fromelisfilescoursepage  = stristr($referer, $CFG->wwwroot . '/repository/filemanager.php') !== false;
-                $fromcoursepage           = stristr($referer, $CFG->wwwroot . '/course/modedit.php') !== false;
-                $fromuserpage             = stristr($referer, $CFG->wwwroot . '/user/filesedit.php') !== false;
+                $fromcoursepage = (
+                    stristr($referer, $CFG->wwwroot .'/course/modedit.php') !== false || stristr($referer, $CFG->wwwroot .'/course/view.php') !== false);
+                $fromuserpage = stristr($referer, $CFG->wwwroot . '/user/files.php') !== false;
                 if (($fromelisfilescoursepage || $fromcoursepage) && $COURSE->id != SITEID) {
                     list($context, $course, $cm) = get_context_info_array($this->context->id);
                 }
@@ -296,6 +297,15 @@ class repository_elis_files extends repository {
         $ret['nologin'] = true;
         $ret['showselectedactions'] = true;
         $ret['showcurrentactions'] = true;
+
+        // Signal that this plugin triggers the display of the refresh icon's tooltip
+        $ret['refreshtooltip'] = true;
+
+        // Signal that this plugin supports the "advanced search" functionality
+        $ret['advancedsearch'] = true;
+
+        // Signal that this plugin should display a button for executing a search
+        $ret['executesearch'] = true;
 
         // Get editing privileges - set canedit flag...
         $canedit = self::check_editing_permissions($courseid, $shared, $oid, $uuid, $uid);
