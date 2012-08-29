@@ -2059,6 +2059,7 @@ class ELIS_files {
     function permission_check($uuid, $uid = 0, $useurl = true) {
         global $CFG, $DB, $USER;
 
+        //error_log("/repository/elis_files/lib/lib.php::permission_check({$uuid}, {$uid}, {$useurl})");
         if (ELIS_FILES_DEBUG_TRACE) mtrace('permission_check(' . $uuid . ', ' . $uid . ', ' .
                                          ($useurl === true ? 'true' : 'false') . ')');
 
@@ -2080,9 +2081,10 @@ class ELIS_files {
 
     /// Determine the context for this file in the store.
         if (($path = $this->get_file_path($uuid)) === false) {
+             //error_log("/repository/elis_files/lib/lib.php::permission_check(): Invalid path - returning false!");
             return false;
         }
-        preg_match('/\\' . $moodleroot . '\/course\/([-a-zA-Z0-9\s]+)\//', $path, $matches);
+        preg_match('/\\' . $moodleroot . '\/course\/([_-a-zA-Z0-9\s]+)\//', $path, $matches);
 
         /// Determine, from the node path which area this file is stored in.
         if (count($matches) == 2) {
@@ -2115,10 +2117,10 @@ class ELIS_files {
 
     /// This is a user file.
         if (empty($sfile) && empty($cfile) && empty($shfile)) {
-            preg_match('/\/User\sHomes\/([-a-zA-Z0-9\s]+)\//', $path, $matches);
+            preg_match('/\/User\sHomes\/([_-a-zA-Z0-9\s]+)\//', $path, $matches);
 
             if (count($matches) == 2) {
-                $username  = $matches[1];
+                $username  = str_replace('_AT_', '@', $matches[1]);
                 $context = get_context_instance(CONTEXT_SYSTEM);
                 $ufile   = true;
             }
@@ -2126,7 +2128,7 @@ class ELIS_files {
 
         /// This is a userset file.
         if (empty($sfile) && empty($cfile) && empty($shfile) && empty($ufile)) {
-            preg_match('/\\' . $moodleroot . '\/userset\/([-a-zA-Z0-9\s]+)\//', $path, $matches);
+            preg_match('/\\' . $moodleroot . '\/userset\/([_-a-zA-Z0-9\s]+)\//', $path, $matches);
 
             if (count($matches) == 2) {
                 $oname  = $matches[1];
@@ -2137,8 +2139,8 @@ class ELIS_files {
                     return false;
                 }
                 $cluster_context = context_elis_userset::instance($oid);
-
                 $ofile   = true;
+                //error_log("/repository/elis_files/lib/lib.php::permission_check(): set ofile = true, cluster_context");
             }
         }
 
