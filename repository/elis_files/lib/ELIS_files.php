@@ -2084,7 +2084,7 @@ class ELIS_files {
              //error_log("/repository/elis_files/lib/lib.php::permission_check(): Invalid path - returning false!");
             return false;
         }
-        preg_match('/\\' . $moodleroot . '\/course\/([_-a-zA-Z0-9\s]+)\//', $path, $matches);
+        preg_match('/\\' . $moodleroot . '\/course\/([-_a-zA-Z0-9\s]+)\//', $path, $matches);
 
         /// Determine, from the node path which area this file is stored in.
         if (count($matches) == 2) {
@@ -2117,10 +2117,11 @@ class ELIS_files {
 
     /// This is a user file.
         if (empty($sfile) && empty($cfile) && empty($shfile)) {
-            preg_match('/\/User\sHomes\/([_-a-zA-Z0-9\s]+)\//', $path, $matches);
+            preg_match('/\/User\sHomes\/([-_a-zA-Z0-9\s]+)\//', $path, $matches);
 
             if (count($matches) == 2) {
                 $username  = str_replace('_AT_', '@', $matches[1]);
+                //error_log("preg_match('/\/User\sHomes\/([-_a-zA-Z0-9\s]+)\//', {$path}, = {$tmp}) => username = {$username}");
                 $context = get_context_instance(CONTEXT_SYSTEM);
                 $ufile   = true;
             }
@@ -2128,7 +2129,7 @@ class ELIS_files {
 
         /// This is a userset file.
         if (empty($sfile) && empty($cfile) && empty($shfile) && empty($ufile)) {
-            preg_match('/\\' . $moodleroot . '\/userset\/([_-a-zA-Z0-9\s]+)\//', $path, $matches);
+            preg_match('/\\' . $moodleroot . '\/userset\/([-_a-zA-Z0-9\s]+)\//', $path, $matches);
 
             if (count($matches) == 2) {
                 $oname  = $matches[1];
