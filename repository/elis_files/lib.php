@@ -307,11 +307,7 @@ class repository_elis_files extends repository {
         // Signal that this plugin should display a button for executing a search
         $ret['executesearch'] = true;
 
-        // Get editing privileges - set canedit flag...
-        $canedit = self::check_editing_permissions($courseid, $shared, $oid, $uuid, $uid);
-        $ret['canedit'] = $canedit;
         $return_path = array();
-
         // Get parent path/breadcrumb
         $this->get_parent_path($uuid, $return_path, 0, 0, 0, 0 /*, $cid, $uid, $shared, $oid */);
 
@@ -369,11 +365,14 @@ class repository_elis_files extends repository {
         //proper parent path containing delimeted UUIDs
         $ret['parentpath'] = self::encode_path_uuids($return_path, $uuid);
 
-//print_object($ret['thisuuid']);
+        // Get editing privileges - set canedit flag...
+        // NOTE: next call MUST occur AFTER while-loop above gets path params!
+        $canedit = self::check_editing_permissions($cid ? $cid : $courseid //TBD
+                                                   , $shared, $oid, $uuid, $uid);
+        $ret['canedit'] = $canedit;
+
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
-//echo "user repo: ";
-//print_object($USER->elis_files_repository_location);
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
 
@@ -1643,7 +1642,8 @@ class repository_elis_files extends repository {
     function check_editing_permissions($id, $shared, $oid, $uuid, $userid) {
         global $USER;
 
-    /// Get the context instance for where we originated viewing this browser from.
+        /// Get the context instance for where we originated viewing this browser from.
+        //error_log("check_editing_permissions({$id}, {$shared}, {$oid}, {$uuid}, {$userid})");
         if (!empty($oid)) {
             $userset_context = context_elis_userset::instance($oid);
         }
