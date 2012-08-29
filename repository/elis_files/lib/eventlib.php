@@ -47,6 +47,37 @@ function elis_files_user_deleted($user) {
     return true;
 }
 
+/**
+ * Handle the event when a Moodle course is deleted
+ *
+ * @param object $course The deleted Moodle course
+ * @return bool true
+ */
+function elis_files_course_deleted($course) {
+    global $DB;
+
+    if (isset($course->id)) {
+        $DB->delete_records('elis_files_course_store', array('courseid' => $course->id));
+    }
+
+    return true;
+}
+
+/**
+ * Handle the event when an ELIS user set is deleted
+ *
+ * @param int $id The id of the deleted user set
+ * @return bool true
+ */
+function elis_files_userset_deleted($id) {
+    global $DB;
+
+    if (!empty($id)) {
+        $DB->delete_records('elis_files_userset_store', array('usersetid' => $id));
+    }
+
+    return true;
+}
 
 /**
  * Handle the event when a user has a role unassigned in Moodle.

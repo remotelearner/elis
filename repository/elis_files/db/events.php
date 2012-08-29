@@ -54,5 +54,18 @@ $handlers = array (
          'handlerfile'     => '/repository/elis_files/lib/eventlib.php',
          'handlerfunction' => 'elis_files_user_created',
          'schedule'        => 'instant'
+     ),
+
+     'course_deleted' => array (
+         'handlerfile'     => '/repository/elis_files/lib/eventlib.php',
+         'handlerfunction' => 'elis_files_course_deleted',
+         'schedule'        => 'instant'
+     ),
+
+     'cluster_deleted' => array (
+         'handlerfile'     => '/repository/elis_files/lib/eventlib.php',
+         'handlerfunction' => 'elis_files_userset_deleted',
+         'schedule'        => 'instant'
      )
+
 );
