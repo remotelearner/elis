@@ -898,14 +898,6 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $uuid = $repo->get_root()->uuid;
     }
 
-    //get overwrite flag
-    $overwriteexisting = optional_param('overwrite', false, PARAM_BOOL);
-
-    if ($overwriteexisting && $olduuid && ($olduuid !== true)) {
-        // delete file to be overwritten
-        elis_files_delete($olduuid);
-    }
-
     $xfermethod = get_config('elis_files', 'file_transfer_method');
     switch ($xfermethod) {
         case ELIS_FILES_XFER_WS:
@@ -1237,6 +1229,11 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
     if (!empty($dir->files)) {
         foreach ($dir->files as $file) {
             if ($file->title == $filename) {
+                if (!empty($file->uuid) &&
+                    ($username = elis_files_transform_username($USER->username))) {
+                    // We're not going to check the response for this right now.
+                    elis_files_request('/moodle/nodeowner/' . $file->uuid . '?username=' . $username);
+                }
                 return $file;
             }
         }
@@ -1855,7 +1852,10 @@ function elis_files_process_node($dom, $node, &$type) {
                     break;
 
                 case 'author':
-                    $contentNode->owner = $cnode->nodeValue;
+                    // ELIS-5750: see also test & request at end of function!
+                    $contentNode->owner = ($cnode->nodeValue == 'admin')
+                                          ? 'moodle' : $cnode->nodeValue;
+                    break;
 
                 case 'published':
                     $created = $cnode->nodeValue;
@@ -1956,6 +1956,7 @@ function elis_files_process_node($dom, $node, &$type) {
                     break;
 
                 default:
+                    //error_log("elis_files_process_node(): Unsupported tag '{$cnode->tagName}' = {$cnode->nodeValue}");
                     break;
             }
 
@@ -2013,6 +2014,7 @@ function elis_files_process_node($dom, $node, &$type) {
                         break;
 
                     default:
+                        //error_log("elis_files_process_node(): Unsupported cmis property '{$propname}' = {$prop->nodeValue}");
                         break;
                 }
             }
@@ -2025,6 +2027,16 @@ function elis_files_process_node($dom, $node, &$type) {
         }
     }
 
+    // ELIS-5750: the following requires the updated webscript: nodeowner.get.js
+    if (!empty($contentNode->uuid) &&
+        (empty($contentNode->owner) || $contentNode->owner == 'moodle') &&
+        ($response = elis_files_request('/moodle/nodeowner/'. $contentNode->uuid))
+        && ($sxml = RLsimpleXMLelement($response)) && !empty($sxml->owner)) {
+        foreach ((array)$sxml->owner AS $val) {
+            $contentNode->owner = $val;
+            break;
+        }
+    }
     return $contentNode;
 }
 

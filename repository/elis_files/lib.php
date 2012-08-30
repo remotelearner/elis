@@ -594,13 +594,13 @@ class repository_elis_files extends repository {
 //                             'uid'=>(int)$uid);
 //            $encodedpath = base64_encode(serialize($params));
             $return[] = array('title'=>$child->title,
-                    'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
-                    'name'=>$child->title,
-                    'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
-                    'created'=>'',
-                    'modified'=>'',
-                    'owner'=>'',
-                    'children'=>array());
+                    'path'      => repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
+                    'name'      => $child->title,
+                    'thumbnail' => $OUTPUT->pix_url('f/folder-32') . '',
+                    'created'   => '',
+                    'modified'  => '',
+                    'owner'     => !empty($child->owner) ? $child->owner : '',
+                    'children'  => array());
         }
         return $return;
     }
