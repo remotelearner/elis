@@ -2044,20 +2044,44 @@ class ELIS_files {
         return $uuid;
     }
 
+   /*
+    * Check if a give node is in the parent path
+    *
+    * @param    string  $uuid           The Unique identifier for a node
+    * @param    string  $compareduuid   Unique identifier for a node to compare against
+    * @return   bool                    True if the node is in the parent path, otherwise, false
+    */
+    function match_uuid_path($uuid, $compareduuid) {
+        $repo = @new repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                                            array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
 
-/**
- * Check for valid permissions given the storage context for a file, also taking
- * into account the location where the file was included within Moodle.
- *
- * @uses $CFG
- * @uses $USER
- * @param string $uuid   Unique identifier for a node.
- * @param int    $uid    The user ID (optional).
- * @param bool   $useurl Check the referring URL for Moodle-based permissions (default: true).
- * @return bool True if the user has permission to access the file, False otherwise.
- */
+        $repo->get_parent_path($uuid, $result, 0, 0, 0, 0);
+
+        foreach ($result as $paths) {
+            $path = unserialize(base64_decode($paths['path']));
+            if ($path['path'] == $compareduuid) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+    * Check for valid permissions given the storage context for a file, also taking
+    * into account the location where the file was included within Moodle.
+    *
+    * @uses $CFG
+    * @uses $USER
+    * @param string $uuid   Unique identifier for a node.
+    * @param int    $uid    The user ID (optional).
+    * @param bool   $useurl Check the referring URL for Moodle-based permissions (default: true).
+    * @return bool True if the user has permission to access the file, False otherwise.
+    */
     function permission_check($uuid, $uid = 0, $useurl = true) {
         global $CFG, $DB, $USER;
+
+        require_once($CFG->dirroot .'/repository/elis_files/lib.php');
 
         //error_log("/repository/elis_files/lib/lib.php::permission_check({$uuid}, {$uid}, {$useurl})");
         if (ELIS_FILES_DEBUG_TRACE) mtrace('permission_check(' . $uuid . ', ' . $uid . ', ' .
@@ -2079,48 +2103,46 @@ class ELIS_files {
         $ofile  = false;
         $ufile  = false;
 
-    /// Determine the context for this file in the store.
+        // Determine the context for this file in the store.
         if (($path = $this->get_file_path($uuid)) === false) {
              //error_log("/repository/elis_files/lib/lib.php::permission_check(): Invalid path - returning false!");
             return false;
         }
-        preg_match('/\\' . $moodleroot . '\/course\/([-_a-zA-Z0-9\s]+)\//', $path, $matches);
 
-        /// Determine, from the node path which area this file is stored in.
-        if (count($matches) == 2) {
-            $cshortname     = $matches[1];
-            $cid = $DB->get_field('course','id',array('shortname'=>$cshortname), IGNORE_MULTIPLE);
+        $coursestoreid = $DB->get_field('elis_files_course_store', 'courseid', array('uuid' => $uuid));
 
-        /// This is a server file.
+        if (!empty($coursestoreid)) {
+            $cid = $DB->get_field('course', 'id', array('id' => $coursestoreid), IGNORE_MULTIPLE);
+
+            // This is a server file.
             if ($cid == SITEID) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
                 $sfile   = true;
+            }
 
-        /// This is a course file.
-            } else if (!empty($cid)) {
+            // This is a course file.
+            if (!empty($cid)) {
                 $context = get_context_instance(CONTEXT_COURSE, $cid);
-                $cfile   = true;
-            } else { // TBD
-                return false;
+                $cfile = true;
             }
         }
 
-    /// This is a shared file.
+        // This is a shared file.
         if (empty($sfile) && empty($cfile)) {
-            preg_match('/\\' . $moodleroot . '\/shared\//', $path, $matches);
+            $matches = $this->match_uuid_path($uuid, $this->suuid);
 
-            if (count($matches) == 1) {
+            if ($matches) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
                 $shfile  = true;
             }
         }
 
-    /// This is a user file.
+        // This is a user file.
         if (empty($sfile) && empty($cfile) && empty($shfile)) {
-            preg_match('/\/User\sHomes\/([-_a-zA-Z0-9\s]+)\//', $path, $matches);
+            $matches = $this->match_uuid_path($uuid, $this->uuuid);
 
-            if (count($matches) == 2) {
-                $username  = str_replace('_AT_', '@', $matches[1]);
+            if ($matches) {
+                $username  = str_replace('_AT_', '@', $this->uuuid);
                 //error_log("preg_match('/\/User\sHomes\/([-_a-zA-Z0-9\s]+)\//', {$path}, = {$tmp}) => username = {$username}");
                 $context = get_context_instance(CONTEXT_SYSTEM);
                 $ufile   = true;
@@ -2129,25 +2151,23 @@ class ELIS_files {
 
         /// This is a userset file.
         if (empty($sfile) && empty($cfile) && empty($shfile) && empty($ufile)) {
-            preg_match('/\\' . $moodleroot . '\/userset\/([-_a-zA-Z0-9\s]+)\//', $path, $matches);
 
-            if (count($matches) == 2) {
-                $oname  = $matches[1];
-
+            $usersetstoreid = $DB->get_field('elis_files_userset_store', 'usersetid', array('uuid' => $uuid));
+             if (!empty($usersetstoreid)) {
                 // Get cluster id
-                $oid = $DB->get_field('crlm_cluster','id',array('name'=>$oname));
-                if (empty($oid)) { // TBD
-                    return false;
+                $oid = $DB->get_field('crlm_cluster', 'id', array('id'=>  $usersetstoreid));
+                if (!empty($oid)) {
+                    $cluster_context = context_elis_userset::instance($oid);
+                    $ofile   = true;
                 }
-                $cluster_context = context_elis_userset::instance($oid);
-                $ofile   = true;
                 //error_log("/repository/elis_files/lib/lib.php::permission_check(): set ofile = true, cluster_context");
             }
+
         }
 
     /// Default to the root of the Alfresco repository (requires system-level repository access).
         if (!isset($context)) {
-            $context = get_context_instance(CONTEXT_SYSTEM);
+            $context = context_system::instance();
         }
 
     /// Attempt to determine where the file open request came from to determine if the current user
