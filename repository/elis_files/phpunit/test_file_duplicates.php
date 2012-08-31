@@ -113,6 +113,8 @@ class fileduplicatesTest extends elis_database_test {
     public function testOverwriteDuplicate() {
         global $CFG, $_POST;
 
+        $this->markTestSkipped('elis_files_handle_duplicate_file() - removed');
+
         // Check if Alfresco is enabled, configured and running first
         if (!$repo = repository_factory::factory('elis_files')) {
             $this->markTestSkipped();
@@ -174,6 +176,8 @@ class fileduplicatesTest extends elis_database_test {
      */
     public function testRenameDuplicate() {
         global $CFG, $_POST;
+
+        $this->markTestSkipped('elis_files_handle_duplicate_file() - removed');
 
         // Check if Alfresco is enabled, configured and running first
         if (!$repo = repository_factory::factory('elis_files')) {
