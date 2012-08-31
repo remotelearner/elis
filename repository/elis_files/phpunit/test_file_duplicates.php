@@ -203,11 +203,9 @@ class fileduplicatesTest extends elis_database_test {
         $filemeta->type = mime_content_type($filename);
         $filemeta->size = $filesize;
         // Generate a duplicate filename
-        $listing = array();
-        $listing['list'] = array();
-        $listing['list'][0]['title'] = $filemeta->name;
-        $listing['list'][0]['path'] = base64_encode(serialize($uploadresponse->uuid));
-
+        $listing = new stdClass;
+        $listing->files = array((object)array('title' => $filemeta->name,
+                                              'uuid'  => true));
         $newfilename =  elis_files_generate_unique_filename($filemeta->name, $listing);
 
         //we need the uuid of the file to send to the elis_files_handle_duplicate function

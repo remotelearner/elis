@@ -749,34 +749,20 @@ function elis_files_create_dir($name, $uuid, $description = '', $useadmin = true
 }
 
 /**
- * Check if a given file is already in the listing
+ * Check if a given filename exists in a ELIS Files folder
  *
  * @param   string  $filename   The name of the file
- * @param   array   $listing    The listing to compare against
- * @return  mixed                If file exists, return uuid of file
+ * @param   object  $dir        The folder listing to check
+ * @return  string|false        If file exists, returns uuid of file else false
  */
-function elis_files_file_exists($filename, $listing) {
-    if (is_array($listing)) {
-        if (isset($listing['list'])) {
-            foreach ($listing['list'] as $list) {
-                if (isset($list['title'])) {
-                    // A match is found
-                    if (strcmp($list['title'], $filename) == 0) {
-                        if (isset($list['path'])) {
-                            $params = unserialize(base64_decode($list['path']));
-                            // return the uuid of the file found
-                            // so it can be deleted in the case of an overwrite
-                            $uuid = $params['path'];
-                            return $uuid;
-                        } else {
-                            return true;
-                        }
-                    }
-                }
+function elis_files_file_exists($filename, $dir) {
+    if (!empty($dir->files)) {
+        foreach ($dir->files as $file) {
+            if ($file->title == $filename) {
+                return $file->uuid;
             }
         }
     }
-
     return false;
 }
 
