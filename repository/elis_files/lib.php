@@ -734,13 +734,72 @@ class repository_elis_files extends repository {
     }
 
     /**
+     * Obtain the query needed to obtain our file listing via webservices
+     * NOTE: This is currently implemented as a Lucene query
+     *
+     * @param string $search_text The search text entered, which contains tokens
+     *                            representing either file name or file content
+     * @param int $categories An array of category ids to filter on (i.e. results
+     *                        must be in one or more to be included), or NULL to not filter
+     *                        by category
+     * @return string The complete search query
+     */
+    private function get_search_query($search_text, $categories = NULL) {
+        global $DB;
+
+        $query_fragments = array();
+
+        // The text-based search component
+        if ($search_text != '') {
+            $text_query_tokens = array();
+
+            // Valid as long as the file a name or contents match one text token
+            $tokens = explode(' ', $search_text);
+            foreach ($tokens as $token) {
+                $text_query_tokens[] = '@cm\:name:"*'.$token.'*"';
+                $text_query_tokens[] = 'TEXT:\"'.$token.'\"';
+            }
+
+            $query_fragments[] = implode(' OR ', $text_query_tokens);
+        }
+
+        // The category-based search component
+        if (is_array($categories)) {
+            $category_query_tokens = array();
+
+            // Valid as long as the file is in at least one of the categories
+            foreach ($categories as $category) {
+                //TODO: search based on UUID rather than title
+                // current side-effect is that duplicate titles will be matched
+                if ($categorytitle = $DB->get_field('elis_files_categories', 'title', array('id' => $category))) {
+                    $category_query_tokens[] = 'PATH:"/cm:generalclassifiable//cm:'.$categorytitle.'//member"';
+                }
+            }
+
+            $query_fragments[] = implode(' OR ', $category_query_tokens);
+        }
+
+        // File must satisfy both the text-based and category-based conditions
+        $query = '('.implode(') AND (', $query_fragments).')';
+
+        return $query;
+    }
+
+    /**
      * Look for a file
      *
-     * @param string $search_text
-     * @return array
+     * @param string $search_text The search text entered, which contains tokens
+     *                            representing either file name or file content
+     * @param int $page The page we are showing the contents for
+     * @param int $categories An array of category ids to filter on (i.e. results
+     *                        must be in one or more to be included), or NULL to not filter
+     *                        by category
+     * @return array A data structure equivalent to the return value of "get_listing",
+     *               containing the filter listing
      */
-    public function search($search_text, $page = 1, $categories = NULL) {
-        global $OUTPUT, $DB, $COURSE, $USER;
+    function search($search_text, $page = 1, $categories = NULL) {
+        global $CFG, $COURSE, $OUTPUT, $USER;
+        require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
 
         $ret = array();
         $shared = 0;
@@ -812,40 +871,17 @@ class repository_elis_files extends repository {
         $this->elis_files->file_browse_options($cid, $uid, $shared, $oid, $ret['locations']);
         $ret['list'] = array();
 
-        if (!empty($search_text)) {
-            $search_result = elis_files_search($search_text);
+        // Obtain the list of matching files
+        $query = $this->get_search_query($search_text, $categories);
+        $response = elis_files_utils_invoke_service('/moodle/lucenesearch?searchquery='.rawurlencode($query));
+        $sxml = RLsimpleXMLelement($response);
 
-            // Convert elis category IDs to matching repository category UUIDs
-            $category_uuids = array();
-            if (is_array($categories))
-            {
-                foreach ($categories as $category_id) {
-                    $category_result = $DB->get_record('elis_files_categories', array('id'=> $category_id));
-                    if (!empty($category_result)) {
-                        $category_uuids[] = $category_result->uuid;
-                    }
-                }
-            }
+        if ($sxml and $entries = $sxml->xpath('//entry')) {
+            foreach ($entries as $entry) {
+                // Include shared and oid parameters
+                $uuid = (string)$entry->uuid;
 
-            if (!empty($search_result->files)) {
-                foreach ($search_result->files as $file_object) {
-                    // See if we have categories that we need to check against
-                    if (!empty($category_uuids)) {
-                        $found_category = false;
-                        $category_result = elis_files_get_node_categories($file_object->noderef, $file_object->uuid);
-                        foreach ($category_uuids as $category_uuid) {
-                            if (!empty($category_result[$category_uuid])) {
-                                $found_category = true;
-                                break;
-                            }
-                        }
-                        if (!$found_category) {
-                            continue;
-                        }
-                    }
-
-                    // Include shared and oid parameters
-                    $uuid = $file_object->uuid;
+                if ($properties = elis_files_node_properties($uuid)) {
                     $params = array('path'=>$uuid,
                                     'shared'=>(boolean)$shared,
                                     'oid'=>(int)$oid,
@@ -855,17 +891,17 @@ class repository_elis_files extends repository {
 
                     $alfresco_version = elis_files_get_repository_version();
                     if ($alfresco_version == '3.2.1') {
-                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->filename, 90))->out(false);
+                        $thumbnail = $OUTPUT->pix_url(file_extension_icon($entry->filename, 90))->out(false);
                     } else {
-                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->icon, 90))->out(false);
+                        $thumbnail = $OUTPUT->pix_url(file_extension_icon($entry->icon, 90))->out(false);
                     }
-                    $ret['list'][] = array('title'=>$file_object->title,
+                    $ret['list'][] = array('title'=>$properties->title,
                                            'path'=>$encodedpath,
                                            'thumbnail' => $thumbnail,
-                                           'created'=>date("M. j, Y",$file_object->created),
-                                           'modified'=>date("M. j, Y",$file_object->modified),
-                                           'owner'=>$file_object->owner,
-                                           'source'=>$file_object->uuid);
+                                           'created'=>date("M. j, Y",$properties->created),
+                                           'modified'=>date("M. j, Y",$properties->modified),
+                                           'owner'=>$properties->owner,
+                                           'source'=>$uuid);
                 }
             }
         }
