@@ -882,26 +882,29 @@ class repository_elis_files extends repository {
                 $uuid = (string)$entry->uuid;
 
                 if ($properties = elis_files_node_properties($uuid)) {
-                    $params = array('path'=>$uuid,
-                                    'shared'=>(boolean)$shared,
-                                    'oid'=>(int)$oid,
-                                    'cid'=>(int)$cid,
-                                    'uid'=>(int)$uid);
-                    $encodedpath = base64_encode(serialize($params));
+                    if (strcmp($properties->type, "cmis:folder") !== 0 &&
+                        strcmp($properties->type, "folder") !== 0) {
+                        $params = array('path'=>$uuid,
+                                        'shared'=>(boolean)$shared,
+                                        'oid'=>(int)$oid,
+                                        'cid'=>(int)$cid,
+                                        'uid'=>(int)$uid);
+                        $encodedpath = base64_encode(serialize($params));
 
-                    $alfresco_version = elis_files_get_repository_version();
-                    if ($alfresco_version == '3.2.1') {
-                        $thumbnail = $OUTPUT->pix_url(file_extension_icon($entry->filename, 90))->out(false);
-                    } else {
-                        $thumbnail = $OUTPUT->pix_url(file_extension_icon($entry->icon, 90))->out(false);
+                        $alfresco_version = elis_files_get_repository_version();
+                        if ($alfresco_version == '3.2.1') {
+                            $thumbnail = $OUTPUT->pix_url(file_extension_icon($entry->filename, 90))->out(false);
+                        } else {
+                            $thumbnail = $OUTPUT->pix_url(file_extension_icon($entry->icon, 90))->out(false);
+                        }
+                        $ret['list'][] = array('title'=>$properties->title,
+                                               'path'=>$encodedpath,
+                                               'thumbnail' => $thumbnail,
+                                               'created'=>date("M. j, Y",$properties->created),
+                                               'modified'=>date("M. j, Y",$properties->modified),
+                                               'owner'=>$properties->owner,
+                                               'source'=>$uuid);
                     }
-                    $ret['list'][] = array('title'=>$properties->title,
-                                           'path'=>$encodedpath,
-                                           'thumbnail' => $thumbnail,
-                                           'created'=>date("M. j, Y",$properties->created),
-                                           'modified'=>date("M. j, Y",$properties->modified),
-                                           'owner'=>$properties->owner,
-                                           'source'=>$uuid);
                 }
             }
         }
