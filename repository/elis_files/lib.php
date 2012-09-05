@@ -772,7 +772,8 @@ class repository_elis_files extends repository {
                 //TODO: search based on UUID rather than title
                 // current side-effect is that duplicate titles will be matched
                 if ($categorytitle = $DB->get_field('elis_files_categories', 'title', array('id' => $category))) {
-                    $category_query_tokens[] = 'PATH:"/cm:generalclassifiable//cm:'.$categorytitle.'//member"';
+                    $cattitle = elis_files_ISO_9075_map($categorytitle);
+                    $category_query_tokens[] = 'PATH:"/cm:generalclassifiable//cm:'.$cattitle.'//member"';
                 }
             }
 

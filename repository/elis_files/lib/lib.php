@@ -1321,20 +1321,7 @@ function elis_files_category_search($categories) {
     $nodes = array();
 
     foreach ($categories as $category) {
-    /// Re-encoded special characters to ISO-9075 standard for Xpath.
-        $search = array(
-            ':',
-            '_',
-            ' '
-        );
-
-        $replace = array(
-            '_x003A_',
-            '_x005F_',
-            '_x0020_'
-        );
-
-        $cattitle = str_replace($search, $replace, $category->title);
+        $cattitle = elis_files_ISO_9075_map($category->title);
         $response = elis_files_utils_invoke_service('/moodle/categorysearch/' . $cattitle);
 
         $sxml = RLsimpleXMLelement($response);
@@ -3160,4 +3147,73 @@ if (!function_exists('glob_recursive')) {
 function elis_files_nopasswd_auths() {
     // TBD: determine from auth plugin which don't support passwords ???
     return array('openid', 'cas');
+}
+
+/**
+ * Method to map special characters to ISO 9075 codes for valid XML search
+ * @param string categorytitle The name of the category
+ *
+ * @return string Returns category title with special characters mapped to their hex values
+ *
+ */
+function elis_files_ISO_9075_map($categorytitle) {
+    /// Re-encoded special characters to ISO-9075 standard for Xpath.
+    // Alfresco accepts the following special characters as part of a category name: +=&{[;,`~@#$%^(-_'}])
+    // Of these, only the following characters can be encoded and successfully used in a search: &@$%(')`
+    // Encoding: +={[;,~#^-_} doesn't allow for a successful search, neither does leaving these characters unencoded
+    // For some reason we have always encoded ':' even though Alfresco does not allow this as part of a category name
+    $search = array(
+        ':',
+        '_',
+        ' ',
+        "'",
+        '+',
+        '=',
+        '&',
+        '{',
+        '}',
+        '[',
+        ']',
+        ';',
+        ',',
+        '`',
+        '~',
+        '@',
+        '#',
+        '$',
+        '%',
+        '^',
+        '(',
+        ')',
+        '-'
+    );
+
+    $replace = array(
+        '_x003A_',
+        '_x005F_',
+        '_x0020_',
+        '_x0027_',
+        '_x002B_',
+        '_x003D_',
+        '_x0026_',
+        '_x007B_',
+        '_x007D_',
+        '_x005B_',
+        '_x005D_',
+        '_x003B_',
+        '_x002C_',
+        '_x0060_',
+        '_x007E_',
+        '_x0040_',
+        '_x0023_',
+        '_x0024_',
+        '_x0025_',
+        '_x005E_',
+        '_x0028_',
+        '_x0029_',
+        '_x002D_'
+    );
+
+    $cattitle = str_replace($search, $replace, $categorytitle);
+    return $cattitle;
 }

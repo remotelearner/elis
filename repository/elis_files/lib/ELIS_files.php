@@ -2341,6 +2341,8 @@ class ELIS_files {
         $cats = array();
         if ($children = $DB->get_records('elis_files_categories', array('parent'=> $catid))) {
             foreach ($children as $child) {
+                // html encode special characters and single quotes for tree menu
+                $child->title = htmlspecialchars($child->title,ENT_QUOTES);
                 $cats[] = $child;
             }
         }
@@ -2378,14 +2380,14 @@ class ELIS_files {
                 $cat->uuid   = $category['uuid'];
                 $cat->path   = !empty($classification->category->id->path) ?
                                $classification->category->id->path : '';
-                $cat->title  = addslashes($category['name']);
+                $cat->title  = $category['name'];
                 $cat->id     = $DB->insert_record('elis_files_categories', $cat);
             } else {
                 $cat->parent = $parent;
                 $cat->uuid   = $category['uuid'];
                 $cat->path   = !empty($classification->category->id->path) ?
                                $classification->category->id->path : '';
-                $cat->title  = addslashes($category['name']);
+                $cat->title  = $category['name'];
 
                 update_record('elis_files_categories', $cat);
             }
