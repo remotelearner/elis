@@ -882,7 +882,7 @@ class repository_elis_files extends repository {
                 // Include shared and oid parameters
                 $uuid = (string)$entry->uuid;
 
-                if ($properties = elis_files_node_properties($uuid)) {
+                if ($properties = $this->elis_files->get_info($uuid)) {
                     if (strcmp($properties->type, "cmis:folder") !== 0 &&
                         strcmp($properties->type, "folder") !== 0) {
                         $params = array('path'=>$uuid,
@@ -891,6 +891,10 @@ class repository_elis_files extends repository {
                                         'cid'=>(int)$cid,
                                         'uid'=>(int)$uid);
                         $encodedpath = base64_encode(serialize($params));
+                        $filesize = isset($properties->filesize) ? $properties->filesize : '';
+                        $created = isset($properties->created) ? $properties->created : '';
+                        $modified = isset($properties->modified) ? $properties->modified : '';
+                        $owner = isset($properties->owner) ? $properties->owner : '';
 
                         $alfresco_version = elis_files_get_repository_version();
                         if ($alfresco_version == '3.2.1') {
@@ -900,10 +904,11 @@ class repository_elis_files extends repository {
                         }
                         $ret['list'][] = array('title'=>$properties->title,
                                                'path'=>$encodedpath,
+                                               'size' => $filesize,
                                                'thumbnail' => $thumbnail,
-                                               'created'=>date("M. j, Y",$properties->created),
-                                               'modified'=>date("M. j, Y",$properties->modified),
-                                               'owner'=>$properties->owner,
+                                               'datecreated'=>$created,
+                                               'datemodified'=>$modified,
+                                               'author'=>$owner,
                                                'source'=>$uuid);
                     }
                 }
