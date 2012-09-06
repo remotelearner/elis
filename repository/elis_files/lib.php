@@ -823,29 +823,17 @@ class repository_elis_files extends repository {
         }
 
         $courseid = $COURSE->id;
-
-        if (empty($uuid)) {
-            if ($ruuid = $this->elis_files->get_repository_location($COURSE->id, $userid, $shared, $oid)) {
-                $uuid = $ruuid;
-            } else if ($duuid = $this->elis_files->get_default_browsing_location($courseid, $userid, $shared, $oid)) {
-                $uuid = $duuid;
-            }
-            $uuuid = $this->elis_files->get_user_store($USER->id);
-            if ($uuid == $uuuid) {
-                $uid = $USER->id;
-            } else {
-                $uid = 0;
-            }
+        $uuid = false;
+        if ($ruuid = $this->elis_files->get_repository_location($courseid, $userid, $shared, $oid)) {
+            $uuid = $ruuid;
+        } else if ($duuid = $this->elis_files->get_default_browsing_location($courseid, $userid, $shared, $oid)) {
+            $uuid = $duuid;
+        }
+        $uuuid = $this->elis_files->get_user_store($USER->id);
+        if ($uuid == $uuuid) {
+            $uid = $USER->id;
         } else {
-            $uuuid = $this->elis_files->get_user_store($USER->id);
-            if ($uuid == $uuuid) {
-                $uid = $USER->id;
-            } else {
-                $uid = 0;
-            }
-            if ($this->elis_files->permission_check($uuid, $USER->id, false)) {
-                $this->elis_files->get_repository_location($COURSE->id, $userid, $shared, $this->context);
-            }
+            $uid = 0;
         }
 
         $canedit = self::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
