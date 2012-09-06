@@ -822,10 +822,12 @@ class repository_elis_files extends repository {
             $userid = 0;
         }
 
+        $courseid = $COURSE->id;
+
         if (empty($uuid)) {
             if ($ruuid = $this->elis_files->get_repository_location($COURSE->id, $userid, $shared, $oid)) {
                 $uuid = $ruuid;
-            } else if ($duuid = $this->elis_files->get_default_browsing_location($COURSE->id, $userid, $shared, $oid)) {
+            } else if ($duuid = $this->elis_files->get_default_browsing_location($courseid, $userid, $shared, $oid)) {
                 $uuid = $duuid;
             }
             $uuuid = $this->elis_files->get_user_store($USER->id);
