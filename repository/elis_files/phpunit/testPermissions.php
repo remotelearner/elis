@@ -36,6 +36,28 @@ require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 
 /**
+ * Mock class that allows us to not run back-end Alfresco calls when we can avoid them
+ * @author brendan
+ *
+ */
+class mock_repository_elis_files extends repository_elis_files {
+    /*
+     * Calculate the 'top' of the breadcrumb and then call the requested get_parent_path method
+     * @param   string  uuid    node uuid
+     * @param   array   path    breadcrumb path to node uuid
+     * @param   int     cid     course id related to node uuid
+     * @param   int     uid     user id related to node uuid
+     * @param   int     shared  shared flag related to node uuid
+     * @param   int     oid     user set id related to node uuid
+     * @param   string  type    type of parent path retrieval - either tree or parent
+     * @return  boolean         Return true if uuid is at root = e.g. end = uuid
+     */
+    function get_parent_path($uuid, &$path, $cid, $uid, $shared, $oid, $type = 'parent') {
+        $path = array($uuid);
+    }
+}
+
+/**
  * Mock class that allows up to not run back-end Alfresco calls when we can avoid
  * them
  */
@@ -50,14 +72,14 @@ class mock_ELIS_files extends ELIS_files {
         return $uuid;
     }
 
-   /*
+       /*
     * Check if a give node is in the parent path
     *
     * @param    string  $uuid           The Unique identifier for a node
     * @param    string  $compareduuid   Unique identifier for a node to compare against
     * @return   bool                    True if the node is in the parent path, otherwise, false
     */
-    function match_uuid_path($uuid, $compareduuid) {
+    function match_uuid_path($uuid, $compareduuid, $result) {
         return $uuid == $compareduuid;
     }
 
@@ -354,6 +376,9 @@ class permissionsTest extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
+        $repo = @new mock_repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+
         $this->create_guest_role();
 
         $this->create_contexts_and_site_course();
@@ -369,7 +394,7 @@ class permissionsTest extends elis_database_test {
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
         $elis_files->uuuid = 'testuuid';
-        $has_permission = $elis_files->permission_check($elis_files->uuuid);
+        $has_permission = $elis_files->permission_check($elis_files->uuuid, 0, true, $repo);
 
         // Validation
         $this->assertTrue($has_permission);
@@ -403,6 +428,9 @@ class permissionsTest extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
+        $repo = @new mock_repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                                                 array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+
         $this->create_contexts_and_site_course();
         $courseid = $this->create_test_course();
 
@@ -422,7 +450,7 @@ class permissionsTest extends elis_database_test {
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        $has_permission = $elis_files->permission_check($mapping->uuid);
+        $has_permission = $elis_files->permission_check($mapping->uuid, 0, true, $repo);
 
         // Validation
         $this->assertTrue($has_permission);
@@ -457,6 +485,9 @@ class permissionsTest extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
+        $repo = @new mock_repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                                                 array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+
         $this->create_contexts_and_site_course();
 
         $userset = new userset(array(
@@ -479,7 +510,7 @@ class permissionsTest extends elis_database_test {
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        $has_permission = $elis_files->permission_check($mapping->uuid);
+        $has_permission = $elis_files->permission_check($mapping->uuid, 0, true, $repo);
 
         // Validation
         $this->assertTrue($has_permission);
@@ -513,6 +544,9 @@ class permissionsTest extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
+        $repo = @new mock_repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+
         $this->create_contexts_and_site_course();
 
         $this->create_guest_role();
@@ -525,7 +559,7 @@ class permissionsTest extends elis_database_test {
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        $has_permission = $elis_files->permission_check($elis_files->suuid);
+        $has_permission = $elis_files->permission_check($elis_files->suuid, 0, true, $repo);
 
         // Validation
         $this->assertTrue($has_permission);
@@ -546,6 +580,9 @@ class permissionsTest extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
+        $repo = @new mock_repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+
         $this->create_contexts_and_site_course();
 
         $this->create_guest_role();
@@ -558,7 +595,7 @@ class permissionsTest extends elis_database_test {
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        $has_permission = $elis_files->permission_check($elis_files->muuid);
+        $has_permission = $elis_files->permission_check($elis_files->muuid, 0, true, $repo);
 
         // Validation
         $this->assertTrue($has_permission);

@@ -2073,9 +2073,10 @@ class ELIS_files {
     * @param string $uuid   Unique identifier for a node.
     * @param int    $uid    The user ID (optional).
     * @param bool   $useurl Check the referring URL for Moodle-based permissions (default: true).
+    * @param object $repo   ELIS Files repo object to use (only for unit testing)
     * @return bool True if the user has permission to access the file, False otherwise.
     */
-    function permission_check($uuid, $uid = 0, $useurl = true) {
+    function permission_check($uuid, $uid = 0, $useurl = true, $repo = NULL) {
         global $CFG, $DB, $USER;
 
         require_once($CFG->dirroot .'/repository/elis_files/lib.php');
@@ -2084,8 +2085,10 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('permission_check(' . $uuid . ', ' . $uid . ', ' .
                                          ($useurl === true ? 'true' : 'false') . ')');
 
-        $repo = @new repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
-                                            array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+        if ($repo === NULL) {
+            $repo = @new repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+        }
 
         $repo->get_parent_path($uuid, $result, 0, 0, 0, 0);
 
