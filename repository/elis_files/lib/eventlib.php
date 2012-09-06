@@ -134,6 +134,7 @@ function elis_files_role_unassigned($ra) {
                 // Look for Alfresco capabilities in this context for this user and assign permissions as required.
                 if ($permissions = elis_files_get_permissions($uuid, $username)) {
                     foreach ($permissions as $permission) {
+                        // TODO: determine if this is still needed
                         elis_files_set_permission($username, $uuid, $permission, ELIS_FILES_CAPABILITY_DENIED);
                     }
                 }

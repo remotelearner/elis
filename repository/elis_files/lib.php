@@ -1694,18 +1694,25 @@ class repository_elis_files extends repository {
         $this->elis_files->get_other_capabilities($USER, $capabilities);
         $canedit = false;
 
+        $syscontext = context_system::instance();
+        $site_files_permission = has_capability('repository/elis_files:createsitecontent', $syscontext);
+
         if (empty($userid) && empty($shared) && empty($oid)) {
-            if (($id == SITEID && has_capability('repository/elis_files:createsitecontent', $context)) ||
-                ($id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context))) {
+            $has_permission = $site_files_permission ||
+                              $id == SITEID && has_capability('repository/elis_files:createsitecontent', $context) ||
+                              $id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context);
+            if ($has_permission) {
                 $canedit = true;
             }
         } else if (empty($userid) && $shared == true) {
-            $canedit = $capabilities['repository/elis_files:createsharedcontent'];
+            $canedit = $site_files_permission ||
+                       $capabilities['repository/elis_files:createsharedcontent'];
         } else {
             if (($USER->id == $userid) && empty($oid)) {
-                $canedit = $capabilities['repository/elis_files:createowncontent'];
+                $canedit = $site_files_permission ||
+                           $capabilities['repository/elis_files:createowncontent'];
             } else {
-                if (empty($oid) && has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
+                if (has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
                     $canedit = true;
                 } else if (!empty($oid) && has_capability('repository/elis_files:createusersetcontent', $userset_context, $USER->id)) {
                     $canedit = true;
