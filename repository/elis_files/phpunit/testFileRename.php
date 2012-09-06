@@ -59,13 +59,13 @@ class fileRenameTest extends PHPUnit_Framework_TestCase {
                      array('_file_a', '_file_a_1', array()),
                      array('_file_a.txt', '_file_a_1.txt', array()),
                      array('__file_a_1.txt', '__file_a_2.txt', array()),
-                     array('file_1', 'file_3', array('list' => array(array('title' => 'file_2')))),
-                     array('file_1.txt', 'file_3.txt', array('list' => array(array('title' => 'file_2.txt')))),
-                     array('file', 'file_2', array('list' => array(array('title' => 'file_1'), array('title' => 'file_3')))),
-                     array('file_1_1.txt', 'file_1_3.txt', array('list' => array(array('title' => 'file_1_2.txt')))),
-                     array('file_1_1.txt', 'file_1_4.txt', array('list' => array(array('title' => 'file_1_2.txt'), array('title' => 'file_1_3.txt')))),
-                     array('file_1', 'file_5', array('list' => array(array('title' => 'file_3'), array('title' => 'file_2'), array('title' => 'file_4')))),
-                     array('_file', '_file_2', array('list' => array(array('title' => '_file_1'))))
+                     array('file_1', 'file_3', (object)array('files' => array((object)array('title' => 'file_2', 'uuid' => true)))),
+                     array('file_1.txt', 'file_3.txt', (object)array('files' => array((object)array('title' => 'file_2.txt', 'uuid' => true)))),
+                     array('file', 'file_2', (object)array('files' => (object)array((object)array('title' => 'file_1', 'uuid' => true), (object)array('title' => 'file_3', 'uuid' => true)))),
+                     array('file_1_1.txt', 'file_1_3.txt', (object)array('files' => array((object)array('title' => 'file_1_2.txt', 'uuid' => true)))),
+                     array('file_1_1.txt', 'file_1_4.txt', (object)array('files' => array((object)array('title' => 'file_1_2.txt', 'uuid' => true), (object)array('title' => 'file_1_3.txt', 'uuid' => true)))),
+                     array('file_1', 'file_5', (object)array('files' => array((object)array('title' => 'file_3', 'uuid' => true), (object)array('title' => 'file_2', 'uuid' => true), (object)array('title' => 'file_4', 'uuid' => true)))),
+                     array('_file', '_file_2', (object)array('files' => array((object)array('title' => '_file_1', 'uuid' => true))))
             );
     }
 

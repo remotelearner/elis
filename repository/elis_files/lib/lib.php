@@ -749,34 +749,20 @@ function elis_files_create_dir($name, $uuid, $description = '', $useadmin = true
 }
 
 /**
- * Check if a given file is already in the listing
+ * Check if a given filename exists in a ELIS Files folder
  *
  * @param   string  $filename   The name of the file
- * @param   array   $listing    The listing to compare against
- * @return  mixed                If file exists, return uuid of file
+ * @param   object  $dir        The folder listing to check
+ * @return  string|false        If file exists, returns uuid of file else false
  */
-function elis_files_file_exists($filename, $listing) {
-    if (is_array($listing)) {
-        if (isset($listing['list'])) {
-            foreach ($listing['list'] as $list) {
-                if (isset($list['title'])) {
-                    // A match is found
-                    if (strcmp($list['title'], $filename) == 0) {
-                        if (isset($list['path'])) {
-                            $params = unserialize(base64_decode($list['path']));
-                            // return the uuid of the file found
-                            // so it can be deleted in the case of an overwrite
-                            $uuid = $params['path'];
-                            return $uuid;
-                        } else {
-                            return true;
-                        }
-                    }
-                }
+function elis_files_file_exists($filename, $dir) {
+    if (!empty($dir->files)) {
+        foreach ($dir->files as $file) {
+            if ($file->title == $filename) {
+                return $file->uuid;
             }
         }
     }
-
     return false;
 }
 
@@ -810,32 +796,6 @@ function elis_files_generate_unique_filename($filename, $listing) {
 
     return $newfilename;
 }
-/**
- * Upload a file into the repository.
- *
- * @uses $CFG
- * @uses $USER
- * @param string $upload   The array index of the uploaded file.
- * @param string $path     The full path to the file on the local filesystem.
- * @param string $uuid     The UUID of the folder where the file is being uploaded to.
- * @param mixed  $olduuid  The uuid of the file to be overwritten - false if the file doesn't already exist
- * @param string $newfilename The new name of a file when duplicate
- * @param object $filemeta The file meta data of the file to be uploaded when overwriting
- * @return object Node values for the uploaded file.
- */
-function elis_files_handle_duplicate_file($upload = '', $path = '', $uuid = '', $olduuid = false, $newfilename = '', $filemeta = null) {
-    global $USER;
-
-    //pass the new filename
-    $filename = isset($newfilename) ? $newfilename:'';
-
-    $result = elis_files_upload_file($upload, $path, $uuid, true, $filename, $olduuid, $filemeta);
-
-    //clean up temp file after file upload
-    @fulldelete($filemeta->filepath);
-
-    return $result;
-}
 
 /**
  * Upload a file into the repository.
@@ -858,7 +818,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
     // assign file info from filemeta
     if ($filemeta) {
-        $filename = (empty($filename)) ? $filemeta->name: $filename;
+        $filename = empty($filename) ? $filemeta->name : $filename;
         $filepath = $filemeta->filepath.$filemeta->name;
         $filemime = $filemeta->type;
         $filesize = $filemeta->size;
@@ -1361,20 +1321,7 @@ function elis_files_category_search($categories) {
     $nodes = array();
 
     foreach ($categories as $category) {
-    /// Re-encoded special characters to ISO-9075 standard for Xpath.
-        $search = array(
-            ':',
-            '_',
-            ' '
-        );
-
-        $replace = array(
-            '_x003A_',
-            '_x005F_',
-            '_x0020_'
-        );
-
-        $cattitle = str_replace($search, $replace, $category->title);
+        $cattitle = elis_files_ISO_9075_map($category->title);
         $response = elis_files_utils_invoke_service('/moodle/categorysearch/' . $cattitle);
 
         $sxml = RLsimpleXMLelement($response);
@@ -3200,4 +3147,73 @@ if (!function_exists('glob_recursive')) {
 function elis_files_nopasswd_auths() {
     // TBD: determine from auth plugin which don't support passwords ???
     return array('openid', 'cas');
+}
+
+/**
+ * Method to map special characters to ISO 9075 codes for valid XML search
+ * @param string categorytitle The name of the category
+ *
+ * @return string Returns category title with special characters mapped to their hex values
+ *
+ */
+function elis_files_ISO_9075_map($categorytitle) {
+    /// Re-encoded special characters to ISO-9075 standard for Xpath.
+    // Alfresco accepts the following special characters as part of a category name: +=&{[;,`~@#$%^(-_'}])
+    // Of these, only the following characters can be encoded and successfully used in a search: &@$%(')`
+    // Encoding: +={[;,~#^-_} doesn't allow for a successful search, neither does leaving these characters unencoded
+    // For some reason we have always encoded ':' even though Alfresco does not allow this as part of a category name
+    $search = array(
+        ':',
+        '_',
+        ' ',
+        "'",
+        '+',
+        '=',
+        '&',
+        '{',
+        '}',
+        '[',
+        ']',
+        ';',
+        ',',
+        '`',
+        '~',
+        '@',
+        '#',
+        '$',
+        '%',
+        '^',
+        '(',
+        ')',
+        '-'
+    );
+
+    $replace = array(
+        '_x003A_',
+        '_x005F_',
+        '_x0020_',
+        '_x0027_',
+        '_x002B_',
+        '_x003D_',
+        '_x0026_',
+        '_x007B_',
+        '_x007D_',
+        '_x005B_',
+        '_x005D_',
+        '_x003B_',
+        '_x002C_',
+        '_x0060_',
+        '_x007E_',
+        '_x0040_',
+        '_x0023_',
+        '_x0024_',
+        '_x0025_',
+        '_x005E_',
+        '_x0028_',
+        '_x0029_',
+        '_x002D_'
+    );
+
+    $cattitle = str_replace($search, $replace, $categorytitle);
+    return $cattitle;
 }

@@ -145,8 +145,25 @@ function xmldb_repository_elis_files_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2012083000, 'repository', 'elis_files');
     }
 
+    /*
+     * This upgrade step removes backslashes from category titles in the elis_files_categories
+     */
+    if ($result && $oldversion < 2012090400)  {
+
+        // Initialize the repo object.
+        $repo = repository_factory::factory();
+        $table = 'elis_files_categories';
+        $dbman = $DB->get_manager();
+        if ($repo && $dbman->table_exists($table) && $categories = elis_files_get_categories()) {
+            $DB->delete_records($table);
+
+            // Perform the back-end category refresh
+            $categories = elis_files_get_categories();
+            $uuids = array();
+            $repo->process_categories($uuids, $categories);
+        }
+
+        upgrade_plugin_savepoint(true, 2012090400, 'repository', 'elis_files');
+    }
     return $result;
 }
-
-?>
-

@@ -2051,16 +2051,13 @@ class ELIS_files {
     * @param    string  $compareduuid   Unique identifier for a node to compare against
     * @return   bool                    True if the node is in the parent path, otherwise, false
     */
-    function match_uuid_path($uuid, $compareduuid) {
-        $repo = @new repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
-                                            array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
-
-        $repo->get_parent_path($uuid, $result, 0, 0, 0, 0);
-
-        foreach ($result as $paths) {
-            $path = unserialize(base64_decode($paths['path']));
-            if ($path['path'] == $compareduuid) {
-                return true;
+    function match_uuid_path($uuid, $compareduuid, $result) {
+        if (is_array($result)) {
+            foreach ($result as $paths) {
+                $path = unserialize(base64_decode($paths['path']));
+                if ($path['path'] == $compareduuid) {
+                    return true;
+                }
             }
         }
 
@@ -2087,6 +2084,11 @@ class ELIS_files {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('permission_check(' . $uuid . ', ' . $uid . ', ' .
                                          ($useurl === true ? 'true' : 'false') . ')');
 
+        $repo = @new repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                                            array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+
+        $repo->get_parent_path($uuid, $result, 0, 0, 0, 0);
+
         if (empty($uid)) {
             $uid = $USER->id;
         }
@@ -2102,12 +2104,6 @@ class ELIS_files {
         $shfile = false;
         $ofile  = false;
         $ufile  = false;
-
-        // Determine the context for this file in the store.
-        if (($path = $this->get_file_path($uuid)) === false) {
-             //error_log("/repository/elis_files/lib/lib.php::permission_check(): Invalid path - returning false!");
-            return false;
-        }
 
         $coursestoreid = $DB->get_field('elis_files_course_store', 'courseid', array('uuid' => $uuid));
 
@@ -2129,7 +2125,7 @@ class ELIS_files {
 
         // This is a shared file.
         if (empty($sfile) && empty($cfile)) {
-            $matches = $this->match_uuid_path($uuid, $this->suuid);
+            $matches = $this->match_uuid_path($uuid, $this->suuid, $result);
 
             if ($matches) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
@@ -2139,7 +2135,7 @@ class ELIS_files {
 
         // This is a user file.
         if (empty($sfile) && empty($cfile) && empty($shfile)) {
-            $matches = $this->match_uuid_path($uuid, $this->uuuid);
+            $matches = $this->match_uuid_path($uuid, $this->uuuid, $result);
 
             if ($matches) {
                 $info = $this->get_info($this->uuuid);
@@ -2361,6 +2357,8 @@ class ELIS_files {
         $cats = array();
         if ($children = $DB->get_records('elis_files_categories', array('parent'=> $catid))) {
             foreach ($children as $child) {
+                // html encode special characters and single quotes for tree menu
+                $child->title = htmlspecialchars($child->title,ENT_QUOTES);
                 $cats[] = $child;
             }
         }
@@ -2398,14 +2396,14 @@ class ELIS_files {
                 $cat->uuid   = $category['uuid'];
                 $cat->path   = !empty($classification->category->id->path) ?
                                $classification->category->id->path : '';
-                $cat->title  = addslashes($category['name']);
+                $cat->title  = $category['name'];
                 $cat->id     = $DB->insert_record('elis_files_categories', $cat);
             } else {
                 $cat->parent = $parent;
                 $cat->uuid   = $category['uuid'];
                 $cat->path   = !empty($classification->category->id->path) ?
                                $classification->category->id->path : '';
-                $cat->title  = addslashes($category['name']);
+                $cat->title  = $category['name'];
 
                 update_record('elis_files_categories', $cat);
             }
