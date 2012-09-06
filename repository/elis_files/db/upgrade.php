@@ -167,6 +167,3 @@ function xmldb_repository_elis_files_upgrade($oldversion = 0) {
     }
     return $result;
 }
-
-?>
-
