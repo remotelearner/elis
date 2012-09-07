@@ -317,7 +317,7 @@ class repository_elis_files extends repository {
         $ret['path'] = $return_path;
 
         $this->current_node = $this->elis_files->get_info($uuid);
-        if (!$this->current_node) {
+        if (!$this->current_node || empty($this->current_node->uuid)) {
             return false;
         }
 
@@ -326,9 +326,8 @@ class repository_elis_files extends repository {
         $check_node = $this->current_node;
         $prev_node = $this->current_node;
         $uid = $cid = $oid = $shared = 0;
-        while (!$uid && !$cid && !$oid && !$shared &&
-               ($check_node = $this->elis_files->get_parent($check_node->uuid))
-               && !empty($check_node->uuid)) {
+
+        do {
             $folder_name = !empty($prev_node->title) ? $prev_node->title : '';
             $check_uuid = $check_node->uuid;
             if ($check_uuid == $this->elis_files->cuuid) {
@@ -345,7 +344,9 @@ class repository_elis_files extends repository {
                 $uid = elis_files_folder_to_userid($folder_name);
             }
             $prev_node = $check_node;
-        }
+        } while (!$uid && !$cid && !$oid && !$shared &&
+                ($check_node = $this->elis_files->get_parent($check_node->uuid))
+                && !empty($check_node->uuid));
 
         // Add current node to the return path
         // Include shared and oid parameters
