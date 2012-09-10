@@ -222,8 +222,9 @@ class repository_elis_files extends repository {
             $referer = get_referer(false);
             if ($referer !== false) {
                 $fromelisfilescoursepage  = stristr($referer, $CFG->wwwroot . '/repository/filemanager.php') !== false;
-                $fromcoursepage           = stristr($referer, $CFG->wwwroot . '/course/modedit.php') !== false;
-                $fromuserpage             = stristr($referer, $CFG->wwwroot . '/user/filesedit.php') !== false;
+                $fromcoursepage = (
+                    stristr($referer, $CFG->wwwroot .'/course/modedit.php') !== false || stristr($referer, $CFG->wwwroot .'/course/view.php') !== false);
+                $fromuserpage = stristr($referer, $CFG->wwwroot . '/user/files.php') !== false;
                 if (($fromelisfilescoursepage || $fromcoursepage) && $COURSE->id != SITEID) {
                     list($context, $course, $cm) = get_context_info_array($this->context->id);
                 }
@@ -297,11 +298,16 @@ class repository_elis_files extends repository {
         $ret['showselectedactions'] = true;
         $ret['showcurrentactions'] = true;
 
-        // Get editing privileges - set canedit flag...
-        $canedit = self::check_editing_permissions($courseid, $shared, $oid, $uuid, $uid);
-        $ret['canedit'] = $canedit;
-        $return_path = array();
+        // Signal that this plugin triggers the display of the refresh icon's tooltip
+        $ret['refreshtooltip'] = true;
 
+        // Signal that this plugin supports the "advanced search" functionality
+        $ret['advancedsearch'] = true;
+
+        // Signal that this plugin should display a button for executing a search
+        $ret['executesearch'] = true;
+
+        $return_path = array();
         // Get parent path/breadcrumb
         $this->get_parent_path($uuid, $return_path, 0, 0, 0, 0 /*, $cid, $uid, $shared, $oid */);
 
@@ -311,19 +317,17 @@ class repository_elis_files extends repository {
         $ret['path'] = $return_path;
 
         $this->current_node = $this->elis_files->get_info($uuid);
-        if (!$this->current_node) {
+        if (!$this->current_node || empty($this->current_node->uuid)) {
             return false;
         }
 
         $ret['parent'] = $this->current_node; // elis_files_get_parent($uuid);
 
-        $admin_username = trim(get_config('elis_files', 'admin_username'));
         $check_node = $this->current_node;
         $prev_node = $this->current_node;
         $uid = $cid = $oid = $shared = 0;
-        while (!$uid && !$cid && !$oid && !$shared &&
-               ($check_node = $this->elis_files->get_parent($check_node->uuid))
-               && !empty($check_node->uuid)) {
+
+        do {
             $folder_name = !empty($prev_node->title) ? $prev_node->title : '';
             $check_uuid = $check_node->uuid;
             if ($check_uuid == $this->elis_files->cuuid) {
@@ -337,16 +341,12 @@ class repository_elis_files extends repository {
             } else if ($check_uuid == $this->elis_files->suuid) {
                 $shared = true;
             } else if ($prev_node->uuid == $this->elis_files->uuuid) {
-                if ($folder_name == $admin_username) {
-                    $uid = $DB->get_field('user', 'id', array('username' => 'admin'));
-                    //error_log("ELIS Files: matches admin user with folder = {$folder_name} ($uid)");
-                } else {
-                    $username = str_replace('_AT_', '@', $folder_name);
-                    $uid = $DB->get_field('user', 'id', array('username' => $username));
-                }
+                $uid = elis_files_folder_to_userid($folder_name);
             }
             $prev_node = $check_node;
-        }
+        } while (!$uid && !$cid && !$oid && !$shared &&
+                ($check_node = $this->elis_files->get_parent($check_node->uuid))
+                && !empty($check_node->uuid));
 
         // Add current node to the return path
         // Include shared and oid parameters
@@ -366,11 +366,14 @@ class repository_elis_files extends repository {
         //proper parent path containing delimeted UUIDs
         $ret['parentpath'] = self::encode_path_uuids($return_path, $uuid);
 
-//print_object($ret['thisuuid']);
+        // Get editing privileges - set canedit flag...
+        // NOTE: next call MUST occur AFTER while-loop above gets path params!
+        $canedit = self::check_editing_permissions($cid ? $cid : $courseid //TBD
+                                                   , $shared, $oid, $uuid, $uid);
+        $ret['canedit'] = $canedit;
+
         // Store the UUID value that we are currently browsing.
         $this->elis_files->set_repository_location($uuid, $cid, $uid, $shared, $oid);
-//echo "user repo: ";
-//print_object($USER->elis_files_repository_location);
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
 
@@ -404,13 +407,7 @@ class repository_elis_files extends repository {
                         } else if ($check_uuid == $this->elis_files->suuid) {
                             $shared = true;
                         } else if ($prev_node->uuid == $this->elis_files->uuuid) {
-                            if ($folder_name == $admin_username) {
-                                $uid = $DB->get_field('user', 'id', array('username' => 'admin'));
-                                //error_log("ELIS Files: matches admin user with folder = {$folder_name} ($uid)");
-                            } else {
-                                $username = str_replace('_AT_', '@', $folder_name);
-                                $uid = $DB->get_field('user', 'id', array('username' => $username));
-                            }
+                            $uid = elis_files_folder_to_userid($folder_name);
                         }
                         $prev_node = $parent_node;
                     } while (!$uid && !$cid && !$oid && !$shared &&
@@ -598,13 +595,13 @@ class repository_elis_files extends repository {
 //                             'uid'=>(int)$uid);
 //            $encodedpath = base64_encode(serialize($params));
             $return[] = array('title'=>$child->title,
-                    'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
-                    'name'=>$child->title,
-                    'thumbnail'=>$OUTPUT->pix_url('f/folder-32') . '',
-                    'created'=>'',
-                    'modified'=>'',
-                    'owner'=>'',
-                    'children'=>array());
+                    'path'      => repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
+                    'name'      => $child->title,
+                    'thumbnail' => $OUTPUT->pix_url('f/folder-32') . '',
+                    'created'   => '',
+                    'modified'  => '',
+                    'owner'     => !empty($child->owner) ? $child->owner : '',
+                    'children'  => array());
         }
         return $return;
     }
@@ -738,13 +735,73 @@ class repository_elis_files extends repository {
     }
 
     /**
+     * Obtain the query needed to obtain our file listing via webservices
+     * NOTE: This is currently implemented as a Lucene query
+     *
+     * @param string $search_text The search text entered, which contains tokens
+     *                            representing either file name or file content
+     * @param int $categories An array of category ids to filter on (i.e. results
+     *                        must be in one or more to be included), or NULL to not filter
+     *                        by category
+     * @return string The complete search query
+     */
+    private function get_search_query($search_text, $categories = NULL) {
+        global $DB;
+
+        $query_fragments = array();
+
+        // The text-based search component
+        if ($search_text != '') {
+            $text_query_tokens = array();
+
+            // Valid as long as the file a name or contents match one text token
+            $tokens = explode(' ', $search_text);
+            foreach ($tokens as $token) {
+                $text_query_tokens[] = '@cm\:name:"*'.$token.'*"';
+                $text_query_tokens[] = 'TEXT:\"'.$token.'\"';
+            }
+
+            $query_fragments[] = implode(' OR ', $text_query_tokens);
+        }
+
+        // The category-based search component
+        if (is_array($categories)) {
+            $category_query_tokens = array();
+
+            // Valid as long as the file is in at least one of the categories
+            foreach ($categories as $category) {
+                //TODO: search based on UUID rather than title
+                // current side-effect is that duplicate titles will be matched
+                if ($categorytitle = $DB->get_field('elis_files_categories', 'title', array('id' => $category))) {
+                    $cattitle = elis_files_ISO_9075_map($categorytitle);
+                    $category_query_tokens[] = 'PATH:"/cm:generalclassifiable//cm:'.$cattitle.'//member"';
+                }
+            }
+
+            $query_fragments[] = implode(' OR ', $category_query_tokens);
+        }
+
+        // File must satisfy both the text-based and category-based conditions
+        $query = '('.implode(') AND (', $query_fragments).')';
+
+        return $query;
+    }
+
+    /**
      * Look for a file
      *
-     * @param string $search_text
-     * @return array
+     * @param string $search_text The search text entered, which contains tokens
+     *                            representing either file name or file content
+     * @param int $page The page we are showing the contents for
+     * @param int $categories An array of category ids to filter on (i.e. results
+     *                        must be in one or more to be included), or NULL to not filter
+     *                        by category
+     * @return array A data structure equivalent to the return value of "get_listing",
+     *               containing the filter listing
      */
-    public function search($search_text, $page = 1, $categories = NULL) {
-        global $OUTPUT, $DB, $COURSE, $USER;
+    function search($search_text, $page = 1, $categories = NULL) {
+        global $CFG, $COURSE, $OUTPUT, $USER;
+        require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
 
         $ret = array();
         $shared = 0;
@@ -766,28 +823,18 @@ class repository_elis_files extends repository {
             $userid = 0;
         }
 
-        if (empty($uuid)) {
-            if ($ruuid = $this->elis_files->get_repository_location($COURSE->id, $userid, $shared, $oid)) {
-                $uuid = $ruuid;
-            } else if ($duuid = $this->elis_files->get_default_browsing_location($COURSE->id, $userid, $shared, $oid)) {
-                $uuid = $duuid;
-            }
-            $uuuid = $this->elis_files->get_user_store($USER->id);
-            if ($uuid == $uuuid) {
-                $uid = $USER->id;
-            } else {
-                $uid = 0;
-            }
+        $courseid = $COURSE->id;
+        $uuid = false;
+        if ($ruuid = $this->elis_files->get_repository_location($courseid, $userid, $shared, $oid)) {
+            $uuid = $ruuid;
+        } else if ($duuid = $this->elis_files->get_default_browsing_location($courseid, $userid, $shared, $oid)) {
+            $uuid = $duuid;
+        }
+        $uuuid = $this->elis_files->get_user_store($USER->id);
+        if ($uuid == $uuuid) {
+            $uid = $USER->id;
         } else {
-            $uuuid = $this->elis_files->get_user_store($USER->id);
-            if ($uuid == $uuuid) {
-                $uid = $USER->id;
-            } else {
-                $uid = 0;
-            }
-            if ($this->elis_files->permission_check($uuid, $USER->id, false)) {
-                $this->elis_files->get_repository_location($COURSE->id, $userid, $shared, $this->context);
-            }
+            $uid = 0;
         }
 
         $canedit = self::check_editing_permissions($COURSE->id, $shared, $oid, $uuid, $uid);
@@ -816,60 +863,45 @@ class repository_elis_files extends repository {
         $this->elis_files->file_browse_options($cid, $uid, $shared, $oid, $ret['locations']);
         $ret['list'] = array();
 
-        if (!empty($search_text)) {
-            $search_result = elis_files_search($search_text);
+        // Obtain the list of matching files
+        $query = $this->get_search_query($search_text, $categories);
+        $response = elis_files_utils_invoke_service('/moodle/lucenesearch?searchquery='.rawurlencode($query));
+        $sxml = RLsimpleXMLelement($response);
 
-            // Convert elis category IDs to matching repository category UUIDs
-            $category_uuids = array();
-            if (is_array($categories))
-            {
-                foreach ($categories as $category_id) {
-                    $category_result = $DB->get_record('elis_files_categories', array('id'=> $category_id));
-                    if (!empty($category_result)) {
-                        $category_uuids[] = $category_result->uuid;
-                    }
-                }
-            }
+        if ($sxml and $entries = $sxml->xpath('//entry')) {
+            foreach ($entries as $entry) {
+                // Include shared and oid parameters
+                $uuid = (string)$entry->uuid;
 
-            if (!empty($search_result->files)) {
-                foreach ($search_result->files as $file_object) {
-                    // See if we have categories that we need to check against
-                    if (!empty($category_uuids)) {
-                        $found_category = false;
-                        $category_result = elis_files_get_node_categories($file_object->noderef, $file_object->uuid);
-                        foreach ($category_uuids as $category_uuid) {
-                            if (!empty($category_result[$category_uuid])) {
-                                $found_category = true;
-                                break;
-                            }
+                if ($properties = $this->elis_files->get_info($uuid)) {
+                    if (strcmp($properties->type, "cmis:folder") !== 0 &&
+                        strcmp($properties->type, "folder") !== 0) {
+                        $params = array('path'=>$uuid,
+                                        'shared'=>(boolean)$shared,
+                                        'oid'=>(int)$oid,
+                                        'cid'=>(int)$cid,
+                                        'uid'=>(int)$uid);
+                        $encodedpath = base64_encode(serialize($params));
+                        $filesize = isset($properties->filesize) ? $properties->filesize : '';
+                        $created = isset($properties->created) ? $properties->created : '';
+                        $modified = isset($properties->modified) ? $properties->modified : '';
+                        $owner = isset($properties->owner) ? $properties->owner : '';
+
+                        $alfresco_version = elis_files_get_repository_version();
+                        if ($alfresco_version == '3.2.1') {
+                            $thumbnail = $OUTPUT->pix_url(file_extension_icon($entry->filename, 90))->out(false);
+                        } else {
+                            $thumbnail = $OUTPUT->pix_url(file_extension_icon($entry->icon, 90))->out(false);
                         }
-                        if (!$found_category) {
-                            continue;
-                        }
+                        $ret['list'][] = array('title'=>$properties->title,
+                                               'path'=>$encodedpath,
+                                               'size' => $filesize,
+                                               'thumbnail' => $thumbnail,
+                                               'datecreated'=>$created,
+                                               'datemodified'=>$modified,
+                                               'author'=>$owner,
+                                               'source'=>$uuid);
                     }
-
-                    // Include shared and oid parameters
-                    $uuid = $file_object->uuid;
-                    $params = array('path'=>$uuid,
-                                    'shared'=>(boolean)$shared,
-                                    'oid'=>(int)$oid,
-                                    'cid'=>(int)$cid,
-                                    'uid'=>(int)$uid);
-                    $encodedpath = base64_encode(serialize($params));
-
-                    $alfresco_version = elis_files_get_repository_version();
-                    if ($alfresco_version == '3.2.1') {
-                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->filename, 90))->out(false);
-                    } else {
-                      $thumbnail = $OUTPUT->pix_url(file_extension_icon($file_object->icon, 90))->out(false);
-                    }
-                    $ret['list'][] = array('title'=>$file_object->title,
-                                           'path'=>$encodedpath,
-                                           'thumbnail' => $thumbnail,
-                                           'created'=>date("M. j, Y",$file_object->created),
-                                           'modified'=>date("M. j, Y",$file_object->modified),
-                                           'owner'=>$file_object->owner,
-                                           'source'=>$file_object->uuid);
                 }
             }
         }
@@ -1150,7 +1182,6 @@ class repository_elis_files extends repository {
      */
     protected function folder_tree_to_fm(&$output, $folderentry, $path = '', $puuid = '', $uid = 0, $cid = 0, $oid = 0, $shared = false) {
         global $DB;
-        $admin_username = trim(get_config('elis_files', 'admin_username'));
         foreach ($folderentry as $folder) {
             $_uid = $uid;
             $_cid = $cid;
@@ -1167,13 +1198,7 @@ class repository_elis_files extends repository {
                 } else if ($puuid == $this->elis_files->suuid) {
                     $_shared = true;
                 } else if ($folder['uuid'] == $this->elis_files->uuuid) {
-                    if ($folder['name'] == $admin_username) {
-                        $_uid = $DB->get_field('user', 'id', array('username' => 'admin'));
-                        //error_log("ELIS Files: matches admin user with folder = {$folder['name']} ($uid)");
-                    } else {
-                        $username = str_replace('_AT_', '@', $folder['name']);
-                        $_uid = $DB->get_field('user', 'id', array('username' => $username));
-                    }
+                    $_uid = elis_files_folder_to_userid($folder['name']);
                 }
             }
             $entry = array();
@@ -1653,7 +1678,8 @@ class repository_elis_files extends repository {
     function check_editing_permissions($id, $shared, $oid, $uuid, $userid) {
         global $USER;
 
-    /// Get the context instance for where we originated viewing this browser from.
+        /// Get the context instance for where we originated viewing this browser from.
+        //error_log("check_editing_permissions({$id}, {$shared}, {$oid}, {$uuid}, {$userid})");
         if (!empty($oid)) {
             $userset_context = context_elis_userset::instance($oid);
         }
@@ -1668,18 +1694,25 @@ class repository_elis_files extends repository {
         $this->elis_files->get_other_capabilities($USER, $capabilities);
         $canedit = false;
 
+        $syscontext = context_system::instance();
+        $site_files_permission = has_capability('repository/elis_files:createsitecontent', $syscontext);
+
         if (empty($userid) && empty($shared) && empty($oid)) {
-            if (($id == SITEID && has_capability('repository/elis_files:createsitecontent', $context)) ||
-                ($id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context))) {
+            $has_permission = $site_files_permission ||
+                              $id == SITEID && has_capability('repository/elis_files:createsitecontent', $context) ||
+                              $id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context);
+            if ($has_permission) {
                 $canedit = true;
             }
         } else if (empty($userid) && $shared == true) {
-            $canedit = $capabilities['repository/elis_files:createsharedcontent'];
+            $canedit = $site_files_permission ||
+                       $capabilities['repository/elis_files:createsharedcontent'];
         } else {
             if (($USER->id == $userid) && empty($oid)) {
-                $canedit = $capabilities['repository/elis_files:createowncontent'];
+                $canedit = $site_files_permission ||
+                           $capabilities['repository/elis_files:createowncontent'];
             } else {
-                if (empty($oid) && has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
+                if (has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
                     $canedit = true;
                 } else if (!empty($oid) && has_capability('repository/elis_files:createusersetcontent', $userset_context, $USER->id)) {
                     $canedit = true;

@@ -47,6 +47,37 @@ function elis_files_user_deleted($user) {
     return true;
 }
 
+/**
+ * Handle the event when a Moodle course is deleted
+ *
+ * @param object $course The deleted Moodle course
+ * @return bool true
+ */
+function elis_files_course_deleted($course) {
+    global $DB;
+
+    if (isset($course->id)) {
+        $DB->delete_records('elis_files_course_store', array('courseid' => $course->id));
+    }
+
+    return true;
+}
+
+/**
+ * Handle the event when an ELIS user set is deleted
+ *
+ * @param int $id The id of the deleted user set
+ * @return bool true
+ */
+function elis_files_userset_deleted($id) {
+    global $DB;
+
+    if (!empty($id)) {
+        $DB->delete_records('elis_files_userset_store', array('usersetid' => $id));
+    }
+
+    return true;
+}
 
 /**
  * Handle the event when a user has a role unassigned in Moodle.
@@ -103,6 +134,7 @@ function elis_files_role_unassigned($ra) {
                 // Look for Alfresco capabilities in this context for this user and assign permissions as required.
                 if ($permissions = elis_files_get_permissions($uuid, $username)) {
                     foreach ($permissions as $permission) {
+                        // TODO: determine if this is still needed
                         elis_files_set_permission($username, $uuid, $permission, ELIS_FILES_CAPABILITY_DENIED);
                     }
                 }

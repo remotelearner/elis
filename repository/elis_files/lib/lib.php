@@ -749,34 +749,20 @@ function elis_files_create_dir($name, $uuid, $description = '', $useadmin = true
 }
 
 /**
- * Check if a given file is already in the listing
+ * Check if a given filename exists in a ELIS Files folder
  *
  * @param   string  $filename   The name of the file
- * @param   array   $listing    The listing to compare against
- * @return  mixed                If file exists, return uuid of file
+ * @param   object  $dir        The folder listing to check
+ * @return  string|false        If file exists, returns uuid of file else false
  */
-function elis_files_file_exists($filename, $listing) {
-    if (is_array($listing)) {
-        if (isset($listing['list'])) {
-            foreach ($listing['list'] as $list) {
-                if (isset($list['title'])) {
-                    // A match is found
-                    if (strcmp($list['title'], $filename) == 0) {
-                        if (isset($list['path'])) {
-                            $params = unserialize(base64_decode($list['path']));
-                            // return the uuid of the file found
-                            // so it can be deleted in the case of an overwrite
-                            $uuid = $params['path'];
-                            return $uuid;
-                        } else {
-                            return true;
-                        }
-                    }
-                }
+function elis_files_file_exists($filename, $dir) {
+    if (!empty($dir->files)) {
+        foreach ($dir->files as $file) {
+            if ($file->title == $filename) {
+                return $file->uuid;
             }
         }
     }
-
     return false;
 }
 
@@ -810,32 +796,6 @@ function elis_files_generate_unique_filename($filename, $listing) {
 
     return $newfilename;
 }
-/**
- * Upload a file into the repository.
- *
- * @uses $CFG
- * @uses $USER
- * @param string $upload   The array index of the uploaded file.
- * @param string $path     The full path to the file on the local filesystem.
- * @param string $uuid     The UUID of the folder where the file is being uploaded to.
- * @param mixed  $olduuid  The uuid of the file to be overwritten - false if the file doesn't already exist
- * @param string $newfilename The new name of a file when duplicate
- * @param object $filemeta The file meta data of the file to be uploaded when overwriting
- * @return object Node values for the uploaded file.
- */
-function elis_files_handle_duplicate_file($upload = '', $path = '', $uuid = '', $olduuid = false, $newfilename = '', $filemeta = null) {
-    global $USER;
-
-    //pass the new filename
-    $filename = isset($newfilename) ? $newfilename:'';
-
-    $result = elis_files_upload_file($upload, $path, $uuid, true, $filename, $olduuid, $filemeta);
-
-    //clean up temp file after file upload
-    @fulldelete($filemeta->filepath);
-
-    return $result;
-}
 
 /**
  * Upload a file into the repository.
@@ -858,7 +818,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 
     // assign file info from filemeta
     if ($filemeta) {
-        $filename = (empty($filename)) ? $filemeta->name: $filename;
+        $filename = empty($filename) ? $filemeta->name : $filename;
         $filepath = $filemeta->filepath.$filemeta->name;
         $filemime = $filemeta->type;
         $filesize = $filemeta->size;
@@ -896,14 +856,6 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
 //    error_log("elis_files_upload_file('$upload', '$path', '$uuid', $useadmin): version = ". ELIS_files::$version);
     if (empty($uuid)) {
         $uuid = $repo->get_root()->uuid;
-    }
-
-    //get overwrite flag
-    $overwriteexisting = optional_param('overwrite', false, PARAM_BOOL);
-
-    if ($overwriteexisting && $olduuid && ($olduuid !== true)) {
-        // delete file to be overwritten
-        elis_files_delete($olduuid);
     }
 
     $xfermethod = get_config('elis_files', 'file_transfer_method');
@@ -1237,6 +1189,11 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
     if (!empty($dir->files)) {
         foreach ($dir->files as $file) {
             if ($file->title == $filename) {
+                if (!empty($file->uuid) &&
+                    ($username = elis_files_transform_username($USER->username))) {
+                    // We're not going to check the response for this right now.
+                    elis_files_request('/moodle/nodeowner/' . $file->uuid . '?username=' . $username);
+                }
                 return $file;
             }
         }
@@ -1364,20 +1321,7 @@ function elis_files_category_search($categories) {
     $nodes = array();
 
     foreach ($categories as $category) {
-    /// Re-encoded special characters to ISO-9075 standard for Xpath.
-        $search = array(
-            ':',
-            '_',
-            ' '
-        );
-
-        $replace = array(
-            '_x003A_',
-            '_x005F_',
-            '_x0020_'
-        );
-
-        $cattitle = str_replace($search, $replace, $category->title);
+        $cattitle = elis_files_ISO_9075_map($category->title);
         $response = elis_files_utils_invoke_service('/moodle/categorysearch/' . $cattitle);
 
         $sxml = RLsimpleXMLelement($response);
@@ -1855,7 +1799,10 @@ function elis_files_process_node($dom, $node, &$type) {
                     break;
 
                 case 'author':
-                    $contentNode->owner = $cnode->nodeValue;
+                    // ELIS-5750: see also test & request at end of function!
+                    $contentNode->owner = ($cnode->nodeValue == 'admin')
+                                          ? 'moodle' : $cnode->nodeValue;
+                    break;
 
                 case 'published':
                     $created = $cnode->nodeValue;
@@ -1956,6 +1903,7 @@ function elis_files_process_node($dom, $node, &$type) {
                     break;
 
                 default:
+                    //error_log("elis_files_process_node(): Unsupported tag '{$cnode->tagName}' = {$cnode->nodeValue}");
                     break;
             }
 
@@ -2013,6 +1961,7 @@ function elis_files_process_node($dom, $node, &$type) {
                         break;
 
                     default:
+                        //error_log("elis_files_process_node(): Unsupported cmis property '{$propname}' = {$prop->nodeValue}");
                         break;
                 }
             }
@@ -2025,6 +1974,16 @@ function elis_files_process_node($dom, $node, &$type) {
         }
     }
 
+    // ELIS-5750: the following requires the updated webscript: nodeowner.get.js
+    if (!empty($contentNode->uuid) &&
+        (empty($contentNode->owner) || $contentNode->owner == 'moodle') &&
+        ($response = elis_files_request('/moodle/nodeowner/'. $contentNode->uuid))
+        && ($sxml = RLsimpleXMLelement($response)) && !empty($sxml->owner)) {
+        foreach ((array)$sxml->owner AS $val) {
+            $contentNode->owner = $val;
+            break;
+        }
+    }
     return $contentNode;
 }
 
@@ -3107,54 +3066,60 @@ function elis_files_node_path($uuid, $path = '') {
  *
  * @param int $courseid The id of the course whose file picker view we are currently
  *                      on, or SITEID if we are viewing private files
+ * @param bool $default True if desire default browsing location
  * @return string The encoded path corresponding to the current location
  */
-function elis_files_get_current_path_for_course($courseid) {
+function elis_files_get_current_path_for_course($courseid, $default = false) {
     global $CFG, $DB, $USER;
     require_once($CFG->dirroot.'/repository/elis_files/lib.php');
 
     // Default to the Moodle area
     $currentpath = '/';
 
-    // Initialize repository plugin
+    // Determine if the ELIS Files repository is enabled
     $sql = 'SELECT i.name, i.typeid, r.type
-            FROM {repository} r, {repository_instances} i
-            WHERE r.type=?
-              AND i.typeid=r.id';
-    $repository = $DB->get_record_sql($sql, array('elis_files'));
+            FROM {repository} r
+            JOIN {repository_instances} i
+            WHERE r.type = ?
+            AND i.typeid = r.id';
+
+    $repository = $DB->get_record_sql($sql, array('elis_files'), IGNORE_MISSING);
 
     if ($repository) {
-        // Need this context to construct the repository_elis_files object
-        $user_context = get_context_instance(CONTEXT_USER, $USER->id);
-        $params = array(
-            'ajax' => false,
-            'name' => $repository->name,
-            'type' => 'elis_files'
-        );
-
+        // Initialize repository plugin
         try {
-            $repo = @new repository_elis_files('elis_files', $user_context, $params);
+            $ctx = context_user::instance($USER->id);
+            $options = array(
+                'ajax' => false,
+                'name' => $repository->name,
+                'type' => 'elis_files'
+            );
+            $repo = @new repository_elis_files('elis_files', $ctx, $options);
 
-            if (!empty($repo)) {
+            if (!empty($repo->elis_files)) {
                 // TBD: Is the following required???
                 //$listing = (object)$repo->get_listing(true);
-                //$uuid = $repo->elis_files->get_course_store($courseid);
+                $uuid = ($courseid == SITEID)
+                         ? false // No Site course folder, use default location
+                         : $repo->elis_files->get_course_store($courseid);
 
                 // Determine the default browsing location
-                $cid = $courseid;
-                $uid = 0;
-                $shared = 0;
-                $oid = 0;
-                $uuid = $repo->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid);
+                $cid    = $courseid;
+                $uid    = $USER->id;
+                $shared = false;
+                $oid    = 0;
+                if ($default || empty($uuid)) {
+                    $uuid = $repo->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid);
+                }
 
                 if ($uuid != false) {
                     // Encode the UUID
-                    $currentpath = repository_elis_files::build_encodedpath($uuid, 0, $cid);
+                    $currentpath = repository_elis_files::build_encodedpath($uuid, $uid, $cid);
                 }
             }
         } catch (Exception $e) {
             // The parent "repository" class may throw exceptions
-            error_log('/repository/filemanager.php: Exception: '.$e->getMessage());
+            error_log("/repository/elis_files/lib/lib.php::elis_files_get_current_path_for_course({$courseid}): Exception: ". $e->getMessage());
         }
     }
 
@@ -3182,4 +3147,73 @@ if (!function_exists('glob_recursive')) {
 function elis_files_nopasswd_auths() {
     // TBD: determine from auth plugin which don't support passwords ???
     return array('openid', 'cas');
+}
+
+/**
+ * Method to map special characters to ISO 9075 codes for valid XML search
+ * @param string categorytitle The name of the category
+ *
+ * @return string Returns category title with special characters mapped to their hex values
+ *
+ */
+function elis_files_ISO_9075_map($categorytitle) {
+    /// Re-encoded special characters to ISO-9075 standard for Xpath.
+    // Alfresco accepts the following special characters as part of a category name: +=&{[;,`~@#$%^(-_'}])
+    // Of these, only the following characters can be encoded and successfully used in a search: &@$%(')`
+    // Encoding: +={[;,~#^-_} doesn't allow for a successful search, neither does leaving these characters unencoded
+    // For some reason we have always encoded ':' even though Alfresco does not allow this as part of a category name
+    $search = array(
+        ':',
+        '_',
+        ' ',
+        "'",
+        '+',
+        '=',
+        '&',
+        '{',
+        '}',
+        '[',
+        ']',
+        ';',
+        ',',
+        '`',
+        '~',
+        '@',
+        '#',
+        '$',
+        '%',
+        '^',
+        '(',
+        ')',
+        '-'
+    );
+
+    $replace = array(
+        '_x003A_',
+        '_x005F_',
+        '_x0020_',
+        '_x0027_',
+        '_x002B_',
+        '_x003D_',
+        '_x0026_',
+        '_x007B_',
+        '_x007D_',
+        '_x005B_',
+        '_x005D_',
+        '_x003B_',
+        '_x002C_',
+        '_x0060_',
+        '_x007E_',
+        '_x0040_',
+        '_x0023_',
+        '_x0024_',
+        '_x0025_',
+        '_x005E_',
+        '_x0028_',
+        '_x0029_',
+        '_x002D_'
+    );
+
+    $cattitle = str_replace($search, $replace, $categorytitle);
+    return $cattitle;
 }

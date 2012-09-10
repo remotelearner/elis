@@ -121,8 +121,49 @@ function xmldb_repository_elis_files_upgrade($oldversion = 0) {
         upgrade_plugin_savepoint(true, 2012050200, 'repository', 'elis_files');
     }
 
+    /*
+     * This upgrade step removes any possible stale data in the elis_files_userset_store and
+     * elis_files_course_store that not longer have relevant courses or user sets
+     */
+    if ($result && $oldversion < 2012083000)  {
+        require_once($CFG->dirroot . '/elis/program/lib/data/userset.class.php');
+
+        $sql = "DELETE FROM {$CFG->prefix}elis_files_userset_store
+                WHERE NOT EXISTS (SELECT *
+                                  FROM {".userset::TABLE."}
+                                  WHERE {$CFG->prefix}elis_files_userset_store.usersetid = {".userset::TABLE."}.id)";
+
+        $DB->execute($sql);
+
+        $sql = "DELETE FROM {$CFG->prefix}elis_files_course_store
+                WHERE NOT EXISTS (SELECT *
+                                  FROM {course}
+                                  WHERE {$CFG->prefix}elis_files_course_store.courseid = {course}.id)";
+
+        $DB->execute($sql);
+
+        upgrade_plugin_savepoint(true, 2012083000, 'repository', 'elis_files');
+    }
+
+    /*
+     * This upgrade step removes backslashes from category titles in the elis_files_categories
+     */
+    if ($result && $oldversion < 2012090400)  {
+
+        // Initialize the repo object.
+        $repo = repository_factory::factory();
+        $table = 'elis_files_categories';
+        $dbman = $DB->get_manager();
+        if ($repo && $dbman->table_exists($table) && $categories = elis_files_get_categories()) {
+            $DB->delete_records($table);
+
+            // Perform the back-end category refresh
+            $categories = elis_files_get_categories();
+            $uuids = array();
+            $repo->process_categories($uuids, $categories);
+        }
+
+        upgrade_plugin_savepoint(true, 2012090400, 'repository', 'elis_files');
+    }
     return $result;
 }
-
-?>
-

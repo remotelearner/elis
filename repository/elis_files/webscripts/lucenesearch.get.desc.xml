@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Lucene Advanced Search</shortname>
+  <description>Runs a free-form Lucene search query for advanced searches</description>
+   <url>/moodle/lucenesearch?searchquery={searchquery}</url>
+   <format default="xml">extension</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+</webscript>

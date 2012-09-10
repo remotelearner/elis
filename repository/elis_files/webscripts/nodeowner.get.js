@@ -16,7 +16,16 @@ function main() {
 		status.redirect = true;
 		return false;
 	}
-	
+
+	// If no(empty) username parameter then just return current owner
+	// RL EDIT: ELIS-5750 - Alfresco 3.2 not returning owner with node info
+
+	if (!username.length) {
+		model.owner = node.getOwner();
+		model.uuid  = node.id;
+		return true;
+	}
+
 	if (people.getPerson(username) == null) {
 		status.code     = 400;
 		status.message  = 'Could not user: ' + username;
