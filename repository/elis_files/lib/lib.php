@@ -874,6 +874,22 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
     }
 }
 
+/* Define HTM Encoding filter class */
+class htmencoded_filter extends php_user_filter {
+  function filter($in, $out, &$consumed, $closing)
+  {
+    while ($bucket = stream_bucket_make_writeable($in)) {
+      $bucket->data = str_replace('&','&amp;',$bucket->data);
+      $bucket->data = str_replace('<','&lt;',$bucket->data);
+      $bucket->data = str_replace('>','&gt;',$bucket->data);
+      $bucket->data = str_replace("'",'&apos;',$bucket->data);
+      $bucket->data = str_replace('"','&quot;',$bucket->data);
+      $consumed += $bucket->datalen;
+      stream_bucket_append($out, $bucket);
+    }
+    return PSFS_PASS_ON;
+  }
+}
 
 /**
  * Upload a file into the repository via web services.
@@ -926,10 +942,27 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
 
     $encodedbytes = 0;
 
-/// Use a stream filter to base64 encode the file contents to a temporary file.
+
     if ($fi = fopen($filepath, 'r')) {
+/// Use a stream filter to encode the file contents to a temporary file.
         if ($fo = tmpfile()) {
-            stream_filter_append($fi, 'convert.base64-encode');
+            // Only use HMTM encoding for xml files
+            // Still not working - must be on the other end
+            if (ELIS_files::is_version('3.4') &&
+                (strstr($filemime,'application/xml') ||
+                 substr($filemime, 0, 4) == 'text')) {
+                // htm encode
+                /* If not already registered, register our filter with PHP */
+                $registered_filters = stream_get_filters();
+                if (!in_array("htmencoded", $registered_filters)) {
+                    stream_filter_register("htmencoded", "htmencoded_filter")
+                        or die("Failed to register filter");
+                }
+                stream_filter_append($fi, 'htmencoded');
+            }  else {
+                // base 64 encode
+                stream_filter_append($fi, 'convert.base64-encode');
+            }
 
         /// Write the beginning of the XML document to the temporary file.
             $encodedbytes += fwrite($fo, $data1, strlen($data1));

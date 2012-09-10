@@ -33,11 +33,12 @@ require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elis_files/lib.php');
 
 
 define('ONE_MB_BYTES', 1048576);
 define('ELIS_FILES_PREFIX', 'elis_files_test_file_upload_');
-
+define('FILE_NAME_PREFIX', 'elis_files_test_file_type_upload');
 
 /**
  *
@@ -78,7 +79,14 @@ class file_uploadTest extends elis_database_test {
         return array(
             'config_plugins' => 'moodle'
         );
-}
+    }
+
+    protected static function get_ignore_tables() {
+        return array(
+            'repository' => 'moodle',
+            'repository_instance' => 'moodle'
+        );
+    }
 
     protected function setUp() {
         parent::setUp();
@@ -102,7 +110,8 @@ class file_uploadTest extends elis_database_test {
         }
         if ($dir = elis_files_read_dir()) {
             foreach ($dir->files as $file) {
-                if (strpos($file->title, ELIS_FILES_PREFIX) === 0) {
+                if (strpos($file->title, ELIS_FILES_PREFIX) === 0 ||
+                    strpos($file->title, FILE_NAME_PREFIX) === 0 ) {
                     elis_files_delete($file->uuid);
                 }
             }
@@ -221,5 +230,66 @@ class file_uploadTest extends elis_database_test {
             $this->assertNotEquals(false, $response);
             $this->assertObjectHasAttribute('uuid', $response);
         }
+    }
+
+    public function fileExtensionsProvider() {
+        return array(
+            array('EMPTY'),
+            array('c'),
+            array('csv'),
+            array('docx'),
+            array('pdf'),
+            array('png'),
+            array('xml'),        );
+    }
+    /**
+     * Test uploading a file to Alfresco explicitly using the web services method
+     *
+     * @dataProvider fileExtensionsProvider
+     */
+    public function testUploadFileTypesViaWs($extension) {
+        global $CFG, $DB;
+
+    // Check for ELIS_files repository
+        if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
+            // RL: ELIS files: Alfresco
+            $data = null;
+            $listing = null;
+            $sql = 'SELECT i.name, i.typeid, r.type FROM {repository} r, {repository_instances} i WHERE r.type=? AND i.typeid=r.id';
+            $repository = $DB->get_record_sql($sql, array('elis_files'));
+            if ($repository) {
+                try {
+                    $repo = @new repository_elis_files('elis_files',
+                                get_context_instance(CONTEXT_SYSTEM),
+                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+                } catch (Exception $e) {
+                    $this->markTestSkipped();
+               }
+            } else {
+                $this->markTestSkipped();
+            }
+        } else {
+            $this->markTestSkipped();
+        }
+
+        // Explicitly set the file transfer method to Web Services
+        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
+
+        // Don't process xml files - causes errors - there is a backlog issue (ELIS-7365) to look into this some time
+        if ($extension == 'xml') {
+            $this->markTestSkipped();
+        }
+
+        // Handle the no extension test case
+        $extension = ($extension == 'EMPTY') ? '' : '.'.$extension;
+
+        $filename = $CFG->dirroot.'/repository/elis_files/phpunit/'.FILE_NAME_PREFIX.$extension;
+        $response = $this->call_upload_file($repo, '', $filename, $repo->elis_files->root->uuid);
+
+        //Download the file and compare contents
+        $thefile = $repo->get_file($response->uuid);
+
+        // Assert that the downloaded file is the same as the uploaded file
+        $this->assertFileEquals($filename,$thefile['path']);
     }
 }
