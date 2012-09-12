@@ -378,14 +378,24 @@ class customfieldform extends cmform {
         if (empty($data['shortname'])) {
             $err['shortname'] = get_string('required');
         } else {
-            /*
-            /// Fetch field-record from DB
-            $field = $DB->get_record(field::TABLE, array('shortname'=>$data['shortname']));
-            /// Check the shortname is unique
-            if ($field and $field->id != $data['id']) {
-                $err['shortname'] = get_string('profileshortnamenotunique', 'admin');
+            // Check for duplicate shortnames
+            $level = $this->_customdata->required_param('level', PARAM_ACTION);
+            $contextlevel = context_elis_helper::get_level_from_name($level);
+            if (!$contextlevel) {
+                print_error('invalid_context_level', 'elis_program');
             }
-            */
+
+            $sql = "SELECT ef.id
+                    FROM {".field::TABLE."} ef
+                    INNER JOIN {".field_contextlevel::TABLE."} cl ON ef.id = cl.fieldid
+                    WHERE ef.shortname = ?
+                    AND cl.contextlevel = ?";
+
+            $params =  array($data['shortname'], $contextlevel);
+
+            if ($DB->record_exists_sql($sql, $params)) {
+                 $err['shortname'] = get_string('profileshortnamenotunique', 'admin');
+            }
         }
 
         $plugins = get_list_of_plugins('elis/core/fields');
