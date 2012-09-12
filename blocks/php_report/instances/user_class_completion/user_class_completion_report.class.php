@@ -665,9 +665,15 @@ class user_class_completion_report extends table_report {
         if (!empty($contexts)) {
             //add a join for each profile field
             foreach ($contexts as $context) {
+                $ctxname     = $contextlevelnames[$context->contextlevel];
+
+                if (!in_array($ctxname, array_keys($instancefields))) {
+                    // Not a context level we care about
+                    continue;
+                }
+
                 if ($contextlevel != $context->contextlevel) {
                     $contextlevel = $context->contextlevel;
-                    $ctxname     = $contextlevelnames[$context->contextlevel];
                     $contextname = $ctxname.'_'; // TBD
                     $instancefield = $instancefields[$ctxname];
                     //have one ot more profile field we're joining, so join the context table at the top level
