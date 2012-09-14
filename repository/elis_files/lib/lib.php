@@ -914,7 +914,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
     $logger->flush();
 
     // Create the repository object
-    if (empty($repo) ||
+    if (empty($repo) &&
         !($repo = repository_factory::factory('elis_files'))) {
         return false;
     }
