@@ -275,11 +275,6 @@ class file_uploadTest extends elis_database_test {
         // Explicitly set the file transfer method to Web Services
         set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
 
-        // Don't process xml files - causes errors - there is a backlog issue (ELIS-7365) to look into this some time
-        if ($extension == 'xml') {
-            $this->markTestSkipped();
-        }
-
         // Handle the no extension test case
         $extension = ($extension == 'EMPTY') ? '' : '.'.$extension;
 

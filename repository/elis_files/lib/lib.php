@@ -926,6 +926,18 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         $username = $USER->username;
     }
 
+    if (basename($filepath) != $filename) {
+        // the upload file doesn't have correct filename - so change it
+        $dir = rtrim(dirname($filepath), '/');
+        $upfile = "{$dir}/{$filename}";
+        if (!@rename($filepath, $upfile)) {
+            error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed renaming '{$filepath}' to '{$upfile}'");
+            $logger->signal_error(ELIS_FILES_ERROR_WS);
+            return false;
+        }
+        $filepath = $upfile;
+    }
+
     $overwrite = false;
     if (($folder_list = $repo->read_dir($uuid)) && !empty($folder_list->files)) {
         foreach ($folder_list->files as $file) {
@@ -936,258 +948,64 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         }
     }
 
-    if (!empty($overwrite)) {
-        if (basename($filepath) != $filename) {
-            // the upload file doesn't have correct filename - so change it
-            $dir = rtrim(dirname($filepath), '/');
-            $upfile = "{$dir}/{$filename}";
-            if (!@rename($filepath, $upfile)) {
-                error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed renaming '{$filepath}' to '{$upfile}'");
-                return false;
-            }
-            $filepath = $upfile;
-        }
+    if (empty($overwrite)) {
+        $serviceuri = '/moodle/createcontent';
+    } else {
         $serviceuri = '/moodle/updatecontent';
-        //if (ELIS_files::is_version('3.4')) {
-        //    $serviceuri = '/moodle/updatecontent'; // TBD
-        //}
-        $response = elis_files_utils_http_request($serviceuri, 'ticket',
+        $uuid = $overwrite;
+    }
+    $response = elis_files_utils_http_request($serviceuri, 'ticket',
                             array() /* TBD: headers? */, 'CUSTOM-POST',
                             array('filedata' => "@{$filepath}",
-                                  'uuid' => $overwrite), $username);
-        if (empty($response) || empty($response->code) ||
-            (floor($response->code/100) * 100) != 200) {
-            ob_start();
-            var_dump($response);
-            $tmp = ob_get_contents();
-            ob_end_clean();
-            error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed updating node: {$overwrite}; response = {$tmp}");
-            return false;
-        }
-        $properties = new stdClass;
+                                  'uuid' => $uuid), $username);
+    if (empty($response) || empty($response->code) ||
+        (floor($response->code/100) * 100) != 200) {
+        ob_start();
+        var_dump($response);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed updating node: {$overwrite}; response = {$tmp}");
+        $logger->signal_error(ELIS_FILES_ERROR_WS);
+        return false;
+    }
+    $properties = new stdClass;
+    $properties->type = ELIS_files::$type_document;
+    if (!empty($overwrite)) {
         $properties->uuid = $overwrite;
         $properties->title = $filename;
-        $properties->type = ELIS_files::$type_document;
-    } else {
-        $chunksize = 8192;
-
-        /// We need to write the XML structure for the upload out to a file on disk to accomdate large files
-        /// that will potentially overrun the maximum memory allowed to a PHP script.
-        $data1 = '<?xml version="1.0" encoding="utf-8"?>' . "\n";
-
-        if (ELIS_files::is_version('3.2')) {
-            $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app" ' .
-                'xmlns:cmis="http://docs.oasis-open.org/ns/cmis/core/200901" xmlns:alf="http://www.alfresco.org">' . "\n" .
-                '  <link rel="type" href="' . elis_files_base_url() . '/api/type/document"/>' . "\n" .
-                '  <link rel="repository" href="' . elis_files_base_url() . '/api/repository"/>' . "\n";
-        } else if (ELIS_files::is_version('3.4')) {
-            $data1 .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:cmis="http://www.cmis.org/2008/05">' . "\n";
+    } else if (!empty($response->data) &&
+               ($sxml = RLsimpleXMLelement($response->data)) &&
+               !empty($sxml->node)) {
+        //ob_start();
+        //var_dump($sxml);
+        //$tmp = ob_get_contents();
+        //ob_end_clean();
+        //error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): INFO: sxml = {$tmp}");
+        if (!empty($sxml->node->uuid)) {
+            $properties->uuid = $sxml->node->uuid;
         }
-
-        $data1 .= '  <title>' . $filename . '</title>' . "\n" .
-            '  <summary>' . get_string('uploadedbymoodle', 'repository_elis_files') . '</summary>' . "\n" .
-            '  <content type="' . $filemime . '">';
-
-        $data2 = '</content>' . "\n" .
-            '  <cmis:object>' . "\n" .
-            '    <cmis:properties>' . "\n" .
-            '      <cmis:propertyString cmis:name="ObjectTypeId">' . "\n" .
-            '        <cmis:value>document</cmis:value>' . "\n" .
-            '      </cmis:propertyString>' . "\n" .
-            '    </cmis:properties>' . "\n" .
-            '  </cmis:object>' . "\n" .
-            '</entry>';
-
-        $encodedbytes = 0;
-
-
-        if ($fi = fopen($filepath, 'r')) {
-            /// Use a stream filter to encode the file contents to a temporary file.
-            if ($fo = tmpfile()) {
-                // Only use HMTM encoding for xml files
-                // Still not working - must be on the other end
-                if (ELIS_files::is_version('3.4') &&
-                    (strstr($filemime,'application/xml') ||
-                     substr($filemime, 0, 4) == 'text')) {
-                    // htm encode
-                    /* If not already registered, register our filter with PHP */
-                    $registered_filters = stream_get_filters();
-                    if (!in_array("htmencoded", $registered_filters)) {
-                        stream_filter_register("htmencoded", "htmencoded_filter")
-                            or die("Failed to register filter");
-                    }
-                    stream_filter_append($fi, 'htmencoded');
-                } else {
-                    // base 64 encode
-                    stream_filter_append($fi, 'convert.base64-encode');
-                }
-
-                /// Write the beginning of the XML document to the temporary file.
-                $encodedbytes += fwrite($fo, $data1, strlen($data1));
-
-                /// Copy the uploaded file into the temporary file (usng the base64 encode stream filter)
-                /// in 8K chunks to conserve memory.
-                while (!feof($fi)) {
-                    $encodedbytes += fwrite($fo, fread($fi, $chunksize));
-                }
-                fclose($fi);
-
-                /// Write the end of the XML document to the temporary file.
-                $encodedbytes += fwrite($fo, $data2, strlen($data2));
-            } else {
-                return false;
-            }
-        } else {
-            return false;
+        if (!empty($sxml->node->filename)) {
+            $properties->title = $sxml->node->filename;
         }
-
-        rewind($fo);
-
-        if (ELIS_files::is_version('3.2')) {
-            $serviceuri = '/api/node/workspace/SpacesStore/' . $uuid . '/descendants';
-        } else if (ELIS_files::is_version('3.4')) {
-            $serviceuri = '/cmis/i/' . $uuid . '/children';
-        }
-
-        // Initialize the object that return/result data is stored with
-        $result = new stdClass;
-
-        $url = elis_files_utils_get_wc_url($serviceuri, 'refresh', $username);
-        $uri = parse_url($url);
-
-        switch ($uri['scheme']) {
-            case 'http':
-                $port = isset($uri['port']) ? $uri['port'] : 80;
-                $host = $uri['host'] . ($port != 80 ? ':'. $port : '');
-                $fp = @fsockopen($uri['host'], $port, $errno, $errstr, 15);
-                break;
-
-            case 'https':
-                /// Note: Only works for PHP 4.3 compiled with OpenSSL.
-                $port = isset($uri['port']) ? $uri['port'] : 443;
-                $host = $uri['host'] . ($port != 443 ? ':'. $port : '');
-                $fp = @fsockopen('ssl://'. $uri['host'], $port, $errno, $errstr, 20);
-                break;
-
-            default:
-                $result->error = 'invalid schema '. $uri['scheme'];
-                return $result;
-        }
-
-        /// Make sure the socket opened properly.
-        if (!$fp) {
-            $result->error = trim($errno .' '. $errstr);
-            return $result;
-        }
-
-        /// Construct the path to act on.
-        $path = isset($uri['path']) ? $uri['path'] : '/';
-        if (isset($uri['query'])) {
-            $path .= '?'. $uri['query'];
-        }
-
-        /// Create HTTP request.
-        $headers = array(
-            // RFC 2616: "non-standard ports MUST, default ports MAY be included".
-            // We don't add the port to prevent from breaking rewrite rules checking
-            // the host that do not take into account the port number.
-            'Host'           => "Host: $host",
-            'Content-type'   => 'Content-type: application/atom+xml;type=entry',
-            'User-Agent'     => 'User-Agent: Moodle (+http://moodle.org/)',
-            'Content-Length' => 'Content-Length: ' . $encodedbytes,
-            'MIME-Version'   => 'MIME-Version: 1.0'
-        );
-
-        $request = 'POST  '. $path . " HTTP/1.0\r\n";
-        $request .= implode("\r\n", $headers);
-        $request .= "\r\n\r\n";
-        fwrite($fp, $request);
-
-        /// Write the XML request (which contains the base64-encoded uploaded file contents) into the socket.
-        while (!feof($fo)) {
-            fwrite($fp, fread($fo, $chunksize));
-        }
-
-        fclose($fo);
-        fwrite($fp, "\r\n");
-
-        // Fetch response
-        $response = '';
-        while (!feof($fp) && $chunk = fread($fp, $chunksize)) {
-            $response .= $chunk;
-        }
-        fclose($fp);
-
-        /// Parse response.
-        list($split, $result->data) = explode("\r\n\r\n", $response, 2);
-        $split = preg_split("/\r\n|\n|\r/", $split);
-
-        list($protocol, $code, $text) = explode(' ', trim(array_shift($split)), 3);
-        $result->headers = array();
-
-        /// Parse headers.
-        while ($line = trim(array_shift($split))) {
-            list($header, $value) = explode(':', $line, 2);
-            if (isset($result->headers[$header]) && $header == 'Set-Cookie') {
-                /// RFC 2109: the Set-Cookie response header comprises the token Set-
-                /// Cookie:, followed by a comma-separated list of one or more cookies.
-                $result->headers[$header] .= ','. trim($value);
-            } else {
-                $result->headers[$header] = trim($value);
-            }
-        }
-
-        $responses = array(
-            100 => 'Continue', 101 => 'Switching Protocols',
-            200 => 'OK', 201 => 'Created', 202 => 'Accepted', 203 => 'Non-Authoritative Information', 204 => 'No Content', 205 => 'Reset Content', 206 => 'Partial Content',
-            300 => 'Multiple Choices', 301 => 'Moved Permanently', 302 => 'Found', 303 => 'See Other', 304 => 'Not Modified', 305 => 'Use Proxy', 307 => 'Temporary Redirect',
-            400 => 'Bad Request', 401 => 'Unauthorized', 402 => 'Payment Required', 403 => 'Forbidden', 404 => 'Not Found', 405 => 'Method Not Allowed', 406 => 'Not Acceptable', 407 => 'Proxy Authentication Required', 408 => 'Request Time-out', 409 => 'Conflict', 410 => 'Gone', 411 => 'Length Required', 412 => 'Precondition Failed', 413 => 'Request Entity Too Large', 414 => 'Request-URI Too Large', 415 => 'Unsupported Media Type', 416 => 'Requested range not satisfiable', 417 => 'Expectation Failed',
-            500 => 'Internal Server Error', 501 => 'Not Implemented', 502 => 'Bad Gateway', 503 => 'Service Unavailable', 504 => 'Gateway Time-out', 505 => 'HTTP Version not supported'
-        );
-
-        /// RFC 2616 states that all unknown HTTP codes must be treated the same as
-        /// the base code in their class.
-        if (!isset($responses[$code])) {
-            $code = floor($code / 100) * 100;
-        }
-        //TODO: check for $code 500 and add menu to replace copy or cancel the uploaded file with the same name as an existing file
-        //if($code == 500) {
-        //
-        //} else
-        if ($code != 200 && $code != 201 && $code != 304) {
-            if (ELIS_FILES_DEBUG_TRACE) {
-                debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $serviceuri), DEBUG_DEVELOPER);
-            }
-            $logger->signal_error(ELIS_FILES_ERROR_WS);
-            return false;
-        }
-
-        $response = preg_replace('/(&[^amp;])+/', '&amp;', $response);
-        $dom = new DOMDocument();
-        $dom->preserveWhiteSpace = false;
-        $dom->loadXML($result->data);
-
-        $nodes = $dom->getElementsByTagName('entry');
-
-        if (!$nodes->length) {
-            return false;
-        }
-
-        $type = '';
-        $properties = elis_files_process_node($dom, $nodes->item(0), $type);
+    }
+    if (empty($properties->uuid)) {
+        ob_start();
+        var_dump($sxml);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed getting node data: XML = {$tmp}");
+        $logger->signal_error(ELIS_FILES_ERROR_WS);
+        return false;
     }
 
     // set the current user to be the owner of the newly created file
-    if (!empty($properties->uuid)) {
-        $username = elis_files_transform_username($USER->username);
+    $username = elis_files_transform_username($USER->username);
 
-        // We're not going to check the response for this right now.
-        elis_files_request('/moodle/nodeowner/'. $properties->uuid .'?username=' . $username);
-    }
+    // We're not going to check the response for this right now.
+    elis_files_request('/moodle/nodeowner/'. $properties->uuid .'?username=' . $username);
 
     return $properties;
 }
-
 
 /**
  * Upload a file into the repository via FTP.
