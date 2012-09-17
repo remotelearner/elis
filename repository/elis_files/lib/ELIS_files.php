@@ -99,10 +99,10 @@ class ELIS_files {
     var $cmis                    = null;  // CMIS service connection object.
     var $muuid                   = '';  // Moodle root folder UUID
     var $suuid                   = '';  // Shared folder UUID
-    var $cuuid                   = '';  // Course folder UUID
-    var $uuuid                   = '';  // User folder UUID
-    var $uhomesuid               = ''; // User Homes folder UUID
-    var $ouuid                   = '';  // usersets folder UUID
+    var $cuuid                   = '';  // Top level Course folder UUID
+    var $uuuid                   = '';  // User specific folder UUID
+    var $uhomesuid               = ''; // Top level User Homes folder UUID
+    var $ouuid                   = '';  // Top level usersets folder UUID
     var $root                    = '';  // Object representation of the root node
     var $config                  = '';  // Config object setting variables for Alfresco
     var $isrunning               = null;
@@ -1708,7 +1708,6 @@ class ELIS_files {
                 $usersetstore->uuid      = $uuid;
                 $usersetstore->id        = $DB->insert_record('elis_files_userset_store', $usersetstore);
             }
-
             return $uuid;
         }
 
@@ -2081,7 +2080,7 @@ class ELIS_files {
 
         require_once($CFG->dirroot .'/repository/elis_files/lib.php');
 
-        //error_log("/repository/elis_files/lib/lib.php::permission_check({$uuid}, {$uid}, {$useurl})");
+        error_log("/repository/elis_files/lib/lib.php::permission_check({$uuid}, {$uid}, {$useurl})");
         if (ELIS_FILES_DEBUG_TRACE) mtrace('permission_check(' . $uuid . ', ' . $uid . ', ' .
                                          ($useurl === true ? 'true' : 'false') . ')');
 
@@ -2092,79 +2091,81 @@ class ELIS_files {
 
         $repo->get_parent_path($uuid, $result, 0, 0, 0, 0);
 
-        if (empty($uid)) {
-            $uid = $USER->id;
-        }
+        // User the do while to get uid
+//        if (empty($uid)) {
+//            $uid = $USER->id;
+//        }
 
         if (!empty($this->config->root_folder)) {
             $moodleroot = $this->config->root_folder;
         } else {
             $moodleroot = '/moodle';
         }
+        // get the flags for uid, cid, oid and shared
+        $uid = 0;
+        $cid = 0;
+        $oid = 0;
+        $shared = false;
+        $parent_node = $this->get_parent($uuid);
 
-        $sfile  = false;
-        $cfile  = false;
-        $shfile = false;
-        $ofile  = false;
-        $ufile  = false;
+//        $parent_node = repository_elis_files::current_node;
+        $prev_node = $this->get_info($uuid);
 
-        $coursestoreid = $DB->get_field('elis_files_course_store', 'courseid', array('uuid' => $uuid));
+        do {
+            $check_uuid = $parent_node->uuid;
+            $folder_name = !empty($prev_node->title)
+                           ? $prev_node->title : '';
+            if ($check_uuid == $this->cuuid) {
+                $cid = $DB->get_field('elis_files_course_store',
+                                      'courseid',
+                                      array('uuid' => $prev_node->uuid));
+            } else if ($check_uuid == $this->ouuid) {
+                $oid = $DB->get_field('elis_files_userset_store',
+                                      'usersetid',
+                                      array('uuid' => $prev_node->uuid));
+            } else if ($check_uuid == $this->suuid) {
+                $shared = true;
+            } else if ($prev_node->uuid == $this->uuuid) {
+                $uid = elis_files_folder_to_userid($folder_name);
+            }
+            $prev_node = $parent_node;
+        } while (!$uid && !$cid && !$oid && !$shared &&
+                 ($parent_node = $this->get_parent($check_uuid))
+                 && !empty($parent_node->uuid));
 
-        if (!empty($coursestoreid)) {
-            $cid = $DB->get_field('course', 'id', array('id' => $coursestoreid), IGNORE_MULTIPLE);
+        if (!empty($cid)) {
+            $cid = $DB->get_field('course', 'id', array('id' => $cid), IGNORE_MULTIPLE);
 
             // This is a server file.
             if ($cid == SITEID) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
-                $sfile   = true;
             }
 
             // This is a course file.
             if (!empty($cid)) {
                 $context = get_context_instance(CONTEXT_COURSE, $cid);
-                $cfile = true;
             }
         }
 
         // This is a shared file.
-        if (empty($sfile) && empty($cfile)) {
-            $matches = $this->match_uuid_path($uuid, $this->suuid, $result);
-
-            if ($matches) {
-                $context = get_context_instance(CONTEXT_SYSTEM);
-                $shfile  = true;
-            }
+        if ($shared) {
+            $context = get_context_instance(CONTEXT_SYSTEM);
         }
 
         // This is a user file.
-        if (empty($sfile) && empty($cfile) && empty($shfile)) {
-            $matches = $this->match_uuid_path($uuid, $this->uuuid, $result);
+        if (!empty($uid)) {
+            $info = $this->get_info($this->uuuid);
 
-            if ($matches) {
-                $info = $this->get_info($this->uuuid);
-
-                if (isset($info->title)) {
-                    $username  = str_replace('_AT_', '@', $info->title);
-                    //error_log("preg_match('/\/User\sHomes\/([-_a-zA-Z0-9\s]+)\//', {$path}, = {$tmp}) => username = {$username}");
-                    $context = get_context_instance(CONTEXT_SYSTEM);
-                    $ufile   = true;
-                }
+            if (isset($info->title)) {
+                $username  = str_replace('_AT_', '@', $info->title);
+                //error_log("preg_match('/\/User\sHomes\/([-_a-zA-Z0-9\s]+)\//', {$path}, = {$tmp}) => username = {$username}");
+                $context = get_context_instance(CONTEXT_SYSTEM);
             }
         }
 
         /// This is a userset file.
-        if (empty($sfile) && empty($cfile) && empty($shfile) && empty($ufile)) {
-
-            $usersetstoreid = $DB->get_field('elis_files_userset_store', 'usersetid', array('uuid' => $uuid));
-             if (!empty($usersetstoreid)) {
-                // Get cluster id
-                $oid = $DB->get_field('crlm_cluster', 'id', array('id'=>  $usersetstoreid));
-                if (!empty($oid)) {
-                    $cluster_context = context_elis_userset::instance($oid);
-                    $ofile   = true;
-                }
-                //error_log("/repository/elis_files/lib/lib.php::permission_check(): set ofile = true, cluster_context");
-            }
+        if (!empty($oid)) {
+            $cluster_context = context_elis_userset::instance($oid);
 
         }
 
@@ -2237,7 +2238,7 @@ class ELIS_files {
             $allowsitefiles = has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
                               has_capability('repository/elis_files:createsitecontent', $syscontext);
 
-            if ($ufile) {
+            if ($uid) {
             /// If the current user is not the user who owns this file and we can't access anything in the
             /// repository, don't allow access.
                 if ($USER->username != $username && !has_capability('repository/elis_files:viewsitecontent', $context)) {
@@ -2253,7 +2254,7 @@ class ELIS_files {
                     return false;
                 }
 
-            } else if ($cfile) {
+            } else if ($cid) {
             /// This file belongs to a course, make sure the current user can access that course's repository
             /// content.
                 $hascap = $allowsitefiles ||
@@ -2263,7 +2264,7 @@ class ELIS_files {
                     return false;
                 }
 
-            } else if ($ofile) {
+            } else if ($oid) {
             /// This file belongs to a course, make sure the current user can access that course's repository
             /// content.
                 $hascap = $allowsitefiles ||
@@ -2273,7 +2274,7 @@ class ELIS_files {
                     return false;
                 }
 
-            } else if ($shfile) {
+            } else if ($shared) {
             /// This repository location is not tied to a specific Moodle context, so we need to look for the
             /// specific capability anywhere within the user's role assignments.
                 $hascap = $allowsitefiles ||
@@ -3490,7 +3491,7 @@ class ELIS_files {
                     $has_permission = $capabilities['repository/elis_files:viewsharedcontent'] ||
                                       $capabilities['repository/elis_files:createsharedcontent'] ||
                                       has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
-                                      has_capability('repository/elis_files:createsitecontent', $syscontext); 
+                                      has_capability('repository/elis_files:createsitecontent', $syscontext);
                     if ($has_permission) {
                         $shared = true;
                         $uid    = 0;

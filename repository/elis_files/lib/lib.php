@@ -736,7 +736,6 @@ function elis_files_create_dir($name, $uuid, $description = '', $useadmin = true
 
     $type       = '';
     $properties = elis_files_process_node($dom, $nodes->item(0), $type);
-
     // Ensure that we set the current user to be the owner of the newly created directory.
     if (!empty($properties->uuid)) {
         $username = elis_files_transform_username($USER->username);
