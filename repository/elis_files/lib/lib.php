@@ -919,13 +919,6 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         return false;
     }
 
-    // Force the usage of the configured Alfresco admin account, if requested.
-    if ($useadmin) {
-        $username = '';
-    } else {
-        $username = $USER->username;
-    }
-
     if (basename($filepath) != $filename) {
         // the upload file doesn't have correct filename - so change it
         $dir = rtrim(dirname($filepath), '/');
@@ -944,6 +937,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
             if ($file->title == $filename) {
                 // file already exists, save uuid
                 $overwrite = $file->uuid;
+                break;
             }
         }
     }
@@ -957,14 +951,15 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
     $response = elis_files_utils_http_request($serviceuri, 'ticket',
                             array() /* TBD: headers? */, 'CUSTOM-POST',
                             array('filedata' => "@{$filepath}",
-                                  'uuid' => $uuid), $username);
+                                  'uuid' => $uuid),
+                            $useadmin ? '' : $USER->username);
     if (empty($response) || empty($response->code) ||
         (floor($response->code/100) * 100) != 200) {
         ob_start();
         var_dump($response);
         $tmp = ob_get_contents();
         ob_end_clean();
-        error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed updating node: {$overwrite}; response = {$tmp}");
+        error_log('/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed '. ($overwrite ? 'updating' : 'creating') ." node: response = {$tmp}");
         $logger->signal_error(ELIS_FILES_ERROR_WS);
         return false;
     }
