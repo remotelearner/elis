@@ -2080,7 +2080,7 @@ class ELIS_files {
 
         require_once($CFG->dirroot .'/repository/elis_files/lib.php');
 
-        error_log("/repository/elis_files/lib/lib.php::permission_check({$uuid}, {$uid}, {$useurl})");
+//        error_log("/repository/elis_files/lib/lib.php::permission_check({$uuid}, {$uid}, {$useurl})");
         if (ELIS_FILES_DEBUG_TRACE) mtrace('permission_check(' . $uuid . ', ' . $uid . ', ' .
                                          ($useurl === true ? 'true' : 'false') . ')');
 
@@ -2091,10 +2091,6 @@ class ELIS_files {
 
         $repo->get_parent_path($uuid, $result, 0, 0, 0, 0);
 
-        // User the do while to get uid
-//        if (empty($uid)) {
-//            $uid = $USER->id;
-//        }
 
         if (!empty($this->config->root_folder)) {
             $moodleroot = $this->config->root_folder;
@@ -2107,8 +2103,6 @@ class ELIS_files {
         $oid = 0;
         $shared = false;
         $parent_node = $this->get_parent($uuid);
-
-//        $parent_node = repository_elis_files::current_node;
         $prev_node = $this->get_info($uuid);
 
         do {
@@ -2155,7 +2149,6 @@ class ELIS_files {
         // This is a user file.
         if (!empty($uid)) {
             $info = $this->get_info($this->uuuid);
-
             if (isset($info->title)) {
                 $username  = str_replace('_AT_', '@', $info->title);
                 //error_log("preg_match('/\/User\sHomes\/([-_a-zA-Z0-9\s]+)\//', {$path}, = {$tmp}) => username = {$username}");

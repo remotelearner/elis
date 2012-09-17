@@ -84,7 +84,7 @@ class mock_ELIS_files extends ELIS_files {
 
         $this->cuuid = "mockcuuid";
         $this->ouuid = "mockouuid";
-        $this->uuuid = "mockuuuid";
+        $this->uuuid = "testuuid";
         $this->suuid = "mocksuuid";
 
         return $valid_setup;
@@ -118,10 +118,48 @@ class mock_ELIS_files extends ELIS_files {
      */
     function get_info($uuid) {
         $result = new stdClass;
-        $result->title = 'fixedtitle';
-        $result->uuid = 'infouuid';
 
+        // Return the correct info
+        if ($uuid == 'testsuuid') {
+            $result->uuid = $this->suuid;
+            $result->title = 'fixedtitle';
+        } else if ($uuid == 'testcuuid') {
+            $result->uuid = 'testcuuid';
+            $result->title = 'testcourseshortname';
+        } else if ($uuid == 'testouuid') {
+            $result->uuid = 'testouuid';
+            $result->title = 'testusersetname';
+        } else if ($uuid == 'testuuid') {
+            $result->uuid = 'testuuid';
+            $result->title = 'testuserusername';
+        } else {
+            $result->title = 'fixedtitle';
+            $result->uuid = 'infouuid';
+        }
         return $result;
+    }
+
+    /**
+     * Assign a user read access to a specific node.
+     *
+     * @param string $username The Alfresco user's username.
+     * @param string $uuid     The Alfresco node UUID.
+     * @return bool True on success, False otherwise.
+     */
+    function allow_read($username, $uuid) {
+        return true;
+    }
+
+
+    /**
+     * Assign a user write access to a specific node.
+     *
+     * @param string $username The Alfresco user's username.
+     * @param string $uuid     The Alfresco node UUID.
+     * @return bool True on success, False otherwise.
+     */
+    function allow_edit($username, $uuid) {
+        return true;
     }
 
     /**
@@ -185,8 +223,7 @@ class mock_ELIS_files extends ELIS_files {
             $parent->uuid = $this->cuuid;
         } else if ($uuid == 'testouuid') {
             $parent->uuid = $this->ouuid;
-        } else if ($uuid == 'testuuuid') {
-            print_object('getting parent of: '.$this->uuuid.' for uuid: '.$uuid);
+        } else if ($uuid == 'testuuid') {
             $parent->uuid = $this->uuuid;
         } else {
             $parent->uuid = $this->suuid;
@@ -480,7 +517,7 @@ class permissionsTest extends elis_database_test {
         $this->create_contexts_and_site_course();
         $USER = $this->create_test_user();
         // Set the username to the fixed value get_info will return for title
-        $USER->username = 'fixedtitle';
+        $USER->username = 'testuserusername';
         $roleid = $this->create_test_role($capability);
 
         // Assign the test role to the test user
@@ -489,13 +526,12 @@ class permissionsTest extends elis_database_test {
 print_object("ok1");
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        // Set the uuid to mock uuid to get a valid permission check
-        $uuid = 'testuuuid';
-//        $elis_files->suuid = 'mocksuuid';
-        $elis_files->uuuid = 'testuserusername';
-        print_object("ok1c");
+
+        // Set the uuid to testuuid to get a valid permission check
+        $uuid = 'testuuid';
+
         $has_permission = $elis_files->permission_check($uuid, 0, true, $repo);
-print_object("ok2");
+
         // Validation
         $this->assertTrue($has_permission);
     }
@@ -550,8 +586,6 @@ print_object("ok2");
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        // Set the suuid to mock suuid to get a valid permission check
-//        $elis_files->suuid = 'mocksuuid';
         $has_permission = $elis_files->permission_check($mapping->uuid, 0, true, $repo);
 
         // Validation
@@ -612,8 +646,7 @@ print_object("ok2");
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        // Set the suuid to mock suuid to get a valid permission check
-//        $elis_files->suuid = 'mocksuuid';
+
         $has_permission = $elis_files->permission_check($mapping->uuid, 0, true, $repo);
 
         // Validation
@@ -663,8 +696,7 @@ print_object("ok2");
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        // Set the suuid to mock suuid to get a valid permission check
-        $elis_files->suuid = 'mocksuuid';
+
         $has_permission = $elis_files->permission_check($elis_files->suuid, 0, true, $repo);
 
         // Validation
@@ -701,8 +733,7 @@ print_object("ok2");
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        // Set the suuid to mock suuid to get a valid permission check
-        $elis_files->suuid = 'mocksuuid';
+
         $has_permission = $elis_files->permission_check($elis_files->muuid, 0, true, $repo);
 
         // Validation
@@ -736,7 +767,6 @@ print_object("ok2");
 
         // Obtain the browsing options
         $elis_files = new mock_ELIS_files();
-
         $cid = SITEID;
         $uid = 0;
         $shared = 0;
@@ -1063,7 +1093,7 @@ print_object("ok2");
             ELIS_FILES_BROWSE_SITE_FILES   => $elis_files->root->uuid,
             ELIS_FILES_BROWSE_SHARED_FILES => $elis_files->suuid,
             ELIS_FILES_BROWSE_COURSE_FILES => $course_mapping->uuid,
-            ELIS_FILES_BROWSE_USER_FILES   => 'mockuuuid'
+            ELIS_FILES_BROWSE_USER_FILES   => 'testuuid'
         );
 
         foreach ($setting_options as $setting_option => $expected_uuid) {
