@@ -370,6 +370,12 @@ class repository_elis_files extends repository {
         // NOTE: next call MUST occur AFTER while-loop above gets path params!
         $canedit = self::check_editing_permissions($cid ? $cid : $courseid //TBD
                                                    , $shared, $oid, $uuid, $uid);
+        if ($canedit) {
+            $canview = true;
+        } else {
+            $canview = self::check_viewing_permissions($cid ? $cid : $courseid //TBD
+                                                       , $shared, $oid, $uuid, $uid);
+        }
         $ret['canedit'] = $canedit;
 
         // Store the UUID value that we are currently browsing.
@@ -377,15 +383,16 @@ class repository_elis_files extends repository {
         $children = elis_files_read_dir($this->current_node->uuid);
         $ret['list'] = array();
 
+        $p_uid = $uid;
+        $p_cid = $cid;
+        $p_oid = $oid;
+        $p_shared = $shared;
         // Check that there are folders to list
-        if (isset($children->folders) && is_array($children->folders)) {
+        if (($canview || $canedit) && isset($children->folders) &&
+            is_array($children->folders)) {
             foreach ($children->folders as $child) {
-                if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
-                    continue;
-                }
-
                 // Get path parameters!
-                if (!empty($uuid)) {
+                if (!empty($uuid) && empty($p_uid) && empty($p_cid) && empty($p_oid) && empty($p_shared)) {
                     $uid = 0;
                     $cid = 0;
                     $oid = 0;
@@ -427,26 +434,22 @@ class repository_elis_files extends repository {
                 // on the sub-folder to be different from the current folder
                 $child_canedit = $this->can_edit_child($uuid, $child, $canedit);
 
-                $ret['list'][] = array('title'=>$child->title,
-                        'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
-                        'name'=>$child->title,
-                        'thumbnail'=>$OUTPUT->pix_url('f/folder-64') . '',
+                $ret['list'][] = array('title' => $child->title,
+                        'path' => repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
+                        'name' => $child->title,
+                        'thumbnail' => $OUTPUT->pix_url('f/folder-64') . '',
                         'author' => $owner,
                         'datemodified' => $modified,
                         'datecreated' => $created,
-                        'children'=>array(),
-                        'canedit'=>$child_canedit);
+                        'children' => array(),
+                        'canedit' => $child_canedit);
             }
         }
 
         // Check that there are files to list
-        if (isset($children->files) && is_array($children->files)) {
+        if (($canview || $canedit) && isset($children->files) &&
+            is_array($children->files)) {
             foreach ($children->files as $child) {
-                // Check permissions first
-                if (!$this->elis_files->permission_check($child->uuid, $USER->id, false)) {
-                    continue;
-                }
-
                 if (isset($child->uuid)) {
                     $info = $this->elis_files->get_info($child->uuid);
                 } else {
@@ -456,15 +459,15 @@ class repository_elis_files extends repository {
                 $created = isset($info->created) ? $info->created : '';
                 $modified = isset($info->modified) ? $info->modified : '';
                 $owner = isset($info->owner) ? $info->owner : '';
-                $ret['list'][] = array('title'=>$child->title,
-                        'path'=>repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
+                $ret['list'][] = array('title' => $child->title,
+                        'path' => repository_elis_files::build_encodedpath($child->uuid, $p_uid, $p_cid, $p_oid, $p_shared),
                         'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 90))->out(false),
                         'size' => $filesize,
                         'author' => $owner,
                         'datemodified' => $modified,
                         'datecreated' => $created,
-                        'source'=>$child->uuid,
-                        'canedit'=>$canedit);
+                        'source' => $child->uuid,
+                        'canedit' => $canedit);
             }
         }
 
@@ -1720,6 +1723,63 @@ class repository_elis_files extends repository {
             }
         }
         return $canedit;
+    }
+
+    /**
+     * Check the current user's capability to view the current node
+     * @param int       $id     course id related to uuid
+     * @param int       $shared shared flag related to uuid
+     * @param int       $oid    user set id related to uuid
+     * @param string    $uuid   node uuid
+     * @param int       $userid user id related to uuid
+     * @uses  $USER
+     * @return boolean  Return true or false
+     */
+    function check_viewing_permissions($id, $shared, $oid, $uuid, $userid) {
+        global $USER;
+
+        /// Get the context instance for where we originated viewing this browser from.
+        //error_log("check_viewing_permissions({$id}, {$shared}, {$oid}, {$uuid}, {$userid})");
+        if (!empty($oid)) {
+            $userset_context = context_elis_userset::instance($oid);
+        }
+        if ($id == SITEID) {
+            $context = get_context_instance(CONTEXT_SYSTEM);
+        } else {
+            $context = get_context_instance(CONTEXT_COURSE, $id);
+        }
+        // Get the non context based permissions
+        $capabilities = array('repository/elis_files:viewowncontent'=> false,
+                              'repository/elis_files:viewsharedcontent'=> false);
+        $this->elis_files->get_other_capabilities($USER, $capabilities);
+        $canview = false;
+
+        $syscontext = context_system::instance();
+        $site_files_permission = has_capability('repository/elis_files:viewsitecontent', $syscontext);
+
+        if (empty($userid) && empty($shared) && empty($oid)) {
+            $has_permission = $site_files_permission ||
+                              $id == SITEID && has_capability('repository/elis_files:viewsitecontent', $context) ||
+                              $id != SITEID && has_capability('repository/elis_files:viewcoursecontent', $context);
+            if ($has_permission) {
+                $canview = true;
+            }
+        } else if (empty($userid) && $shared == true) {
+            $canview = $site_files_permission ||
+                       $capabilities['repository/elis_files:viewsharedcontent'];
+        } else {
+            if (($USER->id == $userid) && empty($oid)) {
+                $canview = $site_files_permission ||
+                           $capabilities['repository/elis_files:viewowncontent'];
+            } else {
+                if (has_capability('repository/elis_files:viewsitecontent', $context, $USER->id)) {
+                    $canview = true;
+                } else if (!empty($oid) && has_capability('repository/elis_files:viewusersetcontent', $userset_context, $USER->id)) {
+                    $canview = true;
+                }
+            }
+        }
+        return $canview;
     }
 
     /**
