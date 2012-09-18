@@ -33,7 +33,10 @@ require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php');
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+
+define('TEST_PREFIX', 'elis_files_test_');
 
 /**
  * Mock class that allows us to not run back-end Alfresco calls when we can avoid them
@@ -62,6 +65,31 @@ class mock_repository_elis_files extends repository_elis_files {
  * them
  */
 class mock_ELIS_files extends ELIS_files {
+    var $cuuid = '';
+    var $ouuid = '';
+    var $uuuid = '';
+    var $suuid = '';
+
+ /**
+ * Verify that the Alfresco repository is currently setup and ready to be
+ * used with Moodle (i.e. the needed directory structure is in place).
+ *
+ * @uses $CFG
+ * @param none
+ * @return bool True if setup, False otherwise.
+ */
+    function verify_setup() {
+
+        $valid_setup = parent::verify_setup();
+
+        $this->cuuid = "mockcuuid";
+        $this->ouuid = "mockouuid";
+        $this->uuuid = "testuuid";
+        $this->suuid = "mocksuuid";
+
+        return $valid_setup;
+    }
+
     /**
      * Get the full path of a specific content node in the repository.
      *
@@ -72,7 +100,7 @@ class mock_ELIS_files extends ELIS_files {
         return $uuid;
     }
 
-       /*
+   /*
     * Check if a give node is in the parent path
     *
     * @param    string  $uuid           The Unique identifier for a node
@@ -90,9 +118,48 @@ class mock_ELIS_files extends ELIS_files {
      */
     function get_info($uuid) {
         $result = new stdClass;
-        $result->title = 'fixedtitle';
 
+        // Return the correct info
+        if ($uuid == 'testsuuid') {
+            $result->uuid = $this->suuid;
+            $result->title = 'fixedtitle';
+        } else if ($uuid == 'testcuuid') {
+            $result->uuid = 'testcuuid';
+            $result->title = 'testcourseshortname';
+        } else if ($uuid == 'testouuid') {
+            $result->uuid = 'testouuid';
+            $result->title = 'testusersetname';
+        } else if ($uuid == 'testuuid') {
+            $result->uuid = 'testuuid';
+            $result->title = 'testuserusername';
+        } else {
+            $result->title = 'fixedtitle';
+            $result->uuid = 'infouuid';
+        }
         return $result;
+    }
+
+    /**
+     * Assign a user read access to a specific node.
+     *
+     * @param string $username The Alfresco user's username.
+     * @param string $uuid     The Alfresco node UUID.
+     * @return bool True on success, False otherwise.
+     */
+    function allow_read($username, $uuid) {
+        return true;
+    }
+
+
+    /**
+     * Assign a user write access to a specific node.
+     *
+     * @param string $username The Alfresco user's username.
+     * @param string $uuid     The Alfresco node UUID.
+     * @return bool True on success, False otherwise.
+     */
+    function allow_edit($username, $uuid) {
+        return true;
     }
 
     /**
@@ -140,9 +207,34 @@ class mock_ELIS_files extends ELIS_files {
     function elis_files_userdir($username) {
         return 'useruuid';
     }
+
+    /**
+     * Get the parent of a specific node.
+     *
+     * @param string $uuid Unique identifier for a node.
+     * @return object|bool An object representing the parent node or False.
+     */
+    function get_parent($uuid) {
+        $parent = new stdClass;
+        //set it to a 'valid' parent
+        if ($uuid == 'testsuuid') {
+            $parent->uuid = $this->suuid;
+        } else if ($uuid == 'testcuuid') {
+            $parent->uuid = $this->cuuid;
+        } else if ($uuid == 'testouuid') {
+            $parent->uuid = $this->ouuid;
+        } else if ($uuid == 'testuuid') {
+            $parent->uuid = $this->uuuid;
+        } else {
+            $parent->uuid = $this->suuid;
+        }
+        return $parent;
+    }
 }
 
 class permissionsTest extends elis_database_test {
+    protected $created_uuids = array();
+
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -157,6 +249,7 @@ class permissionsTest extends elis_database_test {
 
         return array(
             'config'                     => 'moodle',
+            'config_plugins'             => 'moodle',
             'context'                    => 'moodle',
             'course'                     => 'moodle',
             'course_categories'          => 'moodle',
@@ -167,6 +260,7 @@ class permissionsTest extends elis_database_test {
             'role_capabilities'          => 'moodle',
             'user'                       => 'moodle',
             clusterassignment::TABLE     => 'elis_program',
+            course::TABLE                => 'elis_program',
             curriculumstudent::TABLE     => 'elis_program',
             field::TABLE                 => 'elis_core',
             field_category::TABLE        => 'elis_core',
@@ -183,12 +277,49 @@ class permissionsTest extends elis_database_test {
      */
     static protected function get_ignored_tables() {
         return array(
-            'block_instances' => 'moodle',
-            'cache_flags'     => 'moodle',
-            'course_sections' => 'moodle',
-            'enrol'           => 'moodle',
-            'log'             => 'moodle'
+            'block_instances'     => 'moodle',
+            'cache_flags'         => 'moodle',
+            'course_sections'     => 'moodle',
+            'enrol'               => 'moodle',
+            'log'                 => 'moodle',
+            'repository'          => 'moodle',
+            'repository_instance' => 'moodle',
+             coursetemplate::TABLE => 'elis_program'
         );
+    }
+
+    protected function setUp() {
+
+        parent::setUp();
+
+        $rs = self::$origdb->get_recordset('config_plugins', array('plugin' => 'elis_files'));
+
+        if ($rs->valid()) {
+            foreach ($rs as $setting) {
+                self::$overlaydb->import_record('config_plugins', $setting);
+            }
+            $rs->close();
+        }
+//        $GLOBALS['USER'] = get_admin();
+    }
+
+    protected function tearDown() {
+        foreach ($this->created_uuids as $uuid) {
+            elis_files_delete($uuid);
+        }
+
+        parent::tearDown();
+    }
+
+    protected function call_upload_file($repo, $upload, $path, $uuid) {
+        $response = elis_files_upload_file($upload, $path, $uuid);
+        if ($response && !empty($response->uuid)) {
+            $this->created_uuids[] = $response->uuid;
+            $node = elis_files_get_parent($response->uuid);
+            $this->assertTrue($node && !empty($node->uuid));
+            $this->assertEquals($uuid, $node->uuid);
+        }
+        return $response;
     }
 
     /**
@@ -234,6 +365,7 @@ class permissionsTest extends elis_database_test {
 
         $data = new stdClass;
         $data->username = 'testuserusername';
+        $data->mnethostid = $CFG->mnet_localhost_id;
         $userid = user_create_user($data);
 
         return $DB->get_record('user', array('id' => $userid));
@@ -253,10 +385,11 @@ class permissionsTest extends elis_database_test {
         $category->name = 'testcategoryname';
         $category->id = $DB->insert_record('course_categories', $category);
 
-        // Creat ethe course
+        // Create the course
         $data = new stdClass;
         $data->category = $category->id;
         $data->fullname = 'testcoursefullname';
+        $data->shortname = 'testcourseshortname';
         $course = create_course($data);
         return $course->id;
     }
@@ -265,7 +398,7 @@ class permissionsTest extends elis_database_test {
      * Create a test role with the provided capability
      *
      * @param string $capability The capability to assign to the role
-     * @param string $name String to use as shortname, name and description 
+     * @param string $name String to use as shortname, name and description
      * @return int The role's id
      */
     private function create_test_role($capability, $name = 'testrole') {
@@ -384,17 +517,20 @@ class permissionsTest extends elis_database_test {
         $this->create_contexts_and_site_course();
         $USER = $this->create_test_user();
         // Set the username to the fixed value get_info will return for title
-        $USER->username = 'fixedtitle';
+        $USER->username = 'testuserusername';
         $roleid = $this->create_test_role($capability);
 
         // Assign the test role to the test user
         $context = context_system::instance();
         role_assign($roleid, $USER->id, $context->id);
-
+print_object("ok1");
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
-        $elis_files->uuuid = 'testuuid';
-        $has_permission = $elis_files->permission_check($elis_files->uuuid, 0, true, $repo);
+
+        // Set the uuid to testuuid to get a valid permission check
+        $uuid = 'testuuid';
+
+        $has_permission = $elis_files->permission_check($uuid, 0, true, $repo);
 
         // Validation
         $this->assertTrue($has_permission);
@@ -436,7 +572,7 @@ class permissionsTest extends elis_database_test {
 
         $mapping = new stdClass;
         $mapping->courseid = $courseid;
-        $mapping->uuid = 'testuuid';
+        $mapping->uuid = 'testcuuid';
         $DB->insert_record('elis_files_course_store', $mapping);
 
         $this->create_guest_role();
@@ -492,12 +628,12 @@ class permissionsTest extends elis_database_test {
 
         $userset = new userset(array(
             'name' => 'testusersetname'
-        )); 
+        ));
         $userset->save();
 
         $mapping = new stdClass;
         $mapping->usersetid = $userset->id;
-        $mapping->uuid = 'testuuid';
+        $mapping->uuid = 'testouuid';
         $DB->insert_record('elis_files_userset_store', $mapping);
 
         $this->create_guest_role();
@@ -510,6 +646,7 @@ class permissionsTest extends elis_database_test {
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
+
         $has_permission = $elis_files->permission_check($mapping->uuid, 0, true, $repo);
 
         // Validation
@@ -559,6 +696,7 @@ class permissionsTest extends elis_database_test {
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
+
         $has_permission = $elis_files->permission_check($elis_files->suuid, 0, true, $repo);
 
         // Validation
@@ -595,6 +733,7 @@ class permissionsTest extends elis_database_test {
 
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
+
         $has_permission = $elis_files->permission_check($elis_files->muuid, 0, true, $repo);
 
         // Validation
@@ -628,7 +767,6 @@ class permissionsTest extends elis_database_test {
 
         // Obtain the browsing options
         $elis_files = new mock_ELIS_files();
-
         $cid = SITEID;
         $uid = 0;
         $shared = 0;
@@ -748,7 +886,7 @@ class permissionsTest extends elis_database_test {
 
         $userset = new userset(array(
             'name' => 'testusersetname'
-        )); 
+        ));
         $userset->save();
         $userset->reset_custom_field_list();
         $userset->load();
@@ -955,7 +1093,7 @@ class permissionsTest extends elis_database_test {
             ELIS_FILES_BROWSE_SITE_FILES   => $elis_files->root->uuid,
             ELIS_FILES_BROWSE_SHARED_FILES => $elis_files->suuid,
             ELIS_FILES_BROWSE_COURSE_FILES => $course_mapping->uuid,
-            ELIS_FILES_BROWSE_USER_FILES   => 'useruuid'
+            ELIS_FILES_BROWSE_USER_FILES   => 'testuuid'
         );
 
         foreach ($setting_options as $setting_option => $expected_uuid) {
@@ -1003,7 +1141,7 @@ class permissionsTest extends elis_database_test {
      * @param boolean $course True if checking permissions on course files
      * @param boolean $shared True if checking permissions on shared files
      * @param boolean $userset True if checking permissions on userset files
-     * @param boolean $own True if checking permissions on own (personal) files 
+     * @param boolean $own True if checking permissions on own (personal) files
      * @dataProvider node_flag_provider
      */
     public function testCheckEditingPermissionsRespectsSiteFiles($course, $shared, $userset, $own) {
@@ -1080,6 +1218,192 @@ class permissionsTest extends elis_database_test {
                                                'type' => 'elis_files'
                                            ));
         $has_permission = $repo->check_editing_permissions($id, $shared, $oid, $uuid, $userid);
+
+        // Validation
+        $this->assertTrue($has_permission);
+    }
+
+   /**
+     * Data provider for folder depth testing for permissions checking
+     *
+     * @return array Data, as expected by the test method
+     */
+    public function hierarchy_provider() {
+        return array(
+            array('1'),
+            array('2'),
+            array('3'),
+            array('4'),
+        );
+    }
+
+    /**
+     * Validate that the "permission_check" method works hierarchically and respects the
+     * capabilities assigned at the system level for userset files
+     *
+     * @param string $depth The folder depth to build for hierachy testing
+     * @dataProvider hierarchy_provider
+     */
+    public function testPermissionCheckHierarchicalCapabilitiesForUsersetFile($depth) {
+        global $CFG, $DB, $SESSION, $USER;
+        require_once(elispm::lib('data/userset.class.php'));
+
+// Make sure the test user is not mistaken for a site admin or guest
+        set_config('siteadmins', '');
+        set_config('siteguest', '');
+        // Use a fixed capability
+        $capability = 'repository/elis_files:createusersetcontent';
+
+        // unset the repo to avoid the is_siteadmin problem in the factory class
+        unset($SESSION->repo);
+
+        // create a test user and give them the capability and role they need
+        $this->create_contexts_and_site_course();
+
+        $this->create_guest_role();
+        $USER = $this->create_test_user();
+        $roleid = $this->create_test_role($capability);
+
+        // Assign the test role to the test user
+        $context = context_system::instance();
+        role_assign($roleid, $USER->id, $context->id);
+
+//print_object("user id ".$USER->id." name? ".$USER->username." is admin? ".is_siteadmin());
+
+        // Check for ELIS_files repository
+        if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
+            // RL: ELIS files: Alfresco
+            $data = null;
+            $listing = null;
+            $sql = 'SELECT i.name, i.typeid, r.type FROM {repository} r, {repository_instances} i WHERE r.type=? AND i.typeid=r.id';
+            $repository = $DB->get_record_sql($sql, array('elis_files'));
+            if ($repository) {
+                try {
+                    $repo = @new repository_elis_files('elis_files',
+                                get_context_instance(CONTEXT_SYSTEM),
+                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+                } catch (Exception $e) {
+                    $this->markTestSkipped();
+               }
+            } else {
+                $this->markTestSkipped();
+            }
+        } else {
+            $this->markTestSkipped();
+        }
+
+        // Explicitly set the file transfer method to web services
+        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
+
+
+        $userset = new userset(array(
+            'name' => 'elisunittestuserset'
+        ));
+        $userset->save();
+
+        $current_uuid = $repo->elis_files->get_userset_store($userset->id);
+        $this->created_uuids[] = $current_uuid;
+
+        // Now we need to create folders up to the depth from the data provider and upload a file
+        for ($i = 1; $i <= $depth; ++$i) {
+            //create a sub-folder
+            $current_node = elis_files_create_dir(TEST_PREFIX.'userset_'.$i,$current_uuid);
+            $this->assertTrue($current_node && !empty($current_node->uuid));
+            $current_uuid = $current_node->uuid;
+            $this->created_uuids[] = $current_uuid;
+        }
+
+        $filename = $CFG->dirroot.'/repository/elis_files/phpunit/'.TEST_PREFIX.'file.txt';
+        //upload a file to this folder
+        $response = $this->call_upload_file($repo, '', $filename, $current_uuid);
+        // FTP was failing, but this is a good check to keep in
+        $this->assertFalse(!$response);
+
+        $has_permission = $repo->elis_files->permission_check($response->uuid, 0, true, $repo);
+
+        // Validation
+        $this->assertTrue($has_permission);
+    }
+
+    /**
+     * Validate that the "permission_check" method method works hierarchically and respects the appropriate
+     * capabilities assigned at the system level for course files
+     *
+     * @param string $depth The folder depth to build for hierachy testing
+     * @dataProvider hierarchy_provider
+     */
+    public function testPermissionCheckRespectsHierarchyForCourseFile($depth) {
+        global $CFG, $DB, $SESSION, $USER;
+        require_once(elispm::lib('data/userset.class.php'));
+
+// Make sure the test user is not mistaken for a site admin or guest
+        set_config('siteadmins', '');
+        set_config('siteguest', '');
+        // Use a fixed capability
+        $capability = 'repository/elis_files:createcoursecontent';
+
+        // unset the repo to avoid the is_siteadmin problem in the factory class
+        unset($SESSION->repo);
+
+        $this->create_contexts_and_site_course();
+        $courseid = $this->create_test_course();
+
+        // Check for ELIS_files repository
+        if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
+            // RL: ELIS files: Alfresco
+            $data = null;
+            $listing = null;
+            $sql = 'SELECT i.name, i.typeid, r.type FROM {repository} r, {repository_instances} i WHERE r.type=? AND i.typeid=r.id';
+            $repository = $DB->get_record_sql($sql, array('elis_files'));
+            if ($repository) {
+                try {
+                    $repo = @new repository_elis_files('elis_files',
+                                get_context_instance(CONTEXT_SYSTEM),
+                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+                } catch (Exception $e) {
+                    $this->markTestSkipped();
+               }
+            } else {
+                $this->markTestSkipped();
+            }
+        } else {
+            $this->markTestSkipped();
+        }
+
+        // Explicitly set the file transfer method to web services
+        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
+
+        // use test course id
+        $current_uuid = $repo->elis_files->get_course_store($courseid);
+        $this->created_uuids[] = $current_uuid;
+
+        $this->create_guest_role();
+
+        $USER = $this->create_test_user();
+        $roleid = $this->create_test_role($capability);
+
+        // Assign the test role to the test user
+        $context = context_system::instance();
+        role_assign($roleid, $USER->id, $context->id);
+
+// Now we need to create folders up to the depth from the data provider and upload a file
+        for ($i = 1; $i <= $depth; ++$i) {
+            //create a sub-folder
+            $current_node = elis_files_create_dir(TEST_PREFIX.'course_'.$i,$current_uuid);
+            $this->assertTrue($current_node && !empty($current_node->uuid));
+            $current_uuid = $current_node->uuid;
+            $this->created_uuids[] = $current_uuid;
+        }
+
+        $filename = $CFG->dirroot.'/repository/elis_files/phpunit/'.TEST_PREFIX.'file.txt';
+        //upload a file to this folder
+        $response = $this->call_upload_file($repo, '', $filename, $current_uuid);
+        // FTP was failing, but this is a good check to keep in
+        $this->assertFalse(!$response);
+
+        // Perform the appropriate permission check
+//        $elis_files = new mock_ELIS_files();
+        $has_permission = $repo->elis_files->permission_check($response->uuid, 0, true, $repo);
 
         // Validation
         $this->assertTrue($has_permission);
