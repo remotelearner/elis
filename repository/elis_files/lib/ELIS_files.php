@@ -2106,7 +2106,7 @@ class ELIS_files {
         $prev_node = $this->get_info($uuid);
 
         do {
-            $check_uuid = $parent_node->uuid;
+            $check_uuid = !empty($parent_node->uuid) ? $parent_node->uuid : 0;
             $folder_name = !empty($prev_node->title)
                            ? $prev_node->title : '';
             if ($check_uuid == $this->cuuid) {
@@ -2119,7 +2119,8 @@ class ELIS_files {
                                       array('uuid' => $prev_node->uuid));
             } else if ($check_uuid == $this->suuid) {
                 $shared = true;
-            } else if ($prev_node->uuid == $this->uuuid) {
+            } else if (!empty($prev_node->uuid) &&
+                       $prev_node->uuid == $this->uuuid) {
                 $uid = elis_files_folder_to_userid($folder_name);
             }
             $prev_node = $parent_node;
