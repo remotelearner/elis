@@ -523,7 +523,7 @@ class permissionsTest extends elis_database_test {
         // Assign the test role to the test user
         $context = context_system::instance();
         role_assign($roleid, $USER->id, $context->id);
-print_object("ok1");
+
         // Perform the appropriate permission check
         $elis_files = new mock_ELIS_files();
 
