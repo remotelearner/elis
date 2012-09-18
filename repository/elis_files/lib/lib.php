@@ -3001,7 +3001,7 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
 
                 // Determine the default browsing location
                 $cid    = $courseid;
-                $uid    = $USER->id;
+                $uid    = 0;
                 $shared = false;
                 $oid    = 0;
                 if ($default || empty($uuid)) {
