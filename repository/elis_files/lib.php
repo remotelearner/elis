@@ -1570,11 +1570,21 @@ class repository_elis_files extends repository {
      * @return boolean
      */
     public function is_visible() {
-        if (!parent::is_visible()) {
+        global $COURSE, $USER;
+
+        if (!parent::is_visible() || !isset($this->elis_files) || empty($this->elis_files->isrunning)) {
             return false;
         }
 
-        return (isset($this->elis_files) && !empty($this->elis_files->isrunning));
+        $uid = $USER->id;
+        $courseid = $COURSE->id;
+        $cid = (isset($course) && is_object($course)) ? $course->id : 0;
+        $uid = (isset($uid)) ? $uid : 0;
+        $oid = 0;
+        $shared = (boolean)0;
+
+        // ELIS files is visible if the user has any permissions from default browsing location
+        return $this->elis_files->get_default_browsing_location($cid, $uid, $shared, $oid);
     }
 
     public function supported_returntypes() {
