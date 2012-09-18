@@ -1578,8 +1578,7 @@ class repository_elis_files extends repository {
 
         $uid = $USER->id;
         $courseid = $COURSE->id;
-        $cid = (isset($course) && is_object($course)) ? $course->id : 0;
-        $uid = (isset($uid)) ? $uid : 0;
+        $cid = ($courseid != SITEID) ? $courseid : 0;
         $oid = 0;
         $shared = (boolean)0;
 
