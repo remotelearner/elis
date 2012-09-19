@@ -48,6 +48,10 @@ $plugin_display = get_string('pluginname', $plugin);
 rlip_manualrun_page_setup($baseurl, $plugin_display);
 echo $OUTPUT->header();
 
+//add a warning message for all imports
+$import_warning = get_string('importwarning','block_rlip');
+echo $OUTPUT->box($import_warning);
+
 //need to get number of different files
 $instance = rlip_dataplugin_factory::factory($plugin);
 $labels = $instance->get_file_labels();
