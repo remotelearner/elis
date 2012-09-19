@@ -350,6 +350,7 @@ class customfieldform extends cmform {
         global $CFG, $USER, $DB;
 
         $err = array();
+        $fid = $this->_customdata->optional_param('id', 0, PARAM_INT);
 
         //ob_start();
         //var_dump($this->defaultdata_menu);
@@ -385,11 +386,18 @@ class customfieldform extends cmform {
                 print_error('invalid_context_level', 'elis_program');
             }
 
+            $editsql = '';
+            // We are in edit mode
+            if (!empty($fid)) {
+                $editsql = "AND ef.id != {$fid}";
+            }
+
             $sql = "SELECT ef.id
                     FROM {".field::TABLE."} ef
                     INNER JOIN {".field_contextlevel::TABLE."} cl ON ef.id = cl.fieldid
                     WHERE ef.shortname = ?
-                    AND cl.contextlevel = ?";
+                    AND cl.contextlevel = ?
+                    {$editsql}";
 
             $params =  array($data['shortname'], $contextlevel);
 

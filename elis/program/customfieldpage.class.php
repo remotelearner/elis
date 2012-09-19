@@ -137,8 +137,12 @@ class customfieldpage extends pm_page {
         if (!empty($category_names)) {
             if ($level == 'user') {
                 // create new field from Moodle field
-                $select = 'shortname NOT IN (SELECT shortname FROM {'.field::TABLE.'})';
-                $moodlefields = $DB->get_records_select('user_info_field', $select, array('sortorder'=>'id,name'));
+                $sql = 'shortname NOT IN
+                        (SELECT shortname FROM {'.field::TABLE.'} ef
+                        INNER JOIN {'.field_contextlevel::TABLE.'} cl
+                        ON ef.id = cl.fieldid WHERE cl.contextlevel = :contextlevel)';
+                $moodlefields = $DB->get_records_select('user_info_field', $sql, array('contextlevel' => $ctxlvl, 'sortorder'=>'id,name'));
+
                 $moodlefields = $moodlefields ? $moodlefields : array();
                 $tmppage->param('action', 'editfield');
                 $tmppage->param('from', 'moodle');
@@ -148,6 +152,7 @@ class customfieldpage extends pm_page {
                 //           array_map(create_function('$x', 'return $x->name;'), $moodlefields),
                 //           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'elis_program'));
                 $actionurl = new moodle_url($tmppage->out());
+
                 $single_select = new single_select($actionurl, 'id', array_map(create_function('$x', 'return $x->name;'), $moodlefields), null, array(''=>get_string('field_from_moodle', 'elis_program')));
                 echo $OUTPUT->render($single_select);
                 echo '</div>';
