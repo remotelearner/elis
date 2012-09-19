@@ -103,9 +103,7 @@ class generalized_filter_simpleselect extends generalized_filter_type {
             foreach ($this->_options as $key => $value) {
                 // ELIS-7048 -- Menu select options are including a carriage return at the end of the $key property, causing
                 //              the filter to not return any data on form submission. =(
-                if (substr($key, -1) == "\n" || substr($key, -1) == "\r") {
-                    $key = substr($key, 0, -1);
-                }
+                $key = trim($key, "\n\r");
                 $choices[$key] = $value;
             }
         }
