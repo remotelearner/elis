@@ -44,7 +44,7 @@ require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
 require_once(elis::file('core/fields/manual/custom_fields.php'));
 
 require_once($CFG->dirroot.'/blocks/php_report/php_report_base.php');
-require_once(elis::lib('filtering/autocomplete_eliswithcustomfields.php'));
+require_once(elispm::lib('filtering/autocomplete_eliswithcustomfields.php'));
 
 class autocompleteElisWithCustomFieldsTest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
