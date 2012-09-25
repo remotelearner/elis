@@ -30,9 +30,9 @@ require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once(elis::lib('data/customfield.class.php'));
 
-//NOTE: needed because this is used in customfield.class.php :-(
-//(not actually setting anything on the PM user context)
-define('CONTEXT_ELIS_USER',    1005);
+if (file_exists($CFG->dirroot .'/elis/program/accesslib.php')) {
+    require_once($CFG->dirroot .'/elis/program/accesslib.php');
+}
 
 /**
  * Class for testing the storage and retrieval of custom field data
@@ -52,16 +52,19 @@ class customFieldDataAccessTest extends elis_database_test {
             field_category::TABLE              => 'elis_core',
             field_category_contextlevel::TABLE => 'elis_core',
             field_contextlevel::TABLE          => 'elis_core',
-            field_data_char::TABLE             => 'elis_core'
+            field_data_char::TABLE             => 'elis_core',
+            field_owner::TABLE                 => 'elis_core'
         );
     }
 
     /**
      * Initialize our custom field data, and persist in the database
      *
+     * @param  mixed  $cl optional contextlevel to use,
+                          default null for self::contextlevel
      * @return object The custom field created
      */
-    protected function init_custom_field() {
+    protected function init_custom_field($cl = null) {
         //set up our custom field
         $field = new field(array(
             'name'        => 'testcustomfieldname',
@@ -69,7 +72,8 @@ class customFieldDataAccessTest extends elis_database_test {
             'multivalued' => 1
         ));
         $field_category = new field_category(array('name' => 'testcategoryname'));
-        $field = field::ensure_field_exists_for_context_level($field, self::contextlevel, $field_category);
+        $field = field::ensure_field_exists_for_context_level($field,
+                          $cl ? $cl : self::contextlevel, $field_category);
 
         //set up the default data
         $default_params = array(
@@ -262,5 +266,16 @@ class customFieldDataAccessTest extends elis_database_test {
 
         $this->assertEquals($field->id, $record->fieldid);
         $this->assertEquals('value3', $record->data);
+    }
+
+    /**
+     * Validate fix for ELIS-7545
+     * ensure_field_exists_for_context_level() correctly supports context names
+     *
+     */
+    public function testELIS7545() {
+        $field = $this->init_custom_field('user');
+        $this->assertTrue(!empty($field));
+        $field->delete();
     }
 }
