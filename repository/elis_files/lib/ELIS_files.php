@@ -84,6 +84,7 @@ defined('ELIS_FILES_BROWSE_SITE_FILES')   or define('ELIS_FILES_BROWSE_SITE_FILE
 defined('ELIS_FILES_BROWSE_SHARED_FILES') or define('ELIS_FILES_BROWSE_SHARED_FILES', 30);
 defined('ELIS_FILES_BROWSE_COURSE_FILES') or define('ELIS_FILES_BROWSE_COURSE_FILES', 40);
 defined('ELIS_FILES_BROWSE_USER_FILES')   or define('ELIS_FILES_BROWSE_USER_FILES',   50);
+defined('ELIS_FILES_BROWSE_USERSET_FILES') or define('ELIS_FILES_BROWSE_USERSET_FILES', 60);
 
 // Setup options for the method to transfer files into Alfresco from Moodle
 defined('ELIS_FILES_XFER_WS')  || define('ELIS_FILES_XFER_WS', 'webservices');
@@ -3421,7 +3422,7 @@ class ELIS_files {
  * @return string The UUID of the last location the user was browsing files in.
  */
     function get_default_browsing_location(&$cid, &$uid, &$shared, &$oid) {
-        global $CFG, $COURSE, $USER;
+        global $CFG, $COURSE, $USER, $DB;
 
         // If the default location is not set at all, just return nothing now.
         if (!isset($this->config->default_browse)) {
@@ -3468,7 +3469,8 @@ class ELIS_files {
             $browsing_locs = array(ELIS_FILES_BROWSE_USER_FILES,
                                    ELIS_FILES_BROWSE_SITE_FILES,
                                    ELIS_FILES_BROWSE_SHARED_FILES,
-                                   ELIS_FILES_BROWSE_COURSE_FILES);
+                                   ELIS_FILES_BROWSE_COURSE_FILES,
+                                   ELIS_FILES_BROWSE_USERSET_FILES);
 
             $default_entry = array_search($this->config->default_browse,
                                           $browsing_locs);
@@ -3521,9 +3523,21 @@ class ELIS_files {
                 case ELIS_FILES_BROWSE_COURSE_FILES:
                     if ($cid == SITEID && $COURSE->id != SITEID) {
                         $cid = $COURSE->id;
+                    }
+                    if (!$cid || $cid == SITEID) {
+                        // TBD: no valid $COURSE so just find first one???
+                        $courses = enrol_get_my_courses();
+                        if (empty($courses)) {
+                            break;
+                        }
+                        foreach ($courses as $course) {
+                            $cid = $course->id;
+                            break;
+                        }
+                    }
+                    if ($cid && $cid != SITEID) {
                         $context = get_context_instance(CONTEXT_COURSE, $cid);
                     }
-
                     $has_permission = has_capability('repository/elis_files:viewcoursecontent', $context) ||
                                       has_capability('repository/elis_files:createcoursecontent', $context) ||
                                       has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
@@ -3558,6 +3572,40 @@ class ELIS_files {
                     }
                     break;
 
+                case ELIS_FILES_BROWSE_USERSET_FILES:
+                    if (!file_exists($CFG->dirroot .'/elis/program/accesslib.php')) {
+                        break;
+                    }
+                    require_once($CFG->dirroot .'/elis/program/accesslib.php');
+                    require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+                    require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php');
+                    $crlm_user = cm_get_crlmuserid($USER->id);
+                    if ($crlm_user === false) {
+                        break;
+                    }
+                    $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+                    $assignments = $DB->get_records('crlm_cluster_assignments',
+                                                    array('userid' => $crlm_user));
+                    // TBD: just get the first valid userset store???
+                    foreach ($assignments as $cluster_assignment) {
+                        $context = $contextclass::instance($cluster_assignment->clusterid);
+
+                        $has_permission = has_capability('repository/elis_files:viewusersetcontent', $context) ||
+                                          has_capability('repository/elis_files:createusersetcontent', $context) ||
+                                          has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
+                                          has_capability('repository/elis_files:createsitecontent', $syscontext);
+                        if ($has_permission) {
+                            $uuid = $this->get_userset_store($cluster_assignment->clusterid);
+                            if (!empty($uuid)) {
+                                $oid    = $cluster_assignment->clusterid;
+                                $shared = 0;
+                                $uid    = 0;
+                                $cid    = 0;
+                                return $uuid;
+                            }
+                        }
+                    }
+                    break;
                 }
             }
         }
