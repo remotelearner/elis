@@ -3010,7 +3010,7 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
 
                 if ($uuid != false) {
                     // Encode the UUID
-                    $currentpath = repository_elis_files::build_encodedpath($uuid, $uid, $cid, $shared);
+                    $currentpath = repository_elis_files::build_encodedpath($uuid, $uid, $cid, $oid, $shared);
                 }
             }
         } catch (Exception $e) {
