@@ -3457,10 +3457,32 @@ class ELIS_files {
             }
          **** END Disable block for ELIS-7127 **** */
 
+            $oid = 0;
+
+            /**
+             * ELIS-7452: We're gonna go thru all possible browing locations
+             * in pre-determined order:
+             * User > Site > Shared [> Userset > Course]
+             * but we'll put desired default_browsing location first!
+             */
+            $browsing_locs = array(ELIS_FILES_BROWSE_USER_FILES,
+                                   ELIS_FILES_BROWSE_SITE_FILES,
+                                   ELIS_FILES_BROWSE_SHARED_FILES,
+                                   ELIS_FILES_BROWSE_COURSE_FILES);
+
+            $default_entry = array_search($this->config->default_browse,
+                                          $browsing_locs);
+            if ($default_entry !== false) {
+                array_splice($browsing_locs, $default_entry, 1);
+            }
+            $browsing_locs = array_merge(array($this->config->default_browse),
+                                         $browsing_locs);
+
             // If a user does not have permission to access the default location, fall through to the next
             // lower level to see if they can access that location.
             // TBD: MUST CHECK FOR CAPABILITIES AY ANY CONTEXT LEVEL!!!
-            switch ($this->config->default_browse) {
+            foreach ($browsing_locs as $browse_loc) {
+                switch ($browse_loc) {
                 case ELIS_FILES_BROWSE_SITE_FILES:
                     if (has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
                         has_capability('repository/elis_files:createsitecontent', $syscontext)) {
@@ -3470,9 +3492,11 @@ class ELIS_files {
                         if (!empty($root->uuid)) {
                             $shared = 0;
                             $uid    = 0;
+                            $cid    = 0;
                             return $root->uuid;
                         }
                     }
+                    break;
 
                 case ELIS_FILES_BROWSE_SHARED_FILES:
                     // Get the non context based permissions
@@ -3489,8 +3513,10 @@ class ELIS_files {
                     if ($has_permission) {
                         $shared = true;
                         $uid    = 0;
+                        $cid    = 0;
                         return $this->suuid;
                     }
+                    break;
 
                 case ELIS_FILES_BROWSE_COURSE_FILES:
                     if ($cid == SITEID && $COURSE->id != SITEID) {
@@ -3507,6 +3533,7 @@ class ELIS_files {
                         $uid    = 0;
                         return $this->get_course_store($cid);
                     }
+                    break;
 
                 case ELIS_FILES_BROWSE_USER_FILES:
                     $context = get_context_instance(CONTEXT_USER, $USER->id);
@@ -3529,13 +3556,9 @@ class ELIS_files {
                             return $uuid;
                         }
                     }
+                    break;
 
-                default:
-                    //TODO: consider scenarios where the user has a "view" or "create"
-                    //capability at a higher level than the configured location, e.g.
-                    //default location of user files, and capability at the shared files level
-
-                    return false;
+                }
             }
         }
 
