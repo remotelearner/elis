@@ -3521,6 +3521,7 @@ class ELIS_files {
                     break;
 
                 case ELIS_FILES_BROWSE_COURSE_FILES:
+                    $has_permission = false;
                     if ($cid == SITEID && $COURSE->id != SITEID) {
                         $cid = $COURSE->id;
                     }
@@ -3528,25 +3529,36 @@ class ELIS_files {
                         // TBD: no valid $COURSE so just find first one???
                         $courses = enrol_get_my_courses();
                         if (empty($courses)) {
+                            $cid = 0;
                             break;
                         }
                         foreach ($courses as $course) {
-                            $cid = $course->id;
-                            break;
+                            $context = get_context_instance(CONTEXT_COURSE, $course->id);
+                            $has_permission = has_capability('repository/elis_files:viewcoursecontent', $context) ||
+                                              has_capability('repository/elis_files:createcoursecontent', $context) ||
+                                              has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
+                                              has_capability('repository/elis_files:createsitecontent', $syscontext);
+                            if ($has_permission) {
+                                $cid = $course->id;
+                                break;
+                            }
                         }
                     }
                     if ($cid && $cid != SITEID) {
-                        $context = get_context_instance(CONTEXT_COURSE, $cid);
+                        if (!$has_permission) {
+                            $context = get_context_instance(CONTEXT_COURSE, $cid);
+                            $has_permission = has_capability('repository/elis_files:viewcoursecontent', $context) ||
+                                              has_capability('repository/elis_files:createcoursecontent', $context) ||
+                                              has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
+                                              has_capability('repository/elis_files:createsitecontent', $syscontext);
+                        }
+                        if ($has_permission) {
+                            $shared = 0;
+                            $uid    = 0;
+                            return $this->get_course_store($cid);
+                        }
                     }
-                    $has_permission = has_capability('repository/elis_files:viewcoursecontent', $context) ||
-                                      has_capability('repository/elis_files:createcoursecontent', $context) ||
-                                      has_capability('repository/elis_files:viewsitecontent', $syscontext) ||
-                                      has_capability('repository/elis_files:createsitecontent', $syscontext);
-                    if ($cid != SITEID && $has_permission) {
-                        $shared = 0;
-                        $uid    = 0;
-                        return $this->get_course_store($cid);
-                    }
+                    $cid = 0;
                     break;
 
                 case ELIS_FILES_BROWSE_USER_FILES:
