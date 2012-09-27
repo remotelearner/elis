@@ -1666,10 +1666,8 @@ class ELIS_files {
         }
 
         // Make sure that the optional table we are about to check actually exists.
-        $table = new xmldb_table('crlm_cluster');
-
         $dbman = $DB->get_manager();
-        if (!$dbman->table_exists($table)) {
+        if (!$dbman->table_exists('crlm_cluster')) {
             return false;
         }
 
@@ -2702,9 +2700,8 @@ class ELIS_files {
         require_once($CFG->libdir . '/ddllib.php');
 
         // Ensure that the cluster table actually exists before we query it.
-        $table = new xmldb_table('crlm_cluster');
         $manager = $DB->get_manager();
-        if (!$manager->table_exists($table)) {
+        if (!$manager->table_exists('crlm_cluster')) {
             return false;
         }
 
