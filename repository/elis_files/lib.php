@@ -1726,7 +1726,7 @@ class repository_elis_files extends repository {
             } else {
                 if (has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
                     $canedit = true;
-                } else if (!empty($oid) && has_capability('repository/elis_files:createusersetcontent', $userset_context, $oid)) {
+                } else if (!empty($oid) && has_capability('repository/elis_files:createusersetcontent', $userset_context)) {
                     $canedit = true;
                 }
             }
@@ -1783,7 +1783,7 @@ class repository_elis_files extends repository {
             } else {
                 if (has_capability('repository/elis_files:viewsitecontent', $context, $USER->id)) {
                     $canview = true;
-                } else if (!empty($oid) && has_capability('repository/elis_files:viewusersetcontent', $userset_context, $oid)) {
+                } else if (!empty($oid) && has_capability('repository/elis_files:viewusersetcontent', $userset_context)) {
                     $canview = true;
                 }
             }
