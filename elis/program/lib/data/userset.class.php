@@ -117,6 +117,8 @@ class userset extends data_object_with_custom_fields {
             $userset_context = $contextclass::instance($this->id);
             $userset_context->delete();
 
+            events_trigger('cluster_deleted', $this->id);
+
             return;
         }
 
