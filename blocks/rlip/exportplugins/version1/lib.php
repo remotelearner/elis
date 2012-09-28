@@ -114,14 +114,16 @@ class rlipexport_version1_config {
                   ) AND export.fieldorder {$comparrison_symbol} ?";
         $neworder = $DB->get_field_sql($sql, array($currentorder));
 
-        //change the fieldorder on the record being moved
-        $params = array('id' => $exportid);
-        $DB->set_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'fieldorder', $neworder, $params);
+        if (!empty($neworder)) {
+            //change the fieldorder on the record being moved
+            $params = array('id' => $exportid);
+            $DB->set_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'fieldorder', $neworder, $params);
 
-        //change the field that is "one away" to use the field order
-        $select = "fieldorder = ? AND id != ?";
-        $params = array($neworder, $exportid);
-        $DB->set_field_select(RLIPEXPORT_VERSION1_FIELD_TABLE, 'fieldorder', $currentorder, $select, $params);
+            //change the field that is "one away" to use the field order
+            $select = "fieldorder = ? AND id != ?";
+            $params = array($neworder, $exportid);
+            $DB->set_field_select(RLIPEXPORT_VERSION1_FIELD_TABLE, 'fieldorder', $currentorder, $select, $params);
+        }
     }
 
     /**
