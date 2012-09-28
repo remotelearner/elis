@@ -190,11 +190,13 @@ class field extends elis_data_object {
      * or the name of the context level from the ELIS Program Manager
      */
     public static function get_for_context_level($contextlevel) {
-        global $DB;
+        global $CFG, $DB;
         if (!$contextlevel) {
             return array();
         }
-        if (!is_numeric($contextlevel)) {
+        if (!is_numeric($contextlevel) &&
+            file_exists($CFG->dirroot .'/elis/program/accesslib.php')) {
+            require_once($CFG->dirroot .'/elis/program/accesslib.php');
             $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
         if ($contextlevel == CONTEXT_ELIS_USER) {
@@ -226,11 +228,13 @@ class field extends elis_data_object {
      * @param string $name the shortname of the field
      */
     public static function get_for_context_level_with_name($contextlevel, $name) {
-        global $DB;
+        global $CFG, $DB;
         if (!$contextlevel) {
             return false;
         }
-        if (!is_numeric($contextlevel)) {
+        if (!is_numeric($contextlevel) &&
+            file_exists($CFG->dirroot .'/elis/program/accesslib.php')) {
+            require_once($CFG->dirroot .'/elis/program/accesslib.php');
             $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
         $select = 'id IN (SELECT fctx.fieldid
@@ -338,8 +342,11 @@ class field extends elis_data_object {
      * @return object a field object
      */
     public static function ensure_field_exists_for_context_level(field $field, $contextlevel, field_category $category) {
-        if (!is_numeric($contextlevel)) {
-            $contextlevel = elis_context_helper::get_level_from_name($contextlevel);
+        global $CFG;
+        if (!is_numeric($contextlevel) &&
+            file_exists($CFG->dirroot .'/elis/program/accesslib.php')) {
+            require_once($CFG->dirroot .'/elis/program/accesslib.php');
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
 
         // see if we need to create a new field
@@ -619,10 +626,13 @@ class field_category extends elis_data_object {
      * Gets the custom field categories for a given context level.
      */
     public static function get_for_context_level($contextlevel) {
+        global $CFG;
         if (!$contextlevel) {
             return array();
         }
-        if (!is_numeric($contextlevel)) {
+        if (!is_numeric($contextlevel) &&
+            file_exists($CFG->dirroot .'/elis/program/accesslib.php')) {
+            require_once($CFG->dirroot .'/elis/program/accesslib.php');
             $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
         return self::find(new join_filter('id',
@@ -859,6 +869,11 @@ abstract class field_data extends elis_data_object {
      * @param object $record the data_object to fetch the field values from
      */
     public function set_for_context_from_datarecord($contextlevel, $record) {
+        global $CFG;
+        if (!file_exists($CFG->dirroot .'/elis/program/accesslib.php')) {
+            return true; // TBD
+        }
+        require_once($CFG->dirroot .'/elis/program/accesslib.php');
         if (!is_numeric($contextlevel)) {
             $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
             if (!$contextlevel) {
