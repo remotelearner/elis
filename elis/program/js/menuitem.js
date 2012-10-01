@@ -32,7 +32,7 @@
 function loadNodeData(node, fnLoadComplete) {
 	
 	//URL of our script (wwwroot is pre-set by the calling PHP script)
-	var url = wwwroot + '/blocks/curr_admin/load_menu.php?data=' + node.contentElId;
+	var url = document.wwwroot + '/blocks/curr_admin/load_menu.php?data=' + node.contentElId;
 
 	var callback = {
 	
