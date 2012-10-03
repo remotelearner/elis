@@ -367,6 +367,13 @@ class customfieldform extends cmform {
             $td = array($td);
         }
         $dt = $mform->getElementValue('datatype');
+        if (!empty($dt) && is_array($dt)) {
+            // If it's an array just get first value!
+            foreach ($dt as $val) {
+                $dt = $val;
+                break;
+            }
+        }
         $mform->addElement('html', '<script type="text/javascript">
         function setmenudefaults() {
             var myselected = ['.
