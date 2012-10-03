@@ -82,7 +82,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
                 if (fotext && fomenu && fodatetime) {
                     if (cftype == "checkbox") {
                         fotext.className = "accesshide custom_field_options_fieldset";
-                        fomenu.className = "accesshide custom_field_options_fieldset";
+                        fomenu.className = "clearfix custom_field_options_fieldset";
                         fodatetime.className = "accesshide custom_field_options_fieldset";
                     } else if (cftype == "menu") {
                         fotext.className = "accesshide custom_field_options_fieldset";
