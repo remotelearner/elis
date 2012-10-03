@@ -350,7 +350,7 @@ class customfieldform extends cmform {
         global $CFG, $USER, $DB;
 
         $err = array();
-        $fid = $this->_customdata->optional_param('id', 0, PARAM_INT);
+        $fid = $this->_customdata['id'];
 
         //ob_start();
         //var_dump($this->defaultdata_menu);
@@ -380,7 +380,7 @@ class customfieldform extends cmform {
             $err['shortname'] = get_string('required');
         } else {
             // Check for duplicate shortnames
-            $level = $this->_customdata->required_param('level', PARAM_ACTION);
+            $level = $this->_customdata['level'];
             $contextlevel = context_elis_helper::get_level_from_name($level);
             if (!$contextlevel) {
                 print_error('invalid_context_level', 'elis_program');
