@@ -118,7 +118,8 @@ class customfieldform extends cmform {
                     var mopts, itemend, cur;
                     var multivalued = document.getElementById("id_multivalued");
                     var menu_options = document.getElementById("id_manual_field_options");
-                    if (menu_options.value.length && multivalued.checked &&
+                    if ((menu_options.value.length || srcs.selectedIndex > 0) &&
+                        multivalued.checked &&
                         fcontrol.options[fcontrol.selectedIndex].value == "checkbox") {
                         // TBD: just change control type to menu???
                         for (var j = 0; j < fcontrol.options.length; ++j) {
