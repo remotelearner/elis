@@ -10,8 +10,9 @@ require_once elis::plugin_file('elisfields_manual', 'custom_fields.php');
  * @param  moodleform or HTML_QuickForm  $form       The form to add the appropriate element to
  * @param  field                         $field      The definition of the field defining the controls
  * @param  boolean                       $as_filter  Whether to display a "choose" message
+ * @param  string                        $contextname Optional context name/entity
  */
-function checkbox_control_display($form, $mform, $customdata, $field, $as_filter=false) {
+function checkbox_control_display($form, $mform, $customdata, $field, $as_filter = false, $contextname = 'system') {
     if (!($form instanceof moodleform)) {
         $mform = $form;
         $form->_customdata = null;
@@ -24,19 +25,17 @@ function checkbox_control_display($form, $mform, $customdata, $field, $as_filter
             require_once elis::plugin_file('elisfields_manual', 'field_controls/menu.php');
             return menu_control_display($form, $mform, $customdata, $field, $as_filter);
         }
-        $options = explode("\n", $manual->param_options);
-        if (!empty($manual_params['options_source'])) {
-            require_once elis::plugin_file('elisfields_manual','sources.php');
-            $basedir = elis::plugin_file('elisfields_manual','sources');
-            $srcfile = $basedir .'/'. $manual_params['options_source'] .'.php';
+        $options = explode("\n", $manual_params['options']);
+        $source = $manual_params['options_source'];
+        if (!empty($source)) {
+            $srcfile = elis::plugin_file('elisfields_manual', "sources/{$source}.php");
             if (file_exists($srcfile)) {
+                require_once elis::plugin_file('elisfields_manual','sources.php');
                 require_once($srcfile);
-                $classname = "manual_options_{$manual_params['options_source']}";
+                $classname = "manual_options_{$source}";
                 $plugin = new $classname();
-                if ($plugin->is_applicable(!empty($customdata['level'])
-                                           ? $customdata['level']
-                                           : CONTEXT_SYSTEM)) { // TBD
-                    $options = $plugin->get_options(array()); // TBD
+                if ($plugin && $plugin->is_applicable($contextname)) {
+                    $options = $plugin->get_options($customdata);
                 }
             }
         }
