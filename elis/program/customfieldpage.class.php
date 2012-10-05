@@ -300,7 +300,8 @@ class customfieldpage extends pm_page {
             $tmppage = new customfieldpage(array('level' => $level));
             redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
         } else if ($data = $form->get_data()) {
-            $src = $data->manual_field_options_source;
+            $src = !empty($data->manual_field_options_source)
+                   ? $data->manual_field_options_source : '';
             switch ($data->manual_field_control) {
                 case 'checkbox':
                     if (!$data->multivalued && !empty($src)) {
