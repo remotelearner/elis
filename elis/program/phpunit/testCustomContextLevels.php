@@ -52,6 +52,7 @@ class test_element_creation extends elis_database_test {
         return array(
             'context'              => 'moodle',
             'course'               => 'moodle',
+            'grading_areas'        => 'moodle',
             'user'                 => 'moodle',
             curriculum::TABLE      => 'elis_program',
             track::TABLE           => 'elis_program',

@@ -83,6 +83,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
             'events_queue_handlers' => 'moodle',
             'filter_active' => 'moodle',
             'filter_config' => 'moodle',
+            'grading_areas' => 'moodle',
             'groupings' => 'moodle',
             'groups_members' => 'moodle',
             'log' => 'moodle',

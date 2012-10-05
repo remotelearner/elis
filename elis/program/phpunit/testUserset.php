@@ -44,6 +44,7 @@ class usersetTest extends elis_database_test {
             'cache_flags' => 'moodle',
             'context' => 'moodle',
             'course' => 'moodle',
+            'grading_areas' => 'moodle',
             'role' => 'moodle',
             'role_assignments' => 'moodle',
             'role_capabilities' => 'moodle',
