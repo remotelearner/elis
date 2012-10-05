@@ -196,6 +196,7 @@ class customfieldform extends cmform {
                                 menu_options = document.getElementById("id_manual_field_options");
                                 var radiolabel = "'. get_string('profiledefaultdata', 'admin') .'";
                                 var checked = "checked";
+                                var count = 0;
                                 do {
                                     itemend = mopts.indexOf("\n");
                                     if (itemend == -1) {
@@ -234,12 +235,12 @@ class customfieldform extends cmform {
                                     rinput.type = "radio";
                                     rinput.checked = checked;
                                     checked = "";
-                                    rinput.id = "id_defaultdata_radio";
+                                    rinput.id = "id_defaultdata_radio"+count;
                                     rinput.name = "defaultdata_radio";
                                     rinput.value = cur;
                                     var labelrad = document.createElement("label");
                                     //labelrad.for = "id_defaultdata_radio";
-                                    labelrad.setAttribute("for", "id_defaultdata_radio");
+                                    labelrad.setAttribute("for", "id_defaultdata_radio"+count);
                                     labelrad.innerHTML = cur;
                                     rspan.appendChild(rinput);
                                     rspan.appendChild(labelrad);
@@ -247,7 +248,8 @@ class customfieldform extends cmform {
                                     topdiv.appendChild(labeldiv);
                                     topdiv.appendChild(radiodiv);
                                     dtradio.appendChild(topdiv);
-                                    radiolabel = "";
+                                    radiolabel = "&nbsp;";
+                                    count++;
                                 } while (itemend != -1);
                             } else if ((dtradio = document.getElementById("datatype_radio_" + srcs.options[srcs.selectedIndex].value))) {
                                 dtradio.className = "clearfix custom_field_default_fieldset";
