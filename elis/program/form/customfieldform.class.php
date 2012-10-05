@@ -115,7 +115,7 @@ class customfieldform extends cmform {
                 var fcontrol = document.getElementById("id_manual_field_control");
                 disableMenuOptions();
                 if (srcs && fcontrol) {
-                    var mopts, itemend, cur;
+                    var mopts, itemend, cur, iecr;
                     var multivalued = document.getElementById("id_multivalued");
                     var menu_options = document.getElementById("id_manual_field_options");
                     if ((menu_options.value.length || srcs.selectedIndex > 0) &&
@@ -152,6 +152,10 @@ class customfieldform extends cmform {
                                             cur = mopts;
                                         } else {
                                             cur = mopts.substr(0, itemend);
+                                            iecr = cur.indexOf("\r"); // IE7
+                                            if (iecr != -1) {
+                                                cur = cur.substr(0, iecr);
+                                            }
                                             mopts = mopts.substr(itemend + 1);
                                         }
                                         //alert("updateMenuOptions(): Adding option: " + cur);
@@ -198,6 +202,10 @@ class customfieldform extends cmform {
                                         cur = mopts;
                                     } else {
                                         cur = mopts.substr(0, itemend);
+                                        iecr = cur.indexOf("\r"); // IE7
+                                        if (iecr != -1) {
+                                            cur = cur.substr(0, iecr);
+                                        }
                                         mopts = mopts.substr(itemend + 1);
                                     }
                                     //alert("updateMenuOptions(): Adding radio option: " + cur);
@@ -214,7 +222,8 @@ class customfieldform extends cmform {
                                     var labeldiv = document.createElement("div");
                                     labeldiv.className = "fitemtitle";
                                     var labelel = document.createElement("label");
-                                    labelel.for = "id_defaultdata_radio";
+                                    //labelel.for = "id_defaultdata_radio";
+                                    labelel.setAttribute("for", "id_defaultdata_radio");
                                     labelel.innerHTML = radiolabel;
                                     labeldiv.appendChild(labelel);
 
@@ -229,7 +238,8 @@ class customfieldform extends cmform {
                                     rinput.name = "defaultdata_radio";
                                     rinput.value = cur;
                                     var labelrad = document.createElement("label");
-                                    labelrad.for = "id_defaultdata_radio";
+                                    //labelrad.for = "id_defaultdata_radio";
+                                    labelrad.setAttribute("for", "id_defaultdata_radio");
                                     labelrad.innerHTML = cur;
                                     rspan.appendChild(rinput);
                                     rspan.appendChild(labelrad);
@@ -501,6 +511,7 @@ class customfieldform extends cmform {
         if (!is_array($td)) {
             $td = array($td);
         }
+        array_walk($td, array($this, 'trim_crlf'));
         $dt = $mform->getElementValue('datatype');
         $mform->addElement('html', '<script type="text/javascript">
         function setmenudefaults() {
@@ -523,6 +534,7 @@ class customfieldform extends cmform {
                     }
                 }
                 for (j = 0; j < inputtags.length; ++j) {
+                    //alert("checking for radios with value = "+ myselected[i] + "; current: input = "+ inputtags[j].type + ", value = "+ inputtags[j].value + " type == radio ? "+ (inputtags[j].type == "radio") + "; value == ? "+ (inputtags[j].value == myselected[i]));
                     if (inputtags[j].type == "radio" &&
                         inputtags[j].value == myselected[i]) {
                         //alert("radio default match");
