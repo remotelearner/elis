@@ -1062,7 +1062,7 @@ class student extends elis_data_object {
                             if (!empty($mcourse)) {
                                 $userobj = new user($user);
                                 $muser = $userobj->get_moodleuser();
-                                if ($this->_db->record_exists_select('role_assignments', "userid = ? AND contextid = ? AND component != 'enrol_elis'", array($muser->id, $ctx->id))) {
+                                if (!empty($muser) && $this->_db->record_exists_select('role_assignments', "userid = ? AND contextid = ? AND component != 'enrol_elis'", array($muser->id, $ctx->id))) {
                                     // user is assigned a role other than via the elis
                                     // enrolment plugin
                                     $tabobj->{$column} = '';
@@ -2634,7 +2634,7 @@ function student_get_class_from_course($crsid, $userid, $sort = 'cls.idnumber', 
             FROM {'. student::TABLE .'} stu
             INNER JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
             WHERE stu.userid = ?
-            AND cls.courseid = ? 
+            AND cls.courseid = ?
             ORDER BY '.$sort.' '.$dir;
     return $DB->get_records_sql($sql, array($userid, $crsid));
 }
