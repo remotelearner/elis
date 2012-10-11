@@ -2066,8 +2066,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         if ($record->context == 'course') {
 
             //set enrolment start time to the course start date
-            $timestart = $DB->get_field('course', 'startdate', array('id' => $context->instanceid));
-
+            //$timestart = $DB->get_field('course', 'startdate', array('id' => $context->instanceid));
+            // ELIS-6694: set enrolment time to 'now' to allow immediate access
+            $timestart = time();
             if ($role_assignment_exists && !$enrolment_exists) {
 
                 //role assignment already exists, so just enrol the user
