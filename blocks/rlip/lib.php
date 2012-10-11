@@ -204,7 +204,7 @@ function rlip_handle_file_upload($data, $key) {
     $usercontext = get_context_instance(CONTEXT_USER, $USER->id);
     $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->$key);
 
-    if ($instanceid = $DB->get_field('block_instances', 'id', array('blockname' => 'rlip'))) {
+    if ($instanceid = $DB->get_field('block_instances', 'id', array('blockname' => 'rlip'), IGNORE_MULTIPLE)) {
         //try to use the block context
         $context = get_context_instance(CONTEXT_BLOCK, $instanceid);
     } else {
