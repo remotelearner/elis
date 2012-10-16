@@ -329,4 +329,30 @@ class usersetTest extends elis_database_test {
         $this->assertInternalType('array', $allowed);
         $this->assertEquals(2, count($allowed));
     }
+
+    public function testDeleteParentPromoteChildren() {
+        //load great-grandfather, grandfather, parent, child usersets. ids 5,6,7,8, respectively
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
+        $dataset->addTable('context', elis::component_file('program', 'phpunit/userset_context.csv'));
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
+
+        //delete grandfather userset
+        $grandfather = new userset(6);
+        $grandfather->load();
+        $grandfather->deletesubs = 0;
+        $grandfather->delete();
+
+        $parent = new userset(7);
+        $parent->load();
+
+        $child = new userset(8);
+        $child->load();
+
+        $this->assertEquals('0',$parent->parent);
+        $this->assertEquals('1',$parent->depth);
+
+        $this->assertEquals('7',$child->parent);
+        $this->assertEquals('2',$child->depth);
+    }
 }
