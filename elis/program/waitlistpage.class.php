@@ -186,6 +186,8 @@ class waitlistpage extends selectionpage {
         $id = $this->required_param('id', PARAM_INT);
         $recs = explode(',', $this->required_param('selected',PARAM_TEXT));
 
+        $this->session_selection_deletion();
+
         // make sure everything is an int
         foreach ($recs as $key => $val) {
             $recs[$key] = (int)$val;
@@ -212,6 +214,8 @@ class waitlistpage extends selectionpage {
     function do_overenrol() {
         $id = $this->required_param('id', PARAM_INT);
         $recs = explode(',', $this->required_param('selected', PARAM_TEXT));
+
+        $this->session_selection_deletion();
 
         // make sure everything is an int
         foreach ($recs as $key => $val) {
@@ -244,7 +248,7 @@ class waitlist_table extends selection_table {
         $dir          = optional_param('dir', 'ASC', PARAM_ALPHA);
 
         $columns = array(
-            '_selection'  => array('header' => '', 'sortable' => false,
+            '_selection'  => array('header' => get_string('select'), 'sortable' => false,
                                    'display_function' => array(&$this, 'get_item_display__selection')), // TBD
             'idnumber'    => array('header' => get_string('idnumber',        self::LANG_FILE)),
             'name'        => array('header' => get_string('name',            self::LANG_FILE)),
