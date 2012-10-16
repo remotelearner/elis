@@ -411,22 +411,18 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
     require_once elis::plugin_file('elisfields_manual',"field_controls/{$control}.php");
     call_user_func("{$control}_control_display", $form, $mform, $customdata, $field);
 
+    $manual_params = unserialize($manual->params);
+
     // set default data if no over-riding value set!
     if (!isset($customdata['obj']->$elem)) {
         $defaultdata = field_data::get_for_context_and_field(NULL, $field);
         if (!empty($defaultdata)) {
             if ($field->multivalued) {
                 $values = array();
-                // extract the data
-                foreach ($defaultdata as $data) {
-                    $values[] = $data->data;
+                foreach ($defaultdata as $defdata) {
+                    $values[] = $defdata->data;
                 }
-                // represent as a CSV string
-                $fh = fopen("php://memory", "rw");
-                fputcsv($fh, $values);
-                rewind($fh);
-                $defaultdata = fgets($fh);
-                fclose($fh);
+                $defaultdata = $values; // implode(',', $values)
             } else {
                 foreach ($defaultdata as $defdata) {
                     $defaultdata = $defdata->data;
@@ -436,7 +432,7 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
         }
 
         // Format decimal numbers
-        if (strcmp($field->datatype, 'num') == 0) {
+        if ($field->datatype == 'num' && $manual_params['control'] != 'menu') {
             $defaultdata = $field->format_number($defaultdata);
         }
 
@@ -446,7 +442,6 @@ function manual_field_add_form_element($form, $mform, $context, $customdata, $fi
     }
 
     if ($check_required) {
-        $manual_params = unserialize($manual->params);
         if (!empty($manual_params['required'])) {
             $mform->addRule($elem, null, 'required', null, 'client'); // TBD
         }
