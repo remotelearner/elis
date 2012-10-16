@@ -300,12 +300,21 @@ class customfieldpage extends pm_page {
             $tmppage = new customfieldpage(array('level' => $level));
             redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
         } else if ($data = $form->get_data()) {
+            $src = !empty($data->manual_field_options_source)
+                   ? $data->manual_field_options_source : '';
             switch ($data->manual_field_control) {
                 case 'checkbox':
-                    $data->defaultdata = $data->defaultdata_checkbox;
+                    if (!$data->multivalued && !empty($src)) {
+                        $elem = "defaultdata_radio_{$src}_"; // *REQUIRES* trailing '_' ???
+                        $data->defaultdata = $data->$elem;
+                        //error_log("/elis/program/customfieldpage.class.php:: defaultdata->{$elem} = {$data->defaultdata}");
+                    } else if (!$data->multivalued && !empty($data->manual_field_options)) {
+                        $data->defaultdata = $data->defaultdata_radio;
+                    } else {
+                        $data->defaultdata = $data->defaultdata_checkbox;
+                    }
                     break;
                 case 'menu':
-                    $src = $data->manual_field_options_source;
                     $elem = !empty($src) ? "defaultdata_menu_{$src}"
                                          : "defaultdata_menu";
                     $data->defaultdata = $data->$elem;
@@ -469,6 +478,9 @@ class customfieldpage extends pm_page {
                     $data_array[empty($menu_src)
                                 ? 'defaultdata_menu'
                                 : "defaultdata_menu_{$menu_src}"] = $data_array['defaultdata'];
+                    $data_array[empty($menu_src)
+                                ? 'defaultdata_radio'
+                                : "defaultdata_radio_{$menu_src}"] = $data_array['defaultdata'];
                 }
                 $form->set_data($data_array);
             }
