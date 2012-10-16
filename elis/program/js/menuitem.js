@@ -30,9 +30,6 @@
  * @param  function  fnLoadComplete  The function to call which will signify that loading is done
  */
 function loadNodeData(node, fnLoadComplete) {
-	
-	//URL of our script (wwwroot is pre-set by the calling PHP script)
-	var url = document.wwwroot + '/blocks/curr_admin/load_menu.php?data=' + node.contentElId;
 
 	var callback = {
 	
@@ -78,8 +75,15 @@ function loadNodeData(node, fnLoadComplete) {
          
 	}
 
-	//make the actual call
-	YAHOO.util.Connect.asyncRequest('GET', url, callback);
+    if (node.contentElId != "") {
+        //URL of our script (wwwroot is pre-set by the calling PHP script)
+        var url = document.wwwroot + '/blocks/curr_admin/load_menu.php?data=' + node.contentElId;
+        //make the actual call
+        YAHOO.util.Connect.asyncRequest('GET', url, callback);
+    } else {
+        //nothing to load
+        fnLoadComplete();
+    }
 }
 
 /**
