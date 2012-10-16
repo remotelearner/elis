@@ -356,6 +356,11 @@ class customfieldpage extends pm_page {
                     rewind($temp);
                     $defaultdata=fgetcsv($temp);
                     fclose($temp);
+                } else if (!$field->multivalued && is_array($defaultdata)) {
+                    foreach ($defaultdata as $val) {
+                        $defaultdata = $val;
+                        break;
+                    }
                 }
                 field_data::set_for_context_and_field(NULL, $field, $defaultdata);
             } else {
