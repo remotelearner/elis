@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(elis::lib('data/data_object.class.php'));
 require_once(elis::lib('data/data_filter.class.php'));
+require_once($CFG->dirroot . '/elis/core/accesslib.php');
 
 /**
  * Custom fields.
@@ -339,7 +340,7 @@ class field extends elis_data_object {
      */
     public static function ensure_field_exists_for_context_level(field $field, $contextlevel, field_category $category) {
         if (!is_numeric($contextlevel)) {
-            $contextlevel = elis_context_helper::get_level_from_name($contextlevel);
+            $contextlevel = context_elis_helper::get_level_from_name($contextlevel);
         }
 
         // see if we need to create a new field
