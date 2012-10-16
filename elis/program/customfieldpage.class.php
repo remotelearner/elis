@@ -292,7 +292,10 @@ class customfieldpage extends pm_page {
 
         require_once elispm::file('form/customfieldform.class.php');
         $tmppage = new customfieldpage(array('level' => $level, 'action' => 'editfield'), $this);
-        $form = new customfieldform($tmppage->url, $this);
+        $form = new customfieldform($tmppage->url,
+                         array('id'    => $id,
+                               'level' => $level,
+                               'from'  => optional_param('from', '', PARAM_CLEAN)));
         if ($form->is_cancelled()) {
             $tmppage = new customfieldpage(array('level' => $level));
             redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
@@ -331,7 +334,7 @@ class customfieldpage extends pm_page {
             if ($data->defaultdata != '') {
                 // save the default value
                 $defaultdata = $data->defaultdata;
-                if ($field->multivalued) {
+                if ($field->multivalued && is_string($defaultdata)) {
                     // parse as a CSV string
                     // until we can use str_getcsv from PHP 5.3...
                     $temp=fopen("php://memory", "rw");
@@ -407,7 +410,7 @@ class customfieldpage extends pm_page {
 
                     $field_record = $DB->get_record(field::TABLE, array('id'=>$id));
                     if (!empty($field_record)) {
-                        foreach ($field_record as $field_item=>$field_value) {
+                        foreach ($field_record AS $field_item => $field_value) {
                             $data_array[$field_item] = $field_value;
                         }
                     }
@@ -416,16 +419,10 @@ class customfieldpage extends pm_page {
                     if (!empty($defaultdata)) {
                         if ($data->multivalued) {
                             $values = array();
-                            // extract the data
-                            foreach ($defaultdata as $data) {
-                                $values[] = $data->data;
+                            foreach ($defaultdata as $defdata) {
+                                $values[] = $defdata->data;
                             }
-                            // represent as a CSV string
-                            $fh=fopen("php://memory", "rw");
-                            fputcsv($fh, $values);
-                            rewind($fh);
-                            $defaultdata=fgets($fh);
-                            fclose($fh);
+                            $defaultdata = $values;
                         } else {
                             foreach ($defaultdata as $defdata) {
                                 $defaultdata = $defdata->data;
@@ -437,7 +434,9 @@ class customfieldpage extends pm_page {
                     $field = new field();
 
                     // Format decimal numbers
-                    if(strcmp($data_array['datatype'],'num') == 0) {
+                    if ($data_array['datatype'] == 'num'
+                        && $manual->param_control != 'menu'
+                    ) {
                         $defaultdata = $field->format_number($defaultdata);
                     }
 
@@ -463,7 +462,6 @@ class customfieldpage extends pm_page {
                     } else {
                         $field = $data;
                     }
-
                     $data_array['defaultdata_checkbox'] = !empty($data_array['defaultdata']);
                     // ELIS-6699 -- If this is not a datetime field, then we can't use the default data value as a timestamp
                     $data_array['defaultdata_datetime'] = ($field->datatype == 'datetime') ? $data_array['defaultdata'] : time();

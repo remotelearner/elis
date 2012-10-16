@@ -104,6 +104,10 @@ class customfieldform extends cmform {
                             dtmenu.className = "clearfix custom_field_default_fieldset";
                             var defaultdata_menu = document.getElementById("id_defaultdata_menu");
                             var menu_options = document.getElementById("id_manual_field_options");
+                            var multivalued = document.getElementById("id_multivalued");
+                            if (defaultdata_menu && multivalued) {
+                                defaultdata_menu.multiple = multivalued.checked ? "multiple" : "";
+                            }
                             if (defaultdata_menu && menu_options) {
                                 var i;
                                 for (i = defaultdata_menu.options.length - 1;
@@ -175,6 +179,12 @@ class customfieldform extends cmform {
                 }
                 YAHOO.util.Event.addListener(window, "load", switchDefaultData());
             }
+            function multivaluedChanged(checked) {
+                var defaultdata_menu = document.getElementById("id_defaultdata_menu");
+                if (defaultdata_menu) {
+                    defaultdata_menu.multiple = checked ? "multiple" : "";
+                }
+            }
             YAHOO.util.Event.onDOMReady(initCustomFieldDefault);
         </script>');
 
@@ -185,8 +195,8 @@ class customfieldform extends cmform {
         $attrs['manual_field_options_source'] = array('onchange' => 'updateMenuOptions();');
         $attrs['manual_field_options'] = array('onchange' => 'updateMenuOptions();');
 
-        $fid = $this->_customdata->optional_param('id', 0, PARAM_INT);
-        $from = $this->_customdata->optional_param('from', '', PARAM_CLEAN);
+        $fid = $this->_customdata['id'];
+        $from = $this->_customdata['from'];
 
         // common form elements (copied from /user/profile/definelib.php)
         $form->addElement('header', '_commonsettings', get_string('profilecommonsettings', 'admin'));
@@ -200,7 +210,7 @@ class customfieldform extends cmform {
         $form->addRule('name', $strrequired, 'required', null, 'client');
         $form->setType('name', PARAM_MULTILANG);
 
-        $level = $this->_customdata->required_param('level', PARAM_ACTION);
+        $level = $this->_customdata['level'];
         $ctxlvl = context_elis_helper::get_level_from_name($level);
         $categories = field_category::get_for_context_level($ctxlvl);
         $choices = array();
@@ -225,7 +235,7 @@ class customfieldform extends cmform {
         $form->addElement('advcheckbox', 'forceunique', get_string('profileforceunique', 'admin'));
         $form->setAdvanced('forceunique');
 
-        $form->addElement('advcheckbox', 'multivalued', get_string('field_multivalued', 'elis_program'));
+        $form->addElement('advcheckbox', 'multivalued', get_string('field_multivalued', 'elis_program'), '', array('onclick' => 'multivaluedChanged(this.checked);', 'group' => false));
         $form->setAdvanced('multivalued');
         $form->disabledIf('multivalued', 'datatype', 'eq', 'datetime');
 
@@ -260,7 +270,7 @@ class customfieldform extends cmform {
            array_walk($menu_options, array($this, 'trim_crlf'));
            $menu_options = array_combine($menu_options, $menu_options);
         }
-        if (($this->defaultdata_menu = $form->createElement('select', 'defaultdata_menu', get_string('profiledefaultdata', 'admin'), $menu_options))) {
+        if (($this->defaultdata_menu = $form->createElement('select', 'defaultdata_menu', get_string('profiledefaultdata', 'admin'), $menu_options, array('multiple' => 'multiple')))) {
             $form->addElement($this->defaultdata_menu);
         }
         //$form->setType('defaultdata_menu', PARAM_TEXT);
@@ -343,6 +353,59 @@ class customfieldform extends cmform {
 
     function trim_crlf(&$item, $key) {
         $item = trim($item, "\r\n");
+    }
+
+    function definition_after_data() {
+        global $PAGE;
+        parent::definition_after_data();
+        $mform = &$this->_form;
+        $td = $mform->getElementValue('defaultdata_menu');
+        if (!isset($td)) {
+            return;
+        }
+        if (!is_array($td)) {
+            $td = array($td);
+        }
+        $dt = $mform->getElementValue('datatype');
+        if (!empty($dt) && is_array($dt)) {
+            // If it's an array just get first value!
+            foreach ($dt as $val) {
+                $dt = $val;
+                break;
+            }
+        }
+        $mform->addElement('html', '<script type="text/javascript">
+        function setmenudefaults() {
+            var myselected = ['.
+            (($dt == 'char' || $dt == 'text')
+             ? '"'. implode('", "', $td) .'"'
+             : implode(', ', $td)). '];
+            var defaultdata_menu = document.getElementById("id_defaultdata_menu");
+            for (var i = 0; i < myselected.length; ++i) {
+                for (var j = 0; j < defaultdata_menu.options.length; ++j) {
+                    //alert("checking: "+ myselected[i] +" == "+ parseFloat(defaultdata_menu.options[j].value));
+                    if ((typeof(myselected[i]) == "string" &&
+                        myselected[i] == defaultdata_menu.options[j].value)
+                        || (typeof(myselected[i]) == "number" &&
+                        myselected[i] == parseFloat(defaultdata_menu.options[j].value))) {
+                        //alert("match");
+                        defaultdata_menu.options[j].selected = "selected";
+                    }
+                }
+            }
+        }
+        if (YAHOO.env.ua.ie <= 8) {
+            window.setTimeout(setmenudefaults, 2000); // ugly for IE8
+        } else if (window.attachEvent) {
+            window.attachEvent("onload", setmenudefaults);
+        } else if (window.addEventListener) {
+            window.addEventListener("DOMContentLoaded", setmenudefaults, false);
+        } else {
+            window.setTimeout(setmenudefaults, 2000); // rare fallback
+        }
+        </script>');
+
+        // $PAGE->requires->js_init_call() didn't work in IE8 w/ domready=true
     }
 
     function validation($data, $files) {
