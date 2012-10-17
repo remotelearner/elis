@@ -140,9 +140,9 @@ class curriculumstudent extends elis_data_object {
         // Send notifications
 
         /// Does the user receive a notification?
-        $sendtouser       = elis::$config->elis_program->notify_curriculumcompleted_user;
-        $sendtorole       = elis::$config->elis_program->notify_curriculumcompleted_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_curriculumcompleted_supervisor;
+        $sendtouser = (!empty(elis::$config->elis_program->notify_curriculumcompleted_user)) ? true : false;
+        $sendtorole = (!empty(elis::$config->elis_program->notify_curriculumcompleted_role)) ? true : false;
+        $sendtosupervisor = (!empty(elis::$config->elis_program->notify_curriculumcompleted_supervisor)) ? true : false;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
