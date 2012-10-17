@@ -60,7 +60,11 @@ class testTrackAssignmentGetAvailableUsers extends elis_database_test {
             'context' => 'moodle',
             'role' => 'moodle',
             'role_assignments' => 'moodle',
-            'user' => 'moodle'
+            'user' => 'moodle',
+            'elis_field_data_char' => 'elis_core',
+            'elis_field_data_int' => 'elis_core',
+            'elis_field_data_num' => 'elis_core',
+            'elis_field_data_text' => 'elis_core'
         );
     }
 
