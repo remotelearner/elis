@@ -333,7 +333,7 @@ class usersetTest extends elis_database_test {
     public function testDeleteParentPromoteChildren() {
         //load great-grandfather, grandfather, parent, child usersets. ids 5,6,7,8, respectively
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset.csv'));
+        $dataset->addTable(userset::TABLE, elis::component_file('program', 'phpunit/userset_grandfathers.csv'));
         $dataset->addTable('context', elis::component_file('program', 'phpunit/userset_context.csv'));
         load_phpunit_data_set($dataset, true, self::$overlaydb);
 
