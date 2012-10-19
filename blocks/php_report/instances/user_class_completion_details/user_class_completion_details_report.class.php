@@ -848,6 +848,16 @@ class user_class_completion_details_report extends user_class_completion_report 
                         if ($field->datatype == 'bool') {
                             //special display handling for boolean values
                             $rawdata[] = !empty($customdataum->data) ? get_string('yes') : get_string('no');
+                        } else if (isset($field->owners['manual']) &&
+                                   ($manual = new field_owner($field->owners['manual'])) &&
+                                   $manual->param_control == 'datetime') {
+                            //special display handling for datetime fields
+                            $rawdata[] = $this->userdate($customdatum->data,
+                                             get_string(
+                                                 !empty($manual->param_inctime)
+                                                 ? 'customfield_datetime_format'
+                                                 : 'customfield_date_format',
+                                                 $this->languagefile));
                         } else {
                             $rawdata[] = $customdatum->data;
                         }
