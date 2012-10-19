@@ -496,7 +496,7 @@ class user_class_completion_report extends table_report {
                     }
 
                     //store the data type
-                    $this->_fielddatatypes[$fieldid] = $field->data_type();
+                    $this->_fielddatatypes[$fieldid] = $field->datatype;
 
                     // ELIS-5862/ELIS-7409: keep track of datetime fields
                     if (isset($field->owners['manual']) &&
