@@ -624,6 +624,10 @@ class studentpage extends associationpage {
             if (!empty($change_vals)) {
                 echo '<ul class="main">';
                 foreach ($change_vals as $val => $userids) {
+                    if (!is_array($userids)) {
+                        //error_log("studentpage.class.php::userids = {$userids}");
+                        $userids = array($userids);
+                    }
                     $num_users = sizeof($userids);
                     $fullnames = array_intersect_key($fullname_lookup,array_flip($userids));
                     asort($fullnames);
@@ -641,7 +645,10 @@ class studentpage extends associationpage {
                     } elseif ($num_users > 0) {
                         echo '<li>';
                         echo '<span class="blk_user">',implode('</span>, <span class="blk_user">',$fullnames),'</span> ';
-                        echo $lang_changed.' <span class="blk_val">'.$val,'</span></li>';
+                        echo $lang_changed.' <span class="blk_val">',
+                             ($change_cat == $lang_unenrol)
+                             ? get_string('unenrolled', 'elis_program') : $val,
+                             '</span></li>';
                     }
                     unset($fullnames);
                 }
