@@ -637,7 +637,10 @@ class studentpage extends associationpage {
                         echo '<li><a class="blk_user" href="javascript:toggle(\''.$details_id.'\');" title="',$lang_displayusers,'">',
                                 $num_users,' ',
                                 (($num_users === 1) ? $lang_user : $lang_users),
-                                '</a> ',$lang_changed,' <span class="blk_val">',$val,'</span></li>';
+                                '</a> ',$lang_changed,' <span class="blk_val">',
+                                ($change_cat == $lang_unenrol)
+                                ? get_string('unenrolled', 'elis_program') : $val,
+                                '</span></li>';
 
                         echo '<ul id="'.$details_id.'" class="sub">';
                         echo '<li>'.implode('</li><li>',$fullnames).'</li>';
