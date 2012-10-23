@@ -245,8 +245,9 @@ function user_activity_task_process(&$state) {
 
     // find the last record that's close to our chunk size, without
     // splitting a second between runs
-    $endtime = $DB->get_field_select('log', 'MIN(time)', 'id >= ?',
-                                     array($startrec + USERACT_RECORD_CHUNK));
+    $endtime = $DB->get_field_select('log', 'MIN(time)', 'id >= ? AND time > ?',
+                                     array($startrec + USERACT_RECORD_CHUNK,
+                                           $starttime));
     if (!$endtime) {
         $endtime = time();
     }
