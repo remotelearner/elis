@@ -57,7 +57,7 @@ class user_activity_health_test extends elis_database_test {
         elis::$config->eliscoreplugins_user_activity->state = serialize(array(
                  "sessiontimeout" => 300,
                  "sessiontail" => 300,
-                 "starttime" => time() - (365 * DAYSECS),
+                 "starttime" => 1326308749,
                  "startrec" => 1
             ));
 
