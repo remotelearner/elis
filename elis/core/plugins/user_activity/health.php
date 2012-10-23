@@ -36,6 +36,7 @@ class user_activity_health_empty extends crlm_health_check_base {
     }
 
     function exists() {
+        global $DB;
         // health warning if the cron hasn't been run, or is more than a week behind
         if (!$this->lastrun) {
             return true;
@@ -43,7 +44,7 @@ class user_activity_health_empty extends crlm_health_check_base {
         require_once(dirname(__FILE__) .'/etl.php');
         $state = user_activity_task_init(false);
         $last_time = (int)$state['starttime'];
-        return(count_records_select('log', "time >= $last_time") > 0 &&
+        return($DB->count_records_select('log', "time >= $last_time") > 0 &&
                (time() - (7 * DAYSECS)) > $last_time);
     }
 
