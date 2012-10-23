@@ -53,14 +53,23 @@ class user_activity_health_test extends elis_database_test {
         $overlaydb = self::$overlaydb;
         load_phpunit_data_set($dataset, true, $overlaydb);
 
+        elis::$config->eliscoreplugins_user_activity->last_run = time() - DAYSECS;
         elis::$config->eliscoreplugins_user_activity->state = serialize(array(
                  "sessiontimeout" => 300,
                  "sessiontail" => 300,
-                 "starttime" => time() - (8 * DAYSECS),
-                 "startrec" => 0
+                 "starttime" => time() - (365 * DAYSECS),
+                 "startrec" => 1
             ));
 
         $problem = new user_activity_health_empty();
         $this->assertTrue($problem->exists());
+
+        elis::$config->eliscoreplugins_user_activity->state = serialize(array(
+                 "sessiontimeout" => 300,
+                 "sessiontail" => 300,
+                 "starttime" => time() - (6 * DAYSECS),
+                 "startrec" => 1
+            ));
+        $this->assertFalse($problem->exists());
      }
 }
