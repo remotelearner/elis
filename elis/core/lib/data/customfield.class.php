@@ -797,7 +797,7 @@ abstract class field_data extends elis_data_object {
         // FIXME: check exclude, unique, etc
         if ($field->multivalued) {
             // find what data already exists (excluding default value)
-            $records = self::get_for_context_and_field($context, $field, true);
+            $records = self::get_for_context_and_field($context, $field, ($context == NULL));
             $records = $records ? $records : array();
             $todelete = array();
             $existing = array();
