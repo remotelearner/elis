@@ -208,3 +208,8 @@ class context_elis_helper extends context_elis {
         accesslib_clear_all_caches(true);
     }
 }
+
+$pmaccesslib = dirname(__FILE__) .'/../program/accesslib.php';
+if (file_exists($pmaccesslib)) {
+    require_once($pmaccesslib);
+}
