@@ -56,3 +56,7 @@ $settings->add(new admin_setting_configtext('rlipimport_version1/logfilelocation
 $settings->add(new admin_setting_configtext('rlipimport_version1/emailnotification',
                                             get_string('emailnotification', 'rlipimport_version1'),
                                             get_string('configemailnotification', 'rlipimport_version1'), ''));
+
+$settings->add(new admin_setting_configcheckbox('rlipimport_version1/allowduplicateemails',
+                                            get_string('allowduplicateemails','rlipimport_version1elis'),
+                                            get_string('configallowduplicateemails','rlipimport_version1elis'), ''));
