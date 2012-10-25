@@ -24,6 +24,8 @@
  *
  */
 
+$string['allowduplicateemails'] = 'Allow duplicate email addresses.';
+$string['configallowduplicateemails'] = 'If on, duplicate email addresses will be allowed.';
 $string['configemailnotification'] = 'A comma-separated list of email addresses to send import log files to.';
 $string['config_enrolment_schedule_file'] = 'The filename of the \'enrolment\' IP import file.';
 $string['configlogfilelocation'] = 'The directory path, relative to moodledata, to the location of log files.';
