@@ -30,6 +30,7 @@ require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once(elis::file('program/healthpage.class.php'));
 require_once(elis::plugin_file('eliscoreplugins_user_activity', 'health.php'));
+require_once(elis::plugin_file('eliscoreplugins_user_activity', 'etl.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 
 class user_activity_health_test extends elis_database_test {
@@ -38,7 +39,9 @@ class user_activity_health_test extends elis_database_test {
     protected static function get_overlay_tables() {
         return array(
             'log' => 'moodle',
-            'config_plugins' => 'moodle'
+            'config_plugins' => 'moodle',
+            'etl_user_activity' => 'eliscoreplugins_user_activity',
+            'etl_user_module_activity' => 'eliscoreplugins_user_activity'
         );
     }
 
@@ -72,4 +75,68 @@ class user_activity_health_test extends elis_database_test {
             ));
         $this->assertFalse($problem->exists());
      }
+
+    /**
+     * Test ETL bugs fixed with ELIS-7815 & ELIS-7845
+     */
+    public function testNoETLerrorsWithProblemLogData() {
+        global $DB;
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable('log', elis::file('program/phpunit/mdl_log_elis7845_1500.csv'));
+
+        $overlaydb = self::$overlaydb;
+        load_phpunit_data_set($dataset, true, $overlaydb);
+
+        elis::$config->eliscoreplugins_user_activity->last_run = 0;
+        elis::$config->eliscoreplugins_user_activity->state = '';
+
+        // Create existing record (NOT first)!
+        $DB->insert_record('etl_user_module_activity',
+                   (object)array('userid'   => 409,
+                                 'courseid' => 382,
+                                 'cmid'     => 12127,
+                                 'hour'     => 1319659200,
+                                 'duration' => 1)
+                          );
+
+        // Run until complete
+        $prev_done = 0;
+        $prev_togo = 1501;
+        $prev_start = 0;
+        echo "\n";
+        do {
+            $realtime = time();
+            user_activity_etl_cron();
+            $state = user_activity_task_init(false);
+            $last_time = (int)$state['starttime'];
+            $records_done = $DB->count_records_select('log', "time < $last_time");
+            $records_togo = $DB->count_records_select('log', "time >= $last_time");
+            //echo "\n Done = {$records_done} ({$prev_done}), Togo = {$records_togo} ({$prev_togo}), starttime = {$last_time} ({$prev_start})\n";
+            if (!$last_time || !$records_togo) {
+                break;
+            }
+            $this->assertTrue($records_done >= $prev_done);
+            $this->assertTrue($records_togo <= $prev_togo);
+            $this->assertTrue($last_time > $prev_start);
+            $prev_done = $records_done;
+            $prev_togo = $records_togo;
+            $prev_start = $last_time;
+        } while (TRUE);
+        $etluacnt = $DB->count_records('etl_user_activity');
+        $etlumacnt = $DB->count_records('etl_user_module_activity');
+        //echo "\nETLUAcnt = {$etluacnt}";
+        //echo "\nETLUMAcnt = {$etlumacnt}";
+      /*
+        $recs = $DB->get_records('etl_user_module_activity');
+        $cnt = 0;
+        foreach ($recs AS $rec) {
+            $cnt++;
+            echo "\n Rec #{$cnt} etl_user_module_activity = ";
+            var_dump($rec);
+            if ($cnt > 10) break;
+        }
+      */
+        $this->assertEquals(342, $etluacnt);
+        $this->assertEquals(225, $etlumacnt);
+    }
 }
