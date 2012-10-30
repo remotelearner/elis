@@ -193,7 +193,7 @@ class curriculumcoursepage extends curriculumcoursebasepage {
         $items = curriculumcourse_get_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha);
         $numitems = curriculumcourse_count_records($id, $namesearch, $alpha);
 
-        $this->print_num_items($numitems);
+        $this->print_num_items($numitems, $numitems);
         $this->print_alpha();
         $this->print_search();
 
@@ -404,7 +404,7 @@ class coursecurriculumpage extends curriculumcoursebasepage {
         $items = curriculumcourse_get_curriculum_listing($id, $sort, $dir, 0, 0, $namesearch, $alpha);
         $numitems = curriculumcourse_count_curriculum_records($id, $namesearch, $alpha);
 
-        $this->print_num_items($numitems);
+        $this->print_num_items($numitems, $numitems);
         $this->print_alpha();
         $this->print_search();
 
