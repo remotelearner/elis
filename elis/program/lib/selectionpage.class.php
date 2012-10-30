@@ -296,9 +296,8 @@ abstract class selectionpage extends pm_page { // TBD
             if (is_array($selectedcheckboxes)) {
                 $filtered = array();
                 foreach ($selectedcheckboxes as $id) {
-                    if ($DB->record_exists(user::TABLE, array('id' => $id))) {
-                        $filtered[] = $id;
-                    }
+                    // ELIS-6431: removed check that id is valid userid (to fix waitlistpage)
+                    $filtered[] = $id;
                 }
                 $selection  = implode(',', $filtered);
                 echo '<input type="hidden" id="selected_checkboxes" value="' . $selection .'" /> ';
