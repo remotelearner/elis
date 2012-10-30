@@ -27,12 +27,15 @@
 require_once(dirname(__FILE__).'/../test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/elis/core/accesslib.php');
 require_once(elis::lib('testlib.php'));
 require_once(elis::lib('data/customfield.class.php'));
 
 //NOTE: needed because this is used in customfield.class.php :-(
 //(not actually setting anything on the PM user context)
-define('CONTEXT_ELIS_USER',    1005);
+if (!defined('CONTEXT_ELIS_USER')) {
+    define('CONTEXT_ELIS_USER',    1005);
+}
 
 /**
  * Class for testing the storage and retrieval of custom field data
@@ -75,6 +78,7 @@ class customFieldDataAccessTest extends elis_database_test {
         $field = field::ensure_field_exists_for_context_level($field,
                           $cl ? $cl : self::contextlevel, $field_category);
 
+       /*
         //set up the default data
         $default_params = array(
             'fieldid'   => $field->id,
@@ -83,6 +87,8 @@ class customFieldDataAccessTest extends elis_database_test {
         );
         $default_data = new field_data_char($default_params);
         $default_data->save();
+       */
+        field_data::set_for_context_and_field(NULL, $field, array('value1'));
 
         return $field;
     }
