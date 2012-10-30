@@ -134,7 +134,7 @@ class userset extends data_object_with_custom_fields {
         $children = userset::find(new join_filter('id', 'context', 'instanceid',
                                                   new AND_filter(array(new field_filter('path', "{$instance_path}/%", field_filter::LIKE),
                                                                        new field_filter('contextlevel', CONTEXT_ELIS_USERSET)))),
-                                  array('id' => 'DESC'), 0, 0, $this->_db);
+                                  array('depth' => 'ASC'), 0, 0, $this->_db);
         $children = $children->to_array();
 
         if ($this->deletesubs) {
@@ -156,7 +156,7 @@ class userset extends data_object_with_custom_fields {
 
                 if (userset::exists(new field_filter('id', $child->parent))) {
                     /// A parent found so lets lower the depth
-                    $child->depth = $child->depth - 1;
+                    $child->depth = 0;
                 } else {
                     /// Parent not found so this cluster will be top-level
                     $child->parent = 0;
@@ -168,7 +168,7 @@ class userset extends data_object_with_custom_fields {
                         SET depth=0, path=NULL
                         WHERE contextlevel=? AND instanceid=?";
                 $this->_db->execute($sql, array(CONTEXT_ELIS_USERSET, $child->id));
-            } 
+            }
             context_elis_helper::build_all_paths(false, array(CONTEXT_ELIS_USERSET)); // Re-build the context table for all sub-clusters
         }
 
