@@ -496,6 +496,7 @@ class treerepresentation {
         //YUI needs an appropriate div to place the tree in
         $result = $style . "<div id=\"block_curr_admin_tree\" class=\"admintree\"></div>";
 
+        /*
         //obtain the actual tree object
         $js_object = $this->get_js_object();
 
@@ -508,7 +509,7 @@ class treerepresentation {
                 render_curr_admin_tree(object);
         });
         //]]>
-        </script>";
+        </script>";*/
 
         //handle non-js case
         $result .= '<noscript>' . $this->root->convert_to_markup() . '</noscript>';
