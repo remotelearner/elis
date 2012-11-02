@@ -1106,6 +1106,7 @@ $string['unassign'] = 'unassign';
 $string['unassigned'] = 'Unassigned';
 $string['unassignroles'] = 'Unassign roles';
 $string['unenrol'] = 'Unenrol';
+$string['unenrolled'] = 'unenrolled';
 $string['unsatisfiedprereqs'] = 'One or more prerequisites are not completed yet.';
 $string['update_assignment'] = 'Update Assignment';
 $string['update_enrolment'] = 'Update Enrolment';
