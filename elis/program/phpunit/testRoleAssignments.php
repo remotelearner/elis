@@ -56,6 +56,7 @@ class curriculumCustomFieldsTest extends elis_database_test {
             'user_info_category' => 'moodle',
             'user_info_field' => 'moodle',
             'user_info_data' => 'moodle',
+		    'user_preferences' => 'moodle',
             field_category::TABLE => 'elis_core',
             field_category_contextlevel::TABLE => 'elis_core',
             field::TABLE => 'elis_core',
