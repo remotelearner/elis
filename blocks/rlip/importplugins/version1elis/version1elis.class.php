@@ -700,11 +700,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             }
         }
 
-        if (isset($record->email)) {
-            if ($DB->record_exists('crlm_user', array('email' => $record->email))) {
-                $identifier = $this->get_field_mapping('email');
-                $this->fslogger->log_failure("$identifier value of \"{$record->email}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
+        $allowduplicateemails = get_config('rlipimport_version1elis','allowduplicateemails');
+        if (empty($allowduplicateemails)) {
+            if (isset($record->email)) {
+                if ($DB->record_exists('crlm_user', array('email' => $record->email))) {
+                    $identifier = $this->get_field_mapping('email');
+                    $this->fslogger->log_failure("$identifier value of \"{$record->email}\" refers to a user that already exists.", 0, $filename, $this->linenumber, $record, "user");
+                    return false;
+                }
             }
         }
 

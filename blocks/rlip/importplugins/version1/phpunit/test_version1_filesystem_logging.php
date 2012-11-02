@@ -4438,6 +4438,11 @@ class version1FilesystemLoggingTest extends rlip_test {
         $expected_error = "[user.csv line 2] User with username \"validusername\", email \"test@user.com\" could not be ".
                           "created. customemail value of \"test@user.com\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        set_config('allowduplicateemails','1','rlipimport_version1');
+
+        $expected_error = "[user.csv line 2] User with username \"validusername\", email \"test@user.com\" successfully created.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
     /**

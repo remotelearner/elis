@@ -408,6 +408,34 @@ class version1elisFilesystemLoggingTest extends rlip_test {
         $this->assert_data_produces_error($data, $expected_error, 'user');
     }
 
+    public function testELISInvalidUserDuplicateEmailCreate() {
+        global $CFG, $DB;
+
+        //create mapping record
+        $this->create_mapping_record('user', 'email', 'customemail');
+
+        $this->load_csv_data();
+
+        $data = array('action' => 'create',
+                      'username' => 'validtestusername',
+                      'idnumber' => 'validtestidnumber',
+                      'password' => 'Rlippassword!0',
+                      'firstname' => 'rlipfirstname',
+                      'lastname' => 'rliplastname',
+                      'customemail' => 'test@user.com',
+                      'city' => 'Waterloo',
+                      'birhtdate' => 'JAN/01/2012',
+                      'country' => 'CA');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"test@user.com\", idnumber \"validtestidnumber\" could not be created. customemail value of \"test@user.com\" refers to a user that already exists.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+
+        set_config('allowduplicateemails','1','rlipimport_version1elis');
+
+        $expected_error = "[user.csv line 2] User with username \"validtestusername\", email \"test@user.com\", idnumber \"validtestidnumber\" successfully created.\n";
+        $this->assert_data_produces_error($data, $expected_error, 'user');
+    }
+
     /**
      * Validate that email2 validation works on user create
      */
