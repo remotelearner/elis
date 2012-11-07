@@ -140,8 +140,9 @@ class usermanagementGetsUsersTest extends elis_database_test {
         $clusteruser->save();
 
         // Copy the site-level course record from the real DB
-        $sitecourse = self::$origdb->get_record('course', array('id' => SITEID));
-        self::$overlaydb->import_record('course', $sitecourse);
+        //$sitecourse = self::$origdb->get_record('course', array('id' => SITEID));
+        //self::$overlaydb->import_record('course', $sitecourse);
+        //var_dump($sitecourse);die();
 
         //set up our test role
         $syscontext = get_context_instance(CONTEXT_SYSTEM);

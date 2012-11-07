@@ -174,7 +174,7 @@ class trackassignmentpage extends associationpage {
                              . urlencode($namesearch)); // .'&amp;'
             echo $OUTPUT->render($pagingbar), '<br/>'; // TBD
         }
-        $this->print_num_items($numitems);
+        $this->print_num_items($numitems, $numitems);
         $this->print_list_view($items, $columns, 'track_classes');
 
         if (empty($items) && empty($namesearch) && empty($alpha)) {
