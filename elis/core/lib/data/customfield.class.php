@@ -206,13 +206,13 @@ class field extends elis_data_object {
                  LEFT JOIN {'.field_category::TABLE.'} category ON field.categoryid = category.id
                  LEFT JOIN {'.field_owner::TABLE.'} owner ON field.id = owner.fieldid AND owner.plugin = \'moodle_profile\'
                       JOIN {'.field_contextlevel::TABLE."} ctx ON ctx.fieldid = field.id AND ctx.contextlevel = {$contextlevel}
-                  ORDER BY category.sortorder, field.sortorder";
+                  ORDER BY category.sortorder, category.name, field.sortorder";
         } else {
             $sql = 'SELECT field.*, category.name AS categoryname
                       FROM {'.self::TABLE.'} field
                  LEFT JOIN {'.field_category::TABLE.'} category ON field.categoryid = category.id
                       JOIN {'.field_contextlevel::TABLE."} ctx ON ctx.fieldid = field.id AND ctx.contextlevel = {$contextlevel}
-                  ORDER BY category.sortorder, field.sortorder";
+                  ORDER BY category.sortorder, category.name, field.sortorder";
         }
         return new data_collection($DB->get_recordset_sql($sql), 'field', null, array(), true,
                                    array('categoryname', 'mfieldid', 'syncwithmoodle'));
