@@ -76,6 +76,8 @@ class user_class_completion_report extends table_report {
     protected $_fielddatatypes = array();
     //store what contexts fields correspond to
     protected $_fielddatacontexts = array();
+    // store datetime custom fields: fieldid => inctime
+    protected $_datetimefields = array();
 
     protected $student_id_num = '';
 
@@ -494,7 +496,14 @@ class user_class_completion_report extends table_report {
                     }
 
                     //store the data type
-                    $this->_fielddatatypes[$fieldid] = $field->data_type();
+                    $this->_fielddatatypes[$fieldid] = $field->datatype;
+
+                    // ELIS-5862/ELIS-7409: keep track of datetime fields
+                    if (isset($field->owners['manual']) &&
+                        ($manual = new field_owner($field->owners['manual']))
+                        && $manual->param_control == 'datetime') {
+                        $this->_datetimefields[$fieldid] = !empty($manual->param_inctime);
+                    }
                 }
             }
         }
@@ -665,9 +674,15 @@ class user_class_completion_report extends table_report {
         if (!empty($contexts)) {
             //add a join for each profile field
             foreach ($contexts as $context) {
+                $ctxname     = $contextlevelnames[$context->contextlevel];
+
+                if (!in_array($ctxname, array_keys($instancefields))) {
+                    // Not a context level we care about
+                    continue;
+                }
+
                 if ($contextlevel != $context->contextlevel) {
                     $contextlevel = $context->contextlevel;
-                    $ctxname     = $contextlevelnames[$context->contextlevel];
                     $contextname = $ctxname.'_'; // TBD
                     $instancefield = $instancefields[$ctxname];
                     //have one ot more profile field we're joining, so join the context table at the top level
@@ -1912,11 +1927,22 @@ class user_class_completion_report extends table_report {
         }
 
         //handle checkbox yes/no display if needed
+        //ELIS-5862: add transformation of datetime custom fields too
         foreach ($this->_fielddatatypes as $fieldid => $datatype) {
             //make sure we don't set override N/A for curriculum fields in non-curriculum records
-            if ($datatype == 'bool' && !in_array($fieldid, $excluded_fieldids)) {
+            if (!in_array($fieldid, $excluded_fieldids)) {
+
                 $key = "customfielddata_{$fieldid}";
-                $record->$key = !empty($record->$key) ? get_string('yes') : get_string('no');
+                if ($datatype == 'bool') {
+                    $record->$key = !empty($record->$key) ? get_string('yes') : get_string('no');
+                } else if (array_key_exists($fieldid, $this->_datetimefields)) {
+                    $record->$key = $this->userdate($record->$key,
+                                        get_string(
+                                            $this->_datetimefields[$fieldid]
+                                            ? 'customfield_datetime_format'
+                                            : 'customfield_date_format',
+                                            $this->languagefile));
+                }
             }
         }
     }

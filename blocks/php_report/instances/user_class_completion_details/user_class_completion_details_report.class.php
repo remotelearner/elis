@@ -208,14 +208,25 @@ class user_class_completion_details_report extends user_class_completion_report 
             $params = array_merge($params, $filter_sql['where_parameters']);
         }
 
-        $instancefields = array('curriculum' => 'cur.id', 'class' => 'pmcls.id',
-                                'course' => 'curcrs.courseid'); // TBD
-
         $curriculum_custom_field_join = '';
         $class_custom_field_join = '';
         //determine the join SQL for all types of relevant custom fields
         if (!empty($this->_customfieldids)) {
+            // For the program portion, only care about program-level fields
+            $instancefields = array(
+                'curriculum' => 'cur.id',
+            );
+
             $curriculum_custom_field_join = $this->get_custom_field_sql($this->_customfieldids, $instancefields);
+
+            // For the class instance portion, we consider class instance and
+            // course description custom fields
+            $instancefields = array(
+                'class'  => 'cls.id',
+                'course' => 'crs.id'
+            );
+
+            $class_custom_field_join = $this->get_custom_field_sql($this->_customfieldids, $instancefields);
         }
 
         //handle class enrolment status
@@ -270,8 +281,6 @@ class user_class_completion_details_report extends user_class_completion_report 
             $curriculum_select = ' cur.id AS curid,';
             $curriculum_join   = ' LEFT JOIN (
                                       {'. curriculumcourse::TABLE .'} curcrs
-                                      JOIN {'. pmclass::TABLE .'} pmcls
-                                        ON curcrs.courseid = pmcls.courseid
                                       JOIN {'. curriculum::TABLE ."} cur
                                         ON curcrs.curriculumid = cur.id
                                       {$curriculum_custom_field_join}
@@ -279,7 +288,6 @@ class user_class_completion_details_report extends user_class_completion_report 
                                         ON curass.curriculumid = cur.id)
                                    ON crs.id = curcrs.courseid
                                   AND curass.userid = u.id
-                                  AND pmcls.id = cls.id
                                   {$class_custom_field_join} ";
         }
 
@@ -839,7 +847,17 @@ class user_class_completion_details_report extends user_class_completion_report 
                     foreach ($customdata as $customdatum) {
                         if ($field->datatype == 'bool') {
                             //special display handling for boolean values
-                            $rawdata[] = !empty($customdataum->data) ? get_string('yes') : get_string('no');
+                            $rawdata[] = !empty($customdatum->data) ? get_string('yes') : get_string('no');
+                        } else if (isset($field->owners['manual']) &&
+                                   ($manual = new field_owner($field->owners['manual'])) &&
+                                   $manual->param_control == 'datetime') {
+                            //special display handling for datetime fields
+                            $rawdata[] = $this->userdate($customdatum->data,
+                                             get_string(
+                                                 !empty($manual->param_inctime)
+                                                 ? 'customfield_datetime_format'
+                                                 : 'customfield_date_format',
+                                                 $this->languagefile));
                         } else {
                             $rawdata[] = $customdatum->data;
                         }
