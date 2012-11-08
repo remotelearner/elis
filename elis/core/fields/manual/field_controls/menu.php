@@ -27,8 +27,9 @@ function menu_control_display($form, $mform, $customdata, $field, $as_filter = f
                 $options = array('' => get_string("choose"));
             }
             foreach($tmpoptions as $key => $option) {
-                $option = trim($option);
-                $options[$option] = format_string($option);//multilang formatting
+                $option = trim($option, "\n\r");
+                $option = format_string($option);
+                $options[$option] = $option;//multilang formatting
             }
         } else {
             $options = array();
