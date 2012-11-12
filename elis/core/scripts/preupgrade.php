@@ -32,6 +32,19 @@ define('CLI_SCRIPT', true);
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
 require_once($CFG->libdir.'/ddllib.php');
 
+$steps = array(
+             'None',
+             'Fixed duplicate grade letters',
+             'Fixed duplicate user preferences',
+             'Fixed role capabilities',
+             'Updated repository:elis_files',
+             'Updated obsolete authentication plugins (last)',
+             'Complete' // shouldn't get here, move "(last)" to last step, above
+         );
+$completed_step = 0;
+
+// Delete any existing pre-upgrade status (TBD)
+$DB->delete_records('config', array('name' => 'elis_preupgrade_status'));
 
 $dbman = $DB->get_manager();
 
@@ -97,6 +110,9 @@ if ($rec = $DB->record_exists_sql($sql, array())) {
         }
     }
 }
+
+// TBD: we should probably check $status before continuing, as is done below!
+$completed_step++;
 
 mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 
@@ -170,6 +186,7 @@ mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 mtrace(' >>> '.get_string('preup_ec_check', 'elis_core'));
 
 if ($status) {
+    $completed_step++;
     try {
         // Find all of the capabilities that are set to enabled
         $select = 'capability LIKE :cap AND permission LIKE :perm';
@@ -203,6 +220,7 @@ mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 mtrace(' >>> '.get_string('preup_ac_check', 'elis_core'));
 
 if ($status) {
+    $completed_step++;
     try {
     // Find all of the old Alfresco repository plugin capabilities that are set to enabled
         $select = 'name LIKE :name';
@@ -258,6 +276,7 @@ mtrace(' ... '.get_string('done', 'elis_core')."!\n");
 mtrace(' >>> '.get_string('preup_as_check', 'elis_core'));
 
 if ($status) {
+    $completed_step++;
     try {
         $auth = $DB->get_field('config', 'value', array('name' => 'auth'));
 
@@ -292,3 +311,12 @@ if ($status) {
 }
 
 mtrace(' ... '.get_string('done', 'elis_core')."!\n");
+
+if ($status) {
+    $completed_step++;
+}
+
+// Update pre-upgrade status
+$DB->insert_record('config', (object)array('name'  => 'elis_preupgrade_status',
+                                           'value' => "{$completed_step}. {$steps[$completed_step]}"));
+
