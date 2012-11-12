@@ -61,10 +61,10 @@ class elis_graded_users_iterator {
      * @param string $sortorder2 The order in which the second sorting field will be sorted (ASC or DESC)
      * @param mixed  $req_users  Optional array of desired users - empty for all (default)
      */
-    public function graded_users_iterator($course, $grade_items=null, $groupid=0,
-                                          $sortfield1='lastname', $sortorder1='ASC',
-                                          $sortfield2='firstname', $sortorder2='ASC',
-                                          $req_users = null) {
+    public function elis_graded_users_iterator($course, $grade_items=null, $groupid=0,
+                                $sortfield1 = 'lastname', $sortorder1 = 'ASC',
+                                $sortfield2 = 'firstname', $sortorder2 = 'ASC',
+                                $req_users = null) {
         $this->course      = $course;
         $this->grade_items = $grade_items;
         $this->groupid     = $groupid;
