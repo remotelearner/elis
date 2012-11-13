@@ -309,14 +309,13 @@ class curriculumstudent extends elis_data_object {
     public static function get_completed_for_user($userid) {
         global $DB;
 
-        $rows = $DB->get_records_select(curriculumstudent::TABLE, "userid = $userid and completed != 0", null, '', 'id');
-        $rows = ($rows == false ? array() : $rows);
-
         $r = array();
 
+        $rows = $DB->get_recordset_select(curriculumstudent::TABLE, "userid = $userid and completed != 0", null, '', 'id');
         foreach($rows as $row) {
             $r[] = new curriculumstudent($row->id);
         }
+        unset($rows);
 
         return $r;
     }

@@ -485,9 +485,8 @@ class associationpage extends pm_page {
 
         //todo: make usersetassignmentpage consistent with other pages and
         //change all pages to use recordsets
-        $empty = empty($items) || $items instanceof Iterator && !$items->valid();
 
-        if ($empty) {
+        if (empty($items) || ($items instanceof Iterator && $items->valid() === false)) {
             $a = new stdClass;
 
             //determining if we are searching
@@ -548,17 +547,16 @@ class associationpage extends pm_page {
             //$taken_ids[] = $taken_item->id;
         }
 
-        if (!($avail = $items)) {
-            $avail = array();
-        }
+        $items = (is_array($items) || ($items instanceof Iterator && $items->valid()===true)) ? $items : array();
 
         $menu = array();
 
-        foreach ($avail as $info) {
+        foreach ($items as $info) {
             if (!in_array($info->id, $taken_ids)) {
                 $menu[$info->id] = $info->$namefield;
             }
         }
+        unset($items);
 
         echo '<div align="center"><br />';
 

@@ -652,10 +652,10 @@ class duplicate_moodle_profile extends crlm_health_check_base {
                   FROM {user_info_data} dat
               GROUP BY fieldid, userid
                 HAVING COUNT(*) > 1";
-        $this->counts = $DB->get_records_sql($sql);
+        $this->counts = $DB->get_recordset_sql($sql);
     }
     function exists() {
-        return !empty($this->counts);
+        return ($this->counts->valid()===true) ? true : false;
     }
     function severity() {
         return healthpage::SEVERITY_ANNOYANCE;
@@ -664,7 +664,11 @@ class duplicate_moodle_profile extends crlm_health_check_base {
         return get_string('health_dupmoodleprofile', 'elis_program');
     }
     function description() {
-        $count = array_reduce($this->counts, create_function('$a,$b', 'return $a + $b->dup;'), $null);
+        $count = 0;
+        foreach ($this->counts as $dup) {
+            $count += $dup->dup;
+        }
+        $this->counts->close();
         return get_string('health_dupmoodleprofiledesc', 'elis_program', $count);
     }
     function solution() {

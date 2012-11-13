@@ -596,7 +596,7 @@ class studentpage extends associationpage {
 
         $id = $this->required_param('id', PARAM_INT);
 
-        if (empty($items)) {
+        if (empty($items) || ($items instanceof Iterator && $items->valid() === false)) {
             //do not output a notice that no elements are found because this is handled by pmshowmatched
             return;
         }

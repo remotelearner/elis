@@ -655,9 +655,15 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
             /// Get CM completion elements and related Moodle grade items
             $comp_elements = array();
             $gis = array();
-            if (isset($pmclass->course) && (get_class($pmclass->course) == 'course')
-                && ($elements = $pmclass->course->get_completion_elements())) {
 
+            //this will store the initial valid state of the $elements recordset, since once we loop
+            //through it the valid state turns false
+            $compelems_valid = false;
+
+            if (isset($pmclass->course) && (get_class($pmclass->course) == 'course')) {
+
+                $elements = $pmclass->course->get_completion_elements();
+                $compelems_valid = (!empty($elements) && $elements->valid() === true) ? true : false;
                 foreach ($elements as $element) {
                     // In Moodle 1.9, Moodle actually stores the "slashes" on the idnumber field in the grade_items
                     // table so we to check both with and without addslashes. =(  - ELIS-1830
@@ -672,6 +678,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                         $comp_elements[$gi->id] = $element;
                     }
                 }
+                unset($elements);
             }
             // add grade item for the overall course grade
             $coursegradeitem = grade_item::fetch_course_item($moodlecourse->id);
@@ -683,7 +690,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                 continue;
             }
 
-            if (!empty($elements)) {
+            if (!empty($compelems_valid) && $compelems_valid === true) {
                 // get current completion element grades if we have any
                 // IMPORTANT: this record set must be sorted using the Moodle
                 // user ID
@@ -764,7 +771,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
 
                     /// Enrolment time will be the earliest found role assignment for this user.
                     $enroltime = $timenow;
-                    $enrolments = $DB->get_records('enrol', array('courseid' => $class->moodlecourseid));
+                    $enrolments = $DB->get_recordset('enrol', array('courseid' => $class->moodlecourseid));
                     foreach ($enrolments as $enrolment) {
                         $etime = $DB->get_field('user_enrolments', 'timestart',
                                           array('enrolid' => $enrolment->id,
@@ -773,6 +780,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                             $enroltime = $etime;
                         }
                     }
+                    unset($enrolments);
                     $sturec->enrolmenttime = $enroltime;
                     $sturec->completetime = 0;
                     $sturec->endtime = 0;
@@ -796,7 +804,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                         $sturec->grade = $grade;
 
                         /// Update completion status if all that is required is a course grade.
-                        if (empty($elements)) {
+                        if (empty($compelems_valid)) {
                             if ($pmclass->course->completion_grade <= $sturec->grade) {
                                 $sturec->completetime = $usergradeinfo->get_dategraded();
                                 $sturec->completestatusid = STUSTATUS_PASSED;
