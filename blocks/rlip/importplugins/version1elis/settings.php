@@ -49,3 +49,6 @@ $settings->add(new admin_setting_configtext('rlipimport_version1elis/emailnotifi
                                             get_string('emailnotification', 'rlipimport_version1elis'),
                                             get_string('configemailnotification', 'rlipimport_version1elis'), ''));
 
+$settings->add(new admin_setting_configcheckbox('rlipimport_version1elis/allowduplicateemails',
+                                            get_string('allowduplicateemails','rlipimport_version1elis'),
+                                            get_string('configallowduplicateemails','rlipimport_version1elis'), ''));
