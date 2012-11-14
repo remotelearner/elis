@@ -185,7 +185,7 @@ class user_class_completion_report extends table_report {
      * @uses $CFG
      */
     function get_filters($init_data = true) {
-        global $CFG;
+        global $CFG, $USER;
 
         //cluster tree
         $enable_tree_label     = $this->get_string('enable_tree');
@@ -418,11 +418,41 @@ class user_class_completion_report extends table_report {
             ),
         );
 
-        $filters = $userfilter->get_filters();
+        $filters = array();
+
+        $autocomplete_opts = array(
+            'report' => $this->get_report_shortname(),
+            'ui' => 'inline',
+            'contextlevel' => 1005,
+            'instance_fields' => array(
+                'idnumber' => get_string('filter_autocomplete_idnumber',$this->languagefile),
+                'firstname' => get_string('filter_autocomplete_firstname',$this->languagefile),
+                'lastname' => get_string('filter_autocomplete_lastname',$this->languagefile)
+            ),
+            'custom_fields' => '*',
+            'label_template' => '[[firstname]] [[lastname]]',
+            'configurable' => true,
+            'selection_enabled' => true,
+        );
+
+        $filters[] = new generalized_filter_entry(
+                'filter-autoc',
+                '',
+                "CONCAT(u.firstname,' ',u.lastname)",
+                get_string('fld_fullname','elis_core'),
+                false,
+                'autocomplete_eliswithcustomfields',
+                $autocomplete_opts
+        );
+
+        $filters = $filters + $userfilter->get_filters();
 
         $filters[] = new generalized_filter_entry('filter-uid', 'u', 'id',
                              $this->get_string('filter_cluster'),
                              false, 'clustertree', $clustertree_options);
+
+        $filters[] = new generalized_filter_entry('filter-completerange','stu','completetime', $this->get_string('completed_range'),false,'date');
+
 
         $schemas = array(
                 $classfilter,
@@ -2052,7 +2082,7 @@ class clustertree_optional_filtering extends php_report_default_capable_filterin
                         $newsql = $field->get_sql_filter($formatted_data);
                         if (!empty($newsql) && !empty($newsql[0])) {
                             $sqls[] = $newsql[0];
-                            if (!empty($newsql[1])) {
+                            if (!empty($newsql[1]) && is_array($newsql[1])) {
                                 $params = array_merge($params, $newsql[1]);
                             }
                         }
