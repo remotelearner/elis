@@ -65,6 +65,7 @@ class healthpage extends pm_page {
     function display_default() {
         global $OUTPUT, $core_health_checks;
         $verbose = $this->optional_param('verbose', false, PARAM_BOOL);
+        @set_time_limit(0);
 
         $issues = array(
             healthpage::SEVERITY_CRITICAL => array(),
@@ -355,10 +356,8 @@ class health_user_sync extends crlm_health_check_base {
                 AND country != ''
                 AND NOT EXISTS (SELECT 'x'
                                 FROM {". user::TABLE ."} cu
-                                WHERE cu.idnumber = {$CFG->prefix}user.idnumber)
-                AND NOT EXISTS (SELECT 'x'
-                                FROM {". user::TABLE ."} cu
-                                WHERE cu.username = {$CFG->prefix}user.username)";
+                                WHERE cu.idnumber = {user}.idnumber
+                                   OR cu.username = {user}.username)";
 
         $this->count = $DB->count_records_sql($sql, $params);
 
