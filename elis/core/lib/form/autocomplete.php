@@ -56,7 +56,7 @@ foreach ($filters as $i => $filter) {
         break;
     }
 }
-if (empty($found_filter) || strpos($found_filter->type,'autocomplete_') !== 0) {
+if (empty($found_filter) || strpos($found_filter->type,'autocomplete') !== 0) {
     echo 'Error2';
     die();
 }
