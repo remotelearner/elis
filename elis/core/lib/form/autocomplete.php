@@ -145,6 +145,7 @@ if ($mode === 'search') {
             <style>
                 tr:hover{background-color:#efe;}
                 .mform {width:95%;}
+                .mform .fitem {width:auto;}
                 .saved {color:#0a0;}
             </style>
         </head>
