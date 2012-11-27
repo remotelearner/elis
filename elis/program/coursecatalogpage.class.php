@@ -373,6 +373,9 @@ class coursecatalogpage extends pm_page {
 
         // This is for a Moodle user, so get the Curriculum user id.
         $cuserid = cm_get_crlmuserid($USER->id);
+        if (empty($cuserid)) {
+            return;
+        }
 
         // Needed for the hide buttons
         $this->include_js();
@@ -397,6 +400,11 @@ class coursecatalogpage extends pm_page {
         if ($usercnt) {
             $showcurid = optional_param('showcurid',0,PARAM_INT);
             foreach ($usercurs as $usercur) {
+                // make sure the curriculum still exists!
+                $curr = curriculum::find(new field_filter('id', $usercur->curid));
+                if (empty($curr) || empty($curr->rs) || !$curr->rs->valid()) {
+                    continue;
+                }
                 if ($classes = user::get_current_classes_in_curriculum($cuserid, $usercur->curid)) {
                     if ($showcurid > 0) {
                         // If we are passed the showcurid parameter then override the default show/hide settings
