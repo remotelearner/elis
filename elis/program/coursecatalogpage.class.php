@@ -377,24 +377,24 @@ class coursecatalogpage extends pm_page {
         // Needed for the hide buttons
         $this->include_js();
 
-        $usercurs = curriculumstudent::get_curricula($cuserid);
-        $instrclasses = user::get_instructed_classes($cuserid);
-        $noncurclasses = user::get_non_curriculum_classes($cuserid);
+        $usercnt = 0;
+        $usercurs = curriculumstudent::get_curricula($cuserid, $usercnt);
+        $instrcnt = 0;
+        $instrclasses = user::get_instructed_classes($cuserid, $instrcnt);
+        $noncurcnt = 0;
+        $noncurclasses = user::get_non_curriculum_classes($cuserid, $noncurcnt);
 
-        $numtables = 0;
-        if($usercurs) $numtables += count($usercurs);
-        if($instrclasses) $numtables += count($instrclasses);
-        if($noncurclasses) $numtables += count($noncurclasses);
-
-        if($numtables > elis::$config->elis_program->catalog_collapse_count) {
+        $numtables = $usercnt + $instrcnt + $noncurcnt;
+        if ($numtables > elis::$config->elis_program->catalog_collapse_count) {
             $buttonLabel = get_string('show');
             $extraclass = ' hide';
         } else {
             $buttonLabel = get_string('hide');
             $extraclass = '';
         }
+
         // Process our curricula in turn, outputting the courses within each.
-        if ($usercurs) {
+        if ($usercnt) {
             $showcurid = optional_param('showcurid',0,PARAM_INT);
             foreach ($usercurs as $usercur) {
                 if ($classes = user::get_current_classes_in_curriculum($cuserid, $usercur->curid)) {
@@ -423,7 +423,7 @@ class coursecatalogpage extends pm_page {
         }
 
         // Print out a table for classes not belonging to any curriculum
-        if ($noncurclasses) {
+        if ($noncurcnt) {
             $labelshow = get_string('show');
             $labelhide = get_string('hide');
             echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="noncurrscript" type="text/javascript">toggleVisibleInit("noncurrscript", "noncurrbutton", "' . $buttonLabel . '", "'.$labelhide.'", "'.$labelshow.'", "noncurr");</script></div>'. get_string('othercourses', 'elis_program'));
@@ -440,7 +440,7 @@ class coursecatalogpage extends pm_page {
         }
 
         // Print out a table for classes we instruct
-        if ($instrclasses) {
+        if ($instrcnt) {
             echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="instrscript" type="text/javascript">toggleVisibleInit("instrscript", "instrbutton", "' . $buttonLabel . '", "Hide", "Show", "instr");</script></div>'. get_string('instructedcourses', 'elis_program'));
 
             echo "<div id=\"instr\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass . '">';
