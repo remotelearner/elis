@@ -357,7 +357,7 @@ class curriculumstudent extends elis_data_object {
         if ($cnt !== null) {
             $cnt = $rs->valid()
                    ? $DB->count_records_sql("SELECT COUNT('x') ".
-                              $tables.$join.$where.$group, $params)
+                              $tables.$join.$where, $params)
                    : 0;
         }
         return $rs;
