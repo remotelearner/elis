@@ -187,7 +187,7 @@ class context_elis_program extends context_elis {
 
         $result = array();
         foreach ($records as $record) {
-            $result[$record->id] = context::create_instance_from_record($record);
+            $result[$record->id] = context_elis::create_instance_from_record($record);
         }
 
         return $result;
@@ -393,7 +393,7 @@ class context_elis_track extends context_elis {
 
         $result = array();
         foreach ($records as $record) {
-            $result[$record->id] = context::create_instance_from_record($record);
+            $result[$record->id] = context_elis::create_instance_from_record($record);
         }
 
         return $result;
@@ -595,7 +595,7 @@ class context_elis_course extends context_elis {
 
         $result = array();
         foreach ($records as $record) {
-            $result[$record->id] = context::create_instance_from_record($record);
+            $result[$record->id] = context_elis::create_instance_from_record($record);
         }
 
         return $result;
@@ -792,7 +792,7 @@ class context_elis_class extends context_elis {
 
         $result = array();
         foreach ($records as $record) {
-            $result[$record->id] = context::create_instance_from_record($record);
+            $result[$record->id] = context_elis::create_instance_from_record($record);
         }
 
         return $result;
@@ -1149,7 +1149,7 @@ class context_elis_userset extends context_elis {
 
         $result = array();
         foreach ($records as $record) {
-            $result[$record->id] = context::create_instance_from_record($record);
+            $result[$record->id] = context_elis::create_instance_from_record($record);
         }
 
         return $result;
