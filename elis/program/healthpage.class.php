@@ -647,7 +647,7 @@ class cron_lastruntimes_check extends crlm_health_check_base {
 class duplicate_moodle_profile extends crlm_health_check_base {
     function __construct() {
         global $DB;
-        $concat = sql_concat('fieldid', "'/'", 'userid');
+        $concat = $DB->sql_concat('fieldid', "'/'", 'userid');
         $sql = "SELECT $concat, COUNT(*)-1 AS dup
                   FROM {user_info_data} dat
               GROUP BY fieldid, userid
