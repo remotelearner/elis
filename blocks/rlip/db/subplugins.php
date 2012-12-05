@@ -53,6 +53,9 @@ if (!class_exists('plugininfo_rlipfile')) {
 
                 //track our method result
                 $result = array();
+                if (!$DB->get_manager()->table_exists('config_plugins')) {
+                    return $result;
+                }
 
                 //obtain the list of all file plugins
                 $fileplugins = get_plugin_list('rlipfile');

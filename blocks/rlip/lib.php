@@ -93,12 +93,14 @@ class rlip_category_externalpage extends admin_externalpage implements parentabl
  * Add extra admintree configuration structure to the main administration menu tree.
  *
  * @uses $CFG
+ * @uses $PAGE
  * @param object &$adminroot Reference to an admin tree object as generated via admin_get_root().
  * @return none
  */
 function rlip_admintree_setup(&$adminroot) {
-    global $CFG;
+    global $CFG, $PAGE;
     require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+    $PAGE->requires->js('/blocks/navigation/yui/navigation/navigation.js');
 
     $plugintypes = array('rlipimport', 'rlipexport');
 
