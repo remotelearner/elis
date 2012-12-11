@@ -84,7 +84,7 @@ abstract class associationpage2 extends selectionpage {
         //$unassignedpage->params['_assign'] = 'assign';
         $unassignedpage = $this->get_new_page(array('id' => $id, '_assign' => 'assign'));
         list($assigned_string, $unassigned_string) = $this->get_assigned_strings();
-        if (curriculumpage::can_enrol_into_curriculum($id)) {
+        if (strpos(get_class($this), 'rolepage') !== false || curriculumpage::can_enrol_into_curriculum($id)) {
             $row = array(new tabobject('assigned', $assignedpage->url, $assigned_string),
                          new tabobject('unassigned', $unassignedpage->url, $unassigned_string));
         } else {
