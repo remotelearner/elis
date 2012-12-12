@@ -2481,6 +2481,7 @@ class ELIS_files {
     function file_browse_options($cid, $uid, $shared, $oid, &$opts=array(), $createonly = false) {
         global $USER, $COURSE;
 
+        $uuid = ''; // ELIS-7453: avoid undefined variable $uuid error
         //Check defaults
         $opts = array();
 
@@ -2559,7 +2560,7 @@ class ELIS_files {
                 $this->allow_read($USER->username, $this->cuuid);
             }
 
-            if (($cid != SITEID && $uuid = $this->get_course_store($cid)) !== false) {
+            if ($cid != SITEID && ($uuid = $this->get_course_store($cid)) !== false) {
                 // Make sure this user actually has the correct permissions assigned here.
                 if ($editalfcourse) {
                     if (!elis_files_has_permission($uuid, $USER->username, true)) {
