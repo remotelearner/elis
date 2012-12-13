@@ -109,5 +109,15 @@ class block_rlip extends block_base {
         } 
     }
 
+    /**
+     * Subclasses should override this and return true if the
+     * subclass block has a config_global.html or settings.php file.
+     *
+     * @return boolean
+     */
+    function has_config() {
+        return true;
+    }
+
 }
 
