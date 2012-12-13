@@ -1408,4 +1408,45 @@ class permissionsTest extends elis_database_test {
         // Validation
         $this->assertTrue($has_permission);
     }
+
+    public function phpNoticeErrorHandler($errno, $errstr) {
+        $this->fail($errstr);
+    }
+
+    /**
+     * Validate that the "file_browse_options" method has no undefined variable errors
+     * For ELIS-7453
+     */
+    public function testFileBrowseOptionsUndefinedVariableError() {
+        global $USER;
+
+        // Make sure the test user is not mistaken for a site admin or guest
+        set_config('siteadmins', '');
+        set_config('siteguest', '');
+
+        // Setup
+        $this->create_guest_role();
+
+        $this->create_contexts_and_site_course();
+        $USER = $this->create_test_user();
+        $capability = 'repository/elis_files:viewsitecontent';
+        $roleid = $this->create_test_role($capability);
+
+        // Assign the test role to the test user
+        $context = context_system::instance();
+        role_assign($roleid, $USER->id, $context->id);
+
+        // Obtain the browsing options
+        $elis_files = new mock_ELIS_files();
+        $cid = SITEID;
+        $uid = 0;
+        $shared = 0;
+        $oid = 0;
+        $elis_files->root->uuid = false; // Force undefined variable $uuid error
+        set_error_handler(array($this, 'phpNoticeErrorHandler'), E_ALL);
+        $options = $elis_files->file_browse_options($cid, $uid, $shared, $oid);
+
+        // Validation: should have site, shared, and user files
+        $this->assertEquals(3, count($options));
+    }
 }
