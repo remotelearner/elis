@@ -69,10 +69,11 @@ class datedelta {
      * @return bool            true if period in proper format, false otherwise.
      */
     public static function validate($period) {
+       $legal_chars = array('h', 'd', 'w', 'm', 'y');
        foreach (count_chars($period, 1) as $key => $cnt) {
            $char = chr($key);
-           if ($char != ',' && $char != ' ' && !ctype_digit($char) &&
-               ($cnt > 1 || !in_array(strtolower($char), array('h', 'd', 'w', 'm', 'y')))) {
+           $do_check = ($char != ',' && $char != ' ' && !ctype_digit($char));
+           if ($do_check && ($cnt > 1 || !in_array(strtolower($char), $legal_chars))) {
                return false;
            }
        }
