@@ -629,10 +629,9 @@ class individual_course_progress_report extends table_report {
         $params = array();
 
         $permissions_filter = 'TRUE';
-      /* *** OLD method
         $cm_user_id = cm_get_crlmuserid($USER->id);
         $filter_array = php_report_filtering_get_active_filter_values(
-                            $this->get_report_shortname(), 'userid',
+                            $this->get_report_shortname(), 'filterautoc',
                             $this->filter);
         $filter_user_id = (isset($filter_array[0]['value']))
                           ? $filter_array[0]['value']
@@ -659,7 +658,6 @@ class individual_course_progress_report extends table_report {
                 }
             }
         }
-      * ****** */
 
         //tracks progress used by this user
         $total_progress_subquery =
