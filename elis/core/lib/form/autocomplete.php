@@ -83,16 +83,15 @@ if ($filter->_selection_enabled !== true) {
 
 if ($mode === 'search') {
 
-    if ($filter->_useid) {
-        echo "<script>
-              var autocelem = document.getElementById('id_{$filter->_uniqueid}');
-              if (autocelem) {
-                  autocelem.value = '';
-              }
-              </script>\n";
-    }
+    echo "<script>
+          var autocelem = document.getElementById('id_{$filter->_uniqueid}');
+          if (autocelem) {
+              autocelem.value = '". ($filter->_useid ? '': $q) ."';
+          }
+          </script>\n";
 
     //search the database
+    $results = '';
     if (!empty($q)) {
         $results = $filter->get_search_results($q);
         $q = explode(' ',$q);
