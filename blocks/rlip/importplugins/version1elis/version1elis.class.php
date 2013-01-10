@@ -266,136 +266,117 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * to a unix timestamp
      * @todo: consider further generalizing / moving to base class
      *
-     * @param string $date Date in MMM/DD/YYYY format
+     * @param string $date Date in MMM/DD/YYYY format, or MMM/DD/YYYY:HH:MM format if $include_time is true
      * @param boolean $old_formats Only support old (legacy) formats if set to true
      * @param boolean $include_time For including time
+     * @param int     $min_year     For validating year >= minimum allowed
+     * @param int     $max_year     For validating year <= maximum allowed
+     * @param bool    &$year_oor    return param, if true, indicates year out-of-range
      * @return mixed The unix timestamp, or false if date is
      *               not in the right format
      */
-    function parse_date($date, $old_formats = true, $include_time = false) {
-        //determine which case we are in
-        if (strpos($date, '/') !== false) {
-            $delimiter = '/';
-        } else if (strpos($date, '-') !== false) {
-            $delimiter = '-';
-        } else if (strpos($date, '.') !== false) {
-            $delimiter = '.';
-        } else {
-            return false;
-        }
-        //make sure there are three parts
-        $parts = explode($delimiter, $date);
-        if (count($parts) != 3) {
+    function parse_date($date, $old_formats = true, $include_time = false, $min_year = 0, $max_year = 0, &$year_oor = null) {
+        if (!is_string($date)) {
             return false;
         }
 
-        $time = explode(':', $date);
+        $valid = preg_match('|^([a-zA-Z0-9]+)([/\-.])([0-9]+)[/\-.]([0-9]+)[ :]([0-9]+):([0-9]+)|', $date, $matches);
+        // TBD: if ($valid && !$include_time) { return false; }
+        // we'll just ignore the time info later if it's not allowed
+        if (!$valid) {
+            $valid = preg_match('|^([a-zA-Z0-9]+)([/\-.])([0-9]+)[/\-.]([0-9]+)|', $date, $matches);
+        }
 
-        //validate that we have just a date, or a date + time (if time is allowed)
-        $parts_valid = count($time) == 1 || $include_time && count($time) == 3;
-        if (!$parts_valid) {
+        $matchcount = count($matches);
+        if (!$valid || ($matchcount != 5 && $matchcount != 7)) {
+            // invalid format
             return false;
         }
 
-        $include_time = $include_time && count($time) > 1;
+        if ($year_oor !== null) {
+            $year_oor = false;
+        }
 
+        $delimiter = $matches[2];
         if ($delimiter == '/') {
-            //MMM/DD/YYYY or MM/DD/YYYY format
-            //make sure the month is valid
-
-            //time specified
-            if ($include_time) {
-                list($month, $day) = $parts;
-                $year = substr($parts[2], 0, strpos($parts[2], ':'));
-            } else {
-                list($month, $day, $year) = $parts;
-            }
-
+            // MMM/DD/YYYY or MM/DD/YYYY format
+            // make sure the month is valid
             $months = array('jan', 'feb', 'mar', 'apr',
                             'may', 'jun', 'jul', 'aug',
                             'sep', 'oct', 'nov', 'dec');
-            $pos = array_search(strtolower($month), $months);
+            $pos = array_search(strtolower($matches[1]), $months);
             if ($pos === false) {
-                //legacy format (zero values handled below by checkdate)
-                $month = (int)$month;
-
+                // legacy format (zero values handled below by checkdate)
+                $month = $matches[1];
             } else {
-                //new "text" format
+                // new "text" format
                 $month = $pos + 1;
             }
+            $day = $matches[3];
+            $year = $matches[4];
         } else if ($delimiter == '-') {
-            //DD-MM-YYYY format
+            // DD-MM-YYYY format
             if (!$old_formats) {
-                //not supporting this
+                // not supporting this
                 return false;
             }
 
-            //time specified
-            if ($include_time) {
-                list($day, $month) = $parts;
-                $year = substr($parts[2], 0, strpos($parts[2], ':'));
-            } else {
-                list($day, $month, $year) = $parts;
-            }
-            //TODO: consider doing more validation on month being an integer
+            $day = $matches[1];
+            $month = $matches[3];
+            $year = $matches[4];
         } else {
-            //YYYY.MM.DD format
+            // YYYY.MM.DD format
             if (!$old_formats) {
-                //not supporting this
+                // not supporting this
                 return false;
             }
 
-            //time specified
-            if ($include_time) {
-                $month = $parts[1];
-                $day = $parts[2];
-                $year = substr($parts[0], 0, strpos($parts[0], ':'));
-            } else {
-                list($year, $month, $day) = $parts;
-            }
-            //TODO: consider doing more validation on month being an integer
+            $year = $matches[1];
+            $month = $matches[3];
+            $day = $matches[4];
         }
 
         //make sure the combination of date components is valid
         if (!preg_match('/^\d{1,2}$/', $day)) {
-            //invalid day
+            // invalid day
             return false;
         }
 
         if (!preg_match('/^\d\d\d\d$/', $year)) {
-            //invalid year
+            // invalid year
             return false;
         }
 
-        $day = (int)$day;
-        $year = (int)$year;
+        $day = intval($day);
+        $month = intval($month);
+        $year = intval($year);
 
         if (!checkdate($month, $day, $year)) {
-            //invalid combination of month, day and year
+            // invalid combination of month, day and year
+            return false;
+        }
+
+        if (($min_year && $year < $min_year) || ($max_year && $year > $max_year)) {
+            // year not in allowed range
+            if ($year_oor !== null) {
+                $year_oor = true;
+            }
             return false;
         }
 
         $hour = 0;
         $minute = 0;
 
-        //time specified
-        if ($include_time) {
-            $hour_numeric = preg_match('/^\d{1,2}$/', $time[1]);
-            $minute_numeric = preg_match('/^\d{1,2}$/', $time[2]);
-
-            if ($hour_numeric && $minute_numeric) {
-                //determine if time is valid
-                $hour = (int) $time[1];
-                $minute = (int) $time[2];
-                if (!($hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59)) {
-                    return false;
-                }
-            } else {
+        // time specified
+        if ($include_time && $matchcount == 7) {
+            $hour = intval($matches[5]);
+            $minute = intval($matches[6]);
+            if (!($hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59)) {
                 return false;
             }
         }
 
-        //return unix timestamp
+        // return unix timestamp
         return mktime($hour, $minute, 0, $month, $day, $year);
     }
 
@@ -544,35 +525,35 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             foreach ($values as $value) {
                 switch ($control) {
                     case 'checkbox':
-                        //just in case
+                        // just in case
                         $string_value = (string)$value;
 
                         if ($string_value != '0' && $string_value != '1' && strtolower($string_value) != 'yes' && strtolower($string_value) != 'no') {
-                            //not a valid checkbox value
+                            // not a valid checkbox value
                             $message = '"'.$value.'" is not one of the available options for checkbox custom field "'.$identifier.'" (0, 1).';
                             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                             return false;
                         }
 
                         if (strtolower($string_value) == 'yes') {
-                            //NOTE: this control type only supports a single value but the
-                            //API expects an array if it's multivalued
+                            // NOTE: this control type only supports a single value but the
+                            // API expects an array if it's multivalued
                             $record->{'field_'.$field->shortname} = $field->multivalued ? array('1') : '1';
 
                         }
                         if (strtolower($string_value) == 'no') {
-                            //NOTE: this control type only supports a single value but the
-                            //API expects an array if it's multivalued
+                            // NOTE: this control type only supports a single value but the
+                            // API expects an array if it's multivalued
                             $record->{'field_'.$field->shortname} = $field->multivalued ? array('0') : '0';
                         }
                         break;
                     case 'menu':
                         $options = explode("\n", $f->owners['manual']->param_options);
-                        //remove carriage return characters
+                        // remove carriage return characters
                         array_walk($options, 'trim_cr');
 
                         if (!in_array($value, $options)) {
-                            //not a valid option
+                            // not a valid option
                             $message = '"'.$value.'" is not one of the available options for menu of choices custom field "'.$identifier.'".';
                             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                             return false;
@@ -581,7 +562,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                     case 'text':
                         $maxlength = $f->owners['manual']->param_maxlength;
                         if (strlen($value) > $maxlength) {
-                            //too long
+                            // too long
                             $message = 'Text input custom field "'.$identifier.'" value of "'.$value.'" exceeds the maximum field length of '.$maxlength.'.';
                             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                             return false;
@@ -590,41 +571,51 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                     case 'password':
                         $maxlength = $f->owners['manual']->param_maxlength;
                         if (strlen($value) > $maxlength) {
-                            //too long
+                            // too long
                             $message = 'Password custom field "'.$identifier.'" value of "'.$value.'" exceeds the maximum field length of '.$maxlength.'.';
                             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                             return false;
                         }
                         break;
                     case 'datetime':
-                        //determine whether the field supports the "time" component
+                        // determine whether the field supports the "time" component and the max & min years allowed
                         $inctime = $f->owners['manual']->param_inctime;
+                        $startyear = $f->owners['manual']->param_startyear;
+                        $stopyear = $f->owners['manual']->param_stopyear;
+                        $year_oor = false;
                         if ($inctime) {
-                            //date and time supported
-                            $date = $this->parse_date($value, false, true);
-
+                            // date and time supported
+                            $date = $this->parse_date($value, false, true, $startyear, $stopyear, $year_oor);
                             if (!$date) {
-                                //could not parse date + time
-                                $message = '"'.$value.'" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "'.$identifier.'".';
+                                if (!$year_oor) {
+                                    // could not parse date + time
+                                    $message = '"'.$value.'" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "'.$identifier.'".';
+                                } else {
+                                    $message = '"'.$value.'" has out-of-range year for date / time custom field "'.$identifier.'".';
+                                }
                                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                                 return false;
                             } else {
-                                //NOTE: this control type only supports a single value but the
-                                //API expects an array if it's multivalued
+                                // NOTE: this control type only supports a single value but the
+                                // API expects an array if it's multivalued
                                 $record->{'field_'.$field->shortname} = $field->multivalued ? array($date) : $date;
                             }
                         } else {
-                            //date only supported without time
-                            $date = $this->parse_date($value, false, false);
+                            // date only supported without time
+                            $date = $this->parse_date($value, false, false, $startyear, $stopyear, $year_oor);
                             if (!$date) {
-                                //could not parse date
-                                $message = '"'.$value.'" is not a valid date in MMM/DD/YYYY format for date custom field "'.$identifier.'".';
+                                if (!$year_oor) {
+                                    // could not parse date
+                                    $message = '"'.$value.'" is not a valid date in MMM/DD/YYYY format for date custom field "'.$identifier.'".';
+                                } else {
+                                    $message = '"'.$value.'" has out-of-range year for date custom field "'.$identifier.'".';
+                                }
                                 $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                                 return false;
                             } else {
-                                //NOTE: this control type only supports a single value but the
-                                //API expects an array if it's multivalued
-                                 $record->{'field_'.$field->shortname} = $field->multivalued ? array($date) : $date;
+                                // NOTE: this control type only supports a single value but the
+                                // API expects an array if it's multivalued
+                                $record->{'field_'.$field->shortname} = $field->multivalued ? array($date) : $date;
                             }
                         }
                     default:
