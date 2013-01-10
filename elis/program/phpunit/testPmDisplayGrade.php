@@ -45,14 +45,14 @@ class pmDisplayGradeTest extends elis_database_test {
      */
     public function pmdisplaygrade_data() {
         return array(
-                   array('96', '96'),
-                   array(96, '96'),
-                   array((float)96, '96.00'),
-                   array(87.8355550000, '87.84'),
-                   array((int)1, '1'),
-                   array('1', '1'),
-                   array(1.0, '1.00'),
-                   array(1.005, '1.01')
+            array('96', '96'),
+            array(96, '96'),
+            array((float)96, '96.00'),
+            array(87.8355550000, '87.84'),
+            array((int)1, '1'),
+            array('1', '1'),
+            array(1.0, '1.00'),
+            array(1.005, '1.01')
         );
     }
 
@@ -61,7 +61,7 @@ class pmDisplayGradeTest extends elis_database_test {
      *
      * @dataProvider pmdisplaygrade_data
      */
-    public function testPmDisplayGrade($inval, $expected) {
+    public function testpmdisplaygrade($inval, $expected) {
         $actual = pm_display_grade($inval);
         //mtrace("\npm_display_grade({$inval}) => {$actual}\n");
         $this->assertTrue($expected === (string)$actual);
