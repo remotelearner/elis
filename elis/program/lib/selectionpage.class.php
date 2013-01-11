@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -119,9 +119,13 @@ abstract class selectionpage extends pm_page { // TBD
         return new selectionform();
     }
 
+    /**
+     * Method to send back to AJAX request the selected checkboxes in SESSION array
+     * outputs a comma-separated list of checkbox ids
+     */
     function do_get_checkbox_selection() {
         global $SESSION;
-        $id = optional_param('id', 1, PARAM_INT);
+        $id = optional_param('id', 0, PARAM_INT);
         $pagename = $this->page_identity($id);
         //error_log("selectionpage.class.php::do_get_checkbox_selection(): pagename = {$pagename}");
         if (isset($SESSION->selectionpage[$pagename])) {
@@ -136,7 +140,7 @@ abstract class selectionpage extends pm_page { // TBD
     function do_checkbox_selection_session() {
         global $SESSION;
         $selection = optional_param('selected_checkboxes', '', PARAM_CLEAN);
-        $id = optional_param('id', 1, PARAM_INT);
+        $id = optional_param('id', 0, PARAM_INT);
         $selectedcheckboxes = json_decode($selection);
 
         if (is_array($selectedcheckboxes)) {
@@ -167,7 +171,7 @@ abstract class selectionpage extends pm_page { // TBD
     // Remove all session data for a given page
     function session_selection_deletion() {
         global $SESSION;
-        $id = optional_param('id', 1, PARAM_INT);
+        $id = optional_param('id', 0, PARAM_INT);
 
         $pagename = $this->page_identity($id);
 
