@@ -2173,11 +2173,14 @@ function pm_process_user_enrolment_data() {
 function pm_display_grade($grade) {
     $val = false;
     if (is_float($grade)) {
+        // passed value is definitely as float so just round it
         $val = round($grade, 2, PHP_ROUND_HALF_UP);
     } else if (preg_match('/([0-9]+)(\.[0-9]+)/', $grade, $matches) && count($matches) == 3) {
+        // passed value is a numeric string with decimals, round if decimals not all zero
         $val = ($matches[2] == 0) ? $matches[1] : round(floatval($matches[0]), 2, PHP_ROUND_HALF_UP);
     }
-    return(($val !== false) ? sprintf('%0.2f', $val) : (string)$grade);
+    // if we did any rounding of the passed grade then return that
+    return (($val !== false) ? sprintf('%0.2f', $val) : (string)$grade);
 }
 
 /**
