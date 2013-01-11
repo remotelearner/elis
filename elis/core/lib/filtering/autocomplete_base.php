@@ -51,7 +51,6 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
     public $_popup_title = '';
     public $_required = false;
     public $_useid = false;
-
     public $results_fields = array();
     public $perm_req_for_config = 'elis/program:config';
 
@@ -151,16 +150,14 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
         $filt_action_url_base = $CFG->wwwroot.'/elis/core/lib/form/autocomplete.php?report='.$report.'&filter='.$filter;
 
         if ($this->_ui === 'inline') {
-            $mform->addElement('hidden', $this->_uniqueid, $this->get_default(),
-                        array('id' => 'id_'.$this->_uniqueid));
+            $mform->addElement('hidden', $this->_uniqueid, $this->get_default(), array('id' => 'id_'.$this->_uniqueid));
 
             $search_url = $filt_action_url_base.'&mode=search&q=';
             $config_url = $filt_action_url_base.'&mode=config';
 
             $main_input_ph = ($this->_selection_enabled === true) ? get_string('filt_autoc_typetosearch','elis_core') : '';
 
-            $text_input = array($mform->createElement('text', $this->_uniqueid, $this->_label,
-                                    array('placeholder' => $main_input_ph)));
+            $text_input = array($mform->createElement('text', $this->_uniqueid, $this->_label, array('placeholder' => $main_input_ph)));
             if ($this->config_allowed() === true) {
                 $text_input[] = $mform->createElement('static', 'configlink', '',
                         '<a onclick="show_panel(\''.$config_url.'\');" href="#">'
