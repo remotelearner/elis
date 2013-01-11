@@ -1,4 +1,4 @@
-<?php // $Id: fix_program_completion.php,v 1.0 2013/01/10 11:00:00 brentb Exp $
+<?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -33,17 +33,11 @@ require_once(elispm::lib('data/curriculumcourse.class.php'));
 global $DB, $FULLME, $OUTPUT, $PAGE;
 
 if (isset($_SERVER['REMOTE_ADDR'])) {
-    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
-    $PAGE->set_pagelayout('standard');
-    $PAGE->set_url($FULLME);
-    $PAGE->set_title('Fix Program Completion Dates');
-    echo $OUTPUT->header();
-    $br = '<br/>';
-} else {
-    $br = '';
-    if ($argc > 1) {
-        die(print_usage());
-    }
+    die('Cannot execute this script via web, command-line only.');
+}
+
+if ($argc > 1) {
+    die(print_usage());
 }
 
 mtrace("Begin Program Completion Date updating ...");
@@ -52,27 +46,25 @@ $fixed_cnt = 0;
 $currs = curriculum_get_listing();
 foreach ($currs as $cur) {
     $currcourses = $DB->get_records(curriculumcourse::TABLE, array('curriculumid' => $cur->id));
-    //mtrace("\ncur: {$cur->id} - courses = ". var_sdump($currcourses));
+    // mtrace("\ncur: {$cur->id} - courses = ". var_sdump($currcourses));
     if (count($currcourses) == 1) {
         $currcourse = current($currcourses);
         $currclasses = $DB->get_records('crlm_class', array('courseid' => $currcourse->courseid), '', 'id');
-        //mtrace("\ncur: {$cur->id} - classes = ". var_sdump($currclasses));
+        // mtrace("\ncur: {$cur->id} - classes = ". var_sdump($currclasses));
         if (empty($currclasses)) {
             continue;
         }
-        $currasses = $DB->get_recordset('crlm_curriculum_assignment',
-                             array('curriculumid' => $cur->id));
+        $currasses = $DB->get_recordset_select('crlm_curriculum_assignment', 'curriculumid = ? AND locked = 1 AND completed = ? AND timecompleted > 0',
+                          array($cur->id, STUSTATUS_PASSED));
         foreach ($currasses as $currass) {
-            $classenrolments = $DB->get_records_select('crlm_class_enrolment',
-                                       'userid = ? AND classid IN ('.implode(',', array_keys($currclasses)).')',
-                                       array($currass->userid));
+            $classenrolments = $DB->get_records_select('crlm_class_enrolment', 'userid = ? AND classid IN ('.implode(',', array_keys($currclasses)).')',
+                                   array($currass->userid));
             if (count($classenrolments) != 1) {
                 continue;
             }
             $classenrolment = current($classenrolments);
-            if ($classenrolment->locked && $classenrolment->completestatusid == STUSTATUS_PASSED &&
-                $currass->timecompleted != 0 && $classenrolment->completetime != 0 &&
-                $classenrolment->completetime != $currass->timecompleted) {
+            $classiscompleted = $classenrolment->locked && $classenrolment->completestatusid == STUSTATUS_PASSED && $classenrolment->completetime != 0;
+            if ($classiscompleted && $classenrolment->completetime != $currass->timecompleted) {
                 $currass->timecompleted = $classenrolment->completetime;
                 $DB->update_record('crlm_curriculum_assignment', $currass);
                 $fixed_cnt++; 
@@ -82,14 +74,9 @@ foreach ($currs as $cur) {
 }
 
 if ($fixed_cnt > 0) {
-    mtrace("{$fixed_cnt} Program Completion dates updated.{$br}");
+    mtrace("{$fixed_cnt} Program Completion dates updated.");
 } else {
-    mtrace("No Programs (with single course) to update found!{$br}");
-}
-
-if ($br != '') {
-    echo '<p><a href="'. $CFG->wwwroot .'/elis/program/index.php?s=health">Go back to health check page</a></p>';
-    echo $OUTPUT->footer();
+    mtrace("No Programs (with single course) to update found!");
 }
 
 exit;
