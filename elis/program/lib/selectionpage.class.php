@@ -119,6 +119,19 @@ abstract class selectionpage extends pm_page { // TBD
         return new selectionform();
     }
 
+    function do_get_checkbox_selection() {
+        global $SESSION;
+        $id = optional_param('id', 1, PARAM_INT);
+        $pagename = $this->page_identity($id);
+        //error_log("selectionpage.class.php::do_get_checkbox_selection(): pagename = {$pagename}");
+        if (isset($SESSION->selectionpage[$pagename])) {
+            $selectedcheckboxes = $SESSION->selectionpage[$pagename];
+            if (is_array($selectedcheckboxes)) {
+                echo implode(',', $selectedcheckboxes);
+            }
+        }
+    }
+
     // Store the checkbox selection into a session
     function do_checkbox_selection_session() {
         global $SESSION;
@@ -139,9 +152,8 @@ abstract class selectionpage extends pm_page { // TBD
     }
 
     // Retrieve a unique page name identified by the page name, id and action
-    function page_identity($id) {
+    function page_identity($id = 1) {
         $pagename = $this->pagename;
-
         if (method_exists($this, 'is_assigning')) {
             if ($this->is_assigning()) {
                 $pagename = $this->pagename . $id . 'is_assigning';
@@ -149,7 +161,6 @@ abstract class selectionpage extends pm_page { // TBD
                 $pagename = $this->pagename . $id . 'is_not_assigning';
             }
         }
-
         return $pagename;
     }
 
@@ -173,6 +184,7 @@ abstract class selectionpage extends pm_page { // TBD
         $this->do_checkbox_selection_session();
 
         if ($data = $form->get_data()) {
+            $this->session_selection_deletion();
             $selection = json_decode($data->_selection);
             $selection = $selection ? $selection : array();
             if (!is_array($selection)) {
@@ -245,7 +257,7 @@ abstract class selectionpage extends pm_page { // TBD
             $PAGE->set_pagelayout('embedded');
         }
 
-        $id      = $this->optional_param('id', -1, PARAM_INT);
+        $id      = $this->optional_param('id', 0, PARAM_INT);
         $pagenum = $this->optional_param('page', 0, PARAM_INT);
         $perpage = $this->optional_param('perpage', 30, PARAM_INT);
 
@@ -281,15 +293,7 @@ abstract class selectionpage extends pm_page { // TBD
         $this->print_record_count($count, $label);
         echo '</div>';
 
-        $pagename = $this->pagename;
-
-        if (method_exists($this, 'is_assigning')) {
-           if ($this->is_assigning()) {
-                $pagename = $this->pagename . $id . 'is_assigning';
-            } else {
-                $pagename = $this->pagename . $id . 'is_not_assigning';
-            }
-        }
+        $pagename = $this->page_identity($id);
 
         if(isset($SESSION->selectionpage[$pagename])) {
             $selectedcheckboxes = $SESSION->selectionpage[$pagename];
