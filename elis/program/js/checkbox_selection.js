@@ -33,6 +33,8 @@ var selection = new Array();
 
 var selection_field = null;
 
+var is_submitting = false;
+
 var set_content_callback = {
     success: set_content
 };
@@ -40,6 +42,12 @@ var set_content_callback = {
 YAHOO.util.Event.onDOMReady(function() {
     make_links_internal();
     window.selection_field = get_element_by_name("_selection");
+    var submitbutton = document.getElementById('id_submitbutton');
+    if (submitbutton) {
+        submitbutton.onclick = function() {
+            window.is_submitting = true;
+        };
+    }
     var set_checkboxes_callback = {
         success: set_checkboxes_success
     };
@@ -47,7 +55,9 @@ YAHOO.util.Event.onDOMReady(function() {
 });
 
 var onbeforeunload = function(e) {
-    update_checkbox_selection();
+    if (!window.is_submitting) {
+        update_checkbox_selection();
+    }
 }
 
 YAHOO.util.Event.addListener(document, 'unload', onbeforeunload);
