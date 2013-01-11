@@ -186,7 +186,7 @@ class user_class_completion_report extends table_report {
      */
     function get_filters($init_data = true) {
         global $CFG, $USER;
-        require_once($CFG->dirroot .'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
 
         //cluster tree
         $enable_tree_label     = $this->get_string('enable_tree');

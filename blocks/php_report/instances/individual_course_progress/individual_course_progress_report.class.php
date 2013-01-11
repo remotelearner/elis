@@ -82,26 +82,26 @@ class individual_course_progress_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         //needs the contexts code
-        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot.'/elis/program/lib/contexts.php');
 
         //needed for constants that define db tables
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/classmoodlecourse.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/elis/program/lib/data/classmoodlecourse.class.php');
 
         //needed to get the filtering libraries
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/autocomplete_eliswithcustomfields.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/simpleselect.php');
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_values.php');
+        require_once($CFG->dirroot.'/elis/program/lib/filtering/autocomplete_eliswithcustomfields.php');
+        require_once($CFG->dirroot.'/elis/core/lib/filtering/simpleselect.php');
+        require_once($CFG->dirroot.'/elis/program/lib/filtering/custom_field_multiselect_values.php');
 
         //needed for the permissions-checking logic on custom fields
-        require_once($CFG->dirroot .'/blocks/php_report/sharedlib.php');
-        require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php');
+        require_once($CFG->dirroot.'/blocks/php_report/sharedlib.php');
+        require_once($CFG->dirroot.'/elis/program/lib/deprecatedlib.php');
     }
 
     function get_header_entries($export_format) {
@@ -250,7 +250,7 @@ class individual_course_progress_report extends table_report {
      */
     function get_filters($init_data = true) {
         global $CFG, $USER;
-        require_once($CFG->dirroot .'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/elis/program/accesslib.php');
 
         $filters = array();
 
@@ -259,10 +259,10 @@ class individual_course_progress_report extends table_report {
             'ui' => 'inline',
             'contextlevel' => CONTEXT_ELIS_USER,
             'instance_fields' => array(
-                'idnumber' => get_string('filter_autocomplete_idnumber',$this->lang_file),
-                'firstname' => get_string('filter_autocomplete_firstname',$this->lang_file),
-                'lastname' => get_string('filter_autocomplete_lastname',$this->lang_file),
-                'username' => get_string('filter_autocomplete_username',$this->lang_file)
+                'idnumber' => get_string('filter_autocomplete_idnumber', $this->lang_file),
+                'firstname' => get_string('filter_autocomplete_firstname', $this->lang_file),
+                'lastname' => get_string('filter_autocomplete_lastname', $this->lang_file),
+                'username' => get_string('filter_autocomplete_username', $this->lang_file)
             ),
             'custom_fields' => '*',
             'label_template' => '[[firstname]] [[lastname]]',
