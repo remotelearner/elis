@@ -30,9 +30,13 @@ require_once($CFG->dirroot . '/elis/program/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once(elispm::lib('lib.php'));
 
-class pmDisplayGradeTest extends elis_database_test {
+class pmdisplaygradetest extends elis_database_test {
     protected $backupGlobalsBlacklist = array('DB');
 
+    /**
+     * Return the list of tables that should be overlayed.
+     * @return array list of tables to be overlayed
+     */
     protected static function get_overlay_tables() {
         return array();
     }
@@ -59,11 +63,13 @@ class pmDisplayGradeTest extends elis_database_test {
     /**
      * Method to test pm_display_grade()
      *
+     * @param mixed  $inval     input value to be passed to pm_display_grade()
+     * @param string $expected  the expected output from pm_display_grade() for input value
      * @dataProvider pmdisplaygrade_data
      */
     public function testpmdisplaygrade($inval, $expected) {
         $actual = pm_display_grade($inval);
-        //mtrace("\npm_display_grade({$inval}) => {$actual}\n");
+        // mtrace("\npm_display_grade({$inval}) => {$actual}\n");
         $this->assertTrue($expected === (string)$actual);
     }
 
