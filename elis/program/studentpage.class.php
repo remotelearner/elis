@@ -70,19 +70,33 @@ class studentpage extends associationpage {
         parent::checkbox_selection_session($this->pagename);
     }
 
-    function do_bulk_checkbox_selection_session() {
+    /**
+     * Perform bulk_checkbox_selection_session for this page.
+     */
+    public function do_bulk_checkbox_selection_session() {
         parent::bulk_checkbox_selection_session($this->pagename);
     }
 
-    function do_bulk_checkbox_selection_reset() {
+    /**
+     * Perform bulk_checkbox_selection_reset for this page.
+     * @return [type] [description]
+     */
+    public function do_bulk_checkbox_selection_reset() {
         parent::bulk_checkbox_selection_reset('bulkedit');
     }
 
-    function do_bulk_checkbox_selection_deselectall() {
+    /**
+     * Deselect all bulk edit saved checkboxes for this page.
+     * @return [type] [description]
+     */
+    public function do_bulk_checkbox_selection_deselectall() {
         parent::bulk_checkbox_selection_deselectall($this->pagename);
     }
 
-    function do_bulk_apply_all() {
+    /**
+     * Save apply all values for bulk edit for this page.
+     */
+    public function do_bulk_apply_all() {
         parent::bulk_apply_all($this->pagename);
     }
 
@@ -388,10 +402,10 @@ class studentpage extends associationpage {
     }
 
     /**
-        * This converts a user record saved in the session from other pages into a record that looks like it was submitted by the form
-        * @param type $sess_user
-        */
-    function sessuser2formuser($sess_user) {
+     * This converts a user record saved in the session from other pages into a record that looks like it was submitted by the form
+     * @param type $sess_user
+     */
+    public function sessuser2formuser($sess_user) {
         $formuser = array();
 
         if (isset($sess_user->enrolment_date->day) && isset($sess_user->enrolment_date->month) && isset($sess_user->enrolment_date->year)) {
@@ -406,7 +420,7 @@ class studentpage extends associationpage {
             $formuser['endyear'] = $sess_user->completion_date->year;
         }
 
-        //other single fields to check. array in the form sess_user_property => form_user_property
+        // other single fields to check. array in the form sess_user_property => form_user_property
         $fields = array(
             'status'=>'completestatusid',
             'grade' => 'grade',
@@ -429,7 +443,10 @@ class studentpage extends associationpage {
         return $formuser;
     }
 
-    function display_updatemultiple_confirm() {
+    /**
+     * Display confirmation screen when doing bulk edit.
+     */
+    public function display_updatemultiple_confirm() {
         global $SESSION, $CFG, $DB;
 
         $clsid = $this->required_param('id', PARAM_INT);
@@ -438,7 +455,7 @@ class studentpage extends associationpage {
 
         $date_format = 'd F Y';
 
-        //language strings - potential for big loops in this page - this saves the overhead of a function call for minimum mem usage
+        // language strings - potential for big loops in this page - this saves the overhead of a function call for minimum mem usage
         $lang_enroldate = get_string('enrolment_time', 'elis_program');
         $lang_completedate = get_string('completion_time', 'elis_program');
         $lang_status = get_string('student_status', 'elis_program');
@@ -446,45 +463,39 @@ class studentpage extends associationpage {
         $lang_credits = get_string('student_credits', 'elis_program');
         $lang_locked = get_string('student_locked', 'elis_program');
         $lang_unlocked = get_string('student_unlocked', 'elis_program');
-        $lang_unenrol = get_string('unenrol','elis_program');
-        $lang_changed = get_string('bulkedit_changedto','elis_program');
-        $lang_displayusers = get_string('bulkedit_displayusers','elis_program');
-        $lang_user = get_string('user','elis_program');
-        $lang_users = get_string('users','elis_program');
+        $lang_unenrol = get_string('unenrol', 'elis_program');
+        $lang_changed = get_string('bulkedit_changedto', 'elis_program');
+        $lang_displayusers = get_string('bulkedit_displayusers', 'elis_program');
+        $lang_user = get_string('user', 'elis_program');
+        $lang_users = get_string('users', 'elis_program');
         $statuschoices = array();
-        foreach(student::$completestatusid_values as $key => $csidv) {
+        foreach (student::$completestatusid_values as $key => $csidv) {
             $statuschoices[$key] = get_string($csidv, self::LANG_FILE);
         }
 
-        echo '<h2>',get_string('confirm_bulk_enrol_edit','elis_program'),'</h2>';
-        /*
-        echo '<table class="generaltable">';
-        echo '<thead><tr>'
-            .'<th class="header c0">'.get_string('user','elis_program').'</th>'
-            .'<th class="header c1">'.get_string('confirm_bulk_enrol_changes','elis_program').'</th>'
-            .'</tr></thead>';
-         */
+        echo '<h2>'.get_string('confirm_bulk_enrol_edit', 'elis_program').'</h2>';
 
         $pagename = $page.$pageid.'bulkedit';
         if (!empty($SESSION->associationpage[$pagename])) {
-            //adds users saved from other pages.
+            // adds users saved from other pages.
             if (!empty($SESSION->associationpage[$pagename]) && is_array($SESSION->associationpage[$pagename])) {
                 $sess_userids = array_keys($SESSION->associationpage[$pagename]);
 
                 $changes_by_change = array();
                 $fullname_lookup = array();
 
-                while(!empty($sess_userids)) {
+                while (!empty($sess_userids)) {
 
-                    $userids_this_pass = array_splice($sess_userids,0,100);
+                    $userids_this_pass = array_splice($sess_userids, 0, 100);
 
-                    $sql = "SELECT u.id, u.firstname, u.lastname, s.enrolmenttime, s.completetime, s.completestatusid, "
-                                    ."s.grade, s.credits, s.locked "
-                        ."FROM {$CFG->prefix}crlm_user u "
-                        ."JOIN {$CFG->prefix}crlm_class_enrolment s ON s.userid = u.id "
-                        .'WHERE s.classid=? AND u.id IN ('.implode(',',$userids_this_pass).') '
-                        .'ORDER BY u.lastname, u.firstname';
-                    $users = $DB->get_records_sql($sql,array($clsid));
+                    $sql = 'SELECT u.id, u.firstname, u.lastname, s.enrolmenttime, s.completetime, s.completestatusid,
+                                   s.grade, s.credits, s.locked
+                              FROM {crlm_user} u
+                              JOIN {crlm_class_enrolment} s ON s.userid = u.id
+                             WHERE s.classid = ?
+                               AND u.id IN ('.implode(',', $userids_this_pass).')
+                          ORDER BY u.lastname, u.firstname';
+                    $users = $DB->get_records_sql($sql, array($clsid));
 
                     if (!empty($users) && is_array($users)) {
                         foreach ($users as $userid => $user) {
@@ -492,25 +503,28 @@ class studentpage extends associationpage {
                             $changes = array();
                             $unenrol = false;
 
-                            //show differences
+                            // show differences
                             if (!empty($SESSION->associationpage[$pagename][$userid])) {
 
                                 $sess_user =& $SESSION->associationpage[$pagename][$userid];
 
-                                if (isset($sess_user->enrolment_date->day) && isset($sess_user->enrolment_date->month)
-                                        && isset($sess_user->enrolment_date->year)) {
+                                $su_day_set = isset($sess_user->enrolment_date->day);
+                                $su_month_set = isset($sess_user->enrolment_date->month);
+                                $su_year_set = isset($sess_user->enrolment_date->year);
+
+                                if ($su_day_set === true && $su_month_set === true && $su_year_set === true) {
 
                                     $newmonth = $sess_user->enrolment_date->month;
                                     $newday = $sess_user->enrolment_date->day;
                                     $newyear = $sess_user->enrolment_date->year;
 
-                                    $oldmonth = date('n',$user->enrolmenttime);
-                                    $oldday = date('d',$user->enrolmenttime);
-                                    $oldyear = date('Y',$user->enrolmenttime);
+                                    $oldmonth = date('n', $user->enrolmenttime);
+                                    $oldday = date('d', $user->enrolmenttime);
+                                    $oldyear = date('Y', $user->enrolmenttime);
 
                                     if (($newmonth != $oldmonth) || ($newday != $oldday) || ($newyear != $oldyear)) {
-                                        $oldenroldate = date($date_format,$user->enrolmenttime);
-                                        $newenroldate = date($date_format,mktime(0,0,0,$newmonth,$newday,$newyear));
+                                        $oldenroldate = date($date_format, $user->enrolmenttime);
+                                        $newenroldate = date($date_format, mktime(0, 0, 0, $newmonth, $newday, $newyear));
 
                                         $changes[] = array($lang_enroldate, $oldenroldate, $newenroldate);
                                         $changes_by_change[$lang_enroldate][$newenroldate][] = $userid;
@@ -518,11 +532,14 @@ class studentpage extends associationpage {
 
                                 }
 
-                                //since the completion date has no meaning if the user has not completed the class
-                                //we only compare the completion date if the user's status is not "not complete" or will not
-                                //be "not complete"
-                                if ($user->completestatusid != STUSTATUS_NOTCOMPLETE
-                                        || (isset($sess_user->status) && $sess_user->status != STUSTATUS_NOTCOMPLETE)) {
+                                // since the completion date has no meaning if the user has not completed the class
+                                // we only compare the completion date if the user's status is not "not complete" or will not
+                                // be "not complete"
+                                $u_cstatus_not_notcomplete = ($user->completestatusid != STUSTATUS_NOTCOMPLETE) ? true : false;
+                                $su_status_not_notcomplete = (isset($sess_user->status) && $sess_user->status != STUSTATUS_NOTCOMPLETE)
+                                    ? true : false;
+
+                                if ($u_cstatus_not_notcomplete === true || $su_status_not_notcomplete === true) {
 
                                     if (isset($sess_user->completion_date->day) && isset($sess_user->completion_date->month)
                                             && isset($sess_user->completion_date->year)) {
@@ -531,15 +548,19 @@ class studentpage extends associationpage {
                                         $newday = $sess_user->completion_date->day;
                                         $newyear = $sess_user->completion_date->year;
 
-                                        $oldmonth = date('n',$user->completetime);
-                                        $oldday = date('d',$user->completetime);
-                                        $oldyear = date('Y',$user->completetime);
+                                        $oldmonth = date('n', $user->completetime);
+                                        $oldday = date('d', $user->completetime);
+                                        $oldyear = date('Y', $user->completetime);
 
                                         if (($newmonth != $oldmonth) || ($newday != $oldday) || ($newyear != $oldyear)) {
-                                            $oldcompletetime = (!empty($user->completetime)
-                                                    ? date($date_format,$user->completetime)
-                                                    : get_string('confirm_bulk_enrol_none','elis_program'));
-                                            $newcompletetime = date($date_format,mktime(0,0,0,$newmonth,$newday,$newyear));
+
+                                            if (!empty($user->completetime)) {
+                                                $oldcompletetime = date($date_format, $user->completetime);
+                                            } else {
+                                                $oldcompletetime = get_string('confirm_bulk_enrol_none', 'elis_program');
+                                            }
+
+                                            $newcompletetime = date($date_format, mktime(0, 0, 0, $newmonth, $newday, $newyear));
 
                                             $changes[] = array($lang_completedate, $oldcompletetime, $newcompletetime);
                                             $changes_by_change[$lang_completedate][$newcompletetime][] = $userid;
@@ -577,23 +598,7 @@ class studentpage extends associationpage {
                                 }
                             }
 
-                            /*
-                            if (!empty($changes) || $unenrol === true) {
-                                echo '<tr>';
-                                echo '<td>'.fullname($user),' (#'.$user->id.')</td>';
-                                echo '<td>';
-                                echo '<ul>';
-                                foreach ($changes as $change) {
-                                    echo '<li>'.$change[0].': '.$change[1].' >> '.$change[2].'</li>';
-                                }
-                                if ($unenrol === true) {
-                                    echo '<li style="color:#f00">'.get_string('unenrol','elis_program').'</li>';
-                                }
-                                echo '</ul>';
-                                echo '</td></tr>';
-                            }
-                            */
-                            unset($changes,$unenrol); //just for memory purposes
+                            unset($changes, $unenrol); // just for memory purposes
 
                             if (!isset($fullname_lookup[$userid])) {
                                 $fullname_lookup[$userid] = fullname($user);
@@ -601,13 +606,12 @@ class studentpage extends associationpage {
                         }
                     }
 
-                    unset($users, $userids_this_pass); //just for memory purposes
+                    unset($users, $userids_this_pass); // just for memory purposes
 
-                } //end while loop
+                } // end while loop
             }
         }
 
-        //echo '</table>';
         echo '<script>
                 function toggle(id){
                     var e = document.getElementById(id);
@@ -624,28 +628,32 @@ class studentpage extends associationpage {
               </style>';
         echo '<div id="changereview">';
         foreach ($changes_by_change as $change_cat => $change_vals) {
-            echo '<h3>',$change_cat,'</h3>';
+            echo '<h3>'.$change_cat.'</h3>';
             if (!empty($change_vals)) {
                 echo '<ul class="main">';
                 foreach ($change_vals as $val => $userids) {
-                    $num_users = sizeof($userids);
-                    $fullnames = array_intersect_key($fullname_lookup,array_flip($userids));
+                    if (!is_array($userids)) {
+                        //error_log("studentpage.class.php::userids = {$userids}");
+                        $userids = array($userids);
+                    }
+                    $num_users = count($userids);
+                    $fullnames = array_intersect_key($fullname_lookup, array_flip($userids));
                     asort($fullnames);
 
                     if ($num_users > 5) {
-                        $details_id = str_replace('.','',uniqid(true));
-                        echo '<li><a class="blk_user" href="javascript:toggle(\''.$details_id.'\');" title="',$lang_displayusers,'">',
-                                $num_users,' ',
-                                (($num_users === 1) ? $lang_user : $lang_users),
-                                '</a> ',$lang_changed,' <span class="blk_val">',$val,'</span></li>';
+                        $details_id = str_replace('.', '', uniqid(true));
+
+                        $users_str = $num_users . ' ' . (($num_users === 1) ? $lang_user : $lang_users);
+                        echo '<li><a class="blk_user" href="javascript:toggle(\'' . $details_id . '\');" title="'.$lang_displayusers.'">'.
+                             $users_str.'</a> '.$lang_changed.' <span class="blk_val">'.$val.'</span></li>';
 
                         echo '<ul id="'.$details_id.'" class="sub">';
-                        echo '<li>'.implode('</li><li>',$fullnames).'</li>';
+                        echo '<li>'.implode('</li><li>', $fullnames).'</li>';
                         echo '</ul>';
-                    } elseif ($num_users > 0) {
-                        echo '<li>';
-                        echo '<span class="blk_user">',implode('</span>, <span class="blk_user">',$fullnames),'</span> ';
-                        echo $lang_changed.' <span class="blk_val">'.$val,'</span></li>';
+                    } else if ($num_users > 0) {
+                        $nameslist = implode('</span>, <span class="blk_user">', $fullnames);
+                        echo '<li><span class="blk_user">'.$nameslist.'</span> ';
+                        echo $lang_changed.' <span class="blk_val">'.(($change_cat == $lang_unenrol) ? get_string('unenrolled', 'elis_program') : $val).'</span></li>';
                     }
                     unset($fullnames);
                 }
@@ -653,16 +661,17 @@ class studentpage extends associationpage {
             }
         }
         echo '</div>';
-        echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $clsid . '" >'."\n";
+
+        echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id='.$clsid.'" >'."\n";
         echo '<input type="hidden" name="action" value="updatemultiple" />'."<br />\n";
         echo '<input type="submit" value="'.get_string('save_enrolment_changes', self::LANG_FILE).'">'."<br />\n";
         echo '</form>'."<br />\n";
     }
 
     /**
-     *
+     * Perform bulk edit changes.
      */
-    function do_updatemultiple() { // action_updatemultiple
+    public function do_updatemultiple() { // action_updatemultiple
         global $DB, $SESSION;
         $clsid = $this->required_param('id', PARAM_INT);
         $users = pm_process_user_enrolment_data();  // ELIS-4089 -- JJF
@@ -671,7 +680,7 @@ class studentpage extends associationpage {
 
         $pagename = $page.$pageid.'bulkedit';
         if (!empty($SESSION->associationpage[$pagename])) {
-            //adds users saved from other pages.
+            // adds users saved from other pages.
             if (!empty($SESSION->associationpage[$pagename]) && is_array($SESSION->associationpage[$pagename])) {
                 foreach ($SESSION->associationpage[$pagename] as $userid => $sess_user) {
                     if (!isset($users[$userid])) {
@@ -688,7 +697,7 @@ class studentpage extends associationpage {
         // Delete/reset checkbox selection for bulkedit action
         session_selection_deletion('bulkedit');
 
-        foreach($users as $uid => $user) {
+        foreach ($users as $uid => $user) {
 
             if (!isset($user['association_id'])) {
                 continue;
@@ -745,7 +754,7 @@ class studentpage extends associationpage {
             if (isset($user['unenrol']) && pmclasspage::can_enrol_into_class($clsid)) {
                 $stu_delete = new student($sturecord); // TBD: param was $user['association_id']
                 $status = $stu_delete->delete();
-                if(!$status) {
+                if (!$status) {
                     $user = $DB->get_record(user::TABLE, array('id' => $stu->userid));
                     $sparam = new stdClass;
                     $sparam->name = fullname($user);

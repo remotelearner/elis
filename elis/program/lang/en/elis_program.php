@@ -775,6 +775,7 @@ $string['num_userset_found'] = '{$a->num} User Set(s) found';
 $string['num_waitlist'] = 'number of students in the waitlist';
 $string['numselected'] = '{$a->num} currently selected';
 $string['numselected_allpages'] = '{$a->num} currently selected (on all pages)';
+$string['numchanged_allpages'] = '{$a->num} currently changed (on all pages)';
 
 $string['o_active'] = 'Only active';
 $string['o_inactive'] = 'Only inactive';
@@ -1108,6 +1109,7 @@ $string['unassign'] = 'unassign';
 $string['unassigned'] = 'Unassigned';
 $string['unassignroles'] = 'Unassign roles';
 $string['unenrol'] = 'Unenrol';
+$string['unenrolled'] = 'unenrolled';
 $string['unsatisfiedprereqs'] = 'One or more prerequisites are not completed yet.';
 $string['update_assignment'] = 'Update Assignment';
 $string['update_enrolment'] = 'Update Enrolment';

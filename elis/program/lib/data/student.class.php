@@ -872,9 +872,11 @@ class student extends elis_data_object {
 
         if (empty($this->id)) {
             $columns = array(
-                'select'          => array('header' => get_string('select'),
-                                            'sortable' => false,
-                                            'display_function' => 'htmltab_display_function'),
+                'select' => array(
+                    'header' => get_string('select'),
+                    'sortable' => false,
+                    'display_function' => 'htmltab_display_function'
+                ),
                 'unenrol'          => array('header' => get_string('unenrol', self::LANG_FILE),
                                             'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
@@ -901,9 +903,11 @@ class student extends elis_data_object {
                 'locked'           => array('header' => get_string('student_locked', self::LANG_FILE),
                                             'sortable' => false,
                                             'display_function' => 'htmltab_display_function'),
-                'edited'           => array('header' => get_string('student_edited', self::LANG_FILE),
-                                            'sortable' => false,
-                                            'display_function' => 'htmltab_display_function')
+                'edited' => array(
+                    'header' => get_string('student_edited', self::LANG_FILE),
+                    'sortable' => false,
+                    'display_function' => 'htmltab_display_function'
+                )
             );
 
             if (!$can_unenrol) {
@@ -950,17 +954,16 @@ class student extends elis_data_object {
         $users = array();
         if (empty($this->id)) {
 
-            $do_select_all = optional_param('do_select_all','0',PARAM_CLEAN);
+            $do_select_all = optional_param('do_select_all', '0', PARAM_CLEAN);
             if (!empty($do_select_all) && $do_select_all === '1') {
 
-                //save all users as selected in session (user clicked "select all on all pages" button)
+                // save all users as selected in session (user clicked "select all on all pages" button)
                 $users = $this->get_users_enrolled($type, $sort, $dir, 0, 0, '', '');
                 foreach ($users as $userid => $user) {
-                    $SESSION->associationpage[$pagename][$userid] = (object) array(
-                        'id' => $userid,
-                        'selected' => true,
-                        'associd' => $user->association_id
-                    );
+                    $SESSION->associationpage[$pagename][$userid] = new stdClass;
+                    $SESSION->associationpage[$pagename][$userid]->id = $userid;
+                    $SESSION->associationpage[$pagename][$userid]->selected = true;
+                    $SESSION->associationpage[$pagename][$userid]->associd = $user->association_id;
                 }
 
                 echo 'Success';
@@ -968,9 +971,9 @@ class student extends elis_data_object {
 
             } else {
 
-                $users     = $this->get_users_enrolled($type, $sort, $dir, $page * $perpage, $perpage,
-                                                    $namesearch, $alpha);
+                $users = $this->get_users_enrolled($type, $sort, $dir, $page * $perpage, $perpage, $namesearch, $alpha);
                 $usercount = $this->count_users_enrolled($type, $namesearch, $alpha);
+
             }
 
             pmalphabox(new moodle_url('/elis/program/index.php',
@@ -999,11 +1002,11 @@ class student extends elis_data_object {
 
         if (empty($this->id) && !$users) {
             pmshowmatches($alpha, $namesearch);
-            $table = NULL;
+            $table = null;
         } else {
             $stuobj = new student();
             $newarr = array();
-            //$table->width = "100%"; // TBD
+            // $table->width = "100%"; // TBD
             $pmclass = new pmclass($classid);
             if (empty(elis::$config->elis_program->force_unenrol_in_moodle)) {
                 $mcourse = $pmclass->get_moodle_course_id();
@@ -1054,23 +1057,28 @@ class student extends elis_data_object {
                 foreach ($columns as $column => $cdesc) {
                     switch ($column) {
                         case 'select':
-                            $tabobj->{$column} = '<input type="checkbox" onclick="select_item(' . $user->id .')"
-                            name="users[' . $user->id . '][selected]" value="1" id="selected' . $user->id .'" '.($selected?'checked="checked"':''). ' onchange="proxy_select('.$user->id.')"/>';
+                            $tabobj->{$column} = '<input type="checkbox" onclick="select_item(' . $user->id .')" name="users[' . $user->id . '][selected]" '.
+                                                 'value="1" id="selected' . $user->id .'" '.(($selected) ? 'checked="checked" ' : ' ').
+                                                 'onchange="proxy_select(' . $user->id . ')"/>';
                             break;
 
                         case 'unenrol':
                             if (!empty($mcourse)) {
                                 $userobj = new user($user);
                                 $muser = $userobj->get_moodleuser();
-                                if (!empty($muser) && $this->_db->record_exists_select('role_assignments', "userid = ? AND contextid = ? AND component != 'enrol_elis'", array($muser->id, $ctx->id))) {
+                                $role_assignment_exists = $this->_db->record_exists_select('role_assignments',
+                                                                                           "userid = ? AND contextid = ? AND component != 'enrol_elis'",
+                                                                                           array($muser->id, $ctx->id));
+
+                                if (!empty($muser) && $role_assignment_exists) {
                                     // user is assigned a role other than via the elis
                                     // enrolment plugin
                                     $tabobj->{$column} = '';
                                     break;
                                 }
                             }
-                            $tabobj->{$column} = '<input type="checkbox" id="unenrol'.$user->id.'" name="users[' . $user->id . '][unenrol]" ' .
-                                    'value="1" onchange="proxy_select('.$user->id.')" '.($unenrol?'checked="checked"':'').'/>';
+                            $tabobj->{$column} = '<input type="checkbox" id="unenrol'.$user->id.'" name="users[' . $user->id . '][unenrol]" '.
+                                                 'value="1" onchange="proxy_select('.$user->id.')" '.(($unenrol) ? 'checked="checked" ' : ' ').'/>';
                             break;
 
                         case 'name':
@@ -1095,35 +1103,35 @@ class student extends elis_data_object {
 
                         case 'completestatusid':
                             $choices = array();
-                            foreach(student::$completestatusid_values as $key => $csidv) {
+                            foreach (student::$completestatusid_values as $key => $csidv) {
                                 $choices[$key] = get_string($csidv, self::LANG_FILE);
                             }
-                            $tabobj->{$column} = cm_choose_from_menu($choices,
-                                                     'users[' . $user->id . '][completestatusid]',
-                                                     $status, '', 'proxy_select('.$user->id.')', '', true);
+                            $tabobj->{$column} = cm_choose_from_menu($choices, 'users['.$user->id.'][completestatusid]',
+                                                                     $status, '', 'proxy_select('.$user->id.')', '', true);
                             break;
 
                         case 'grade':
-                            $tabobj->{$column} = '<input type="text" id="grade' .$user->id . '" id="locked' .$user->id . '" name="users[' . $user->id . '][grade]" ' .
-                                        'value="' . $grade . '" size="5" onchange="proxy_select('.$user->id.')" />';
+                            $tabobj->{$column} = '<input type="text" id="grade'.$user->id.'" id="locked'.$user->id.'" '.
+                                                 'name="users['.$user->id.'][grade]" value="'.$grade.'" '.
+                                                 'size="5" onchange="proxy_select('.$user->id.')" />';
                             break;
 
                         case 'credits':
-                            $tabobj->{$column} = '<input type="text" id="credits' .$user->id . '" name="users[' . $user->id . '][credits]" ' .
-                                        'value="' . $credits . '" size="5" onchange="proxy_select('.$user->id.')" />';
+                            $tabobj->{$column} = '<input type="text" id="credits'.$user->id.'" name="users['.$user->id.'][credits]" '.
+                                                 'value="'.$credits.'" size="5" onchange="proxy_select('.$user->id.')" />';
                             break;
 
                         case 'locked':
-                            $tabobj->{$column} = '<input type="checkbox" id="locked' .$user->id . '" name="users[' . $user->id . '][locked]" ' .
-                                        'value="1" '.($locked?'checked="checked"':'').' onchange="proxy_select('.$user->id.')"/>'.
-                                        '<input type="hidden" name="users[' . $user->id . '][idnumber]" '.
-                                        'value="' . $user->idnumber . '" />' .
-                                        '<input type="hidden" id="associationid'.$user->id.'" name="users[' . $user->id . '][association_id]" '.
-                                        'value="' . $user->association_id . '" />';
+                            $tabobj->{$column} = '<input type="checkbox" id="locked'.$user->id.'" name="users['.$user->id.'][locked]" value="1" '.
+                                                 ($locked ? 'checked="checked" ' : ' ').'onchange="proxy_select('.$user->id.')" />'.
+                                                 '<input type="hidden" name="users['.$user->id.'][idnumber]" value="'.$user->idnumber.'" />'.
+                                                 '<input type="hidden" id="associationid'.$user->id.'" name="users['.$user->id.'][association_id]" '.
+                                                 'value="'.$user->association_id.'" />';
                             break;
 
                         case 'edited':
-                            $tabobj->{$column} = '<input type="checkbox" name="users[' . $user->id . '][changed]" id="changed'.$user->id.'" '.($changed?'checked="checked"':'').' />';
+                            $tabobj->{$column} = '<input type="checkbox" name="users['.$user->id.'][changed]" id="changed'.$user->id.'" '.
+                                                 ($changed ? 'checked="checked" ' : ' ').'/>';
                             break;
 
                         default:
@@ -1132,19 +1140,14 @@ class student extends elis_data_object {
                     }
                 }
                 $newarr[] = $tabobj;
-                //$table->data[] = $newarr;
+                // $table->data[] = $newarr;
             }
             // TBD: student_table() ???
-            $table = new display_table($newarr, $columns, $this->get_base_url(), null, null,
-                    array('id' => 'selectiontbl', 'width'=>'100%'));
+            $table = new display_table($newarr, $columns, $this->get_base_url(), null, null, array('id' => 'selectiontbl', 'width' => '100%'));
         }
 
-        print_ids_for_checkbox_selection(
-            (!empty($users) && is_array($users)) ? array_keys($users) : array(),
-            $classid,
-            'stu',
-            'bulkedit'
-        );
+        $ids_for_checkbox_selection = (!empty($users) && is_array($users)) ? array_keys($users) : array();
+        print_ids_for_checkbox_selection($ids_for_checkbox_selection, $classid, 'stu', 'bulkedit');
 
         if (empty($this->id)) {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
@@ -1159,24 +1162,17 @@ class student extends elis_data_object {
         }
 
         if (!empty($newarr)) { // TBD: $newarr or $table?
-            if(empty($this->id)) {
+            if (empty($this->id)) {
                 $PAGE->requires->js('/elis/program/js/classform_bulkedit.js');
+                $numselected_allpages = (!empty($SESSION->associationpage[$pagename]) ? count($SESSION->associationpage[$pagename]) : 0);
+                $str_numchanged_allpages = get_string('numchanged_allpages', 'elis_program',
+                                                       array('num' => '<span id="numselected_allpages">'.$numselected_allpages.'</span>'));
                 echo '<div style="display:inline-block;width:100%">';
-                echo '<span style="float:right;font-weight:bold">',
-                        get_string(
-                                'numselected_allpages',
-                                'elis_program',
-                                array('num' =>
-                                    '<span id="numselected_allpages">'
-                                        .(!empty($SESSION->associationpage[$pagename]) ? sizeof($SESSION->associationpage[$pagename]) : 0)
-                                    .'</span>'
-                                )
-                        ),
-                        '</span>';
-                echo '<input type="button" onclick="checkbox_select(true,\'[selected]\',\'selected\')" value="'.get_string('selectallonpage',self::LANG_FILE).'" /> ';
-                echo '<input type="button" onclick="do_select_all();" value="'.get_string('selectallonallpages',self::LANG_FILE).'" /> ';
-                echo '<input type="button" onclick="checkbox_select(false,\'[selected]\',\'selected\')" value="'.get_string('deselectallonpage',self::LANG_FILE).'" /> ';
-                echo '<input type="button" onclick="do_deselect_all();" value="'.get_string('deselectallonallpages',self::LANG_FILE).'" /> ';
+                echo '<span style="float:right;font-weight:bold">'.$str_numchanged_allpages.'</span>';
+                echo '<input type="button" onclick="checkbox_select(true,\'[selected]\',\'selected\')" value="'.get_string('selectallonpage', self::LANG_FILE).'" /> ';
+                echo '<input type="button" onclick="do_select_all();" value="'.get_string('selectallonallpages', self::LANG_FILE).'" /> ';
+                echo '<input type="button" onclick="checkbox_select(false,\'[selected]\',\'selected\')" value="'.get_string('deselectallonpage', self::LANG_FILE).'" /> ';
+                echo '<input type="button" onclick="do_deselect_all();" value="'.get_string('deselectallonallpages', self::LANG_FILE).'" /> ';
                 echo '</div>';
             }
             echo $table->get_html();
@@ -1208,7 +1204,7 @@ class student extends elis_data_object {
                     $sort = 'element'; // TBD
                     $columns[$sort]['sortable'] = $dir;
                 }
-                //$table->width = "100%"; // TBD
+                // $table->width = "100%"; // TBD
 
                 $newarr = array();
                 foreach ($elements as $element) {
@@ -1271,7 +1267,7 @@ class student extends elis_data_object {
                         }
                     }
                     $newarr[] = $tabobj;
-                    //$table->data[] = $newarr;
+                    // $table->data[] = $newarr;
                 }
                 // TBD: student_table() ???
                 $table = new display_table($newarr, $columns, $this->get_base_url(), null, null, array('id' => 'wowwww'));
@@ -1286,8 +1282,9 @@ class student extends elis_data_object {
             echo '<br /><input type="submit" value="' . get_string('save_enrolment_changes', self::LANG_FILE) . '">'."\n";
         }
 
-        echo "<input type=\"button\" onclick=\"document.location='index.php?s=stu&amp;section=curr&amp;" .
-                     "action=default&amp;id=$classid&amp;sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search=" . urlencode($namesearch) . "';\" value=\"".get_string('cancel')."\" />";
+        $cancel_js = "document.location='index.php?s=stu&amp;section=curr&amp;action=default&amp;id=$classid&amp;".
+                     "sort=$sort&amp;dir=$dir&amp;perpage=$perpage&amp;alpha=$alpha&amp;search=".urlencode($namesearch)."';";
+        echo '<input type="button" onclick="'.$cancel_js.'" value="'.get_string('cancel').'" />';
         echo '<input type="button" onclick="datapersist_do_reset()" value="'.get_string('reset').'" />';
         echo '</form>'."\n";
 
@@ -1297,37 +1294,39 @@ class student extends elis_data_object {
         return $output;
     }
 
+    /**
+     * Returns the HTML for the Bulk Apply Inputs Box
+     * @return string the HTML for the Bulk Apply Inputs Box
+     */
     public function get_bulk_edit_ui() {
 
-        //Bulk Apply Inputs
-
-        //generate choices for the completion status menu
+        // generate choices for the completion status menu
         $statuschoices = array();
-        foreach(student::$completestatusid_values as $key => $csidv) {
+        foreach (student::$completestatusid_values as $key => $csidv) {
             $statuschoices[$key] = get_string($csidv, self::LANG_FILE);
         }
 
         $blktpl_table = new html_table;
         $blktpl_table->head = array(
-            'enable' => get_string('blktpl_enable',self::LANG_FILE),
-            'label' => get_string('blktpl_field',self::LANG_FILE),
-            'value' => get_string('blktpl_value',self::LANG_FILE),
+            'enable' => get_string('blktpl_enable', self::LANG_FILE),
+            'label' => get_string('blktpl_field', self::LANG_FILE),
+            'value' => get_string('blktpl_value', self::LANG_FILE),
         );
         $blktpl_table->data = array(
             array(
                 '<input type="checkbox" id="blktpl_enrolmenttime_checked">',
                 get_string('enrolment_time', self::LANG_FILE),
-                cm_print_date_selector('blktpl_enrolmenttime_d','blktpl_enrolmenttime_m','blktpl_enrolmenttime_y',0,true)
+                cm_print_date_selector('blktpl_enrolmenttime_d', 'blktpl_enrolmenttime_m', 'blktpl_enrolmenttime_y', 0, true)
             ),
             array(
                 '<input type="checkbox" id="blktpl_completetime_checked">',
                 get_string('completion_time', self::LANG_FILE),
-                cm_print_date_selector('blktpl_completetime_d','blktpl_completetime_m','blktpl_completetime_y',0,true)
+                cm_print_date_selector('blktpl_completetime_d', 'blktpl_completetime_m', 'blktpl_completetime_y', 0, true)
             ),
             array(
                 '<input type="checkbox" id="blktpl_status_checked">',
                 get_string('student_status', self::LANG_FILE),
-                cm_choose_from_menu($statuschoices,'blktpl_status','', '', '', '', true)
+                cm_choose_from_menu($statuschoices, 'blktpl_status', '', '', '', '', true)
             ),
             array(
                 '<input type="checkbox" id="blktpl_grade_checked">',
@@ -1347,7 +1346,7 @@ class student extends elis_data_object {
             array(
                 '',
                 '',
-                '<input type="button" onclick="do_bulk_value_apply();return false;" value="'.get_string('blktpl_applytousers_button',self::LANG_FILE).'"/>'
+                '<input type="button" onclick="do_bulk_value_apply();return false;" value="'.get_string('blktpl_applytousers_button', self::LANG_FILE).'"/>'
             ),
         );
 

@@ -2295,12 +2295,19 @@ function retrieve_session_selection_bulkedit($id, $action) {
     return false;
 }
 
-function print_ids_for_checkbox_selection($ids,$classid,$page,$target) {
-    $baseurl = get_pm_url()->out_omit_querystring() . '?&id='.$classid.'&s='.$page.'&target=' . $target;
-    echo '<input type="hidden" id="baseurl" value="' . $baseurl .'" /> ';
-    echo '<input type="hidden" id="selfurl" value="' . qualified_me() .'" /> ';
+/**
+ * Prints inputs required for bulk edit checkbox persistence.
+ * @param  array  $ids     An array of IDs to note as checked.
+ * @param  int    $classid The ID of the class the IDs belong to.
+ * @param  string $page    The page type they're checked on. (ex. stu)
+ * @param  string $target  The page section they're checked on. (ex. bulkedit)
+ */
+function print_ids_for_checkbox_selection($ids, $classid, $page, $target) {
+    $baseurl = get_pm_url()->out_omit_querystring().'?&id='.$classid.'&s='.$page.'&target='.$target;
+    echo '<input type="hidden" id="baseurl" value="'.$baseurl.'" /> ';
+    echo '<input type="hidden" id="selfurl" value="'.qualified_me().'" /> ';
     $result  = implode(',', $ids);
-    echo '<input type="hidden" id="persist_ids_this_page" value="' . $result .'" /> ';
+    echo '<input type="hidden" id="persist_ids_this_page" value="'.$result.'" /> ';
 }
 
 /**

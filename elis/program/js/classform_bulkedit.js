@@ -24,13 +24,16 @@
  */
 
 String.prototype.starts_with = function (str) {
-	return this.indexOf(str) === 0;
+    return this.indexOf(str) === 0;
 }
 
 String.prototype.ends_with = function (str) {
-	return this.indexOf(str) === this.length - str.length;
+    return this.indexOf(str) === this.length - str.length;
 }
 
+/**
+ * When the page is loaded, select the saved selections from #persist_ids_this_page
+ */
 YAHOO.util.Event.onDOMReady(function() {
     var sessionselection = document.getElementById('persist_ids_this_page');
     // Load current session data of selected checkboxes
@@ -44,6 +47,9 @@ YAHOO.util.Event.onDOMReady(function() {
     }
 });
 
+/**
+ * Selects all checkboxes for current page.
+ */
 function do_select_all() {
     var baseurl = document.getElementById('selfurl');
     // Make asynchronous call to self page with flag to select all for current page
@@ -55,10 +61,13 @@ function do_select_all() {
         };
         request = Y.io(uri, cfg);
     });
-    checkbox_select(true,'[selected]','selected');
-    checkbox_select(true,'[changed]','changed');
+    checkbox_select(true, '[selected]', 'selected');
+    checkbox_select(true, '[changed]', 'changed');
 }
 
+/**
+ * Deselects all checkboxes for current page.
+ */
 function do_deselect_all() {
     var baseurl = document.getElementById('baseurl');
     // Make asynchronous call to end point to deselect all for current page
@@ -70,9 +79,12 @@ function do_deselect_all() {
         };
         request = Y.io(uri, cfg);
     });
-    checkbox_select(false,'[selected]','selected');
+    checkbox_select(false, '[selected]', 'selected');
 }
 
+/**
+ * Resets checkbox selections - this is the action for the "reset" button.
+ */
 function datapersist_do_reset() {
     var baseurl = document.getElementById('baseurl');
     // Make asynchronous call to end point to deselect all for current page
@@ -88,6 +100,10 @@ function datapersist_do_reset() {
     window.location.reload();
 }
 
+/**
+ * To avoid making an ajax call on every checkbox selection, we only make a call when the user leaves the page.
+ * This collects selected checkboxes and makes an ajax request to save them when the user leaves the page.
+ */
 var do_unload_update = true;
 window.onbeforeunload = function(e) {
     if (do_unload_update != false) {
@@ -95,6 +111,10 @@ window.onbeforeunload = function(e) {
     }
 }
 
+/**
+ * Saves the currently selected checkboxes.
+ * Makes an ajax call with the result of build_selection() to save the currently selected checkboxes in the session.
+ */
 function update_checkbox_selection() {
     var baseurl = document.getElementById('baseurl');
     // Send the selected checkboxes synchronously
@@ -109,6 +129,9 @@ function update_checkbox_selection() {
     });
 }
 
+/**
+ * Applies the currently selected values in the bulk-value tool to the currently selected elements.
+ */
 function do_bulk_value_apply() {
 
     var enrolmenttime_checked = document.getElementById('blktpl_enrolmenttime_checked').checked;
@@ -173,8 +196,8 @@ function do_bulk_value_apply() {
 
     var changed = false;
 
-    //provide visual feedback for users on current page
-    for(var i = 0; i < selectionstatus.length; i++) {
+    // provide visual feedback for users on current page
+    for (var i = 0; i < selectionstatus.length; i++) {
         chbx = document.getElementById('selected' + selectionstatus[i]);
         if (chbx != null) {
             if (chbx.checked == true) {
@@ -215,11 +238,13 @@ function do_bulk_value_apply() {
     }
 }
 
-// Generate an array of the user selected checkboxes and the corresponding data
+/**
+ * Generates an array of the user selected checkboxes and the corresponding data
+ */
 function build_selection() {
     var selection_record = new Array();
     var json;
-    for(var i = 0; i < selectionstatus.length; i++) {
+    for (var i = 0; i < selectionstatus.length; i++) {
         chbx = document.getElementById('changed' + selectionstatus[i]);
         if (chbx != null) {
             if (chbx.checked == true) {
@@ -231,7 +256,7 @@ function build_selection() {
                     selected = selected.checked;
                 }
 
-				var unenrol = '';
+                var unenrol = '';
                 if (document.getElementById("unenrol" + selectionstatus[i]) != null) {
                     unenrol = document.getElementById("unenrol" + selectionstatus[i]);
                     unenrol = unenrol.checked;
@@ -265,8 +290,8 @@ function build_selection() {
                     locked = locked.checked;
                 }
 
-				var associd = '';
-				if (document.getElementById("associationid" + selectionstatus[i]) != null) {
+                var associd = '';
+                if (document.getElementById("associationid" + selectionstatus[i]) != null) {
                     associd = document.getElementById("associationid" + selectionstatus[i]);
                     associd = associd.value;
                 }
@@ -304,8 +329,12 @@ function build_selection() {
 
 var selectionstatus =  new Array();
 
+/**
+ * Selects item identified by <id> and does all other required UI changes
+ * (ex. updating the "currently selected" indicator)
+ * @param  int  id  The ID of the item we want to select.
+ */
 function select_item(id) {
-    console.log(id);
     var chbx = document.getElementById('selected'+id);
     var numselected_e = document.getElementById('numselected_allpages');
     var numselected = parseInt(numselected_e.innerHTML);
@@ -314,15 +343,25 @@ function select_item(id) {
     proxy_select(id);
 }
 
+/**
+ * Selects the item identified by ID
+ * @param  int id The ID of the item we want to select.
+ */
 function proxy_select(id) {
     document.getElementById('changed'+id).checked=true;
 }
 
+/**
+ * Changes the selected status on sets of elements.
+ * @param  bool    checked  The checked status to change to - true=selected, false=not selected.
+ * @param  string  type     The suffix of each element's "name" property, used to filter which elements get selected.
+ * @param  string  idprefix A prefix to strip off each element when getting the numeric ID of the element.
+ */
 function checkbox_select(checked, type, idprefix) {
     var table = document.getElementById('selectiontbl');
     if (table) {
         YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
-            if(el.name.starts_with('users') && el.name.ends_with(type)) {
+            if (el.name.starts_with('users') && el.name.ends_with(type)) {
                 if (el.checked != checked) {
                     el.checked = checked;
                     var prefix_len = idprefix.length;
@@ -334,26 +373,32 @@ function checkbox_select(checked, type, idprefix) {
     }
 }
 
+/**
+ * Sets all elements' enrolment checkbox state based on the state of #class_enrol_select_all
+ */
 function class_enrol_set_all_selected() {
-	var checkbox = document.getElementById('class_enrol_select_all');
+    var checkbox = document.getElementById('class_enrol_select_all');
 
-	var input_elements = document.getElementsByTagName('input');
-	for(var i = 0; i < input_elements.length; i++) {
-		var element = input_elements[i];
-		if(element.name.starts_with('users') && element.name.ends_with('[enrol]')) {
-			element.checked = checkbox.checked;
-		}
-	}
+    var input_elements = document.getElementsByTagName('input');
+    for (var i = 0; i < input_elements.length; i++) {
+        var element = input_elements[i];
+        if (element.name.starts_with('users') && element.name.ends_with('[enrol]')) {
+            element.checked = checkbox.checked;
+        }
+    }
 }
 
+/**
+ * Sets all elements' unenrolment checkbox state based on the state of #class_bulkedit_select_all
+ */
 function class_bulkedit_set_all_selected() {
-  var checkbox = document.getElementById('class_bulkedit_select_all');
+    var checkbox = document.getElementById('class_bulkedit_select_all');
 
-  var input_elements = document.getElementsByTagName('input');
-  for(var i = 0; i < input_elements.length; i++) {
-    var element = input_elements[i];
-    if(element.name.starts_with('users') && element.name.ends_with('[unenrol]')) {
-      element.checked = checkbox.checked;
+    var input_elements = document.getElementsByTagName('input');
+    for (var i = 0; i < input_elements.length; i++) {
+        var element = input_elements[i];
+        if (element.name.starts_with('users') && element.name.ends_with('[unenrol]')) {
+            element.checked = checkbox.checked;
+        }
     }
-  }
 }

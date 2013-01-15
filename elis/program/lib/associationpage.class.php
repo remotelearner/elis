@@ -622,7 +622,10 @@ class associationpage extends pm_page {
         pmsearchbox($this);
     }
 
-    function bulk_apply_all() {
+    /**
+     * Receives a request to apply a value to all selected items. Saves the new information for each selected item.
+     */
+    public function bulk_apply_all() {
         global $SESSION;
 
         $target = optional_param('target', '', PARAM_ALPHA);
@@ -633,7 +636,7 @@ class associationpage extends pm_page {
         $blktpl = json_decode($blktpl);
 
         if (!empty($SESSION->associationpage[$pagename]) && is_array($SESSION->associationpage[$pagename])) {
-            foreach($SESSION->associationpage[$pagename] as $uid => $rec) {
+            foreach ($SESSION->associationpage[$pagename] as $uid => $rec) {
                 if (!empty($rec->selected) && $rec->selected === true) {
                     if (!empty($blktpl->enrolment_date_checked) && $blktpl->enrolment_date_checked === true) {
                         $rec->enrolment_date->day = $blktpl->enrolment_date->day;
@@ -662,7 +665,10 @@ class associationpage extends pm_page {
         }
     }
 
-    function bulk_checkbox_selection_deselectall() {
+    /**
+     * Removes saved checkboxes for the page specified by target, s, and id input vars.
+     */
+    public function bulk_checkbox_selection_deselectall() {
         global $SESSION;
 
         $target = optional_param('target', '', PARAM_ALPHA);
@@ -679,12 +685,18 @@ class associationpage extends pm_page {
         return true;
     }
 
-    function bulk_checkbox_selection_reset($target) {
+    /**
+     * Resets all saved changes.
+     * @param  string $target The the section for the current page to reset. (ex. "bulkedit")
+     */
+    public function bulk_checkbox_selection_reset($target) {
         session_selection_deletion($target);
     }
 
-    // Store checkbox data into session
-    function bulk_checkbox_selection_session() {
+    /**
+     * Store checkbox data into session
+     */
+    public function bulk_checkbox_selection_session() {
         global $SESSION;
         $selection = optional_param('selected_checkboxes', '', PARAM_CLEAN);
         $target = optional_param('target', '', PARAM_ALPHA);
@@ -715,7 +727,7 @@ class associationpage extends pm_page {
     }
 
     // Store checkbox data into session
-    function checkbox_selection_session() {
+    public function checkbox_selection_session() {
         global $SESSION;
         $selection = optional_param('selected_checkboxes', '', PARAM_CLEAN);
         $target = optional_param('target', '', PARAM_ALPHA);
