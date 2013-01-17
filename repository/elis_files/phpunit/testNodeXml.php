@@ -88,7 +88,7 @@ class filenodeXMLTest extends elis_database_test {
 
         $node = $this->setupNode();
 
-        $contentNode = elis_files_process_node_new($node, &$type);
+        $contentNode = elis_files_process_node_new($node, $type);
 
         $expectedContentNode = $this->setupExpectedContent($node);
 
@@ -118,7 +118,7 @@ class filenodeXMLTest extends elis_database_test {
         // test the 3 different owners
         $node->properties[$field] = $data;
 
-        $contentNode = elis_files_process_node_new($node, &$type);
+        $contentNode = elis_files_process_node_new($node, $type);
 
         $expectedContentNode = $this->setupExpectedContent($node);
         $expectedContentNode->owner = $data;
@@ -145,7 +145,7 @@ class filenodeXMLTest extends elis_database_test {
         // test the 3 different owners
         $node->properties[$field1] = $data;
 
-        $contentNode = elis_files_process_node_new($node, &$type);
+        $contentNode = elis_files_process_node_new($node, $type);
 
         $expectedContentNode = $this->setupExpectedContent($node);
         $expectedContentNode->$field2 = $data;
@@ -171,7 +171,7 @@ class filenodeXMLTest extends elis_database_test {
         // test the 3 different owners
         $node->properties[$field] = $data;
 
-        $contentNode = elis_files_process_node_new($node, &$type);
+        $contentNode = elis_files_process_node_new($node, $type);
 
         $expectedContentNode = $this->setupExpectedContent($node);
         // recreate created time
@@ -198,7 +198,7 @@ class filenodeXMLTest extends elis_database_test {
         // test the 3 different owners
         $node->properties[$field] = $data;
 
-        $contentNode = elis_files_process_node_new($node, &$type);
+        $contentNode = elis_files_process_node_new($node, $type);
 
         $expectedContentNode = $this->setupExpectedContent($node);
         // recreate updated time
@@ -226,7 +226,7 @@ class filenodeXMLTest extends elis_database_test {
         // test the 4 link fields
         $node->links[$field1] = $data;
 
-        $contentNode = elis_files_process_node_new($node, &$type);
+        $contentNode = elis_files_process_node_new($node, $type);
 
         $expectedContentNode = $this->setupExpectedContent($node);
         // recreate the 4 link fields
@@ -255,7 +255,7 @@ class filenodeXMLTest extends elis_database_test {
         // test the 3 different owners
         $node->properties[$field] = $data;
 
-        $contentNode = elis_files_process_node_new($node, &$type);
+        $contentNode = elis_files_process_node_new($node, $type);
 
         $expectedContentNode = $this->setupExpectedContent($node);
 
@@ -313,7 +313,7 @@ class filenodeXMLTest extends elis_database_test {
 
         $nodes = $dom->getElementsByTagName('entry');
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
 
         //leave as is and fix code - initialise contentnode to false or something
         $this->assertFalse($contentNode);
@@ -335,7 +335,7 @@ class filenodeXMLTest extends elis_database_test {
             $author = $node->getElementsByTagName("author")->item(0)->nodeValue;
         }
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
 
         $this->assertEquals($id,$contentNode->uuid);
         $this->assertEquals($author,$contentNode->owner);
@@ -363,7 +363,7 @@ class filenodeXMLTest extends elis_database_test {
             $published->item(0)->nodeValue = $data;
         }
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
 
         $this->assertEquals(strtotime($data),$contentNode->created);
 
@@ -391,7 +391,7 @@ class filenodeXMLTest extends elis_database_test {
             $updated->item(0)->nodeValue = $data;
         }
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
 
         $this->assertEquals(strtotime($data),$contentNode->modified);
 
@@ -413,7 +413,7 @@ class filenodeXMLTest extends elis_database_test {
             $icon = $node->getElementsByTagName("icon")->item(0)->nodeValue;
         }
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
 
         $this->assertEquals($title,$contentNode->title);
         $this->assertEquals($summary,$contentNode->summary);
@@ -454,7 +454,7 @@ class filenodeXMLTest extends elis_database_test {
             }
         }
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
         $this->assertEquals($value,$contentNode->links[$field2]);
 
     }
@@ -503,7 +503,7 @@ class filenodeXMLTest extends elis_database_test {
         libxml_clear_errors();
         $nodes = $dom->getElementsByTagName('entry');
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
         $this->assertNotEmpty($contentNode);
     }
 
@@ -518,7 +518,7 @@ class filenodeXMLTest extends elis_database_test {
 
         $type = '';
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
         $this->assertEquals(ELIS_files::$type_folder,$type);
 
     }
@@ -534,7 +534,7 @@ class filenodeXMLTest extends elis_database_test {
 
         $type = '';
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
         $this->assertEquals(ELIS_files::$type_document,$type);
 
     }
@@ -567,7 +567,7 @@ class filenodeXMLTest extends elis_database_test {
             }
         }
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
         $this->assertEquals($value,$contentNode->$field2);
 
     }
@@ -604,7 +604,7 @@ class filenodeXMLTest extends elis_database_test {
             }
         }
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
         $this->assertEquals($value,$contentNode->$field2);
 
     }
@@ -655,7 +655,7 @@ class filenodeXMLTest extends elis_database_test {
 
         $nodes = $dom->getElementsByTagName('entry');
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
         $this->assertNotEmpty($contentNode);
     }
 
@@ -705,7 +705,7 @@ class filenodeXMLTest extends elis_database_test {
 
         $nodes = $dom->getElementsByTagName('entry');
 
-        $contentNode = elis_files_process_node($dom, $nodes->item(0), &$type);
+        $contentNode = elis_files_process_node($dom, $nodes->item(0), $type);
         $this->assertNotEmpty($contentNode);
     }
 }
