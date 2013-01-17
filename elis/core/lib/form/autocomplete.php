@@ -142,7 +142,6 @@ if ($mode === 'search') {
         <head>
             <script src="<?php echo $CFG->wwwroot.'/elis/core/js/jquery-1.7.1.min.js'; ?>"></script>
             <link rel="stylesheet" type="text/css" href="<?php echo $CFG->wwwroot,'/theme/styles.php?theme='.$CFG->theme?>" />
-            <link rel="stylesheet" type="text/css" href="<?php echo $CFG->wwwroot,'/theme/',$CFG->theme,'/styles.php'?>" />
             <style>
                 tr:hover{background-color:#efe;}
                 .mform {width:95%;}
