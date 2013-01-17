@@ -119,6 +119,7 @@ if ($mode === 'search') {
         }
         echo '</tr>';
     }
+    unset($results);
 
     echo '</table>';
 

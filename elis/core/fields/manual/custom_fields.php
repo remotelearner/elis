@@ -547,33 +547,34 @@ function manual_field_validation($data, $field, $contextid) {
             }
         }
         if (is_null($errstr) && $field->forceunique) {
+            $curcontext = -1;
+            $vals = null;
+
             $where = "contextid != {$contextid} AND fieldid = {$field->id}";
-            if ($recs = $DB->get_records_select($field->data_table(), $where,
-                                 null, '', 'id, contextid, data')) {
-                $curcontext = -1;
-                $vals = null;
-                foreach ($recs AS $rec) {
-                    if ($curcontext != $rec->contextid) {
-                        if (!empty($vals)) {
-                            sort($vals);
-                            if ($vals == $fielddata) {
-                                $errstr = get_string('valuealreadyused');
-                                // TBD^^^ "[These/This combination of] values already uesd!"
-                                $vals = null;
-                                break;
-                            }
+            $recs = $DB->get_recordset_select($field->data_table(), $where, null, '', 'id, contextid, data');
+            foreach ($recs AS $rec) {
+                if ($curcontext != $rec->contextid) {
+                    if (!empty($vals)) {
+                        sort($vals);
+                        if ($vals == $fielddata) {
+                            $errstr = get_string('valuealreadyused');
+                            // TBD^^^ "[These/This combination of] values already uesd!"
+                            $vals = null;
+                            break;
                         }
-                        $curcontext = $rec->contextid;
-                        $vals = array();
                     }
-                    $vals[] = $rec->data;
+                    $curcontext = $rec->contextid;
+                    $vals = array();
                 }
-                if (!empty($vals)) {
-                    sort($vals);
-                    if ($vals == $fielddata) {
-                        $errstr = get_string('valuealreadyused');
-                        // TBD^^^ "[These/This combination of] values already uesd!"
-                    }
+                $vals[] = $rec->data;
+            }
+            unset($recs);
+
+            if (!empty($vals)) {
+                sort($vals);
+                if ($vals == $fielddata) {
+                    $errstr = get_string('valuealreadyused');
+                    // TBD^^^ "[These/This combination of] values already uesd!"
                 }
             }
         }
