@@ -1710,7 +1710,7 @@ class pm_user_filtering extends user_filtering {
         default:
             if (strncmp($fieldname, 'field_', 6) === 0) {
                 $f = substr($fieldname, 6);
-                if ($rec = new field($DB->get_record(field::TABLE, array('shortname' => $f)))) {
+                if ($rec = field::get_for_context_level_with_name(CONTEXT_ELIS_USER, $f)) {
                     return new pm_custom_field_filter($fieldname, $rec->shortname, $advanced, $rec);
                 }
             }
