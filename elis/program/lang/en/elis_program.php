@@ -405,6 +405,7 @@ $string['error_creating_class'] = 'Error creating Class Instance for Course Desc
 $string['error_curriculum_incomplete'] = 'Error: program not completed.';
 $string['error_date_range'] = 'Start date must be before the end date.';
 $string['error_duration'] = 'Start time must be before the end time.';
+$string['error_invalid_timeperiod'] = 'Cannot have zero time period.';
 $string['error_n_overenrol'] = 'The over enrol capability is required for this';
 $string['error_not_timeformat'] = 'time not in proper format';
 $string['error_not_durrationformat'] = 'durration not in proper format';
