@@ -481,7 +481,7 @@ class instructor extends elis_data_object {
 */
         $uids = array();
         $stu = new student();
-        if ($users = $stu->get_students()) {
+        if ($users = $stu->get_students($this->classid)) {
             foreach ($users as $user) {
                 $uids[] = $user->id;
             }
@@ -583,7 +583,7 @@ class instructor extends elis_data_object {
 */
         $uids = array();
         $stu  = new student();
-        if ($users = $stu->get_students()) {
+        if ($users = $stu->get_students($this->classid)) {
             foreach ($users as $user) {
                 $uids[] = $user->id;
             }
@@ -598,6 +598,28 @@ class instructor extends elis_data_object {
         if (!empty($uids)) {
             $where .= (!empty($where) ? ' AND ' : '') . 'usr.id NOT IN ( ' .
                       implode(', ', $uids) . ' ) ';
+        }
+
+        //if appropriate, limit selection to users belonging to clusters that
+        //the current user can manage instructor assignments for
+
+        // TODO: Ugly, this needs to be overhauled
+        $cpage = new pmclasspage();
+
+        if (!$cpage->_has_capability('elis/program:assign_class_instructor', $this->classid)) {
+            //perform SQL filtering for the more "conditional" capability
+
+            $allowed_clusters = instructor::get_allowed_clusters($this->classid);
+
+            if (empty($allowed_clusters)) {
+                $where .= (!empty($where) ? ' AND ' : '') . '0=1 ';
+            } else {
+                $cluster_filter = implode(',', $allowed_clusters);
+
+                $where .= (!empty($where) ? ' AND ' : '') . 'usr.id IN (
+                             SELECT userid FROM {'. clusterassignment::TABLE ."}
+                             WHERE clusterid IN ({$cluster_filter}))";
+            }
         }
 
         if (!empty($where)) {
