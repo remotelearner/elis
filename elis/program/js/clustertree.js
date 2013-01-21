@@ -148,7 +148,7 @@ function clustertree_get_list_values(instanceid, list_name) {
  */
 function clustertree_loadNodeData(node, fnLoadComplete, uniqueid, tree_view, instanceid, execution_mode) {
 
-    //URL of our script (document.wwwroot is set my clustertree_module.js)
+    // URL of our script (document.wwwroot is set my clustertree_module.js)
     var url = document.wwwroot + '/elis/program/lib/filtering/helpers/clustertree_load_menu.php?data=' + node.contentElId +
                 '&instanceid=' + instanceid + '&execution_mode=' + execution_mode;
 
@@ -349,7 +349,6 @@ function clustertree_remove_selected_unexpanded(instanceid, node, uniqueid, stor
  * @param  boolean   store        Whether to store any unexpanded state info
  */
 function clustertree_toggle_highlight(instanceid, node, ideal_state, uniqueid, tree_view, store) {
-
     if (node.highlightState != ideal_state) {
         //state is not the ideal state, so toggle it
         //*

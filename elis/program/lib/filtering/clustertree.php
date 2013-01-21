@@ -152,7 +152,7 @@ class checkbox_treerepresentation extends treerepresentation {
         }
 
         //use the appropriate css for the menu
-        $style = '<style>@import url("'. $CFG->wwwroot .'/lib/yui/2.9.0/build/treeview/assets/skins/sam/treeview.css");</style>'; // TBV
+        $style = '<style>@import url("'.$CFG->wwwroot.'/lib/yui/2.9.0/build/treeview/assets/skins/sam/treeview.css");</style>'; // TBV
 
         //YUI needs an appropriate div to place the tree in
         $result = $style ."<div id=\"cluster_param_tree_". $this->instanceid ."_". $uniqueid ."\" class=\"ygtv-checkbox felement\"></div>";
@@ -556,7 +556,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
         /**
          * CSS includes
          */
-        $mform->addElement('html', '<style>@import url("'. $CFG->wwwroot .'/lib/yui/2.9.0/build/treeview/assets/skins/sam/treeview-skin.css");</style>'. $js);
+        $mform->addElement('html', '<style>@import url("'.$CFG->wwwroot.'/lib/yui/2.9.0/build/treeview/assets/skins/sam/treeview-skin.css");</style>'.$js);
 
         //include our custom code that handles the YUI Treeview menu
         //$PAGE->requires->js('/elis/program/js/clustertree.js');
@@ -658,16 +658,9 @@ class generalized_filter_clustertree extends generalized_filter_type {
         $mform->addElement('html', $style . $nested_fieldset . $legend);
         $mform->addElement('static', $this->_uniqueid .'_help', '');
 
-        //cluster select dropdown
-        $mform->addElement(
-                'select',
-                $this->_uniqueid .'_dropdown',
-                $title,
-                $choices_array,
-                array(
-                    'onchange' => 'this.selectedIndex = dropdown_separator(this);'
-                )
-        );
+        // cluster select dropdown
+        $selectparams = array('onchange' => 'this.selectedIndex = dropdown_separator(this);');
+        $mform->addElement('select', $this->_uniqueid .'_dropdown', $title, $choices_array, $selectparams);
 
         //dropdown / cluster tree state storage
         $mform->addElement('hidden', $this->_uniqueid .'_usingdropdown');
@@ -687,31 +680,24 @@ class generalized_filter_clustertree extends generalized_filter_type {
             'requires' => array('yui2-treeview'),
         );
         $PAGE->requires->js_module($module);
-        $PAGE->requires->js_init_call(
-                'M.clustertree.init_tree',
-                array(
-                    $CFG->httpswwwroot,
-                    $tree->instanceid,
-                    $this->_uniqueid,
-                    $tree->get_js_object(),
-                    $this->execution_mode,
-                    $this->options['report_id'],
-                    $this->options['dropdown_button_text'],
-                    $this->options['tree_button_text']
-                ),
-                true,
-                $module
+        $initcallopts = array(
+            $CFG->httpswwwroot,
+            $tree->instanceid,
+            $this->_uniqueid,
+            $tree->get_js_object(),
+            $this->execution_mode,
+            $this->options['report_id'],
+            $this->options['dropdown_button_text'],
+            $this->options['tree_button_text']
         );
+        $PAGE->requires->js_init_call('M.clustertree.init_tree', $initcallopts, true, $module);
 
-        //cluster tree
-        $mform->addElement(
-                'html',
-                '<div class="fitem">
-                    <div class="fitemtitle"></div>
-                    <style>@import url("'. $CFG->wwwroot .'/lib/yui/2.9.0/build/treeview/assets/skins/sam/treeview.css");</style>
-                    <div id="cluster_param_tree_'.$tree->instanceid.'_'.$this->_uniqueid.'" class="ygtv-checkbox felement"></div>
-                </div>'
-        );
+        // cluster tree
+        $clustertreehtml = '<div class="fitem"><div class="fitemtitle"></div>'.
+                           '<style>@import url("'.$CFG->wwwroot.'/lib/yui/2.9.0/build/treeview/assets/skins/sam/treeview.css");</style>'.
+                           '<div id="cluster_param_tree_'.$tree->instanceid.'_'.$this->_uniqueid.'" class="ygtv-checkbox felement"></div>'.
+                           '</div>';
+        $mform->addElement('html', $clustertreehtml);
 
         //list of explicitly selected elements
         $mform->addElement('hidden', $this->_uniqueid .'_listing');
