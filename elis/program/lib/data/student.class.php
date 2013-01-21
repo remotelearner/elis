@@ -384,17 +384,18 @@ class student extends elis_data_object {
         if ($moodlecourseid = moodle_get_course($this->classid)) {
             if (($mcourse = $this->_db->get_record('course', array('id' => $moodlecourseid)))
                 && ($muser = $this->users->get_moodleuser())) {
+
                 $sql = 'SELECT enrol.*
                           FROM {user_enrolments} enrolments
                           JOIN {enrol} enrol ON enrol.id = enrolments.enrolid
                          WHERE enrol.courseid = ?
                            AND enrolments.userid = ?';
-                $enrolments = $this->_db->get_records_sql($sql, array($moodlecourseid, $muser->id));
-
+                $enrolments = $this->_db->get_recordset_sql($sql, array($moodlecourseid, $muser->id));
                 foreach ($enrolments as $enrolment) {
                     $plugin = enrol_get_plugin($enrolment->enrol);
                     $plugin->unenrol_user($enrolment, $muser->id);
                 }
+                unset($enrolments);
             }
         }
 
@@ -492,7 +493,7 @@ class student extends elis_data_object {
     * @param int $userid The user id
     * @param string $sort The sorting field name
     * @param string $dir The direction of sorting
-    * @return array The grade elements
+    * @return recordset The grade elements
     */
     public static function retrieve_grade_elements($courseid = 0, $classid, $userid, $sort, $dir) {
         global $DB;
@@ -511,7 +512,7 @@ class student extends elis_data_object {
 
         $sql = $select.$tables.$join.$where.$sort;
 
-        return $DB->get_records_sql($sql, $params);
+        return $DB->get_recordset_sql($sql, $params);
     }
 
     /**
@@ -602,8 +603,7 @@ class student extends elis_data_object {
 
         $users = array();
         if (empty($this->id)) {
-            $users     = $this->get_users_avail($sort, $dir, $page * $perpage,
-                                                $perpage, $namesearch, $alpha);
+            $users = $this->get_users_avail($sort, $dir, $page * $perpage, $perpage, $namesearch, $alpha);
             $usercount = $this->count_users_avail($namesearch, $alpha); // TBD
 
             pmalphabox(new moodle_url('/elis/program/index.php', // TBD
@@ -629,7 +629,9 @@ class student extends elis_data_object {
             $usercount  = 0;
         }
 
-        if (empty($this->id) && !$users) {
+        $has_users = ((is_array($users) && !empty($users)) || ($users instanceof Iterator && $users->valid() === true)) ? true : false;
+
+        if (empty($this->id) && $has_users === false) {
             pmshowmatches($alpha, $namesearch);
             $table = NULL;
         } else {
@@ -722,6 +724,7 @@ class student extends elis_data_object {
             // TBD: student_table() ???
             $table = new display_table($newarr, $columns, $this->get_base_url(), 'sort', 'dir', array('id' => 'selectiontbl'));
         }
+        unset($users);
 
         print_checkbox_selection($classid, 'stu', 'add');
 
@@ -770,7 +773,7 @@ class student extends elis_data_object {
 
             $elements = self::retrieve_grade_elements($this->pmclass->course->get_course_id(), $this->classid, $this->userid, $sort, $dir);
 
-            if ($elements) {
+            if (!empty($elements) && $elements->valid() === true) {
                 //$table->width = "100%"; // TBD
 
                 $newarr = array();
@@ -844,6 +847,7 @@ class student extends elis_data_object {
                     print_string('grade_update_warning', self::LANG_FILE);
                 }
             }
+            unset($elements);
         }
 
         if (empty($this->id)) {
@@ -949,8 +953,7 @@ class student extends elis_data_object {
 
         $users = array();
         if (empty($this->id)) {
-            $users     = $this->get_users_enrolled($type, $sort, $dir, $page * $perpage, $perpage,
-                                                $namesearch, $alpha);
+            $users = $this->get_users_enrolled($type, $sort, $dir, $page * $perpage, $perpage, $namesearch, $alpha);
             $usercount = $this->count_users_enrolled($type, $namesearch, $alpha);
 
             pmalphabox(new moodle_url('/elis/program/index.php',
@@ -977,7 +980,9 @@ class student extends elis_data_object {
             $usercount  = 0;
         }
 
-        if (empty($this->id) && !$users) {
+        $has_users = ((is_array($users) && !empty($users)) || ($users instanceof Iterator && $users->valid() === true)) ? true : false;
+
+        if (empty($this->id) && $has_users === false) {
             pmshowmatches($alpha, $namesearch);
             $table = NULL;
         } else {
@@ -1085,6 +1090,7 @@ class student extends elis_data_object {
             // TBD: student_table() ???
             $table = new display_table($newarr, $columns, $this->get_base_url(), 'sort', 'dir', array('id' => 'selectiontbl'));
         }
+        unset($users);
 
         print_checkbox_selection($classid, 'stu', 'bulkedit');
 
@@ -1109,7 +1115,8 @@ class student extends elis_data_object {
         }
 
         if (isset($this->id)) {
-            if ($elements = $this->pmclass->course->get_completion_elements()) {
+            $elements = $this->pmclass->course->get_completion_elements();
+            if (!empty($elements) && $elements->valid() === true) {
 
                 $select = 'classid = ? AND userid = ? ';
                 $grades = $this->_db->get_records_select(student_grade::TABLE, $select, array($this->classid, $this->userid), 'id', 'completionid,id,classid,userid,grade,locked,timegraded,timemodified');
@@ -1206,9 +1213,10 @@ class student extends elis_data_object {
                     echo $table->get_html();
                 }
             }
+            unset($elements);
         }
 
-        if (!empty($users)) {
+        if ($has_users === true) {
             echo '<br /><input type="submit" value="' . get_string('save_enrolment_changes', self::LANG_FILE) . '">'."\n";
         }
 
@@ -1258,7 +1266,7 @@ class student extends elis_data_object {
      * class. Regardless of status either passed failed or not completed.
      *
      * @paam int $cid A class ID (optional).
-     * @return array An array of user records.
+     * @return recordset A recordset of user records.
      */
     function get_students($cid = 0) {
 
@@ -1271,11 +1279,11 @@ class student extends elis_data_object {
 
         $uids = array();
 
-        if ($students = $this->_db->get_records(student::TABLE, array('classid' => $cid))) {
-            foreach ($students as $student) {
-                $uids[] = $student->userid;
-            }
+        $students = $this->_db->get_recordset(student::TABLE, array('classid' => $cid));
+        foreach ($students as $student) {
+            $uids[] = $student->userid;
         }
+        unset($students);
 
         if (!empty($uids)) {
             $sql = 'SELECT id, idnumber, username, firstname, lastname
@@ -1283,7 +1291,7 @@ class student extends elis_data_object {
                     WHERE id IN ( '. implode(', ', $uids). ' )
                     ORDER BY lastname ASC, firstname ASC';
 
-            return $this->_db->get_records_sql($sql);
+            return $this->_db->get_recordset_sql($sql);
         }
         return array();
     }
@@ -1291,6 +1299,7 @@ class student extends elis_data_object {
     /**
      * get the students on the waiting list for the supplied (or current) class
      * @param INT $cid the class id
+     * @return recordset students on the waiting list
      */
     public function get_waiting($cid = 0) {
 
@@ -1303,11 +1312,11 @@ class student extends elis_data_object {
 
         $uids = array();
 
-        if ($students = $this->_db->get_records(waitlist::TABLE, array('classid' => $cid))) {
-            foreach ($students as $student) {
-                $uids[] = $student->userid;
-            }
+        $students = $this->_db->get_recordset(waitlist::TABLE, array('classid' => $cid));
+        foreach ($students as $student) {
+            $uids[] = $student->userid;
         }
+        unset($students);
 
         if (!empty($uids)) {
             $sql = 'SELECT id, idnumber, username, firstname, lastname
@@ -1315,11 +1324,18 @@ class student extends elis_data_object {
                     WHERE id IN ( '. implode(', ', $uids) .' )
                     ORDER BY lastname ASC, firstname ASC';
 
-            return $this->_db->get_records_sql($sql);
+            return $this->_db->get_recordset_sql($sql);
         }
         return array();
     }
 
+    /**
+     * Gets classes a user is on the waitlist for in a curriculum
+     * @global moodle_database $DB
+     * @param int $userid User ID
+     * @param int $curid Curriculum ID
+     * @return recordset Recordset of waitlist, class, and course information
+     */
     static public function get_waitlist_in_curriculum($userid, $curid) {
         global $DB;
         $select  = 'SELECT wat.id wlid, wat.position, cls.idnumber clsid, crs.name, cls.* ';
@@ -1332,7 +1348,7 @@ class student extends elis_data_object {
         $sort = 'ORDER BY curcrs.position';
 
         $sql = $select.$tables.$join.$where.$sort;
-        return $DB->get_records_sql($sql, array($curid, $userid));
+        return $DB->get_recordset_sql($sql, array($curid, $userid));
     }
 
     /**
@@ -1572,7 +1588,7 @@ class student extends elis_data_object {
      * TBD: add remaining params
      * @param string $namesearch  name of the users being searched for
      * @param string $alpha       starting letter of the user being searched for
-     * @return array An array of user records.
+     * @return recordset A recordset of user records.
      */
     function get_users_avail($sort = 'name', $dir = 'ASC', $startrec = 0,
                              $perpage = 0, $namesearch = '', $alpha = '') {
@@ -1613,17 +1629,20 @@ class student extends elis_data_object {
         }
 
         $uids = array();
+
         if ($users = $this->get_students()) {
             foreach ($users as $user) {
                 $uids[] = $user->id;
             }
         }
+        unset($users);
 
         if ($users = $this->get_waiting()) {
             foreach ($users as $user) {
                 $uids[] = $user->id;
             }
         }
+        unset($users);
 
         $ins = new instructor();
         if ($users = $ins->get_instructors($this->classid)) {
@@ -1631,6 +1650,7 @@ class student extends elis_data_object {
                 $uids[] = $user->id;
             }
         }
+        unset($users);
 
         if (!empty($uids)) {
             $where .= ' AND usr.id NOT IN ( '. implode(', ', $uids) .' ) ';
@@ -1669,7 +1689,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select.$tables.$join.$on.$where.$sort;
-        return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
+        return $this->_db->get_recordset_sql($sql, $params, $startrec, $perpage);
     }
 
     /**
@@ -1715,12 +1735,14 @@ class student extends elis_data_object {
                 $uids[] = $user->id;
             }
         }
+        unset($users);
 
         if ($users = $this->get_waiting()) {
             foreach ($users as $user) {
                 $uids[] = $user->id;
             }
         }
+        unset($users);
 
         $ins = new instructor();
         if ($users = $ins->get_instructors($this->classid)) {
@@ -1728,6 +1750,7 @@ class student extends elis_data_object {
                 $uids[] = $user->id;
             }
         }
+        unset($users);
 
         if (!empty($uids)) {
             $where .= ' AND usr.id NOT IN ( '. implode(', ', $uids) .' ) ';
@@ -1766,7 +1789,7 @@ class student extends elis_data_object {
      * @param string $namesearch  name of the users being searched for
      * @param string $alpha       starting letter of the user being searched for
      * @uses  object $CFG         TBD: $CFG->curr_configteams
-     * @return array An array of user records.
+     * @return recordset A recordset of user records.
      */
     function get_users_enrolled($type = '', $sort = 'name', $dir = 'ASC', $startrec = 0,
                              $perpage = 0, $namesearch = '', $alpha = '') {
@@ -1825,7 +1848,7 @@ class student extends elis_data_object {
         }
 
         $sql = $select.$tables.$join.$on.$where.$sort;
-        return $this->_db->get_records_sql($sql, $params, $startrec, $perpage);
+        return $this->_db->get_recordset_sql($sql, $params, $startrec, $perpage);
     }
 
     /**
@@ -2372,7 +2395,7 @@ class student_grade extends elis_data_object {
  * @param string $namesearch Search string for student name.
  * @param string $alpha Start initial of student name filter.
  * @uses $DB
- * @return object array Returned records.
+ * @return recordset Returned records.
  */
 function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $perpage=0, $namesearch='',
                              $alpha='') {
@@ -2420,7 +2443,7 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
     }
 
     $sql = $select.$tables.$join.$on.$where.$sort;
-    return $DB->get_records_sql($sql, $params, $startrec, $perpage);
+    return $DB->get_recordset_sql($sql, $params, $startrec, $perpage);
 }
 
 /**
@@ -2505,7 +2528,7 @@ function student_get_student_classes($userid, $curid = 0) {
  * @param string $sort The field to sort on
  * @param string $dir The sort direction
  * @uses $DB
- * @return
+ * @return recordset
  */
 function student_get_class_from_course($crsid, $userid, $sort = 'cls.idnumber', $dir = 'ASC') {
     global $DB;
@@ -2516,5 +2539,5 @@ function student_get_class_from_course($crsid, $userid, $sort = 'cls.idnumber', 
             WHERE stu.userid = ?
             AND cls.courseid = ?
             ORDER BY '.$sort.' '.$dir;
-    return $DB->get_records_sql($sql, array($userid, $crsid));
+    return $DB->get_recordset_sql($sql, array($userid, $crsid));
 }

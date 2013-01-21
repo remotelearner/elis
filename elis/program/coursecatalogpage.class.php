@@ -99,8 +99,8 @@ class coursecatalogpage extends pm_page {
 
     function build_navbar_available() { // get_navigation_available()
         //$action = optional_param('action', 'default', PARAM_CLEAN);
-        //$page = $this->get_new_page(array('action' => $action), true); //new coursecatalogpage(array()); 
-        $page = $this->get_new_page(); //new coursecatalogpage(array()); 
+        //$page = $this->get_new_page(array('action' => $action), true); //new coursecatalogpage(array());
+        $page = $this->get_new_page(); //new coursecatalogpage(array());
         $this->navbar->add(get_string('availablecourses', 'elis_program'),
                            $page->url);
     }
@@ -125,12 +125,14 @@ class coursecatalogpage extends pm_page {
         global $OUTPUT;
         $crsid = cm_get_param('crsid', 0);
 
-        if ($classes = pmclass_get_listing('startdate', 'ASC', 0, 0, '', '', $crsid, true)) {
+        $classes = pmclass_get_listing('startdate', 'ASC', 0, 0, '', '', $crsid, true);
+        if ($classes->valid() === true) {
             $table = new addclasstable($classes);
             $table->print_table();
         } else {
             echo $OUTPUT->heading(get_string('no_classes_available', 'elis_program'));
         }
+        unset($classes);
     }
 
     public function display_waitlist() { // action_waitlist
@@ -158,7 +160,8 @@ class coursecatalogpage extends pm_page {
 
                 echo '<div id="curriculum'. $usercur->curid ."\" {$this->div_attrs} class=\"yui-skin-sam\">";
 
-                if($courses = student::get_waitlist_in_curriculum($cuserid, $usercur->curid)) {
+                $courses = student::get_waitlist_in_curriculum($cuserid, $usercur->curid);
+                if($courses->valid() === true) {
                     echo "<div id=\"$usercur->curid\"></div>";
 
                     $table = new waitlisttable($courses);
@@ -166,7 +169,7 @@ class coursecatalogpage extends pm_page {
                 } else {
                     echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
                 }
-
+                unset($courses);
 
                 echo '</div>';
             }

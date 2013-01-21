@@ -642,7 +642,7 @@ class user extends data_object_with_custom_fields {
      *
      * @param boolean $tab_sensitive true if we need to be concerned about whether
      *                               we are on the current or archived tab, otherwise
-     *                               false 
+     *                               false
      * @param boolean $show_archived specifies whether we're showing archived or non-
      *                               archived courses (ignored if tab_sensitive is false)
      * @param boolean $showcompleted specifies whether we're showing passed and failed
@@ -715,64 +715,66 @@ class user extends data_object_with_custom_fields {
                     $totalcourses = 0;
                     $completecourses = 0;
 
-                    if ($courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC')) {
-                        foreach ($courses as $course) {
-                            $course_obj = new course($course->courseid);
-                            $coursedesc = $course_obj->syllabus;
+                    $courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC');
+                    foreach ($courses as $course) {
+                        $course_obj = new course($course->courseid);
+                        $coursedesc = $course_obj->syllabus;
 
-                            if ($cdata = student_get_class_from_course($course->courseid, $this->id)) {
-                                foreach($cdata as $classdata) {
-                                    //count each enrolment as one "course"
-                                    $totalcourses++;
-
-                                    if (!in_array($classdata->id, $classids)) {
-                                        $classids[] = $classdata->id;
-                                    }
-
-                                    if ($classdata->completestatusid == STUSTATUS_PASSED ||
-                                        $classdata->completestatusid == STUSTATUS_FAILED) {
-                                        //count completed enrolments
-                                        $completecourses++;
-                                    }
-
-                                    if (!$showcompleted && ($classdata->completestatusid == STUSTATUS_PASSED ||
-                                                            $classdata->completestatusid == STUSTATUS_FAILED)) {
-                                        //not showing completed courses, so skip this course
-                                        continue;
-                                    }
-
-                                    if ($mdlcrs = moodle_get_course($classdata->id)) {
-                                        $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
-                                            $mdlcrs . '">' . $course->coursename . '</a>';
-                                    } else {
-                                        $coursename = $course->coursename;
-                                    }
-
-                                    $data[] = array(
-                                        $coursename,
-                                        $classdata->idnumber,
-                                        $coursedesc,
-                                        pm_display_grade($classdata->grade),
-                                        $status_mapping[$classdata->completestatusid],
-                                        $classdata->completestatusid == STUSTATUS_PASSED && !empty($classdata->completetime) ?
-                                        date('M j, Y', $classdata->completetime) : get_string('na','elis_program')
-                                        );
-                                }
-                            } else {
-                                //count this unenrolled course toward the total
+                        $cdata = student_get_class_from_course($course->courseid, $this->id);
+                        if ($cdata->valid() === true) {
+                            foreach($cdata as $classdata) {
+                                //count each enrolment as one "course"
                                 $totalcourses++;
 
+                                if (!in_array($classdata->id, $classids)) {
+                                    $classids[] = $classdata->id;
+                                }
+
+                                if ($classdata->completestatusid == STUSTATUS_PASSED ||
+                                    $classdata->completestatusid == STUSTATUS_FAILED) {
+                                    //count completed enrolments
+                                    $completecourses++;
+                                }
+
+                                if (!$showcompleted && ($classdata->completestatusid == STUSTATUS_PASSED ||
+                                                        $classdata->completestatusid == STUSTATUS_FAILED)) {
+                                    //not showing completed courses, so skip this course
+                                    continue;
+                                }
+
+                                if ($mdlcrs = moodle_get_course($classdata->id)) {
+                                    $coursename = '<a href="' . $CFG->wwwroot . '/course/view.php?id=' .
+                                        $mdlcrs . '">' . $course->coursename . '</a>';
+                                } else {
+                                    $coursename = $course->coursename;
+                                }
+
                                 $data[] = array(
-                                    $course->coursename,
-                                    get_string('dashboard_na', 'elis_program'),
+                                    $coursename,
+                                    $classdata->idnumber,
                                     $coursedesc,
-                                    0,
-                                    get_string('not_enrolled', 'elis_program'),
-                                    get_string('na','elis_program')
-                                );
+                                    pm_display_grade($classdata->grade),
+                                    $status_mapping[$classdata->completestatusid],
+                                    $classdata->completestatusid == STUSTATUS_PASSED && !empty($classdata->completetime) ?
+                                    date('M j, Y', $classdata->completetime) : get_string('na','elis_program')
+                                    );
                             }
+                        } else {
+                            //count this unenrolled course toward the total
+                            $totalcourses++;
+
+                            $data[] = array(
+                                $course->coursename,
+                                get_string('dashboard_na', 'elis_program'),
+                                $coursedesc,
+                                0,
+                                get_string('not_enrolled', 'elis_program'),
+                                get_string('na','elis_program')
+                            );
                         }
+                        unset($cdata);
                     }
+                    unset($courses);
 
                     $curriculas[$usercur->curid]['data'] = $data;
                     //associate this program id with the appropriate counts
@@ -782,17 +784,17 @@ class user extends data_object_with_custom_fields {
                 } else {
 
                     // Keep note of the classid's regardless if set archived or not for later use in determining non-curricula courses
-                    if ($courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC')) {
-                        foreach ($courses as $course) {
-                            if ($cdata = student_get_class_from_course($course->courseid, $this->id)) {
-                                foreach ($cdata as $classdata) {
-                                    if (!in_array($classdata->id, $classids)) {
-                                        $classids[] = $classdata->id;
-                                    }
-                                }
+                    $courses = curriculumcourse_get_listing($usercur->curid, 'curcrs.position, crs.name', 'ASC');
+                    foreach ($courses as $course) {
+                        $cdata = student_get_class_from_course($course->courseid, $this->id);
+                        foreach ($cdata as $classdata) {
+                            if (!in_array($classdata->id, $classids)) {
+                                $classids[] = $classdata->id;
                             }
                         }
+                        unset($cdata);
                     }
+                    unset($courses);
 
                 }
             }
@@ -805,7 +807,7 @@ class user extends data_object_with_custom_fields {
      * Convert a listing of a particular program's courses to a data table
      *
      * @param array $curricula A listing of table entries for a particular program
-     * @return object the table that can be used to display this information 
+     * @return object the table that can be used to display this information
      */
     function get_dashboard_program_table($curricula) {
         $table = new html_table();
@@ -925,7 +927,7 @@ class user extends data_object_with_custom_fields {
      * Convert a listing of non-program courses to a data table
      *
      * @param array $classes A listing of table entries for non-program courses
-     * @return object the table that can be used to display this information 
+     * @return object the table that can be used to display this information
      */
     function get_dashboard_nonprogram_table($classes) {
         global $CFG;
@@ -1035,10 +1037,10 @@ class user extends data_object_with_custom_fields {
                 //add some spacing
                 $br_tag = html_writer::empty_tag('br');
                 $output .= $br_tag.$br_tag;
-    
+
                 //static part of the "show all" text
                 $output .= get_string('dashboard_show_all', 'elis_program');
-    
+
                 //the link
                 $show_all_text = get_string('dashboard_show_all_link', 'elis_program');
                 $parameter = $programid == false ? 'false' : $programid;

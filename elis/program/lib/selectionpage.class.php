@@ -215,7 +215,7 @@ abstract class selectionpage extends pm_page { // TBD
             list($records, $count) = $this->get_records($filter);
         }
 
-        $records = $records ? $records : array();
+        $records = (is_array($records) || ($records instanceof Iterator && $records->valid())) ? $records : array();
         $table = $this->create_selection_table($records, $baseurl);
         $this->print_js_selection_table($table, $filter, $count, $form, $baseurl);
     }

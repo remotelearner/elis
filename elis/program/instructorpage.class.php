@@ -333,7 +333,7 @@ class instructorpage extends associationpage {
         pmsearchbox($this, 'search', 'get', get_string('show_all_users', self::LANG_FILE));
 
         $table = NULL;
-        if (!$inss) {
+        if ($inss->valid() === false) {
             pmshowmatches($alpha, $namesearch, null, 'no_instructor_matching');
         } else {
             // TBD
@@ -364,6 +364,7 @@ class instructorpage extends associationpage {
                 $table = new instructor_page_table($newarr, $columns, $this);
             }
         }
+        unset($inss);
 
         $options = array('s' => 'ins', 'section' => 'curr', 'action' => 'add',
                          'id' => $clsid);
