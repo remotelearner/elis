@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,25 +20,26 @@
  * @subpackage curriculummanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') or die();
 
 // Waiting on conversion?
 //require_once (CURMAN_DIRLOCATION . '/lib/lib.php');
 
-require_once elispm::lib('data/track.class.php');
-require_once elispm::lib('data/user.class.php');
-require_once elispm::lib('data/usertrack.class.php');
-require_once elispm::lib('data/userset.class.php');
-require_once elispm::lib('associationpage.class.php');
-require_once elispm::lib('page.class.php');
-require_once elispm::file('trackassignmentpage.class.php');
-require_once elispm::file('trackpage.class.php');
-require_once elispm::file('userpage.class.php');
-require_once elispm::file('usertrackpage.class.php');
+require_once(elispm::lib('data/track.class.php'));
+require_once(elispm::lib('data/user.class.php'));
+require_once(elispm::lib('data/usertrack.class.php'));
+require_once(elispm::lib('data/userset.class.php'));
+require_once(elispm::lib('associationpage.class.php'));
+require_once(elispm::lib('deepsightpage.class.php'));
+require_once(elispm::lib('page.class.php'));
+require_once(elispm::file('trackassignmentpage.class.php'));
+require_once(elispm::file('trackpage.class.php'));
+require_once(elispm::file('userpage.class.php'));
+require_once(elispm::file('usertrackpage.class.php'));
 
 class usertrackbasepage extends associationpage {
 
@@ -195,7 +196,258 @@ class usertrackpage extends usertrackbasepage {
     }*/
 }
 
-class trackuserpage extends usertrackbasepage {
+/**
+ * Deepsight assignment page for user <-> track associations.
+ */
+class trackuserpage extends deepsightpage {
+    public $pagename = 'trkusr';
+    public $section = 'curr';
+    public $tab_page = 'trackpage';
+    public $data_class = 'usertrack';
+    public $parent_page;
+    public $context;
+
+    /**
+     * Constructor
+     */
+    public function __construct(array $params = null) {
+        $this->context = parent::_get_page_context();
+        parent::__construct($params);
+    }
+
+    /**
+     * Get the context of the current track.
+     *
+     * @return context_elis_track The current track context object.
+     */
+    protected function get_context() {
+        if (!isset($this->context)) {
+            $id = required_param('id', PARAM_INT);
+            $this->context = context_elis_track::instance($id);
+        }
+        return $this->context;
+    }
+
+    /**
+     * Construct the assigned datatable.
+     *
+     * @param string $uniqid A unique ID to assign to the datatable object.
+     * @return deepsight_datatable The datatable object.
+     */
+    protected function construct_assigned_table($uniqid = null) {
+        global $DB;
+        $trackid = $this->required_param('id', PARAM_INT);
+        $endpoint = qualified_me().'&action=deepsight_response&tabletype=assigned&id='.$trackid;
+        $table = new deepsight_datatable_trackassigned($DB, 'assigned', $endpoint, $uniqid);
+        $table->set_trackid($trackid);
+        return $table;
+    }
+
+    /**
+     * Construct the unassigned datatable.
+     *
+     * @param string $uniqid A unique ID to assign to the datatable object.
+     * @return deepsight_datatable The datatable object.
+     */
+    protected function construct_unassigned_table($uniqid = null) {
+        global $DB;
+        $trackid = $this->required_param('id', PARAM_INT);
+        $endpoint = qualified_me().'&action=deepsight_response&tabletype=unassigned&id='.$trackid;
+        $table = new deepsight_datatable_trackavailable($DB, 'unassigned', $endpoint, $uniqid, $trackid);
+        $table->set_trackid($trackid);
+        return $table;
+    }
+
+    /**
+     * Track assignment permission is handled at the action-object level.
+     *
+     * @return true
+     */
+    public function can_do_action_trackassign() {
+        return true;
+    }
+
+    /**
+     * Track unassignment permission is handled at the action-object level.
+     *
+     * @return true
+     */
+    public function can_do_action_trackunassign() {
+        return true;
+    }
+
+    /**
+     * Whether the user has access to see the main page (assigned list)
+     *
+     * @return bool Whether the user has access.
+     */
+    public function can_do_default() {
+        $id = $this->required_param('id', PARAM_INT);
+        $tpage = new trackpage();
+        return $tpage->_has_capability('elis/program:track_view', $id);
+    }
+
+    /**
+     * Determine whether the current user can enrol students into the class.
+     *
+     * @return bool Whether the user can enrol users into the class or not.
+     */
+    public function can_do_add() {
+        $id = $this->required_param('id', PARAM_INT);
+        return trackpage::can_enrol_into_track($id);
+    }
+}
+
+/**
+ * A base datatable object for track assignments.
+ */
+class deepsight_datatable_trackassignments extends deepsight_datatable_user {
+    protected $trackid;
+
+    /**
+     * Sets the current track ID
+     *
+     * @param int $trackid The ID of the track to use.
+     */
+    public function set_trackid($trackid) {
+        $this->trackid = (int)$trackid;
+    }
+
+    /**
+     * Gets an array of javascript files needed for operation.
+     *
+     * @see deepsight_datatable::get_js_dependencies()
+     */
+    public function get_js_dependencies() {
+        $deps = parent::get_js_dependencies();
+        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        return $deps;
+    }
+
+    /**
+     * Get an array of options to pass to the deepsight_datatable javascript object.
+     *
+     * Enables drag and drop, and multiselect
+     *
+     * @return array An array of options, ready to be passed to $this->get_init_js()
+     */
+    public function get_table_js_opts() {
+        $opts = parent::get_table_js_opts();
+        $opts['dragdrop'] = true;
+        $opts['multiselect'] = true;
+        return $opts;
+    }
+}
+
+/**
+ * A datatable object for users assigned to the track.
+ */
+class deepsight_datatable_trackassigned extends deepsight_datatable_trackassignments {
+    /**
+     * Gets the unassignment action.
+     *
+     * @return array An array of deepsight_action objects that will be available for each element.
+     */
+    public function get_actions() {
+        $actions = parent::get_actions();
+        $unassignaction = new deepsight_action_trackunassign($this->DB, 'trackunassign');
+        $unassignaction->endpoint = (strpos($this->endpoint, '?') !== false)
+                ? $this->endpoint.'&m=action'
+                : $this->endpoint.'?m=action';
+        array_unshift($actions, $unassignaction);
+        return $actions;
+    }
+
+    /**
+     * Adds the assignment table for this track.
+     *
+     * @param array $filters An array of active filters to use to determne join sql.
+     * @return string A SQL string containing any JOINs needed for the full query.
+     */
+    protected function get_join_sql(array $filters=array()) {
+        $joinsql = parent::get_join_sql($filters);
+        $joinsql[] = 'JOIN {'.usertrack::TABLE.'} trkass ON trkass.trackid='.$this->trackid.' AND trkass.userid = element.id';
+        return $joinsql;
+    }
+}
+
+/**
+ * A datatable for users not yet assigned to the track.
+ */
+class deepsight_datatable_trackavailable extends deepsight_datatable_trackassignments {
+    /**
+     * Gets the track assignment action.
+     *
+     * @return array An array of deepsight_action objects that will be available for each element.
+     */
+    public function get_actions() {
+        $actions = parent::get_actions();
+        $assignaction = new deepsight_action_trackassign($this->DB, 'trackassign');
+        $assignaction->endpoint = (strpos($this->endpoint, '?') !== false)
+            ? $this->endpoint.'&m=action'
+            : $this->endpoint.'?m=action';
+        array_unshift($actions, $assignaction);
+        return $actions;
+    }
+
+    /**
+     * Adds the assignment table for this track.
+     *
+     * @param array $filters An array of active filters to use to determne join sql.
+     * @return string A SQL string containing any JOINs needed for the full query.
+     */
+    protected function get_join_sql(array $filters=array()) {
+        $joinsql = parent::get_join_sql($filters);
+        $joinsql[] = 'LEFT JOIN {'.usertrack::TABLE.'} trkass ON trkass.trackid='.$this->trackid.' AND trkass.userid = element.id';
+        return $joinsql;
+    }
+
+    /**
+     * Removes instructors and waitlisted users, and adds permission limits, if applicable.
+     *
+     * @param array $filters An array of requested filter data. Formatted like [filtername]=>[data].
+     * @return array An array consisting of the SQL WHERE clause, and the parameters for the SQL.
+     */
+    protected function get_filter_sql(array $filters) {
+        global $USER;
+
+        list($filtersql, $filterparams) = parent::get_filter_sql($filters);
+
+        $additionalfilters = array();
+
+        // Limit to users not currently assigned.
+        $additionalfilters[] = 'trkass.userid IS NULL';
+
+        // Permissions.
+        $tpage = new trackpage();
+        if (!$tpage->_has_capability('elis/program:track_enrol', $this->trackid)) {
+            // Perform SQL filtering for the more "conditional" capability.
+            // Get the context for the "indirect" capability.
+            $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
+
+            // Get the clusters and check the context against them.
+            $clusters = clustertrack::get_clusters($this->trackid);
+            $allowedclusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
+
+            if (empty($allowedclusters)) {
+                $additionalfilters[] = '0=1';
+            } else {
+                $clusterfilter = 'SELECT userid FROM {'.clusterassignment::TABLE.'} WHERE clusterid IN (:clusterfilter)';
+                $additionalfilters[] = 'AND element.id IN ('.$clusterfilter.')';
+                $filterparams['clusterfilter'] = implode(',', $allowedclusters);
+            }
+        }
+
+        // Add our additional filters.
+        $filtersql = (!empty($filtersql))
+            ? $filtersql.' AND '.implode(' AND ', $additionalfilters)
+            : 'WHERE '.implode(' AND ', $additionalfilters);
+
+        return array($filtersql, $filterparams);
+    }
+}
+
+class trackuserpage_old extends usertrackbasepage {
     var $pagename = 'trkusr';
     var $tab_page = 'trackpage';
     //var $default_tab = 'trackuserpage';
@@ -215,10 +467,6 @@ class trackuserpage extends usertrackbasepage {
         return trackpage::can_enrol_into_track($id);
     }
 
-    function can_do_savenew() {
-        return $this->can_do_add();
-    }
-
     function can_do_delete() {
         global $USER;
 
@@ -226,90 +474,5 @@ class trackuserpage extends usertrackbasepage {
         $usrtrk = new usertrack($association_id);
 
         return usertrack::can_manage_assoc($usrtrk->userid, $usrtrk->trackid);
-    }
-
-    function can_do_confirm() {
-        return $this->can_do_add();
-    }
-
-    function display_default() {
-        global $OUTPUT;
-
-        $id      = $this->required_param('id', PARAM_INT);
-        $sort    = $this->optional_param('sort', 'idnumber', PARAM_ALPHANUM);
-        $dir     = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
-        $page    = $this->optional_param('page', 0, PARAM_INT);
-        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
-
-        $columns = array(
-                'idnumber' => array('header' => get_string('student_idnumber', 'elis_program'),
-                                    'decorator' => array(
-                                        new record_link_decorator('userpage',
-                                                array('action' => 'view'), 'userid'), 'decorate')),
-                'name'     => array('header' => get_string('tag_name', 'elis_program'),
-                                    'decorator' => array(
-                                        new record_link_decorator('userpage',
-                                                array('action' => 'view'),
-                                                'userid'),
-                                                'decorate')),
-                'email'    => array('header' => get_string('email', 'elis_program')),
-                'manage'   => array('header' => ''),
-        );
-
-        if ($dir !== 'DESC') {
-            $dir = 'ASC';
-        }
-        if (isset($columns[$sort])) {
-            $columns[$sort]['sortable'] = $dir;
-        } else {
-            $sort = 'idnumber';
-            $columns[$sort]['sortable'] = $dir;
-        }
-
-        $items = usertrack::get_users($id);
-        $count = $items ? count($items) : 0;
-        $items = usertrack::get_users($id, $sort, $dir, $page, $perpage);
-        echo $OUTPUT->paging_bar($count, $page, $perpage, $this->url);
-
-        $this->print_list_view($items, $columns, 'users');
-
-        if ($this->can_do_add()) {
-            $this->print_assign_link();
-        }
-    }
-
-    /**
-     * Handler for the confirm (confirm delete) action.  Tries to delete the object and then renders the appropriate page.
-     */
-    /*
-    function do_delete() {
-        $association_id = required_param('association_id', PARAM_INT);
-        $id = required_param('id', PARAM_INT);
-
-
-        $obj = new $this->data_class($association_id);
-        $obj->delete();
-
-        $target_page = $this->get_new_page(array('id'=> $id));
-
-        redirect($target_page->url);
-    }*/
-
-    function print_assign_link() {
-        global $CFG;
-
-        $id = $this->required_param('id', PARAM_INT);
-        $popup_settings ="height=500,width=500,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
-        $url = $CFG->wwwroot .'/elis/program/usertrackpopup.php?track='.$id;
-        $jsondata = array('url'=>$url,'name'=>'usertrackpopup','options'=>$popup_settings);
-        $jsondata = json_encode($jsondata);
-        $title = get_string('track_assign_users', 'elis_program');
-
-        echo <<<EOD
-<div align="center"><br />
-<input type="button" onclick='return openpopup(null,$jsondata);' value="{$title}"/>
-</div>
-EOD;
-
     }
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * @subpackage programmanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -31,6 +31,7 @@ require_once elispm::lib('data/curriculumstudent.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/clusterassignment.class.php');
 require_once elispm::lib('associationpage2.class.php');
+require_once elispm::lib('deepsightpage.class.php');
 require_once elispm::lib('contexts.php');
 require_once elispm::file('userpage.class.php');
 require_once elispm::file('curriculumpage.class.php');
@@ -475,45 +476,32 @@ class user_curriculum_selection_table extends selection_table {
     }
 }
 
-class curriculumstudentpage extends associationpage2 {
-    var $pagename = 'curstu';
-    var $section = 'curr';
-    var $tab_page = 'curriculumpage';
-    var $data_class = 'curriculumstudent';
-    var $parent_data_class = 'curriculum';
-    var $parent_page;
-    var $context;
+/**
+ * Defines the page to manage associations between programs and students
+ */
+class curriculumstudentpage extends deepsightpage {
+    const LANG_FILE = 'elis_program';
+    public $pagename = 'curstu';
+    public $section = 'curr';
+    public $tab_page = 'curriculumpage';
+    public $data_class = 'curriculumstudent';
+    public $parent_data_class = 'curriculum';
+    public $default_tab = 'curriculumstudent';
+    public $parent_page;
+    public $context;
 
-    var $params = array();
-
-    var $default_tab = 'curriculumstudent';
-
+    /**
+     * Constructor.
+     */
     public function __construct(array $params = null) {
-        $this->section = $this->get_parent_page()->section;
         $this->context = parent::_get_page_context();
-        $this->params = $this->_get_page_params();
         parent::__construct($params);
     }
 
-    public function _get_page_params() {
-        return array('id' => $this->optional_param('id', 0, PARAM_INT)) + parent::_get_page_params();
-    }
-
-    function can_do_default() {
-        $id = $this->required_param('id', PARAM_INT);
-        if ($this->is_assigning()) {
-            return curriculumpage::can_enrol_into_curriculum($id);
-        } else {
-            // TODO: Ugly, this needs to be overhauled
-            $cpage = new curriculumpage();
-            return $cpage->_has_capability('elis/program:program_view', $id);
-        }
-    }
-
-    function get_title_default() {
-        return get_string('breadcrumb_curriculumstudentpage','elis_program');
-    }
-
+    /**
+     * Get the context of the current program.
+     * @return context_elis_program The context object of the current program.
+     */
     protected function get_context() {
         if (!isset($this->context)) {
             $id = required_param('id', PARAM_INT);
@@ -522,254 +510,234 @@ class curriculumstudentpage extends associationpage2 {
         return $this->context;
     }
 
-    protected function get_parent_page() {
-        if (!isset($this->parent_page)) {
-            $id = isset($this->params['id']) ? $this->params['id'] : NULL;
-            $this->parent_page = new curriculumpage(array('id' => $id, 'action' => 'view'));
-        }
-        return $this->parent_page;
+    /**
+     * Construct the assigned datatable.
+     *
+     * @param string $uniqid A unique ID to assign to the datatable object.
+     * @return deepsight_datatable The datatable object.
+     */
+    protected function construct_assigned_table($uniqid = null) {
+        global $DB;
+        $programid = $this->required_param('id', PARAM_INT);
+        $endpoint = qualified_me().'&action=deepsight_response&tabletype=assigned&id='.$programid;
+        $table = new deepsight_datatable_programassigned($DB, 'assigned', $endpoint, $uniqid);
+        $table->set_programid($programid);
+        return $table;
     }
 
-    function get_tab_page() {
-        return $this->get_parent_page();
+    /**
+     * Construct the unassigned datatable.
+     *
+     * @param string $uniqid A unique ID to assign to the datatable object.
+     * @return deepsight_datatable The datatable object.
+     */
+    protected function construct_unassigned_table($uniqid = null) {
+        global $DB;
+        $programid = $this->required_param('id', PARAM_INT);
+        $endpoint = qualified_me().'&action=deepsight_response&tabletype=unassigned&id='.$programid;
+        $table = new deepsight_datatable_programavailable($DB, 'unassigned', $endpoint, $uniqid, $programid);
+        $table->set_programid($programid);
+        return $table;
     }
 
-    function build_navbar_default($who = null, $addparent = true, $params = array()) {
-        $this->get_parent_page()->build_navbar_view($this);
+    /**
+     * Program assignment permission is handled at the action-object level
+     * @return true
+     */
+    public function can_do_action_programassign() {
+        return true;
     }
 
-    protected function get_selection_form() {
-        if ($this->is_assigning()) {
-            return new assignstudentform();
-        } else {
-            return new unassignstudentform();
-        }
+    /**
+     * Program unassignment permission is handled at the action-object level
+     * @return true
+     */
+    public function can_do_action_programunassign() {
+        return true;
     }
 
-    protected function process_assignment($data) {
-        $context = $this->get_context();
-
-        $curid  = $data->id;
-        foreach ($data->_selection as $userid) {
-            $stucur = new curriculumstudent(array('userid' => $userid,
-                                                  'curriculumid' => $curid));
-            $stucur->save();
-        }
-
-        $tmppage = $this->get_new_page(array('_assign' => 'assign'));
-        $sparam = new stdClass;
-        $sparam->num = count($data->_selection);
-        redirect($tmppage->url, get_string('num_users_assigned', 'elis_program', $sparam));
-    }
-
-    protected function process_unassignment($data) {
-        $curid  = $data->id;
-        foreach ($data->_selection as $associd) {
-            $curstu = new curriculumstudent($associd);
-            if ($curstu->curriculumid == $curid) { // sanity check
-                $curstu->delete();
-            }
-        }
-
-        $tmppage = $this->get_new_page(array('_assign' => 'unassign'));
-        $sparam = new stdClass;
-        $sparam->num = count($data->_selection);
-        redirect($tmppage->url, get_string('num_users_unassigned', 'elis_program', $sparam));
-    }
-
-    protected function get_selection_filter() {
-        $post = $_POST;
-        $filter = new pm_user_filtering(null, 'index.php', array('s' => $this->pagename) + $this->get_base_params());
-        $_POST = $post;
-        return $filter;
-    }
-
-    protected function print_selection_filter($filter) {
-        $filter->display_add();
-        $filter->display_active();
-    }
-
-    protected function get_available_records($filter) {
-        global $USER, $DB;
-
-        $context = $this->get_context();
-        $id = required_param('id', PARAM_INT);
-
-        $pagenum = $this->optional_param('page', 0, PARAM_INT);
-        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
-        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
-        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
-        $params = array();
-        if ($order != 'DESC') {
-            $order = 'ASC';
-        }
-
-        static $sortfields = array(
-            'name' => array('lastname', 'firstname'),
-            'idnumber' => 'idnumber',
-            'country' => 'country',
-            'language' => 'language',
-            );
-        if (!array_key_exists($sort, $sortfields)) {
-            $sort = key($sortfields);
-        }
-        if (is_array($sortfields[$sort])) {
-            $sortclause = implode(', ', array_map(create_function('$x', "return \"\$x $order\";"), $sortfields[$sort]));
-        } else {
-            $sortclause = "{$sortfields[$sort]} $order";
-        }
-
-        $where = 'id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=:id)';
-        $params['id'] = $id;
-
-        $extrasql = $filter->get_sql_filter();
-        if ($extrasql[0]) {
-            $where .= ' AND '.$extrasql[0];
-        }
-        if ($extrasql[1]) {
-            $params = array_merge($params,$extrasql[1]);
-        }
-
-        // TODO: Ugly, this needs to be overhauled
+    /**
+     * Whether the user has access to see the main page (assigned list)
+     * @return bool Whether the user has access.
+     */
+    public function can_do_default() {
+        $id = $this->required_param('id');
         $cpage = new curriculumpage();
+        return $cpage->_has_capability('elis/program:program_view', $id);
+    }
 
-        if (!$cpage->_has_capability('elis/program:program_enrol', $id)) {
-            //perform SQL filtering for the more "conditional" capability
+    /**
+     * Determine whether the current user can enrol students into the class.
+     * @return bool Whether the user can enrol users into the class or not.
+     */
+    public function can_do_add() {
+        $id = $this->required_param('id');
+        return curriculumpage::can_enrol_into_curriculum($id);
+    }
+}
+
+/**
+ * A base class for users and programs - both the assigned and available tables extend this.
+ */
+class deepsight_datatable_programassignments extends deepsight_datatable_user {
+    protected $programid;
+
+    /**
+     * Sets the current program ID
+     *
+     * @param int $programid The ID of the program to use.
+     */
+    public function set_programid($programid) {
+        $this->programid = (int)$programid;
+    }
+
+    /**
+     * Gets an array of javascript files needed for operation.
+     *
+     * @see deepsight_datatable::get_js_dependencies()
+     */
+    public function get_js_dependencies() {
+        $deps = parent::get_js_dependencies();
+        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        return $deps;
+    }
+
+    /**
+     * Get an array of options to pass to the deepsight_datatable javascript object.
+     *
+     * Enables drag and drop, and multiselect.
+     *
+     * @return array An array of options, ready to be passed to $this->get_init_js()
+     */
+    public function get_table_js_opts() {
+        $opts = parent::get_table_js_opts();
+        $opts['dragdrop'] = true;
+        $opts['multiselect'] = true;
+        return $opts;
+    }
+}
+
+/**
+ * A datatable listing users that are available to assign to the program, and are not currently assigned.
+ */
+class deepsight_datatable_programavailable extends deepsight_datatable_programassignments {
+    /**
+     * Gets the program assignment action.
+     *
+     * @return array An array of deepsight_action objects that will be available for each element.
+     */
+    public function get_actions() {
+        $actions = parent::get_actions();
+        $assignaction = new deepsight_action_programassign($this->DB, 'programassign');
+        $assignaction->endpoint = (strpos($this->endpoint, '?') !== false)
+            ? $this->endpoint.'&m=action'
+            : $this->endpoint.'?m=action';
+        array_unshift($actions, $assignaction);
+        return $actions;
+    }
+
+    /**
+     * Adds the assignment table for this program.
+     *
+     * @param array $filters An array of active filters to use to determne join sql.
+     *
+     * @return string A SQL string containing any JOINs needed for the full query.
+     */
+    protected function get_join_sql(array $filters=array()) {
+        $joinsql = parent::get_join_sql($filters);
+        $joinsql[] = 'LEFT JOIN {'.curriculumstudent::TABLE.'} currass
+                            ON currass.curriculumid='.$this->programid.' AND currass.userid = element.id';
+        return $joinsql;
+    }
+
+    /**
+     * Removes assigned users, and limits results according to permissions.
+     *
+     * @param array $filters An array of requested filter data. Formatted like [filtername]=>[data].
+     *
+     * @return array An array consisting of the SQL WHERE clause, and the parameters for the SQL.
+     */
+    protected function get_filter_sql(array $filters) {
+        global $USER;
+
+        list($filtersql, $filterparams) = parent::get_filter_sql($filters);
+
+        $additionalfilters = array();
+
+        // Remove assigned users.
+        $additionalfilters[] = 'element.id NOT IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=?)';
+        $filterparams[] = $this->programid;
+
+        // Permissions.
+        $cpage = new curriculumpage();
+        if (!$cpage->_has_capability('elis/program:program_enrol', $this->programid)) {
+            // Perform SQL filtering for the more "conditional" capability.
             $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
 
-            $allowed_clusters = array();
+            $allowedclusters = array();
 
-            //get the clusters assigned to this curriculum
-            $clusters = clustercurriculum::get_clusters($id);
+            // Get the clusters assigned to this curriculum.
+            $clusters = clustercurriculum::get_clusters($this->programid);
             if (!empty($clusters)) {
                 foreach ($clusters as $cluster) {
                     if ($context->context_allowed($cluster->clusterid, 'cluster')) {
-                        $allowed_clusters[] = $cluster->clusterid;
+                        $allowedclusters[] = $cluster->clusterid;
                     }
                 }
             }
 
-            if (empty($allowed_clusters)) {
+            if (empty($allowedclusters)) {
+                $additionalfilters[] = '0=1';
                 return array(array(), 0);
             } else {
-                $cluster_filter = implode(',', $allowed_clusters);
-                $cluster_filter = ' id IN (SELECT userid FROM {'.clusterassignment::TABLE.'}
-                                            WHERE clusterid IN ('.$cluster_filter.'))';
-                $where .= ' AND '.$cluster_filter;
+                $clusterfilter = implode(',', $allowedclusters);
+                $clusterfilter = 'element.id IN (SELECT userid FROM {'.clusterassignment::TABLE.'}
+                                            WHERE clusterid IN ('.$clusterfilter.'))';
+                $additionalfilters[] = $clusterfilter;
             }
         }
 
-        $count = $DB->count_records_select(user::TABLE, $where, $params);
-        $users = $DB->get_recordset_select(user::TABLE, $where, $params, $sortclause, '*', $pagenum*$perpage, $perpage);
+        // Add our additional filters.
+        $filtersql = (!empty($filtersql))
+            ? $filtersql.' AND '.implode(' AND ', $additionalfilters)
+            : 'WHERE '.implode(' AND ', $additionalfilters);
 
-        return array($users, $count);
+        return array($filtersql, $filterparams);
+    }
+}
+
+/**
+ * A datatable for listing currently assigned users.
+ */
+class deepsight_datatable_programassigned extends deepsight_datatable_programassignments {
+    /**
+     * Gets the unassignment action.
+     *
+     * @return array An array of deepsight_action objects that will be available for each element.
+     */
+    public function get_actions() {
+        $actions = parent::get_actions();
+        $unassignaction = new deepsight_action_programunassign($this->DB, 'programunassign');
+        $unassignaction->endpoint = (strpos($this->endpoint, '?') !== false)
+            ? $this->endpoint.'&m=action'
+            : $this->endpoint.'?m=action';
+        array_unshift($actions, $unassignaction);
+        return $actions;
     }
 
-    protected function get_assigned_records($filter) {
-        global $DB;
-
-        $context = $this->get_context();
-        $id = required_param('id', PARAM_INT);
-
-        $pagenum = $this->optional_param('page', 0, PARAM_INT);
-        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
-        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
-        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
-        $params  = array();
-        if ($order != 'DESC') {
-            $order = 'ASC';
-        }
-
-        static $sortfields = array(
-            'name' => array('lastname', 'firstname'),
-            'idnumber' => 'idnumber',
-            'country' => 'country',
-            'language' => 'language',
-            'timecreated' => 'curass.timecreated'
-            );
-        if (!array_key_exists($sort, $sortfields)) {
-            $sort = key($sortfields);
-        }
-        if (is_array($sortfields[$sort])) {
-            $sortclause = implode(', ', array_map(create_function('$x', "return \"\$x $order\";"), $sortfields[$sort]));
-        } else {
-            $sortclause = "{$sortfields[$sort]} $order";
-        }
-
-        $where = 'id IN (SELECT userid FROM {'.curriculumstudent::TABLE.'} WHERE curriculumid=:id1)';
-        //do not use a user table alias because user-based filters operate on the user table directly
-        $sql = 'SELECT curass.id, {'.user::TABLE.'}.id AS userid, firstname, lastname, idnumber, country, language, curass.timecreated
-                FROM {'.curriculumstudent::TABLE.'} curass
-                JOIN {'.user::TABLE.'}
-                  ON curass.userid = {'.user::TABLE.'}.id
-               WHERE curass.curriculumid=:id2
-                 AND {' .user::TABLE."}.{$where}";
-
-        $params['id1'] = $id;
-        $params['id2'] = $id;
-
-        $extrasql = $filter->get_sql_filter();
-        if ($extrasql[0]) {
-            $where .= ' AND '.$extrasql[0];
-            $sql .= ' AND '.$extrasql[0];
-        }
-
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
-            $where .= ' AND inactive = 0';
-            $sql .= ' AND inactive = 0';
-        }
-
-        if ($extrasql[1]) {
-            $params = array_merge($params, $extrasql[1]);
-        }
-
-        //sort based on default / url params
-        $sql .= ' ORDER BY '.$sortclause;
-
-        $fields = 'curass.id, usr.id AS userid, usr.firstname, usr.lastname, usr.idnumber, usr.country, usr.language, curass.timecreated';
-        $count = $DB->count_records_select(user::TABLE, $where, $params);
-        $users = $DB->get_recordset_sql($sql, $params, $pagenum*$perpage, $perpage);
-        //$users = $DB->get_recordset_select(user::TABLE, $where, $params, $sortclause, $fields, $pagenum*$perpage, $perpage);
-
-        return array($users, $count);
+    /**
+     * Adds the assignment table for this program.
+     *
+     * @param array $filters An array of active filters to use to determne join sql.
+     *
+     * @return string A SQL string containing any JOINs needed for the full query.
+     */
+    protected function get_join_sql(array $filters=array()) {
+        $joinsql = parent::get_join_sql($filters);
+        $joinsql[] = 'JOIN {'.curriculumstudent::TABLE.'} currass
+                            ON currass.curriculumid='.$this->programid.' AND currass.userid = element.id';
+        return $joinsql;
     }
-
-    function get_records_from_selection($record_ids) {
-        $sort    = $this->optional_param('sort', 'name', PARAM_ALPHA);
-        $order   = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
-        $perpage = $this->optional_param('perpage', 30, PARAM_INT);
-        $page    = $this->optional_param('page', 0, PARAM_INT);
-
-        $records = user::find(new in_list_filter('id', $record_ids), array($sort => $order), $page * $perpage, $perpage);
-        return $records;
-    }
-
-    protected function create_selection_table($records, $baseurl) {
-        $records = $records ? $records : array();
-        $columns = array('_selection' => array('header' => ''),
-                         'idnumber' => array('header' => get_string('idnumber','elis_program')),
-                         'name' => array('header' => get_string('name','elis_program')),
-                         'country' => array('header' => get_string('country','elis_program')),
-                         'language' => array('header' => get_string('user_language','elis_program')));
-        if (!$this->is_assigning()) {
-            $columns['timecreated'] = array('header' => get_string('registered_date','elis_program'));
-        }
-
-        //determine sort order (default to lastname, firstname ascending)
-        $sort = $this->optional_param('sort', 'name', PARAM_ALPHA);
-        $dir  = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
-        if ($dir !== 'DESC') {
-            $dir = 'ASC';
-        }
-
-        if (isset($columns[$sort])) {
-            $columns[$sort]['sortable'] = $dir;
-        }
-
-        return new curriculum_user_selection_table($records, $columns,
-                                                   new moodle_url($baseurl));
-    }
-
 }
 
 class curriculum_user_selection_table extends selection_table {
