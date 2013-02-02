@@ -462,7 +462,7 @@ function moodle_profile_can_sync($shortname, $eliscontrol = null) {
             if (!empty($fieldowner) && (!empty($fieldowner->param_options) || !empty($fieldowner->param_options_source))) {
                 return false;
             }
-        } else if ($mdldatatype == 'menu') {
+        } else {
             if (empty($fieldowner)) {
                 $elisfield = field::get_for_context_level_with_name(CONTEXT_ELIS_USER, $shortname);
                 if (!empty($elisfield->owners) && isset($elisfield->owners['manual'])) {
