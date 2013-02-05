@@ -980,7 +980,7 @@ class student extends elis_data_object {
                     $SESSION->associationpage[$pagename][$userid]->associd = $user->association_id;
                 }
 
-                echo 'Success';
+                echo get_string('success', self::LANG_FILE);
                 die();
 
             } else {
