@@ -101,6 +101,8 @@ class elis_notifications_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
 
         //configuration
+        set_config('popup_provider_elis_program_notify_pm_permitted', 1, 'message');
+        set_config('email_provider_elis_program_notify_pm_permitted', 1, 'message');
         set_config('notify_classenrol_user', 1, 'elis_program');
         $message = '%%userenrolname%% has been enrolled in the class instance %%classname%%.';
         set_config('notify_classenrol_message', $message, 'elis_program');
@@ -176,6 +178,8 @@ class elis_notifications_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
 
         //configuration
+        set_config('popup_provider_elis_program_notify_pm_permitted', 1, 'message');
+        set_config('email_provider_elis_program_notify_pm_permitted', 1, 'message');
         set_config('notify_classcompleted_user', 1, 'elis_program');
         $message = '%%userenrolname%% has completed the class instance %%classname%%.';
         set_config('notify_classcompleted_message', $message, 'elis_program');
@@ -263,6 +267,8 @@ class elis_notifications_test extends elis_database_test {
         elis::$config = new elis_config();
 
         //configuration
+        set_config('popup_provider_elis_program_notify_pm_permitted', 1, 'message');
+        set_config('email_provider_elis_program_notify_pm_permitted', 1, 'message');
         set_config('notify_classcompleted_user', 1, 'elis_program');
         $message = '%%userenrolname%% has completed the class instance %%classname%%.';
         set_config('notify_classcompleted_message', $message, 'elis_program');
@@ -331,6 +337,8 @@ class elis_notifications_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
 
         //configuration
+        set_config('popup_provider_elis_program_notify_pm_permitted', 1, 'message');
+        set_config('email_provider_elis_program_notify_pm_permitted', 1, 'message');
         set_config('notify_trackenrol_user', 1, 'elis_program');
         $message = '%%userenrolname%% has been enrolled in the track %%trackname%%.';
         set_config('notify_trackenrol_message', $message, 'elis_program');

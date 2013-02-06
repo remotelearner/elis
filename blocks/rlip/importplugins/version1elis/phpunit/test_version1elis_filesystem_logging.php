@@ -116,7 +116,7 @@ class overlay_course_database_fs extends overlay_database {
                 try {
                     //attempt to drop the temporary table
                     $table = new xmldb_table($tablename);
-                    $manager->drop_temp_table($table);
+                    $manager->drop_table($table);
                 } catch (Exception $e) {
                     //temporary table was already dropped
                 }
@@ -141,7 +141,7 @@ class overlay_course_database_fs extends overlay_database {
             if ($table === null) {
                 $table = new xmldb_table($tablename);
                 try {
-                    $manager->drop_temp_table($table);
+                    $manager->drop_table($table);
                 } catch (Exception $e) {
 
                 }
@@ -173,60 +173,74 @@ class version1elisFilesystemLoggingTest extends rlip_test {
         $file = get_plugin_directory('rlipimport', 'version1elis') .'/lib.php';
         require_once($file);
 
-        $tables = array(RLIP_LOG_TABLE => 'block_rlip',
-                     'user' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'role' => 'moodle',
-                     'role_context_levels' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'events_queue_handlers' => 'moodle',
-                     'events_queue' => 'moodle',
-                     'grade_categories' => 'moodle',
-                     'groupings' => 'moodle',
-                     'groupings_groups' => 'moodle',
-                     'groups' => 'moodle',
-                     'grade_items' => 'moodle',
-                     'context' => 'moodle',
-                     'config' => 'moodle',
-                     'backup_controllers' => 'moodle',
-                     'backup_courses' => 'moodle',
-                     'enrol' => 'moodle',
-                     //needed for course delete to prevent errors / warnings
-                     'course_modules' => 'moodle',
-                     'forum' => 'mod_forum',
-                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-                     'elis_scheduled_tasks' => 'elis_core',
-                     RLIP_SCHEDULE_TABLE => 'block_rlip',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     'user' => 'moodle',
-                     'user_info_category' => 'moodle',
-                     'user_info_field' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'message_working' => 'moodle');
+        $tables = array(
+            RLIP_LOG_TABLE => 'block_rlip',
+            'user' => 'moodle',
+            'config_plugins' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            'role' => 'moodle',
+            'role_context_levels' => 'moodle',
+            'role_assignments' => 'moodle',
+            'user_enrolments' => 'moodle',
+            'groups_members' => 'moodle',
+            'block_positions' => 'moodle',
+            'events_queue_handlers' => 'moodle',
+            'events_queue' => 'moodle',
+            'grade_categories' => 'moodle',
+            'groupings' => 'moodle',
+            'groupings_groups' => 'moodle',
+            'groups' => 'moodle',
+            'grade_items' => 'moodle',
+            'context' => 'moodle',
+            'config' => 'moodle',
+            'backup_controllers' => 'moodle',
+            'backup_courses' => 'moodle',
+            'enrol' => 'moodle',
+            // needed for course delete to prevent errors / warnings
+            'course_modules' => 'moodle',
+            'forum' => 'mod_forum',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            'elis_scheduled_tasks' => 'elis_core',
+            RLIP_SCHEDULE_TABLE => 'block_rlip',
+            RLIP_LOG_TABLE => 'block_rlip',
+            'user' => 'moodle',
+            'user_info_category' => 'moodle',
+            'user_info_field' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'message_working' => 'moodle'
+        );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
         if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
             require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elis::lib('data/customfield.class.php'));
             require_once(elispm::lib('data/pmclass.class.php'));
             require_once(elispm::lib('data/course.class.php'));
             require_once(elispm::lib('data/curriculum.class.php'));
             require_once(elispm::lib('data/track.class.php'));
             require_once(elispm::lib('data/user.class.php'));
-            require_once(elispm::lib('data/userset.class.php'));
             require_once(elispm::lib('data/usermoodle.class.php'));
+            require_once(elispm::lib('data/userset.class.php'));
 
-            $tables[user::TABLE] = 'elis_program';
-            $tables[usermoodle::TABLE] = 'elis_program';
-            $tables[curriculum::TABLE] = 'elis_program';
+            $tables[field_data_int::TABLE] = 'elis_core';
+            $tables[field_data_num::TABLE] = 'elis_core';
+            $tables[field_data_char::TABLE] = 'elis_core';
+            $tables[field_data_text::TABLE] = 'elis_core';
+            $tables[clusterassignment::TABLE] = 'elis_program';
+            $tables[clustercurriculum::TABLE] = 'elis_program';
+            $tables[clustertrack::TABLE] = 'elis_program';
             $tables[course::TABLE] = 'elis_program';
+            $tables[curriculum::TABLE] = 'elis_program';
+            $tables[curriculumstudent::TABLE] = 'elis_program';
             $tables[pmclass::TABLE] = 'elis_program';
             $tables[track::TABLE] = 'elis_program';
+            $tables[trackassignment::TABLE] = 'elis_program';
+            $tables[user::TABLE] = 'elis_program';
+            $tables[usermoodle::TABLE] = 'elis_program';
             $tables[userset::TABLE] = 'elis_program';
+            $tables[usertrack::TABLE] = 'elis_program';
+            $tables[userset_profile::TABLE] = 'elis_program';
         }
 
         return $tables;
@@ -293,10 +307,6 @@ class version1elisFilesystemLoggingTest extends rlip_test {
                      'forum_track_prefs' => 'moodle',
                      'sessions' => 'moodle');
 
-        if ($DB->record_exists("block", array("name" => "curr_admin"))) {
-            $tables['crlm_user_moodle'] = 'elis_program';
-            $tables['crlm_user'] = 'elis_program';
-        }
         return $tables;
     }
 

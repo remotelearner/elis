@@ -64,6 +64,7 @@ class elis_userset_course_groups_test extends elis_database_test {
             'context' => 'moodle',
             'course' => 'moodle',
             'course_categories' => 'moodle',
+            'course_format_options' => 'moodle',
             'enrol' => 'moodle',
             'groups' => 'moodle',
             'groups_members' => 'moodle',

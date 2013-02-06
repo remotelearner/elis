@@ -53,21 +53,24 @@ class elis_enrolment_sync_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
-        return array('config_plugins' => 'moodle',
-                     'context' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'enrol' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'user' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     classmoodlecourse::TABLE => 'elis_program',
-                     course::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     pmclass::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+        return array(
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            'course_format_options'               => 'moodle',
+            'enrol' => 'moodle',
+            'role_assignments' => 'moodle',
+            'user' => 'moodle',
+            'user_enrolments' => 'moodle',
+            classmoodlecourse::TABLE => 'elis_program',
+            course::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            pmclass::TABLE => 'elis_program',
+            student::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program'
+        );
     }
 
     /**
