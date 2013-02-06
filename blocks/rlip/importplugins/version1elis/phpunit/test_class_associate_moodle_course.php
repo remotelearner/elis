@@ -28,9 +28,10 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
     define('CLI_SCRIPT', true);
 }
 
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/lib/phpunittestlib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
@@ -122,7 +123,7 @@ class overlay_class_associate_moodle_course_database extends overlay_database {
                 try {
                     //attempt to drop the temporary table
                     $table = new xmldb_table($tablename);
-                    $manager->drop_temp_table($table);
+                    $manager->drop_table($table);
                 } catch (Exception $e) {
                     //temporary table was already dropped
                 }
@@ -152,6 +153,7 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/usermoodle.class.php'));
 
         $tables = array(
             'backup_controllers' => 'moodle',
@@ -167,13 +169,17 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
             'role' => 'moodle',
             'role_assignments' => 'moodle',
             'role_capabilities' => 'moodle',
+            'user' => 'moodle',
             'user_enrolments' => 'moodle',
             field::TABLE => 'elis_core',
             classmoodlecourse::TABLE => 'elis_program',
             course::TABLE => 'elis_program',
             coursetemplate::TABLE => 'elis_program',
+            instructor::TABLE => 'elis_program',
             pmclass::TABLE => 'elis_program',
             student::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
         );
 
@@ -192,6 +198,8 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
      */
     static protected function get_ignored_tables() {
         return array(
+            'backup_files_temp' => 'moodle',
+            'backup_ids_temp' => 'moodle',
             'block_instances' => 'moodle',
             'cache_flags' => 'moodle',
             'config_plugins' => 'moodle',
@@ -232,6 +240,17 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         }
 
         accesslib_clear_all_caches(true);
+        get_test_user();
+    }
+
+    /**
+     * tearDown method for class
+     * called after assertPostConditions() for each test function
+     */
+    protected function tearDown()
+    {
+        delete_test_user();
+        parent::tearDown();
     }
 
     /**
@@ -264,8 +283,11 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/course.class.php'));
 
         //make sure $USER is set up for backup/restore
-        $USER = $DB->get_record_select('user', "username != 'guest' and DELETED = 0", array(), '*', IGNORE_MULTIPLE);
-        $GLOBAL['USER'] = $USER;
+        $USER = $DB->get_record_select('user', "username != 'guest' and deleted = 0", array(), '*', IGNORE_MULTIPLE);
+        $GLOBALS['USER'] = $USER;
+        if (empty($USER)) {
+            $this->markTestSkipped('Could not initialize $USER object - skipping!');
+        }
 
         //need the moodle/backup:backupcourse capability
         $guestroleid = create_role('guestrole', 'guestrole', 'guestrole');
@@ -347,6 +369,10 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
 
         //make sure $USER is set up for backup/restore
         $USER->id = $DB->get_field_select('user', 'id', "username != 'guest' AND deleted = 0", array(), IGNORE_MULTIPLE);
+
+        if (empty($USER->id)) {
+            $this->markTestSkipped('Could not initialize $USER->id - skipping!');
+        }
 
         //need the moodle/backup:backupcourse capability
         $guestroleid = create_role('guestrole', 'guestrole', 'guestrole');

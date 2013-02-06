@@ -876,6 +876,8 @@ class elis_user_import_test extends elis_database_test {
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
+        $CFG->siteguest = '';
+
         $import_data = array('action' => $action);
         foreach ($user_data as $key => $value) {
             $import_data[$key] = $value;

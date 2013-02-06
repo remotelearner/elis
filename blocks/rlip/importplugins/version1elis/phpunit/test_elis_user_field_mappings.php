@@ -181,6 +181,8 @@ class elis_user_field_mappings_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
 
+        $CFG->siteguest = '';
+
         foreach ($this->mapping as $standardfieldname => $customfieldname) {
             $mapping = new stdClass;
             $mapping->entitytype = 'user';

@@ -2915,12 +2915,29 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * static method to determine if specified role shortname is an 'instructor' role
+     *
+     * @param  string $roleshortname  the role to check for 'instructor' role
+     * @return bool   true if specified role shortname is an 'instructor' role, false otherwise
+     */
+    static function is_instructor_role($roleshortname) {
+        static $instructorroles = array(
+            'editingteacher',
+            'teacher',
+            'instructor'
+        );
+        return in_array(strtolower($roleshortname), $instructorroles);
+    }
+
+    /**
      * Performs any necessary conversion of the action value based on the
      * "createorupdate" setting for enrolments
      *
      * @param object $record One record of import data
      * @param string $action The supplied action
      * @return string The action to use in the import
+     * @uses   $CFG
+     * @uses   $DB
      */
     function handle_enrolment_createorupdate($record, $action) {
         global $CFG, $DB;
@@ -2928,15 +2945,15 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         require_once(elispm::lib('data/instructor.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
-        //check config setting
+        // check config setting
         $createorupdate = get_config('rlipimport_version1elis', 'createorupdate');
 
-        //split "context" into level and instance
+        // split "context" into level and instance
         $pos = strpos($record->context, "_");
         $context = substr($record->context, 0, $pos);
         $instance = substr($record->context, $pos + 1);
 
-        //user-related fields
+        // user-related fields
         $username_set = isset($record->user_username) && $record->user_username != '';
         $email_set = isset($record->user_email) && $record->user_email != '';
         $idnumber_set = isset($record->user_idnumber) && $record->user_idnumber != '';
@@ -2944,28 +2961,28 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $required_user_field_set = $username_set || $email_set || $idnumber_set;
 
         if (!empty($createorupdate)) {
-            //determine if we have the necessary fields set
+            // determine if we have the necessary fields set
             if ($instance != '' && $required_user_field_set) {
-                //determine enrolment validitiy
+                // determine enrolment validitiy
                 $userid = $this->get_userid_from_record($record, 'bogus');
                 $classid = $DB->get_field('crlm_class', 'id', array('idnumber' => $instance));
 
                 if (!empty($userid) && !empty($classid)) {
-                    if (isset($record->role) && ($record->role == 'teacher' || $record->role == 'instructor')) {
-                        //instructor enrolment
+                    if (isset($record->role) && self::is_instructor_role($record->role)) {
+                        // instructor enrolment
                         $table = instructor::TABLE;
                     } else {
-                        //student enrolment
+                        // student enrolment
                         $table = student::TABLE;
                     }
 
-                    //identify the course
+                    // identify the course
                     if ($DB->record_exists($table, array('userid' => $userid,
                                                          'classid' => $classid))) {
-                        //course exists, so the action is an update
+                        // course exists, so the action is an update
                         $action = 'update';
                     } else {
-                        //course does not exist, so the action is a create
+                        // course does not exist, so the action is a create
                         $action = 'create';
                     }
                 }
@@ -3355,9 +3372,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //obtain the track id
         $trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $idnumber));
 
-        //obtain the user id
-        $userid = $this->get_userid_from_record($record, $filename);
-
         //create the association
         usertrack::enrol($userid, $trackid);
 
@@ -3414,9 +3428,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //obtain the track id
         $trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $idnumber));
-
-        //obtain the user id
-        $userid = $this->get_userid_from_record($record, $filename);
 
         //delete the association
         $usertrackid = $DB->get_field(usertrack::TABLE, 'id', array('userid' => $userid,
@@ -3539,9 +3550,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //obtain the cluster / userset id
         $clusterid = $DB->get_field(userset::TABLE, 'id', array('name' => $name));
 
-        //obtain the user id
-        $userid = $this->get_userid_from_record($record, $filename);
-
         //create the association
         $clusterassignment = new clusterassignment(array('userid' => $userid,
                                                          'clusterid' => $clusterid,
@@ -3591,9 +3599,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //obtain the cluster / userset id
         $clusterid = $DB->get_field(userset::TABLE, 'id', array('name' => $name));
-
-        //obtain the user id
-        $userid = $this->get_userid_from_record($record, $filename);
 
         //delete the association
         $clusterassignmentid = $DB->get_field(clusterassignment::TABLE, 'id', array('userid' => $userid,
@@ -3661,8 +3666,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      */
     function record_is_instructor_assignment($record) {
         if (isset($record->role)) {
-            $role = strtolower($record->role);
-            $is_instructor = $role == 'teacher' || $role == 'instructor';
+            $is_instructor = self::is_instructor_role($record->role);
         } else {
             $is_instructor = false;
         }
@@ -3820,9 +3824,6 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
-        //obtain the user id
-        $userid = $this->get_userid_from_record($record, $filename);
-
         //determine enrolment and completion times
         $today = mktime(0, 0, 0);
         if (isset($record->enrolmenttime)) {
@@ -3882,6 +3883,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @param string $idnumber The idnumber of the class instance
      *
      * @return boolean true on success, otherwise false
+     * @uses   $CFG
+     * @uses   $DB
      */
     function class_enrolment_create_instructor($record, $filename, $idnumber) {
         global $CFG, $DB;
@@ -3896,7 +3899,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $userid = $this->get_userid_from_record($record, $filename);
 
-        //string to describe the user
+        // string to describe the user
         $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
 
         if ($DB->record_exists(instructor::TABLE, array('classid' => $crsid, 'userid' => $userid))) {
@@ -3909,13 +3912,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        //obtain the class id
+        // obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
-        //obtain the user id
-        $userid = $this->get_userid_from_record($record, $filename);
-
-        //determine assignment and completion times
+        // determine assignment and completion times
         $today = mktime(0, 0, 0);
         if (isset($record->assigntime)) {
             $assigntime = $this->parse_date($record->assigntime);
@@ -3928,14 +3928,20 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $completetime = $today;
         }
 
-        //create the association
-        $instructor = new instructor(array('userid' => $userid,
-                                           'classid' => $classid,
-                                           'assigntime' => $assigntime,
-                                           'completetime' => $completetime));
+        // create the association
+        $insdata = array(
+            'userid'       => $userid,
+            'classid'      => $classid,
+            'assigntime'   => $assigntime,
+            'completetime' => $completetime
+        );
+        $instructor = new instructor($insdata);
+        if (!empty($record->role)) {
+            $instructor->roleshortname = $record->role;
+        }
         $instructor->save();
 
-        //log success
+        // log success
         $success_message = "User with {$user_descriptor} successfully enrolled in class instance \"{$idnumber}\" as an instructor.";
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
@@ -4049,6 +4055,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @param string $idnumber The idnumber of the class instance
      *
      * @return boolean true on success, otherwise false
+     * @uses   $CFG
+     * @uses   $DB
      */
     function class_enrolment_update_instructor($record, $filename, $idnumber) {
         global $CFG, $DB;
@@ -4065,31 +4073,33 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        //obtain the class id
+        // obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
-        //obtain the user id
+        // obtain the user id
         $userid = $this->get_userid_from_record($record, $filename);
 
-        //update the record
+        // update the record
         $id = $DB->get_field(instructor::TABLE, 'id', array('classid' => $classid,
                                                             'userid' => $userid));
         $instructor = new instructor($id);
-
-        //enrolment and completion times
+        $instructor->load();
+        // enrolment and completion times
         if (isset($record->assigntime)) {
             $instructor->assigntime = $this->parse_date($record->assigntime);
         }
         if (isset($record->completetime)) {
             $instructor->completetime = $this->parse_date($record->completetime);
         }
-
+        if (!empty($record->role)) {
+            $instructor->roleshortname = $record->role;
+        }
         $instructor->save();
 
-        //string to describe the user
+        // string to describe the user
         $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
 
-        //log success
+        // log success
         $success_message = "Instructor enrolment for user with {$user_descriptor} in class instance \"{$idnumber}\" successfully updated.";
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
@@ -4138,7 +4148,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $userid = $this->get_userid_from_record($record, $filename);
 
-        //string to describe the user
+        // string to describe the user
         $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
 
         if (!$DB->record_exists('crlm_class_enrolment', array('classid' => $crsid, 'userid' => $userid))) {
@@ -4151,19 +4161,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        //obtain the class id
+        // obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
-        //obtain the user id
-        $userid = $this->get_userid_from_record($record, $filename);
-
-        //delete the association
+        // delete the association
         $studentid = $DB->get_field(student::TABLE, 'id', array('userid' => $userid,
                                                                 'classid' => $classid));
         $student = new student($studentid);
+        $student->load();
         $student->delete();
 
-        //log success
+        // log success
         $success_message = "User with {$user_descriptor} successfully unenrolled from class instance \"{$idnumber}\" as a student.";
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
@@ -4178,6 +4186,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @param string $idnumber The idnumber of the class instance
      *
      * @return boolean true on success, otherwise false
+     * @uses   $CFG
+     * @uses   $DB
      */
     function class_enrolment_delete_instructor($record, $filename, $idnumber) {
         global $CFG, $DB;
@@ -4193,7 +4203,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $userid = $this->get_userid_from_record($record, $filename);
 
-        //string to describe the user
+        // string to describe the user
         $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
 
         if (!$DB->record_exists(instructor::TABLE, array('classid' => $crsid, 'userid' => $userid))) {
@@ -4206,19 +4216,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        //obtain the cluster / userset id
+        // obtain the cluster / userset id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
-        //obtain the user id
-        $userid = $this->get_userid_from_record($record, $filename);
-
-        //delete the association
+        // delete the association
         $studentid = $DB->get_field(instructor::TABLE, 'id', array('userid' => $userid,
                                                                    'classid' => $classid));
         $instructor = new instructor($studentid);
+        $instructor->load();
         $instructor->delete();
 
-        //log success
+        // log success
         $success_message = "User with {$user_descriptor} successfully unenrolled from class instance \"{$idnumber}\" as an instructor.";
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
@@ -4288,11 +4296,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     /**
      * Assign a role on a Moodle user context
      *
-     * @param object $record One record of import data
+     * @param object $record   One record of import data
      * @param string $filename The import file name, used for logging
-     * @param string $idnumber The idnumber of the class instance
+     * @param string $idnumber The idnumber of the target user
      *
      * @return boolean true on success, otherwise false
+     * @uses   $CFG
+     * @uses   $DB
      */
     function user_enrolment_create($record, $filename, $idnumber) {
         global $CFG, $DB;
@@ -4312,16 +4322,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $userid = $DB->get_field('user', 'id', $params);
 
         $targetuserid = $DB->get_field('user', 'id', array('idnumber' => $idnumber));
+
         $targetcontext = context_user::instance($targetuserid);
 
         $roleid = $DB->get_field('role', 'id', array('shortname' => $record->role));
-
+        // TBD: test $roleid & $targetcontext
         role_assign($roleid, $userid, $targetcontext->id);
 
-        //string to describe the user
+        // string to describe the user
         $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
 
-        //log success
+        // log success
         $success_message = "User with {$user_descriptor} successfully assigned role with shortname \"{$record->role}\" on user \"{$idnumber}\".";
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
@@ -4331,11 +4342,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     /**
      * Unassign a role from a Moodle user context
      *
-     * @param object $record One record of import data
+     * @param object $record   One record of import data
      * @param string $filename The import file name, used for logging
-     * @param string $idnumber The idnumber of the class instance
+     * @param string $idnumber The idnumber of the target user
      *
      * @return boolean true on success, otherwise false
+     * @uses   $CFG
+     * @uses   $DB
      */
     function user_enrolment_delete($record, $filename, $idnumber) {
         global $CFG, $DB;
@@ -4355,16 +4368,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $userid = $DB->get_field('user', 'id', $params);
 
         $targetuserid = $DB->get_field('user', 'id', array('idnumber' => $idnumber));
+
         $targetcontext = context_user::instance($targetuserid);
 
         $roleid = $DB->get_field('role', 'id', array('shortname' => $record->role));
-
+        // TBD: test $roleid & $targetcontext
         role_unassign($roleid, $userid, $targetcontext->id);
 
-        //string to describe the user
+        // string to describe the user
         $user_descriptor = $this->get_user_descriptor($record, false, 'user_');
 
-        //log success
+        // log success
         $success_message = "User with {$user_descriptor} successfully unassigned role with shortname \"{$record->role}\" on user \"{$idnumber}\".";
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
