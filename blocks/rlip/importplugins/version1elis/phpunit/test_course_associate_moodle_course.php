@@ -50,12 +50,14 @@ class elis_course_associate_moodle_course_test extends elis_database_test {
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/coursetemplate.class.php'));
 
-        return array('course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     field::TABLE => 'elis_core',
-                     course::TABLE => 'elis_program',
-                     coursetemplate::TABLE => 'elis_program',
-                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis');
+        return array(
+            'course' => 'moodle',
+            'course_categories' => 'moodle',
+            field::TABLE => 'elis_core',
+            course::TABLE => 'elis_program',
+            coursetemplate::TABLE => 'elis_program',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
+        );
     }
 
     /**

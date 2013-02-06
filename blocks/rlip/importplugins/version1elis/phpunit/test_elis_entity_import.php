@@ -169,6 +169,7 @@ class elis_entity_import_test extends elis_database_test {
             'grade_grades_history' => 'moodle',
             'grade_items' => 'moodle',
             'grade_items_history' => 'moodle',
+            'grading_areas' => 'moodle',
             'groups' => 'moodle',
             'groups_members' => 'moodle',
             'message' => 'moodle',
@@ -189,6 +190,9 @@ class elis_entity_import_test extends elis_database_test {
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
             );
 
+        if (file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
+            $tables += array('elis_files_userset_store' => 'repository_elis_files');
+        }
         return $tables;
     }
 
