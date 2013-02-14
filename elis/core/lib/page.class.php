@@ -44,7 +44,7 @@ abstract class elis_page extends moodle_page {
     /**
      * Page parameters (if null, use the HTTP parameters)
      */
-    private $params = null;
+    protected $params = null;
 
     /**
      * Constructor.
