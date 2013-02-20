@@ -82,7 +82,10 @@ function toggleVisibleInit(addBefore, nameAttr, buttonLabel, hideText, showText,
         hideLabel: hideText,
         showLabel: showText
     };
-    YAHOO.util.Event.addListener(showHideButton, 'click', toggleVisible, element);
+    YUI().use('yui2-event', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Event.addListener(showHideButton, 'click', toggleVisible, element);
+    });
     el = document.getElementById(addBefore);
     el.parentNode.insertBefore(showHideButton, el);
 }
@@ -113,11 +116,12 @@ var cmFormatTimeRange = function(elCell, oRecord, oColumn, oData) {
 
 // Custom sorter for time range column
 var cmSortTimeRange = function(a, b, desc) {
+    var Y = YUI().use('*');
+    var YAHOO = Y.YUI2;
     // Deal with empty values
-    if(!YAHOO.lang.isValue(a)) {
+    if (!YAHOO.lang.isValue(a)) {
         return (!YAHOO.lang.isValue(b)) ? 0 : 1;
-    }
-    else if(!YAHOO.lang.isValue(b)) {
+    } else if (!YAHOO.lang.isValue(b)) {
         return -1;
     }
 
@@ -127,18 +131,18 @@ var cmSortTimeRange = function(a, b, desc) {
     var lastComp = comp(a[0], b[0], desc);
 
     // Start minute
-    if(lastComp == 0) {
-    	lastComp = comp(a[1], b[1], desc);
+    if (lastComp == 0) {
+        lastComp = comp(a[1], b[1], desc);
     }
 
     // End hour
-    if(lastComp == 0) {
-    	lastComp = comp(a[2], b[2], desc);
+    if (lastComp == 0) {
+        lastComp = comp(a[2], b[2], desc);
     }
 
     // End minute
-    if(lastComp == 0) {
-    	lastComp = comp(a[3], b[3], desc);
+    if (lastComp == 0) {
+        lastComp = comp(a[3], b[3], desc);
     }
 
     return lastComp;
@@ -160,9 +164,11 @@ function changeNamesearch(anchoritem) {
 
 // date formatter for YUI table that understands 0 dates
 function cmFormatDate(elCell, oRecord, oColumn, oData) {
+    var Y = YUI().use('*');
+    var YAHOO = Y.YUI2;
     if (oData.getDate()) {
-	elCell.innerHTML = YAHOO.util.Date.format(oData, {format:"%b %d, %Y"});
+        elCell.innerHTML = YAHOO.util.Date.format(oData, {format:"%b %d, %Y"});
     } else {
-	elCell.innerHTML = '-';
+        elCell.innerHTML = '-';
     }
 }

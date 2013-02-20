@@ -675,9 +675,15 @@ class generalized_filter_clustertree extends generalized_filter_type {
         }
 
         $module = array(
-            'name' => 'clustertree',
+            'name'     => 'clustertree',
             'fullpath' => '/elis/program/js/clustertree_module.js',
-            'requires' => array('yui2-treeview'),
+            'requires' => array(
+                'yui2-connection',
+                'yui2-dom',
+                'yui2-event',
+                'yui2-json',
+                'yui2-treeview'
+            )
         );
         $PAGE->requires->js_module($module);
         $initcallopts = array(

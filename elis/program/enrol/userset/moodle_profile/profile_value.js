@@ -80,5 +80,8 @@ function update_profile_value_list(fieldIndex, elementName, selectedValue, origi
 	requestURL += '&value=' + selectedValue;
     }
 
-    YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    YUI().use('yui2-connection', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    });
 }

@@ -54,9 +54,6 @@ function cluster_moodle_profile_edit_form($form, $mform, $clusterid) {
         $prof_fields = userset_profile::find(new field_filter('clusterid', $clusterid), array(), 0, 2);
     }
 
-    $PAGE->requires->yui2_lib('yahoo');
-    $PAGE->requires->yui2_lib('event');
-    $PAGE->requires->yui2_lib('connection');
     $PAGE->requires->js('/elis/program/enrol/userset/moodle_profile/profile_value.js');
 
     for ($i = 1; $i <= 2; $i++) {

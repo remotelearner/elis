@@ -40,9 +40,6 @@ class customfieldform extends cmform {
         $form->addElement('hidden', 'id');
         $form->setType('id', PARAM_INT);
 
-        // Include required yui javascript
-        $PAGE->requires->yui2_lib(array('yahoo',
-                                        'dom'));
         $form->addElement('html', '<script type="text/javascript">
             function switchDefaultData() {
                 var elem;
@@ -300,7 +297,10 @@ class customfieldform extends cmform {
                 if (inctime) {
                     timeFieldsEnabled(inctime.checked);
                 }
-                YAHOO.util.Event.addListener(window, "load", switchDefaultData());
+                YUI().use("yui2-event", function(Y) {
+                    var YAHOO = Y.YUI2;
+                    YAHOO.util.Event.addListener(window, "load", switchDefaultData());
+                });
             }
             function multivaluedChanged(checked) {
                 var fcontrol = document.getElementById("id_manual_field_control");
@@ -316,7 +316,10 @@ class customfieldform extends cmform {
                     updateMenuOptions();
                 }
             }
-            YAHOO.util.Event.onDOMReady(initCustomFieldDefault);
+            YUI().use("yui2-event", function(Y) {
+                var YAHOO = Y.YUI2;
+                YAHOO.util.Event.onDOMReady(initCustomFieldDefault);
+            });
         </script>');
 
         $attrs['manual_field_control'] = array('onchange' => 'switchDefaultData();');
@@ -553,15 +556,17 @@ class customfieldform extends cmform {
                 }
             }
         }
-        if (YAHOO.env.ua.ie <= 8) {
-            window.setTimeout(setmenudefaults, 2000); // ugly for IE8
-        } else if (window.attachEvent) {
-            window.attachEvent("onload", setmenudefaults);
-        } else if (window.addEventListener) {
-            window.addEventListener("DOMContentLoaded", setmenudefaults, false);
-        } else {
-            window.setTimeout(setmenudefaults, 2000); // rare fallback
-        }
+        YUI().use("yui2-base", "yui2-yahoo", function(Y) {
+            if (Y.YUI2.env.ua.ie <= 8) {
+                window.setTimeout(setmenudefaults, 2000); // ugly for IE8
+            } else if (window.attachEvent) {
+                window.attachEvent("onload", setmenudefaults);
+            } else if (window.addEventListener) {
+                window.addEventListener("DOMContentLoaded", setmenudefaults, false);
+            } else {
+                window.setTimeout(setmenudefaults, 2000); // rare fallback
+            }
+        });
         </script>');
 
         // $PAGE->requires->js_init_call() didn't work in IE8 w/ domready=true

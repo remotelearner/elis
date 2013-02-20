@@ -1071,7 +1071,6 @@ class user extends data_object_with_custom_fields {
 
         require_once elispm::lib('data/curriculumstudent.class.php');
 
-        $PAGE->requires->yui2_lib(array('dom', 'event', 'connection'));
         $PAGE->requires->js('/elis/program/js/util.js');
         $PAGE->requires->js('/elis/program/js/dashboard.js');
 

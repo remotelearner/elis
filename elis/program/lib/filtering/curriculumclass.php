@@ -285,7 +285,6 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
 
         $this->_fields = array();
 
-        $PAGE->requires->yui2_lib(array('yahoo', 'dom', 'event', 'connection', 'json'));
         $PAGE->requires->js('/elis/core/js/dependentselect.js');
 
         if (empty($options['help'])) {

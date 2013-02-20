@@ -41,7 +41,9 @@ var set_content_callback = {
 };
 
 // initialize page settings once the DOM has finished loading
-YAHOO.util.Event.onDOMReady(function() {
+YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', function(Y) {
+    var YAHOO = Y.YUI2;
+    YAHOO.util.Event.onDOMReady(function() {
     make_links_internal();
     window.selection_field = get_element_by_name("_selection");
     // add onclick handler to submit button to flag when the form is submitting
@@ -56,6 +58,7 @@ YAHOO.util.Event.onDOMReady(function() {
     };
     YAHOO.util.Connect.asyncRequest("GET", window.basepage + '&mode=bare&action=get_checkbox_selection', set_checkboxes_callback);
 });
+});
 
 // the onbeforeunload handler to send the current selections, unless the form is submitting
 var onbeforeunload = function(e) {
@@ -64,7 +67,10 @@ var onbeforeunload = function(e) {
     }
 }
 
-YAHOO.util.Event.addListener(document, 'unload', onbeforeunload);
+YUI().use('yui2-event', function(Y) {
+    var YAHOO = Y.YUI2;
+    YAHOO.util.Event.addListener(document, 'unload', onbeforeunload);
+});
 
 /**
  * Returns the first element found that has the given name attribute
@@ -72,16 +78,22 @@ YAHOO.util.Event.addListener(document, 'unload', onbeforeunload);
  * @return object  the DOM element with the specified name
  */
 function get_element_by_name(name) {
-    return YAHOO.util.Dom.getElementsBy(function(el) { return el.getAttribute("name") == name; })[0];
+    var result;
+    YUI().use('yui2-dom', function(Y) {
+        var YAHOO = Y.YUI2;
+        result = YAHOO.util.Dom.getElementsBy(function(el) { return el.getAttribute("name") == name; })[0];
+    });
+    return result;
 }
 
 /**
  * function to send POST request back with currently selected checkboxes
  */
 function update_checkbox_selection() {
-    var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
     // Send the selected checkboxes synchronously
-    YUI().use("io-base", function(Y) {
+    YUI().use("io-base", "yui2-json", function(Y) {
+        var YAHOO = Y.YUI2;
+        var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
         var uri = basepage + "&action=checkbox_selection_session";
         var cfg = {
             method: 'POST',
@@ -98,13 +110,17 @@ function update_checkbox_selection() {
  */
 function make_links_internal() {
     var list_display = document.getElementById('list_display');
-    // catch any click events, to catch user clicking on a link
-    YAHOO.util.Event.addListener(list_display, "click", load_link);
-    // catch any form submit events
-    // IE doesn't bubble submit events, so we have to listen on each form
-    // element (which hopefully isn't too many)
-    YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'form', 'list_display', function(el) {
-        YAHOO.util.Event.addListener(el, "submit", load_form, el.getAttribute('id'));
+
+    YUI().use("yui2-dom", "yui2-event", "yui2-json", function(Y) {
+        var YAHOO = Y.YUI2;
+        // catch any click events, to catch user clicking on a link
+        YAHOO.util.Event.addListener(list_display, "click", load_link);
+        // catch any form submit events
+        // IE doesn't bubble submit events, so we have to listen on each form
+        // element (which hopefully isn't too many)
+        YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'form', 'list_display', function(el) {
+            YAHOO.util.Event.addListener(el, "submit", load_form, el.getAttribute('id'));
+        });
     });
 }
 
@@ -122,8 +138,11 @@ function set_content(resp) {
     make_links_internal();
     mark_selected();
     if (!innerhtml_scripts_run) {
-        YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'script', div.id, function(el) {
-            eval(el.text);
+        YUI().use("yui2-dom", function(Y) {
+            var YAHOO = Y.YUI2;
+            YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'script', div.id, function(el) {
+                eval(el.text);
+            });
         });
     }
 }
@@ -132,25 +151,31 @@ function set_content(resp) {
  * event handler for links within the list_display div
  */
 function load_link(ev) {
-    var target = YAHOO.util.Event.getTarget(ev);
-    if (!target.getAttribute("href")) return;
-    window.lastrequest = target.getAttribute("href");
-    var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
-    YAHOO.util.Connect.asyncRequest("POST", window.lastrequest + "&mode=bare", set_content_callback, "selected_checkboxes=" + selectedcheckboxes);
-    YAHOO.util.Event.preventDefault(ev);
+    YUI().use("yui2-connection", "yui2-dom", "yui2-event", "yui2-json", function(Y) {
+        var YAHOO = Y.YUI2;
+        var target = YAHOO.util.Event.getTarget(ev);
+        if (!target.getAttribute("href")) return;
+        window.lastrequest = target.getAttribute("href");
+        var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
+        YAHOO.util.Connect.asyncRequest("POST", window.lastrequest + "&mode=bare", set_content_callback, "selected_checkboxes=" + selectedcheckboxes);
+        YAHOO.util.Event.preventDefault(ev);
+    });
 }
 
 /**
  * event handler for forms within the list_display div
  */
 function load_form(ev) {
-    var target = YAHOO.util.Event.getTarget(ev);
-    var data = YAHOO.util.Connect.setForm(target);
-    var link = target.getAttribute('action');
-    window.lastrequest = link + '?' + data;
-    var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
-    YAHOO.util.Connect.asyncRequest("POST", link + "?mode=bare", set_content_callback, "selected_checkboxes=" + selectedcheckboxes);
-    YAHOO.util.Event.preventDefault(ev);
+    YUI().use("yui2-connection", "yui2-dom", "yui2-event", "yui2-json", function(Y) {
+        var YAHOO = Y.YUI2;
+        var target = YAHOO.util.Event.getTarget(ev);
+        var data = YAHOO.util.Connect.setForm(target);
+        var link = target.getAttribute('action');
+        window.lastrequest = link + '?' + data;
+        var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
+        YAHOO.util.Connect.asyncRequest("POST", link + "?mode=bare", set_content_callback, "selected_checkboxes=" + selectedcheckboxes);
+        YAHOO.util.Event.preventDefault(ev);
+    });
 }
 
 /**
@@ -158,18 +183,21 @@ function load_form(ev) {
  */
 function change_selected_display() {
     var selected_only = get_element_by_name("selectedonly");
-    if (selected_only.checked) {
-        if (window.selection != null) {
-            var data = '[' + window.selection.join(',') + ']';
-            if (!data) {
-                data = "[]";
+    YUI().use("yui2-connection", function(Y) {
+        var YAHOO = Y.YUI2;
+        if (selected_only.checked) {
+            if (window.selection != null) {
+                var data = '[' + window.selection.join(',') + ']';
+                if (!data) {
+                    data = "[]";
+                }
+                YAHOO.util.Connect.asyncRequest("POST", basepage + "&mode=bare&_showselection="+data, set_content_callback, "selected_checkboxes=" + data);
             }
-        YAHOO.util.Connect.asyncRequest("POST", basepage + "&mode=bare&_showselection="+data, set_content_callback, "selected_checkboxes=" + data);
+        } else {
+            var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
+            YAHOO.util.Connect.asyncRequest("POST", basepage + "&mode=bare", set_content_callback, "selected_checkboxes=" + selectedcheckboxes);
         }
-    } else {
-        var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
-        YAHOO.util.Connect.asyncRequest("POST", basepage + "&mode=bare", set_content_callback, "selected_checkboxes=" + selectedcheckboxes);
-    }
+    });
 }
 
 /**
@@ -250,14 +278,17 @@ function mark_selected() {
     var table = document.getElementById('selectiontable');
     var numselected = 0;
     if (table) {
-        YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
-            var id = el.name.substr(6);
-            if (checkbox_selection_index(id) == -1) {
-                el.checked = false;
-            } else {
-                el.checked = true;
-            }
-            if (el.checked) numselected++;
+        YUI().use("yui2-dom", function(Y) {
+            var YAHOO = Y.YUI2;
+            YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
+                var id = el.name.substr(6);
+                if (checkbox_selection_index(id) == -1) {
+                    el.checked = false;
+                } else {
+                    el.checked = true;
+                }
+                if (el.checked) numselected++;
+            });
         });
     }
     var sessionselection = document.getElementById('selected_checkboxes');
@@ -284,10 +315,13 @@ function mark_selected() {
 function checkbox_select(checked) {
     var table = document.getElementById('selectiontable');
     if (table) {
-        YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
-            el.checked = checked;
-            id = el.name.substr(6);
-            select_item(id);
+        YUI().use("yui2-dom", function(Y) {
+            var YAHOO = Y.YUI2;
+            YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
+                el.checked = checked;
+                id = el.name.substr(6);
+                select_item(id);
+            });
         });
     }
 }

@@ -343,7 +343,7 @@ class coursecatalogpage extends pm_page {
 
         echo '<style>@import url("' . $CFG->wwwroot . '/lib/yui/datatable/assets/skins/sam/datatable.css");</style>';
 
-        $PAGE->requires->yui2_lib(array('dom', 'event', 'dragdrop', 'element', 'datasource', 'datatable')); // TBD
+        // $PAGE->requires->yui2_lib(array('dom', 'event', 'dragdrop', 'element', 'datasource', 'datatable')); // TBD
 
         // Monkey patch - not required with YUI 2.6.0 apparently
         // require_js('js/yui_2527707_patch.js');
@@ -630,21 +630,23 @@ class yui_table extends display_table {
 ?>
 
 <script type="text/javascript">
-YAHOO.util.Event.addListener(window, "load", function() {
-    YAHOO.example.Basic = function() {
-        var myColumnDefs = <?php echo $this->get_yui_columns(); ?>;
-        var myData = <?php echo $this->get_json(); ?>;
-        var myDataSource = new YAHOO.util.DataSource(myData);
-        myDataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
-        myDataSource.responseSchema = <?php echo $this->get_json_schema(); ?>;
-        var myDataTable = new YAHOO.widget.DataTable("<?php echo $tablename; ?>",
-                myColumnDefs, myDataSource);
+YUI().use("yui2-datasource", "yui2-datatable", "yui2-dom", "yui2-element", "yui2-event", "yui2-utilities", function(Y) {
+    var YAHOO = Y.YUI2;
+    YAHOO.util.Event.addListener(window, "load", function() {
+        YAHOO.example.Basic = function() {
+            var myColumnDefs = <?php echo $this->get_yui_columns(); ?>;
+            var myData = <?php echo $this->get_json(); ?>;
+            var myDataSource = new YAHOO.util.DataSource(myData);
+            myDataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+            myDataSource.responseSchema = <?php echo $this->get_json_schema(); ?>;
+            var myDataTable = new YAHOO.widget.DataTable("<?php echo $tablename; ?>", myColumnDefs, myDataSource);
 
-        return {
-            oDS: myDataSource,
-            oDT: myDataTable
-        };
-    }();
+            return {
+                oDS: myDataSource,
+                oDT: myDataTable
+            };
+        }();
+    });
 });
 </script>
 

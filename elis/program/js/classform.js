@@ -31,17 +31,20 @@ String.prototype.ends_with = function (str) {
 	return this.indexOf(str) === this.length - str.length;
 }
 
-YAHOO.util.Event.onDOMReady(function() {
-    var sessionselection = document.getElementById('selected_checkboxes');
-    // Load current session data of selected checkboxes
-    if (sessionselection != null) {
-        var checkedselection = sessionselection.value.split(',');
-        for (var i = 0; i < checkedselection.length; i++) {
-            if (checkedselection[i]) {
-                selection.push(checkedselection[i]);
+YUI().use('yui2-dom', 'yui2-event', function(Y) {
+    var YAHOO = Y.YUI2;
+    YAHOO.util.Event.onDOMReady(function() {
+        var sessionselection = document.getElementById('selected_checkboxes');
+        // Load current session data of selected checkboxes
+        if (sessionselection != null) {
+            var checkedselection = sessionselection.value.split(',');
+            for (var i = 0; i < checkedselection.length; i++) {
+                if (checkedselection[i]) {
+                    selection.push(checkedselection[i]);
+                }
             }
         }
-    }
+    });
 });
 
 window.onbeforeunload = function(e) {
@@ -51,7 +54,8 @@ window.onbeforeunload = function(e) {
 function update_checkbox_selection() {
     var baseurl = document.getElementById('baseurl');
     // Send the selected checkboxes synchronously
-    YUI().use("io-base", function(Y) {
+    YUI().use("io-base", "yui2-json", function(Y) {
+        var YAHOO = Y.YUI2;
         var uri = baseurl.value + "&action=checkbox_selection_session";
         var cfg = {
             method: 'POST',
@@ -117,7 +121,10 @@ function build_selection() {
                   }
 
         }
-        selection_record.push(YAHOO.lang.JSON.stringify(json));
+        YUI().use('yui2-json', function(Y) {
+            var YAHOO = Y.YUI2;
+            selection_record.push(YAHOO.lang.JSON.stringify(json));
+        });
     }
 
     return selection_record;
@@ -152,12 +159,15 @@ function checkbox_selection_index(element) {
 function checkbox_select(checked, type) {
     var table = document.getElementById('selectiontbl');
     if (table) {
-        YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
-            if(el.name.starts_with('users') && el.name.ends_with(type)) {
-                el.checked = checked;
-                id = el.id.substr(8);
-                select_item(id);
-            }
+        YUI().use('yui2-dom', function(Y) {
+            var YAHOO = Y.YUI2;
+            YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
+                if (el.name.starts_with('users') && el.name.ends_with(type)) {
+                    el.checked = checked;
+                    id = el.id.substr(8);
+                    select_item(id);
+                }
+            });
         });
     }
 }

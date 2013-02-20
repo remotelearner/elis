@@ -74,7 +74,10 @@ function saveLearningPlanVisibilityState(e, data) {
         cache: false
     };
     var requestURL = M.cfg.wwwroot + '/elis/program/userprefset.php?param=' + userprefparam + '&value=' + newitems;
-    YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    YUI().use('yui2-connection', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    });
 
     return false;
 }
@@ -158,8 +161,11 @@ function toggleCompletedCourses(e, data) {
         argument: {programid: programid}
     }
 
-    //make the Ajax request
-    YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, programid);
+    // make the Ajax request
+    YUI().use('yui2-connection', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, programid);
+    });
 }
 
 /**
@@ -232,17 +238,20 @@ function toggleCompletedInit(addBefore, nameAttr, buttonLabel, hideText, showTex
         showHideCompletedButton.disabled = 'disabled';
     }
 
-    //pass along extra data for use in event handler
+    // pass along extra data for use in event handler
     showHideCompletedButton.moodle = {
         hideLabel: hideText,
         showLabel: showText
     };
 
-    //set up the click handler
-    YAHOO.util.Event.addListener(showHideCompletedButton, 'click', toggleCompletedCourses, element);
+    // set up the click handler
+    YUI().use('yui2-event', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Event.addListener(showHideCompletedButton, 'click', toggleCompletedCourses, element);
+    });
 
-    //add the button to the DOM
-	el = document.getElementById(addBefore);
+    // add the button to the DOM
+    el = document.getElementById(addBefore);
     el.parentNode.insertBefore(showHideCompletedButton, el);
 }
 
@@ -255,10 +264,12 @@ function toggleVisibleInitWithState(addBefore, nameAttr, buttonLabel, hideText, 
         hideLabel: hideText,
         showLabel: showText
     };
-    YAHOO.util.Event.addListener(showHideButton, 'click', toggleVisible, element);
-    YAHOO.util.Event.addListener(showHideButton, 'click', saveLearningPlanVisibilityState, element);
+    YUI().use('yui2-event', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Event.addListener(showHideButton, 'click', toggleVisible, element);
+        YAHOO.util.Event.addListener(showHideButton, 'click', saveLearningPlanVisibilityState, element);
+    });
     el = document.getElementById(addBefore);
     el.parentNode.insertBefore(showHideButton, el);
 }
-
 

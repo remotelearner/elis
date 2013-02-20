@@ -30,6 +30,7 @@
  * @param  function  fnLoadComplete  The function to call which will signify that loading is done
  */
 function loadNodeData(node, fnLoadComplete) {
+    var YAHOO = Y.YUI2; // ELIS-7858
 
     //URL of our script (wwwroot is pre-set by the calling PHP script)
     var url = document.wwwroot + '/blocks/curr_admin/load_menu.php?data=' + node.contentElId;
@@ -96,6 +97,8 @@ function loadNodeData(node, fnLoadComplete) {
  */
 function render_curr_admin_tree(tree_object) {
     YUI().use('yui2-treeview', function(Y) {
+        var YAHOO = Y.YUI2; // ELIS-7858
+
         /**
          * Override YUI functionality to not escape HTML tags
          *
