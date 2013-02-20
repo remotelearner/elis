@@ -35,10 +35,14 @@ function dependentselect_updateoptions(pid, id, path) {
     var childId = child.value;
 
     var option_success = function(o) {
-        var data = YAHOO.lang.JSON.parse(o.responseText);
+        var data;
         var selectCache = [];
         var selected    = false;
 
+        YUI().use('yui2-json', function(Y) {
+            var YAHOO = Y.YUI2;
+            data = YAHOO.lang.JSON.parse(o.responseText);
+        });
         for (i = 0; i < child.options.length; i++) {
             if (child.options[i].select == true) {
                 selectCache.push(child.options[i].value);
@@ -107,7 +111,10 @@ function dependentselect_updateoptions(pid, id, path) {
         }
     }
 
-    YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    YUI().use('yui2-connection', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    });
 
     return true;
 }

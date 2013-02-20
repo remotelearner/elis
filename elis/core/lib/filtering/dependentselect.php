@@ -93,8 +93,6 @@ class generalized_filter_dependentselect extends generalized_filter_type {
      */
     function setupForm(&$mform) {
         global $PAGE;
-        $PAGE->requires->yui2_lib(array('yahoo', 'dom', 'event',
-                                        'connection', 'json'));
         $PAGE->requires->js('/elis/core/js/dependentselect.js');
 
         $options_array = $this->get_main_options();
