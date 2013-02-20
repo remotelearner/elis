@@ -34,8 +34,12 @@ var class_innerhtml_scripts_run = false;
 
 function associate_link_handler(basepage, divid) {
 
-	this.basepage = basepage;
-	this.divid = divid;
+    YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+    var YAHOO = Y.YUI2;
+
+
+    this.basepage = basepage;
+    this.divid = divid;
 
     /**
      * Returns the first element found that has the given name attribute
@@ -60,7 +64,7 @@ function associate_link_handler(basepage, divid) {
 				 function(el) {
 				     YAHOO.util.Event.addListener(el, "submit", load_form, el.getAttribute('id'));
 				 });
-        }
+    }
 
     YAHOO.util.Event.onDOMReady(make_links_internal);
 
@@ -277,5 +281,5 @@ function associate_link_handler(basepage, divid) {
         var button = get_element_by_name('selectall');
         button.checked = false;
     }
-
+});
 }
