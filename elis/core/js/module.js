@@ -13,6 +13,7 @@ M.elis_core.set_value = function(itemid, value) {
  * Create and manage the gradebook idnumber selector popup.
  */
 M.elis_core.init_gradebook_popup = function(Y, options) {
+    var YAHOO = Y.YUI2;
     var textelem = Y.one('#'+options.textelemid);
 
     // add the Browse button after the text element
@@ -230,6 +231,7 @@ function cf_reset() {
 }
 
 M.elis_core.init_custom_field_multiselect = function(Y, options) {
+    var YAHOO = Y.YUI2;
     var container = Y.one('#'+options.id+'_container');
 
     // add the selected fields table and button
@@ -369,7 +371,7 @@ M.elis_core.init_custom_field_multiselect = function(Y, options) {
 
 		    table.appendChild(row);
 		}
-                if (YAHOO.env.ua.ie > 0) { // IE (7)
+                if (Y.YUI2.env.ua.ie > 0) { // IE (7)
                     tablecontainer.setContent('<table>' + table.innerHTML + '</table>');
                 } else { // properly working browsers!
 		    tablecontainer.setContent(table);

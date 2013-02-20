@@ -102,9 +102,15 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
             }
         }
         function initCustomFieldOptions() {
-            YAHOO.util.Event.addListener(window, "load", switchFieldOptions());
+            YUI().use("yui2-event", function(Y) {
+                var YAHOO = Y.YUI2;
+                YAHOO.util.Event.addListener(window, "load", switchFieldOptions());
+            });
         }
-        YAHOO.util.Event.onDOMReady(initCustomFieldOptions);
+        YUI().use("yui2-event", function(Y) {
+            var YAHOO = Y.YUI2;
+            YAHOO.util.Event.onDOMReady(initCustomFieldOptions);
+        });
     </script>');
 
     $form->addElement('header', '', get_string('field_manual_header', 'elisfields_manual'));
