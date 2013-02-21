@@ -68,7 +68,10 @@ function customfields_initializeTable(block_id,action,path,fieldidlist,fieldname
 
     var requestURL = path + "dynamictable.php?action=" + action + "&block_id=" + block_id + "&fieldidlist=" + fieldidlist + "&fieldnamelist=" + fieldnamelist + "&scheduled=" + scheduled;
 
-    YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    YUI().use('yui2-connection', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    });
     return true;
 }
 
@@ -132,7 +135,10 @@ function customfields_updateTable(block_id, action, path, fieldId, fieldName, fi
 
     var requestURL = path + "dynamictable.php?fieldid=" + fieldId + "&fieldname=" + fieldName + "&fieldidlist=" + fieldIdList + "&fieldnamelist=" + fieldNameList + "&action=" + action + "&block_id=" + block_id;
 
-    YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    YUI().use('yui2-connection', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    });
     return true;
 }
 

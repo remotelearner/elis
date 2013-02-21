@@ -31,20 +31,25 @@ String.prototype.ends_with = function (str) {
     return this.indexOf(str) === this.length - str.length;
 }
 
-/**
- * When the page is loaded, select the saved selections from #persist_ids_this_page
- */
-YAHOO.util.Event.onDOMReady(function() {
-    var sessionselection = document.getElementById('persist_ids_this_page');
-    // Load current session data of selected checkboxes
-    if (sessionselection != null) {
-        var checkedselection = sessionselection.value.split(',');
-        for (var i = 0; i < checkedselection.length; i++) {
-            if (checkedselection[i]) {
-                selectionstatus.push(checkedselection[i]);
+var selectionstatus = new Array();
+
+YUI().use('yui2-event', function(Y) {
+    var YAHOO = Y.YUI2;
+    /**
+     * When the page is loaded, select the saved selections from #persist_ids_this_page
+     */
+    YAHOO.util.Event.onDOMReady(function() {
+        var sessionselection = document.getElementById('persist_ids_this_page');
+        // Load current session data of selected checkboxes
+        if (sessionselection != null) {
+            var checkedselection = sessionselection.value.split(',');
+            for (var i = 0; i < checkedselection.length; i++) {
+                if (checkedselection[i]) {
+                    selectionstatus.push(checkedselection[i]);
+                }
             }
         }
-    }
+    });
 });
 
 /**
@@ -118,7 +123,8 @@ window.onbeforeunload = function(e) {
 function update_checkbox_selection() {
     var baseurl = document.getElementById('baseurl');
     // Send the selected checkboxes synchronously
-    YUI().use("io-base", function(Y) {
+    YUI().use('io-base', 'yui2-json', function(Y) {
+        var YAHOO = Y.YUI2;
         var uri = baseurl.value + "&action=bulk_checkbox_selection_session";
         var cfg = {
             method: 'POST',
@@ -133,7 +139,6 @@ function update_checkbox_selection() {
  * Applies the currently selected values in the bulk-value tool to the currently selected elements.
  */
 function do_bulk_value_apply() {
-
     var enrolmenttime_checked = document.getElementById('blktpl_enrolmenttime_checked').checked;
     var startday = document.getElementById('menublktpl_enrolmenttime_d');
     var startmonth = document.getElementById('menublktpl_enrolmenttime_m');
@@ -181,11 +186,11 @@ function do_bulk_value_apply() {
         locked: locked
     }
 
-    blktpl = YAHOO.lang.JSON.stringify(json);
-
-    var baseurl = document.getElementById('baseurl');
-    YUI().use("io-base", function(Y) {
+    YUI().use('io-base', 'yui2-json', function(Y) {
+        var YAHOO = Y.YUI2;
+        var baseurl = document.getElementById('baseurl');
         var uri = baseurl.value + "&action=bulk_apply_all";
+        var blktpl = YAHOO.lang.JSON.stringify(json);
         var cfg = {
             method: 'POST',
             sync: true,
@@ -196,6 +201,9 @@ function do_bulk_value_apply() {
 
     var changed = false;
 
+    console.log(completestatusid_checked);
+    console.log(completestatusid);
+    console.log(selectionstatus);
     // provide visual feedback for users on current page
     for (var i = 0; i < selectionstatus.length; i++) {
         chbx = document.getElementById('selected' + selectionstatus[i]);
@@ -320,14 +328,15 @@ function build_selection() {
                 json = { id : selectionstatus[i],
                         selected : false}
             }
-            selection_record.push(YAHOO.lang.JSON.stringify(json));
+            YUI().use('yui2-json', function(Y) {
+                var YAHOO = Y.YUI2;
+                selection_record.push(YAHOO.lang.JSON.stringify(json));
+            });
         }
     }
 
     return selection_record;
 }
-
-var selectionstatus =  new Array();
 
 /**
  * Selects item identified by <id> and does all other required UI changes
@@ -349,6 +358,7 @@ function select_item(id) {
  */
 function proxy_select(id) {
     document.getElementById('changed'+id).checked=true;
+    selectionstatus.push(id);
 }
 
 /**
@@ -360,15 +370,18 @@ function proxy_select(id) {
 function checkbox_select(checked, type, idprefix) {
     var table = document.getElementById('selectiontbl');
     if (table) {
-        YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
-            if (el.name.starts_with('users') && el.name.ends_with(type)) {
-                if (el.checked != checked) {
-                    el.checked = checked;
-                    var prefix_len = idprefix.length;
-                    id = el.id.substr(prefix_len);
-                    select_item(id)
+        YUI().use('yui2-dom', function(Y) {
+            var YAHOO = Y.YUI2;
+            YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
+                if (el.name.starts_with('users') && el.name.ends_with(type)) {
+                    if (el.checked != checked) {
+                        el.checked = checked;
+                        var prefix_len = idprefix.length;
+                        id = el.id.substr(prefix_len);
+                        select_item(id)
+                    }
                 }
-            }
+            });
         });
     }
 }
