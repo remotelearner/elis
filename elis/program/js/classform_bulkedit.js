@@ -201,9 +201,6 @@ function do_bulk_value_apply() {
 
     var changed = false;
 
-    console.log(completestatusid_checked);
-    console.log(completestatusid);
-    console.log(selectionstatus);
     // provide visual feedback for users on current page
     for (var i = 0; i < selectionstatus.length; i++) {
         chbx = document.getElementById('selected' + selectionstatus[i]);
