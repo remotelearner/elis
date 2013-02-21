@@ -23,6 +23,8 @@
  *
  */
 
+var pmYAHOO;
+
 /**
  * Function for handling dynamic node loading
  *
@@ -30,62 +32,58 @@
  * @param  function  fnLoadComplete  The function to call which will signify that loading is done
  */
 function loadNodeData(node, fnLoadComplete) {
-    var YAHOO = Y.YUI2; // ELIS-7858
+    var YAHOO = pmYAHOO; // ELIS-7858
 
-    //URL of our script (wwwroot is pre-set by the calling PHP script)
+    // URL of our script (wwwroot is pre-set by the calling PHP script)
     var url = document.wwwroot + '/blocks/curr_admin/load_menu.php?data=' + node.contentElId;
 
     var callback = {
-
-        //success function
+        // success function
         success: function(o) {
-
-            //YUI can fire multiple expand events for the same node
-            //so make sure it hasn't already been loaded
-            if(o.responseText != '' && node.children == '') {
+            // YUI can fire multiple expand events for the same node
+            // so make sure it hasn't already been loaded
+            if (o.responseText != '' && node.children == '') {
                 var responseObject = YAHOO.lang.JSON.parse(o.responseText);
 
-                //loop through and append new child nodes
-                for(var i = 0; i < responseObject.children.length; i++) {
+                // loop through and append new child nodes
+                for (var i = 0; i < responseObject.children.length; i++) {
                     var childObject = responseObject.children[i];
 
-                    //this actually creates the node in the menu
-                    var newNode = new YAHOO.widget.TextNode(childObject.label, node);
+                    // this actually creates the node in the menu
+                    // console.log(node);
+                    var newNode = new YAHOO.widget.HTMLNode(childObject.label, node);
 
-                    //information about parent elements is held in this value
+                    // information about parent elements is held in this value
                     newNode.contentElId = childObject.contentElId;
 
-                    //CSS styling
+                    // CSS styling
                     newNode.labelStyle = childObject.labelStyle;
 
-                    //specifies if we should not show the + icon
+                    // specifies if we should not show the + icon
                     newNode.isLeaf = childObject.isLeaf;
                 }
             }
 
-            //indicate that loading is complete
+            // indicate that loading is complete
             fnLoadComplete();
         },
 
-        //failure function
+        // failure function
         failure: function(o) {
-
-            //DO NOT warn the user in any way because this failure can happen
-            //in an innocuous way if you navigate to another page while the menu is loading
-
-            //indicate that loading is complete
+            // DO NOT warn the user in any way because this failure can happen
+            // in an innocuous way if you navigate to another page while the menu is loading
+            // indicate that loading is complete
             fnLoadComplete();
         }
-
     }
 
     if (node.contentElId != "") {
-        //URL of our script (wwwroot is pre-set by the calling PHP script)
+        // URL of our script (wwwroot is pre-set by the calling PHP script)
         var url = document.wwwroot + '/blocks/curr_admin/load_menu.php?data=' + node.contentElId;
-        //make the actual call
+        // make the actual call
         YAHOO.util.Connect.asyncRequest('GET', url, callback);
     } else {
-        //nothing to load
+        // nothing to load
         fnLoadComplete();
     }
 }
@@ -96,8 +94,9 @@ function loadNodeData(node, fnLoadComplete) {
  * @param  object  tree_object  The object representing tree contents
  */
 function render_curr_admin_tree(tree_object) {
-    YUI().use('yui2-treeview', function(Y) {
+    YUI().use('yui2-base', 'yui2-connection', 'yui2-container', 'yui2-json', 'yui2-treeview', 'yui2-utilities', 'yui2-yahoo', function(Y) {
         var YAHOO = Y.YUI2; // ELIS-7858
+        pmYAHOO = YAHOO;
 
         /**
          * Override YUI functionality to not escape HTML tags
