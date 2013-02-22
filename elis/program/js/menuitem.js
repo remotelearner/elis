@@ -1,6 +1,6 @@
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,9 @@
  * @subpackage curriculummanagement
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
-
-var pmYAHOO;
 
 /**
  * Function for handling dynamic node loading
@@ -94,40 +92,39 @@ function loadNodeData(node, fnLoadComplete) {
  * @param  object  tree_object  The object representing tree contents
  */
 function render_curr_admin_tree(tree_object) {
-    YUI().use('yui2-base', 'yui2-connection', 'yui2-container', 'yui2-json', 'yui2-treeview', 'yui2-utilities', 'yui2-yahoo', function(Y) {
-        var YAHOO = Y.YUI2; // ELIS-7858
-        pmYAHOO = YAHOO;
+    var YAHOO = pmYAHOO; // ELIS-7858
 
-        /**
-         * Override YUI functionality to not escape HTML tags
-         *
-         * todo: convert menuitem code to user href attribute rather than HTML
-         * content
-         */
-        YAHOO.widget.TextNode.prototype.getContentHtml = function() {
-            var sb = [];
+    /**
+     * Override YUI functionality to not escape HTML tags
+     *
+     * todo: convert menuitem code to user href attribute rather than HTML
+     * content
+     * BJB130222: this may no longer be required (and might not work with YUI2in3)
+     * ... as function loadNodeData(), above, now uses method .HTMLNode()
+     */
+    YAHOO.widget.TextNode.prototype.getContentHtml = function() {
+        var sb = [];
 
-            sb[sb.length] = this.href ? '<a' : '<span';
-            sb[sb.length] = ' id="' + YAHOO.lang.escapeHTML(this.labelElId) + '"';
-            sb[sb.length] = ' class="' + YAHOO.lang.escapeHTML(this.labelStyle) + '"';
-            if (this.href) {
-                sb[sb.length] = ' href="' + YAHOO.lang.escapeHTML(this.href) + '"';
-                sb[sb.length] = ' target="' + YAHOO.lang.escapeHTML(this.target) + '"';
-            }
-            if (this.title) {
-                sb[sb.length] = ' title="' + YAHOO.lang.escapeHTML(this.title) + '"';
-            }
-            sb[sb.length] = ' >';
-            sb[sb.length] = this.label;
-            sb[sb.length] = this.href?'</a>':'</span>';
-            return sb.join("");
-        };
+        sb[sb.length] = this.href ? '<a' : '<span';
+        sb[sb.length] = ' id="' + YAHOO.lang.escapeHTML(this.labelElId) + '"';
+        sb[sb.length] = ' class="' + YAHOO.lang.escapeHTML(this.labelStyle) + '"';
+        if (this.href) {
+            sb[sb.length] = ' href="' + YAHOO.lang.escapeHTML(this.href) + '"';
+            sb[sb.length] = ' target="' + YAHOO.lang.escapeHTML(this.target) + '"';
+        }
+        if (this.title) {
+            sb[sb.length] = ' title="' + YAHOO.lang.escapeHTML(this.title) + '"';
+        }
+        sb[sb.length] = ' >';
+        sb[sb.length] = this.label;
+        sb[sb.length] = this.href ? '</a>' : '</span>';
+        return sb.join("");
+    };
 
-        var curr_admin_tree = new YAHOO.widget.TreeView("block_curr_admin_tree", tree_object.children);
+    var curr_admin_tree = new YAHOO.widget.TreeView("block_curr_admin_tree", tree_object.children);
 
-        //set up dynamic loading
-        curr_admin_tree.setDynamicLoad(loadNodeData);
+    // set up dynamic loading
+    curr_admin_tree.setDynamicLoad(loadNodeData);
 
-        curr_admin_tree.render();
-    });
+    curr_admin_tree.render();
 }
