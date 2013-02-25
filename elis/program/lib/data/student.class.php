@@ -1163,7 +1163,9 @@ class student extends elis_data_object {
         }
         unset($users);
 
-        $ids_for_checkbox_selection = (!empty($users) && is_array($users)) ? array_keys($users) : array();
+        $ids_for_checkbox_selection = (!empty($SESSION->associationpage[$pagename]) && is_array($SESSION->associationpage[$pagename]))
+            ? array_keys($SESSION->associationpage[$pagename]) : array();
+
         print_ids_for_checkbox_selection($ids_for_checkbox_selection, $classid, 'stu', 'bulkedit');
 
         if (empty($this->id)) {
