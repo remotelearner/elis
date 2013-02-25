@@ -877,9 +877,8 @@ abstract class php_report {
 
         $report_shortname = $this->get_report_shortname();
 
-        //these JS files are needed for async reporting requests
-        $PAGE->requires->js('/blocks/php_report/js/reportblock.js');
-        $PAGE->requires->yui2_lib(array('yahoo', 'dom', 'event', 'connection'));
+        // these JS files are needed for async reporting requests
+        $PAGE->requires->js('/blocks/php_report/js/reportblock.js'); // TBD: is this even used?
 
         //outermost report div
         $output = '<div id="php_report_block" class="php_report_block">';

@@ -91,10 +91,6 @@ class scheduling_form_step_schedule extends moodleform {
         // Get the workflow data for the timezone to keep the time_selector in line
         $workflowdata = $workflow->unserialize_data(array());
 
-        // Include required yui javascript needed for AJAX calls
-        $PAGE->requires->yui2_lib(array('yahoo',
-                                        'dom'));
-
         $mform->addElement('html','');
         // Add javascript function to toggle the simple/recurring calendar elements
         // Also add a listener to show/hide the simple/calendar elements on page load
@@ -128,9 +124,15 @@ class scheduling_form_step_schedule extends moodleform {
                     }
             }
         function initCalendar() {
-            YAHOO.util.Event.addListener(window, "load", switchCalendar());
+            YUI().use("yui2-event", function(Y) {
+                var YAHOO = Y.YUI2;
+                YAHOO.util.Event.addListener(window, "load", switchCalendar());
+            });
         }
-        YAHOO.util.Event.onDOMReady(initCalendar);
+        YUI().use("yui2-event", function(Y) {
+            var YAHOO = Y.YUI2;
+            YAHOO.util.Event.onDOMReady(initCalendar);
+        });
         </script>');
 
         $mform->addElement('hidden', '_wfid', $workflow->id);

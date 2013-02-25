@@ -6,7 +6,7 @@
  * array.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    elis
- * @subpackage curriculummanagement
+ * @subpackage block-php_report
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -35,26 +35,34 @@
  * @return  HTMLElement  The first element found with the given name
  */
 function get_element_by_name(name) {
-    return YAHOO.util.Dom.getElementsBy(function(el) { return el.getAttribute("name") == name; })[0]
+    var result;
+    YUI().use('yui2-dom', function(Y) {
+        var YAHOO = Y.YUI2;
+        result = YAHOO.util.Dom.getElementsBy(function(el) { return el.getAttribute("name") == name; })[0];
+    });
+    return result;
 }
 
 /**
  * Selects all checkboxes on the appropriate form
  */
 function select_all() {
-	//select all checkboxes
-    table = YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'table', 'list_display')[0];
-    if (table) {
-	YAHOO.util.Dom.getElementsBy(function(el) { return true; },
-				     'input', table,
-				     function(el) {
-					 el.checked = true;
-					 id = el.name.substr(6);
-				     });
-    }
-    //uncheck the "select all" checkbox
-    button = get_element_by_name('selectall');
-    button.checked = false;
+    YUI().use('yui2-dom', function(Y) {
+        var YAHOO = Y.YUI2;
+        var table;
+        var button;
+        // select all checkboxes
+        table = YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'table', 'list_display')[0];
+        if (table) {
+            YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
+                el.checked = true;
+                id = el.name.substr(6);
+            });
+        }
+        // uncheck the "select all" checkbox
+        button = get_element_by_name('selectall');
+        button.checked = false;
+    });
 }
 
 /**
@@ -66,11 +74,11 @@ function select_all() {
  * @return  none
  */
 function php_report_schedule_update_progress_bar(completed, total) {
-	//calculate the current width based on progress
-	var percent = Math.round(completed / total * 100);
-	//update the progress bar
-	var progress_bar_element = document.getElementById('php_report_schedule_progress_bar_completed');
-	progress_bar_element.style.width = percent + "%";
+    // calculate the current width based on progress
+    var percent = Math.round(completed / total * 100);
+    // update the progress bar
+    var progress_bar_element = document.getElementById('php_report_schedule_progress_bar_completed');
+    progress_bar_element.style.width = percent + "%";
 }
 
 /**
@@ -81,7 +89,7 @@ function php_report_schedule_update_progress_bar(completed, total) {
  * @return  none
  */
 function php_report_schedule_set_current_job(text) {
-	var element = document.getElementById('php_report_schedule_current_job');
+    var element = document.getElementById('php_report_schedule_current_job');
     element.innerHTML = text;
 }
 
@@ -103,14 +111,14 @@ function php_report_schedule_set_progress(text) {
  * @param  string  text  The error text to append
  */
 function php_report_schedule_append_error(text) {
-	if (text != '') {
-    	var error_element = document.getElementById('php_report_schedule_errors');
-	    if (error_element.innerHTML == '') {
-		    error_element.innerHTML = text;
-	    } else {
-		    error_element.innerHTML += '<br/>' + text;
-	    }
-	}
+    if (text != '') {
+        var error_element = document.getElementById('php_report_schedule_errors');
+        if (error_element.innerHTML == '') {
+            error_element.innerHTML = text;
+        } else {
+            error_element.innerHTML += '<br/>' + text;
+        }
+    }
 }
 
 /**
@@ -127,51 +135,58 @@ function php_report_schedule_append_error(text) {
  * @return  none
  */
 function php_report_schedule_run_jobs(wwwroot, scheduleids, schedulenames, index, runninglabel, donerunninglabel, progresstext) {
+    // success handler
+    var php_report_success = function(o) {
+        // parse the reponse data, consisting of progress text and an error message
+        var response_data;
+        YUI().use('yui2-json', function(Y) {
+            var YAHOO = Y.YUI2;
+            response_data = YAHOO.lang.JSON.parse(o.responseText);
+        });
 
-    //success handler
-	var php_report_success = function(o) {
-	    //parse the reponse data, consisting of progress text and an error message
-		var response_data = YAHOO.lang.JSON.parse(o.responseText);
-
-		php_report_schedule_update_progress_bar(index + 1, scheduleids.length);
+        php_report_schedule_update_progress_bar(index + 1, scheduleids.length);
 
         if ((index + 1) < scheduleids.length) {
-        	//chain on to the next job
+            // chain on to the next job
             php_report_schedule_run_jobs(wwwroot, scheduleids, schedulenames, index + 1, runninglabel, donerunninglabel, response_data[0]);
         } else {
-        	php_report_schedule_set_current_job(donerunninglabel);
+            php_report_schedule_set_current_job(donerunninglabel);
+            php_report_schedule_set_progress(response_data[0]);
 
-        	php_report_schedule_set_progress(response_data[0]);
-
-            //update errors in the UI
-        	php_report_schedule_append_error(response_data[1]);
+            // update errors in the UI
+            php_report_schedule_append_error(response_data[1]);
         }
-	}
-
-	//failure handler
-    var php_report_failure = function(o) {
-        //parse the reponse data, consisting of progress text and an error message
-		var response_data = YAHOO.lang.JSON.parse(o.responseText);
-
-    	if ((index + 1) < scheduleids.length) {
-    		//chain on to the next job
-            php_report_schedule_run_jobs(wwwroot, scheduleids, schedulenames, index + 1, runninglabel, donerunninglabel, response_data[0]);
-    	}
     }
 
-	//similar to profile_value.js
-	var callback = {
-	    success: php_report_success,
-	    failure: php_report_failure
-	}
+    // failure handler
+    var php_report_failure = function(o) {
+    	if ((index + 1) < scheduleids.length) {
+            // parse the reponse data, consisting of progress text and an error message
+            var response_data;
+            YUI().use('yui2-json', function(Y) {
+                var YAHOO = Y.YUI2;
+                response_data = YAHOO.lang.JSON.parse(o.responseText);
+            });
+            // chain on to the next job
+            php_report_schedule_run_jobs(wwwroot, scheduleids, schedulenames, index + 1, runninglabel, donerunninglabel, response_data[0]);
+        }
+    }
 
-	//set up the AJAX request
-	var requestURL = wwwroot + "/blocks/php_report/lib/run_schedule_async.php?scheduleid=" +
-	                 scheduleids[index] + '&schedulename=' + schedulenames[index] + '&current=' + (index+1) + '&total=' + scheduleids.length;
+    // similar to profile_value.js
+    var callback = {
+        success: php_report_success,
+        failure: php_report_failure
+    }
 
-	php_report_schedule_set_current_job(runninglabel + schedulenames[index]);
+    // set up the AJAX request
+    var requestURL = wwwroot + "/blocks/php_report/lib/run_schedule_async.php?scheduleid=" + scheduleids[index] + '&schedulename=' +
+        schedulenames[index] + '&current=' + (index+1) + '&total=' + scheduleids.length;
 
-	php_report_schedule_set_progress(progresstext);
+    php_report_schedule_set_current_job(runninglabel + schedulenames[index]);
+    php_report_schedule_set_progress(progresstext);
 
-    YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    YUI().use('yui2-connection', function(Y) {
+        var YAHOO = Y.YUI2;
+        YAHOO.util.Connect.asyncRequest('GET', requestURL, callback, null);
+    });
 }

@@ -37,9 +37,8 @@ echo $OUTPUT->header();
 
 $scheduleids = required_param('scheduleids', PARAM_CLEAN);
 
-//javascript dependencies
+// javascript dependencies
 $PAGE->requires->js('/blocks/php_report/js/lib.js');
-$PAGE->requires->yui2_lib(array('yahoo', 'event', 'connection', 'json'));
 
 //display instructions
 echo $OUTPUT->box(get_string('popup_run_instructions', 'block_php_report'));
@@ -116,7 +115,12 @@ $params = array($CFG->wwwroot,
                 $runninglabel,
                 $donerunninglabel,
                 $progress_text);
-$PAGE->requires->js_function_call('php_report_schedule_run_jobs', $params, true);
+$PAGE->requires->js_function_call('php_report_schedule_run_jobs', $params, true, array(
+    'yui2-connection',
+    'yui2-dom',
+    'yui2-event',
+    'yui2-json'
+));
 
 //temporarily change the config global to prevent the documentation link
 //from showing up

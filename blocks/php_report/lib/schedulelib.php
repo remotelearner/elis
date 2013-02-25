@@ -795,15 +795,17 @@ class scheduling_page extends workflowpage {
         $this->display_listinstancejobs();
 
         if (count($scheduleids) > 0) {
-            //include the necessary javascript libraries for the ASYNC request stuff
-            $PAGE->requires->yui2_lib(array('yahoo', 'event'));
-
-            //one or more schedules selected, so open the popup to run them
+            // one or more schedules selected, so open the popup to run them
             $js_params = array('url' => '/blocks/php_report/lib/run_schedule_popup.php?scheduleids='.urlencode(json_encode($scheduleids)),
                                'name' => 'runjobsnow',
                                'options' => "\"menubar=0,location=0,scrollbars,status,resizable,width=400,height=500\"");
             $params = array(null, $js_params);
-            $PAGE->requires->js_function_call('openpopup', $params, true);
+            // include the necessary javascript libraries for the ASYNC request stuff
+            $PAGE->requires->js_function_call('openpopup', $params, true, array(
+                'yui2-connection',
+                'yui2-dom',
+                'yui2-event'
+            ));
         }
     }
 
