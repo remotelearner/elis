@@ -26,8 +26,8 @@
 
 //need to do this because this file is included from different paths
 require_once(dirname(__FILE__) .'/../../config.php');
-require_once($CFG->libdir . '/pChart.1.27d/pChart/pChart.class');
-require_once($CFG->libdir . '/pChart.1.27d/pChart/pData.class');  
+require_once(dirname(__FILE__) . '/lib/pChart.1.27d/pChart/pChart.class');
+require_once(dirname(__FILE__) . '/lib/pChart.1.27d/pChart/pData.class');  
 
 define('PHP_REPORT_GAS_GAUGE_PI', 3.1415);
 define('PHP_REPORT_GAS_GAUGE_POINTS_PER_PI', 2000);
@@ -263,7 +263,7 @@ if ($value === '') {
     $value = (float)$value;
 }
 
-$font = $CFG->dirroot . "/lib/pChart.1.27d/Fonts/tahoma.ttf";
+$font = $CFG->dirroot . "/blocks/php_report/lib/pChart.1.27d/Fonts/tahoma.ttf";
 
 //creat our main chart
 $chart = new pChart(2 * $radius, $radius);

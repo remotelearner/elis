@@ -25,7 +25,7 @@
  */
 
 require_once('../../config.php');
-require_once($CFG->libdir . '/pChart.1.27d/pChart/pChart.class');
+require_once(dirname(__FILE__) . '/lib/pChart.1.27d/pChart/pChart.class');
 
 //default colors
 $color_defaults = array('r' => 0,
@@ -167,7 +167,7 @@ draw_rectangle($chart, 0, 0, $width + 1, $height + 1, $border_color_array, false
 $display_text = get_text($value, $total, $fraction, $display_text, $display_percent_sign);
 
 if(strlen($display_text) > 0) {
-    $chart->setFontProperties($CFG->dirroot . "/lib/pChart.1.27d/Fonts/tahoma.ttf", 10);
+    $chart->setFontProperties($CFG->dirroot . "/blocks/php_report/lib/pChart.1.27d/Fonts/tahoma.ttf", 10);
     $chart->drawTextBox(0, 0, $width + 1, $height + 1, $display_text, 0,
                         $text_color_array['r'], $text_color_array['g'], $text_color_array['b'], ALIGN_CENTER);
 }
