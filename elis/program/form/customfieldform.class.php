@@ -528,6 +528,8 @@ class customfieldform extends cmform {
         if ($level == 'user') { // user custom field from Moodle
             if (!empty($shortname) && $DB->record_exists('user_info_field', array('shortname' => $shortname))) {
                 $mform->freeze('shortname');
+                // ELIS-8329: 2.4 freeze seems to remove element from data!
+                $mform->setDefault('shortname', $shortname);
                 $requireshortname = false;
             }
         }
