@@ -476,5 +476,22 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         }
     }
 
+    if ($result && $oldversion < 2013022700) {
+        // ELIS-8295: install missing message processors
+        if ($dbman->table_exists('message_processors')) {
+            foreach (get_list_of_plugins('message/output') as $mp) {
+                // error_log("elis_core::upgrade.php: checking for message processor: '{$mp}'");
+                if (!$DB->record_exists('message_processors', array('name' => $mp))) {
+                    require_once("{$CFG->dirroot}/message/output/{$mp}/db/install.php");
+                    $installfcn = "xmldb_message_{$mp}_install";
+                    if (function_exists($installfcn)) {
+                        $installfcn();
+                    }
+                }
+            }
+        }
+        upgrade_plugin_savepoint(true, 2013022700, 'elis', 'core');
+    }
+
     return $result;
 }
