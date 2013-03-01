@@ -286,6 +286,7 @@ class version1DatabaseLoggingTest extends rlip_test {
             'grade_letters' => 'moodle',
             'grade_outcomes_courses' => 'moodle',
             'grade_settings' => 'moodle',
+            'grading_areas' => 'moodle',
             'groupings' => 'moodle',
             'groupings_groups' => 'moodle',
             'groups' => 'moodle',
@@ -521,6 +522,9 @@ class version1DatabaseLoggingTest extends rlip_test {
     public function testVersion1DBLoggingLogsSuccessMessageOnUserDelete() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
 
         $data = array('entity' => 'user',
                       'action' => 'create',

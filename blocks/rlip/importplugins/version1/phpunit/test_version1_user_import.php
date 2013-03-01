@@ -1981,6 +1981,9 @@ class version1UserImportTest extends elis_database_test {
         global $CFG, $DB;
         set_config('siteguest', 0);
 
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
+
         $this->run_core_user_import(array());
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
                                                      'mnethostid' => $CFG->mnet_localhost_id));
@@ -1999,6 +2002,9 @@ class version1UserImportTest extends elis_database_test {
     public function testVersion1ImportDeletesUserBasedOnEmail() {
         global $DB;
 
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
+
         $this->run_core_user_import(array());
         $userid = $DB->get_field('user', 'id', array('email' => 'rlipuser@rlipdomain.com'));
 
@@ -2015,6 +2021,9 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportDeletesUserBasedOnIdnumber() {
         global $DB;
+
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
 
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
         $userid = $DB->get_field('user', 'id', array('idnumber' => 'rlipidnumber'));
@@ -2033,6 +2042,9 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportDeletesUserBasedOnUsernameEmail() {
         global $CFG, $DB;
+
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
 
         $this->run_core_user_import(array());
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
@@ -2055,6 +2067,9 @@ class version1UserImportTest extends elis_database_test {
     public function testVersion1ImportDeletesUserBasedOnUsernameIdnumber() {
         global $CFG, $DB;
 
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
+
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
                                                      'mnethostid' => $CFG->mnet_localhost_id,
@@ -2076,6 +2091,9 @@ class version1UserImportTest extends elis_database_test {
     public function testVersion1ImportDeletesUserBasedOnEmailIdnumber() {
         global $DB;
 
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
+
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
         $userid = $DB->get_field('user', 'id', array('email' => 'rlipuser@rlipdomain.com',
                                                      'idnumber' => 'rlipidnumber'));
@@ -2095,6 +2113,9 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportDeletesUserBasedOnUsernameEmailIdnumber() {
         global $CFG, $DB;
+
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
 
         $this->run_core_user_import(array('idnumber' => 'rlipidnumber'));
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
