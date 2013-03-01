@@ -491,8 +491,9 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                 if (isset($exceptions[$field])) {
                     //determine the dependency key and value
                     $dependency = $exceptions[$field];
-                    $key = reset(array_keys($dependency));
-                    $value = reset(array_values($dependency));
+                    $arraykeys = array_keys($dependency);
+                    $key = reset($arraykeys);
+                    $value = reset($arraykeys);
 
                     if (isset($record->$key) && $record->$key == $value) {
                         //dependency applies, so no error

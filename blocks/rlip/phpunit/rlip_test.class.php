@@ -187,7 +187,7 @@ abstract class rlip_test extends elis_database_test {
      * @param string $path The path to look for modules in
      * @return array An array of extra overlay tables
      */
-    protected function load_plugin_xmldb($path) {
+    protected static function load_plugin_xmldb($path) {
         global $CFG;
 
         require_once($CFG->libdir.'/ddllib.php');

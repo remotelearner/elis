@@ -522,6 +522,9 @@ class version1DatabaseLoggingTest extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
+
         $data = array('entity' => 'user',
                       'action' => 'create',
                       'username' => 'rlipusername',
