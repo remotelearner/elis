@@ -2282,6 +2282,10 @@ class version1UserImportTest extends elis_database_test {
     public function testVersion1ImportDeleteUserDeletesAssociations() {
         global $CFG, $DB;
         set_config('siteadmins', 0);
+        // New config settings needed for course format refactoring in 2.4
+        set_config('numsections', 15, 'moodlecourse');
+        set_config('hiddensections', 0, 'moodlecourse');
+        set_config('coursedisplay', 1, 'moodlecourse');
 
         require_once($CFG->dirroot.'/cohort/lib.php');
         require_once($CFG->dirroot.'/course/lib.php');

@@ -556,6 +556,8 @@ class version1FilesystemLoggingTest extends rlip_test {
     /**
      * Creates the system and site course context, as well as the site course
      * record
+     *
+     * @return string Site course shortname
      */
     private function create_contexts_and_site_course() {
         global $DB;
@@ -575,6 +577,8 @@ class version1FilesystemLoggingTest extends rlip_test {
             unset($record->id);
             $DB->insert_record('course', $record);
         }
+
+        return $record->shortname;
     }
 
     /**
@@ -1486,6 +1490,14 @@ class version1FilesystemLoggingTest extends rlip_test {
         //base data used every time
         $basedata = array('action' => 'delete');
 
+        // Create guest user
+        $guest = $this->create_test_user('guest', 'guest@localhost', 'guest');
+        set_config('siteguest', $guest);
+
+        // Create admin user
+        $admin = $this->create_test_user('admin', 'admin@localhost', 'admin');
+        set_config('siteadmins', $admin);
+
         //username
         $this->create_test_user();
         $data = $basedata;
@@ -1615,6 +1627,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
+        // Prevent problem with cached contexts
         accesslib_clear_all_caches(true);
 
         //set up dependencies
@@ -2418,19 +2431,22 @@ class version1FilesystemLoggingTest extends rlip_test {
     /**
      * Validates success message for the role assignment create action on the system context
      */
-    public function testVersion1ImportLogsSuccesfulSystemRoleAssignmentCreate() {
+    public function testVersion1ImportLogsSuccessfulSystemRoleAssignmentCreate() {
         global $DB;
 
-        $this->create_contexts_and_site_course();
+        $sitename = $this->create_contexts_and_site_course();
 
         //set up dependencies
         $this->create_test_user();
         $this->create_test_role();
 
-        //base data used every time
-        $basedata = array('action' => 'create',
-                          'context' => 'system',
-                          'role' => 'rlipshortname');
+        // Base data used every time
+        $basedata = array(
+            'action'   => 'create',
+            'context'  => 'system',
+            'instance' => $sitename,
+            'role'     => 'rlipshortname'
+        );
 
         //username
         $data = $basedata;
@@ -2886,20 +2902,23 @@ class version1FilesystemLoggingTest extends rlip_test {
     /**
      * Validates success message for the role assignment delete action on the system context
      */
-    public function testVersion1ImportLogsSuccesfulSystemRoleAssignmentDelete() {
+    public function testVersion1ImportLogsSuccessfulSystemRoleAssignmentDelete() {
         global $DB;
 
-        $this->create_contexts_and_site_course();
+        $sitename = $this->create_contexts_and_site_course();
 
         //set up dependencies
         $userid = $this->create_test_user();
         $context = get_context_instance(CONTEXT_SYSTEM);
         $roleid = $this->create_test_role();
 
-        //base data used every time
-        $basedata = array('action' => 'delete',
-                          'context' => 'system',
-                          'role' => 'rlipshortname');
+        // Base data used every time
+        $basedata = array(
+            'action'   => 'delete',
+            'context'  => 'system',
+            'instance' => $sitename,
+            'role'     => 'rlipshortname'
+        );
 
         //username
         role_assign($roleid, $userid, $context->id);
@@ -3181,9 +3200,8 @@ class version1FilesystemLoggingTest extends rlip_test {
      * @dataProvider roleAssignmentInvalidUserProvider
      */
     public function testVersion1ImportLogsInvalidUserOnSystemRoleAssignmentCreate($data, $message) {
-        //set up dependencies
-        $this->create_contexts_and_site_course();
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        // Set up dependencies
+        $sitename = $this->create_contexts_and_site_course();
         $roleid = $this->create_test_role();
 
         //create mapping records
@@ -3191,10 +3209,13 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_mapping_record('enrolment', 'email', 'customemail');
         $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
 
-        //base data used every time
-        $basedata = array('action' => 'create',
-                          'context' => 'system',
-                          'role' => 'rlipshortname');
+        // Base data used every time
+        $basedata = array(
+            'action'   => 'create',
+            'context'  => 'system',
+            'instance' => $sitename,
+            'role'     => 'rlipshortname'
+        );
 
         //set up the exact data we need
         $data = array_merge($basedata, $data);
@@ -3219,11 +3240,14 @@ class version1FilesystemLoggingTest extends rlip_test {
         //create the role without enabling it at any context
         create_role('rlipfullshortname', 'rlipshortname', 'rlipdescription');
 
-        //data
-        $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'context' => 'system',
-                      'role' => 'rlipshortname');
+        // Data
+        $data = array(
+            'action'   => 'create',
+            'username' => 'rlipusername',
+            'context'  => 'system',
+            'instance' => 'rlipusername',
+            'role'     => 'rlipshortname'
+        );
 
         $message = "[enrolment.csv line 2] Enrolment could not be created. The role with shortname \"rlipshortname\" is not assignable on the system context level.\n";
 
@@ -3266,10 +3290,13 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_mapping_record('enrolment', 'role', 'customrole');
 
         //data
-        $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'context' => 'system',
-                      'customrole' => 'bogus');
+        $data = array(
+            'action'     => 'create',
+            'username'   => 'rlipusername',
+            'context'    => 'system',
+            'instance'   => 'rlipusername',
+            'customrole' => 'bogus'
+        );
 
         $message = "[enrolment.csv line 2] Enrolment could not be created. customrole value of \"bogus\" does not refer to a valid role.\n";
 
@@ -3844,8 +3871,8 @@ class version1FilesystemLoggingTest extends rlip_test {
     public function testVersion1ImportLogsDuplicateRoleAssignmentFailureMessage() {
         global $DB;
 
-        //set up dependencies
-        $this->create_contexts_and_site_course();
+        // Set up dependencies
+        $sitename = $this->create_contexts_and_site_course();
 
         // Create guest user
         $guestuser = get_test_user('guest');
@@ -3859,10 +3886,13 @@ class version1FilesystemLoggingTest extends rlip_test {
         $context = get_context_instance(CONTEXT_SYSTEM);
         $roleid = $this->create_test_role();
 
-        //base data used every time
-        $basedata = array('action' => 'create',
-                          'context' => 'system',
-                          'role' => 'rlipshortname');
+        // Base data used every time
+        $basedata = array(
+            'action'   => 'create',
+            'context'  => 'system',
+            'instance' => $sitename,
+            'role'     => 'rlipshortname',
+        );
 
         //username
         role_assign($roleid, $userid, $context->id);
@@ -3929,7 +3959,8 @@ class version1FilesystemLoggingTest extends rlip_test {
      * @dataProvider roleAssignmentInvalidUserProvider
      */
     public function testVersion1ImportLogsInvalidUserOnSystemRoleAssignmentDelete($data, $message) {
-        //set up dependencies
+        // Set up dependencies
+        $sitename = $this->create_contexts_and_site_course();
         $roleid = $this->create_test_role();
 
         //create mapping records
@@ -3937,10 +3968,13 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_mapping_record('enrolment', 'email', 'customemail');
         $this->create_mapping_record('enrolment', 'idnumber', 'customidnumber');
 
-        //base data used every time
-        $basedata = array('action' => 'delete',
-                          'context' => 'system',
-                          'role' => 'rlipshortname');
+        // Base data used every time
+        $basedata = array(
+            'action'   => 'delete',
+            'context'  => 'system',
+            'instance' => $sitename,
+            'role'     => 'rlipshortname'
+        );
 
         //set up the exact data we need
         $data = array_merge($basedata, $data);
@@ -3990,11 +4024,14 @@ class version1FilesystemLoggingTest extends rlip_test {
         //create mapping records
         $this->create_mapping_record('enrolment', 'role', 'customrole');
 
-        //data
-        $data = array('action' => 'delete',
-                      'username' => 'rlipusername',
-                      'context' => 'system',
-                      'customrole' => 'bogus');
+        // Data
+        $data = array(
+            'action'     => 'delete',
+            'username'   => 'rlipusername',
+            'context'    => 'system',
+            'instance'   => 'system',
+            'customrole' => 'bogus'
+        );
 
         $message = "[enrolment.csv line 2] Enrolment could not be deleted. customrole value of \"bogus\" does not refer to a valid role.\n";
 
@@ -4259,10 +4296,13 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_test_role();
 
         //data
-        $data = array('action' => 'delete',
-                      'username' => 'rlipusername',
-                      'context' => 'system',
-                      'role' => 'rlipshortname');
+        $data = array(
+            'action'   => 'delete',
+            'username' => 'rlipusername',
+            'context'  => 'system',
+            'instance' => 'system',
+            'role'     => 'rlipshortname'
+        );
 
         $message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on the system context.\n";
 
@@ -5854,8 +5894,8 @@ class version1FilesystemLoggingTest extends rlip_test {
 
         $filepath = $CFG->dataroot.'/invalidlogpath';
 
-        // create a folder and make it executable only
-        // cleanup the folder first if it already exists
+        // Create a folder and make it executable only
+        // Cleanup the folder first if it already exists
         if (file_exists($filepath)) {
             // Remove any files
             if (!empty($filepath)) {
@@ -5887,7 +5927,8 @@ class version1FilesystemLoggingTest extends rlip_test {
         $provider = new rlip_importprovider_fsloguser($data);
         $manual = true;
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
-        //for now suppress output generated
+
+        // For now suppress output generated
         ob_start();
         $instance->run();
         ob_end_clean();
@@ -5898,8 +5939,14 @@ class version1FilesystemLoggingTest extends rlip_test {
                                       ' Change \'invalidlogpath\' to a valid logfile location on the settings page. Processed 0 of 1 records.');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
 
-        //cleanup the new folder
+        // Cleanup the new folder
         if (file_exists($filepath)) {
+            // Remove any files
+            if (!empty($filepath)) {
+                foreach (glob("{$filepath}/*") as $logfile) {
+                    unlink($logfile);
+                }
+            }
             rmdir($filepath);
         }
         $this->assertEquals($exists, true);
@@ -5948,7 +5995,7 @@ class version1FilesystemLoggingTest extends rlip_test {
         $testfilename = self::get_current_logfile($testfilename);
 
         $exists = file_exists($testfilename);
-        $this->assertEquals($exists, true);
+        $this->assertEquals($exists, true, 'Manual import should have generated the file');
 
         // cleanup data file
         @unlink($testfilename);
@@ -6706,11 +6753,14 @@ class version1FilesystemLoggingTest extends rlip_test {
         $system_context = get_context_instance(CONTEXT_SYSTEM);
         role_assign($roleid, $userid, $system_context->id);
 
-        //run the import and validate
-        $data = array('action' => 'create',
-                      'username' => 'rlipusername',
-                      'context' => 'system',
-                      'role' => 'rlipshortname');
+        // Run the import and validate
+        $data = array(
+            'action'    => 'create',
+            'username'  => 'rlipusername',
+            'context'   => 'system',
+            'instance'  => 'system',
+            'role'      => 'rlipshortname'
+        );
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be assigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\" is already assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }
@@ -6724,11 +6774,14 @@ class version1FilesystemLoggingTest extends rlip_test {
         $this->create_test_user();
         $roleid = $this->create_test_role();
 
-        //run the import and validate
-        $data = array('action' => 'delete',
-                      'username' => 'rlipusername',
-                      'context' => 'system',
-                      'role' => 'rlipshortname');
+        // Run the import and validate
+        $data = array(
+            'action'   => 'delete',
+            'username' => 'rlipusername',
+            'context'  => 'system',
+            'instance' => 'system',
+            'role'     => 'rlipshortname'
+        );
         $expected_message = "[enrolment.csv line 2] User with username \"rlipusername\" could not be unassigned role with shortname \"rlipshortname\" on the system context. User with username \"rlipusername\" is not assigned role with shortname \"rlipshortname\" on the system context.\n";
         $this->assert_data_produces_error($data, $expected_message, 'enrolment');
     }

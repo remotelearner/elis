@@ -1611,6 +1611,11 @@ class version1ExportTest extends rlip_test {
     public function testVersion1InvalidExportPath() {
         global $CFG, $DB, $USER;
 
+        // Check if test is being run as root
+        if (posix_getuid() === 0) {
+            $this->markTestSkipped('This test will always fail when run as root.');
+        }
+
         require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
@@ -1630,15 +1635,7 @@ class version1ExportTest extends rlip_test {
         }
         mkdir($filepath, 0100);
 
-        // Check if test is being run as root
-        $isroot = false;
-        if (!posix_geteuid()) {
-            $isroot = true;
-            // Set effective uid to something other than root
-            posix_setuid(1);
-        }
-
-        // set up the export file path
+        // Set up the export file path
         $filename = 'rliptestexport.csv';
         set_config('export_file', $filename, 'rlipexport_version1');
 
@@ -1675,12 +1672,7 @@ class version1ExportTest extends rlip_test {
         $params = array('message' => "Export file rliptestexport.csv cannot be processed because the folder: {$dataroot}/invalidexportpath/ is not accessible. Please fix the export path.");
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
 
-        if ($isroot) {
-            // Set effective uid back to root
-            posix_setuid(0);
-        }
-
-        // cleanup the folder
+        // Cleanup the folder
         if (file_exists($filepath)) {
             // Remove any files
             if (!empty($filepath)) {

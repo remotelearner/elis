@@ -526,6 +526,9 @@ class version1DatabaseLoggingTest extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
+
         $data = array('entity' => 'user',
                       'action' => 'create',
                       'username' => 'rlipusername',
@@ -572,6 +575,12 @@ class version1DatabaseLoggingTest extends rlip_test {
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseCreate() {
         global $CFG, $DB;
+
+        // New config settings needed for course format refactoring in 2.4
+        set_config('numsections', 15, 'moodlecourse');
+        set_config('hiddensections', 0, 'moodlecourse');
+        set_config('coursedisplay', 1, 'moodlecourse');
+
         $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
         require_once($file);
 

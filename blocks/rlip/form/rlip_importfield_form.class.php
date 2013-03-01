@@ -56,7 +56,7 @@ class rlip_importfield_form extends moodleform {
      * @param boolean $cancel whether to show cancel button, default true
      * @param string $submitlabel label for submit button, defaults to get_string('savechanges')
      */
-    function add_action_buttons() {
+    function add_action_buttons($cancel = true, $submitlabel = NULL) {
         $mform =& $this->_form;
         //button labels
         $submitlabel = get_string('savechanges');
