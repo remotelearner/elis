@@ -98,6 +98,7 @@ class version1UserImportTest extends elis_database_test {
             'events_queue' => 'moodle',
             'groups' => 'moodle',
             'course' => 'moodle',
+            'course_format_options' => 'moodle',
             'course_sections' => 'moodle',
             'course_categories' => 'moodle',
             'enrol' => 'moodle',
@@ -420,19 +421,20 @@ class version1UserImportTest extends elis_database_test {
 
         set_config('allowuserthemes', 1);
 
-        $data = array('country' => 'CA',
-                      'auth' => 'mnet',
-                      'maildigest' => '2',
-                      'autosubscribe' => '1',
-                      'trackforums' => '1',
-                      'screenreader' => '1',
-                      'timezone' => -5.0,
-                      'theme' => 'standard',
-                      'lang' => 'en',
-                      'description' => 'rlipdescription',
-                      'idnumber' => 'rlipidnumber',
-                      'institution' => 'rlipinstitution',
-                      'department' => 'rlipdepartment');
+        $data = array(
+            'country' => 'CA',
+            'auth' => 'mnet',
+            'maildigest' => '2',
+            'autosubscribe' => '1',
+            'trackforums' => '1',
+            'timezone' => -5.0,
+            'theme' => 'standard',
+            'lang' => 'en',
+            'description' => 'rlipdescription',
+            'idnumber' => 'rlipidnumber',
+            'institution' => 'rlipinstitution',
+            'department' => 'rlipdepartment'
+        );
 
         $this->run_core_user_import($data);
 
@@ -442,7 +444,6 @@ class version1UserImportTest extends elis_database_test {
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
                    trackforums = :trackforums AND
-                   screenreader = :screenreader AND
                    timezone = :timezone AND
                    theme = :theme AND
                    lang = :lang AND
@@ -450,20 +451,21 @@ class version1UserImportTest extends elis_database_test {
                    idnumber = :idnumber AND
                    institution = :institution AND
                    department = :department";
-        $params = array('username' => 'rlipusername',
-                        'mnethostid' => $CFG->mnet_localhost_id,
-                        'auth' => 'mnet',
-                        'maildigest' => 2,
-                        'autosubscribe' => 1,
-                        'trackforums' => 1,
-                        'screenreader' => 1,
-                        'timezone' => -5.0,
-                        'theme' => 'standard',
-                        'lang' => 'en',
-                        'description' => 'rlipdescription',
-                        'idnumber' => 'rlipidnumber',
-                        'institution' => 'rlipinstitution',
-                        'department' => 'rlipdepartment');
+        $params = array(
+            'username' => 'rlipusername',
+            'mnethostid' => $CFG->mnet_localhost_id,
+            'auth' => 'mnet',
+            'maildigest' => 2,
+            'autosubscribe' => 1,
+            'trackforums' => 1,
+            'timezone' => -5.0,
+            'theme' => 'standard',
+            'lang' => 'en',
+            'description' => 'rlipdescription',
+            'idnumber' => 'rlipidnumber',
+            'institution' => 'rlipinstitution',
+            'department' => 'rlipdepartment'
+        );
 
         //print_object($DB->get_records('user'));
 
@@ -479,19 +481,20 @@ class version1UserImportTest extends elis_database_test {
 
         $this->run_core_user_import(array());
 
-        $data = array('action' => 'update',
-                      'username' => 'rlipusername',
-                      'auth' => 'mnet',
-                      'maildigest' => 2,
-                      'autosubscribe' => 1,
-                      'trackforums' => 1,
-                      'screenreader' => 1,
-                      'timezone' => -5.0,
-                      'theme' => 'standard',
-                      'lang' => 'en',
-                      'description' => 'rlipdescription',
-                      'institution' => 'rlipinstitution',
-                      'department' => 'rlipdepartment');
+        $data = array(
+            'action' => 'update',
+            'username' => 'rlipusername',
+            'auth' => 'mnet',
+            'maildigest' => 2,
+            'autosubscribe' => 1,
+            'trackforums' => 1,
+            'timezone' => -5.0,
+            'theme' => 'standard',
+            'lang' => 'en',
+            'description' => 'rlipdescription',
+            'institution' => 'rlipinstitution',
+            'department' => 'rlipdepartment'
+        );
 
         $this->run_core_user_import($data, false);
 
@@ -504,7 +507,6 @@ class version1UserImportTest extends elis_database_test {
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
                    trackforums = :trackforums AND
-                   screenreader = :screenreader AND
                    timezone = :timezone AND
                    theme = :theme AND
                    lang = :lang AND
@@ -525,19 +527,20 @@ class version1UserImportTest extends elis_database_test {
 
         $this->run_core_user_import(array());
 
-        $data = array('action' => 'update',
-                      'username' => 'rlipusername',
-                      'auth' => 'mnet',
-                      'maildigest' => 2,
-                      'autosubscribe' => 'yes',
-                      'trackforums' => 'yes',
-                      'screenreader' => 'no',
-                      'timezone' => -5.0,
-                      'theme' => 'standard',
-                      'lang' => 'en',
-                      'description' => 'rlipdescription',
-                      'institution' => 'rlipinstitution',
-                      'department' => 'rlipdepartment');
+        $data = array(
+            'action' => 'update',
+            'username' => 'rlipusername',
+            'auth' => 'mnet',
+            'maildigest' => 2,
+            'autosubscribe' => 'yes',
+            'trackforums' => 'yes',
+            'timezone' => -5.0,
+            'theme' => 'standard',
+            'lang' => 'en',
+            'description' => 'rlipdescription',
+            'institution' => 'rlipinstitution',
+            'department' => 'rlipdepartment'
+        );
 
         $this->run_core_user_import($data, false);
 
@@ -555,7 +558,6 @@ class version1UserImportTest extends elis_database_test {
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
                    trackforums = :trackforums AND
-                   screenreader = :screenreader AND
                    timezone = :timezone AND
                    theme = :theme AND
                    lang = :lang AND
@@ -760,16 +762,15 @@ class version1UserImportTest extends elis_database_test {
 
         $this->run_core_user_import(array());
 
-        $data = array('action' => 'update',
-                      'username' => 'rlipusername',
-                      'screenreader' => 2);
+        $data = array(
+            'action' => 'update',
+            'username' => 'rlipusername'
+        );
 
         $this->run_core_user_import($data, false);
 
-        //make sure the data hasn't changed
-        $this->assert_record_exists('user', array('username' => 'rlipusername',
-                                                  'mnethostid' => $CFG->mnet_localhost_id,
-                                                  'screenreader' => 0));
+        // make sure the data hasn't changed
+        $this->assert_record_exists('user', array('username' => 'rlipusername', 'mnethostid' => $CFG->mnet_localhost_id));
     }
 
     /**
@@ -1290,7 +1291,6 @@ class version1UserImportTest extends elis_database_test {
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
                    trackforums = :trackforums AND
-                   screenreader = :screenreader AND
                    timezone = :timezone AND
                    theme = :theme AND
                    lang = :lang AND
@@ -1298,20 +1298,21 @@ class version1UserImportTest extends elis_database_test {
                    idnumber = :idnumber AND
                    institution = :institution AND
                    department = :department";
-        $params = array('username' => 'rlipusername',
-                        'mnethostid' => $CFG->mnet_localhost_id,
-                        'auth' => 'manual',
-                        'maildigest' => 0,
-                        'autosubscribe' => 1,
-                        'trackforums' => 0,
-                        'screenreader' => 0,
-                        'timezone' => 99,
-                        'theme' => '',
-                        'lang' => $CFG->lang,
-                        'description' => '',
-                        'idnumber' => '',
-                        'institution' => '',
-                        'department' => '');
+        $params = array(
+            'username' => 'rlipusername',
+            'mnethostid' => $CFG->mnet_localhost_id,
+            'auth' => 'manual',
+            'maildigest' => 0,
+            'autosubscribe' => 1,
+            'trackforums' => 0,
+            'timezone' => 99,
+            'theme' => '',
+            'lang' => $CFG->lang,
+            'description' => '',
+            'idnumber' => '',
+            'institution' => '',
+            'department' => ''
+        );
 
         $exists = $DB->record_exists_select('user', $select, $params);
 
@@ -2422,27 +2423,28 @@ class version1UserImportTest extends elis_database_test {
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
-        //set up our mapping of standard field names to custom field names
-        $mapping = array('action' => 'action1',
-                         'username' => 'username1',
-                         'auth' => 'auth1',
-                         'password' => 'password1',
-                         'firstname' => 'firstname1',
-                         'lastname' => 'lastname1',
-                         'email' => 'email1',
-                         'maildigest' => 'maildigest1',
-                         'autosubscribe' => 'autosubscribe1',
-                         'trackforums' => 'trackforums1',
-                         'screenreader' => 'screenreader1',
-                         'city' => 'city1',
-                         'country' => 'country1',
-                         'timezone' => 'timezone1',
-                         'theme' => 'theme1',
-                         'lang' => 'lang1',
-                         'description' => 'description1',
-                         'idnumber' => 'idnumber1',
-                         'institution' => 'institution1',
-                         'department' => 'department1');
+        // set up our mapping of standard field names to custom field names
+        $mapping = array(
+            'action' => 'action1',
+            'username' => 'username1',
+            'auth' => 'auth1',
+            'password' => 'password1',
+            'firstname' => 'firstname1',
+            'lastname' => 'lastname1',
+            'email' => 'email1',
+            'maildigest' => 'maildigest1',
+            'autosubscribe' => 'autosubscribe1',
+            'trackforums' => 'trackforums1',
+            'city' => 'city1',
+            'country' => 'country1',
+            'timezone' => 'timezone1',
+            'theme' => 'theme1',
+            'lang' => 'lang1',
+            'description' => 'description1',
+            'idnumber' => 'idnumber1',
+            'institution' => 'institution1',
+            'department' => 'department1'
+        );
 
         //store the mapping records in the database
         foreach ($mapping as $standardfieldname => $customfieldname) {
@@ -2453,28 +2455,29 @@ class version1UserImportTest extends elis_database_test {
             $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
         }
 
-        //run the import
-        $data = array('entity' => 'user',
-                      'action1' => 'create',
-                      'username1' => 'rlipusername',
-                      'auth1' => 'mnet',
-                      'password1' => 'Rlippassword!0',
-                      'firstname1' => 'rlipfirstname',
-                      'lastname1' => 'rliplastname',
-                      'email1' => 'rlipuser@rlipdomain.com',
-                      'maildigest1' => '2',
-                      'autosubscribe1' => '1',
-                      'trackforums1' => '1',
-                      'screenreader1' => '1',
-                      'city1' => 'rlipcity',
-                      'country1' => 'CA',
-                      'timezone1' => -5.0,
-                      'theme1' => 'standard',
-                      'lang1' => 'en',
-                      'description1' => 'rlipdescription',
-                      'idnumber1' => 'rlipidnumber',
-                      'institution1' => 'rlipinstitution',
-                      'department1' => 'rlipdepartment');
+        // run the import
+        $data = array(
+            'entity' => 'user',
+            'action1' => 'create',
+            'username1' => 'rlipusername',
+            'auth1' => 'mnet',
+            'password1' => 'Rlippassword!0',
+            'firstname1' => 'rlipfirstname',
+            'lastname1' => 'rliplastname',
+            'email1' => 'rlipuser@rlipdomain.com',
+            'maildigest1' => '2',
+            'autosubscribe1' => '1',
+            'trackforums1' => '1',
+            'city1' => 'rlipcity',
+            'country1' => 'CA',
+            'timezone1' => -5.0,
+            'theme1' => 'standard',
+            'lang1' => 'en',
+            'description1' => 'rlipdescription',
+            'idnumber1' => 'rlipidnumber',
+            'institution1' => 'rlipinstitution',
+            'department1' => 'rlipdepartment'
+        );
         $this->run_core_user_import($data, false);
 
         //validate user record
@@ -2488,7 +2491,6 @@ class version1UserImportTest extends elis_database_test {
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
                    trackforums = :trackforums AND
-                   screenreader = :screenreader AND
                    city = :city AND
                    country = :country AND
                    theme = :theme AND
@@ -2497,27 +2499,27 @@ class version1UserImportTest extends elis_database_test {
                    idnumber = :idnumber AND
                    institution = :institution AND
                    department = :department";
-        $params = array('username' => 'rlipusername',
-                        'mnethostid' => $CFG->mnet_localhost_id,
-                        'auth' => 'mnet',
-                        'password' => hash_internal_user_password('Rlippassword!0'),
-                        'firstname' => 'rlipfirstname',
-                        'lastname' => 'rliplastname',
-                        'email' => 'rlipuser@rlipdomain.com',
-                        'maildigest' => 2,
-                        'autosubscribe' => 1,
-                        'trackforums' => 1,
-                        'screenreader' => 1,
-                        'city' => 'rlipcity',
-                        'country' => 'CA',
-                        'timezone' => -5.0,
-                        'theme' => 'standard',
-                        'lang' => 'en',
-                        'description' => 'rlipdescription',
-                        'idnumber' => 'rlipidnumber',
-                        'institution' => 'rlipinstitution',
-                        'department' => 'rlipdepartment'
-                        );
+        $params = array(
+            'username' => 'rlipusername',
+            'mnethostid' => $CFG->mnet_localhost_id,
+            'auth' => 'mnet',
+            'password' => hash_internal_user_password('Rlippassword!0'),
+            'firstname' => 'rlipfirstname',
+            'lastname' => 'rliplastname',
+            'email' => 'rlipuser@rlipdomain.com',
+            'maildigest' => 2,
+            'autosubscribe' => 1,
+            'trackforums' => 1,
+            'city' => 'rlipcity',
+            'country' => 'CA',
+            'timezone' => -5.0,
+            'theme' => 'standard',
+            'lang' => 'en',
+            'description' => 'rlipdescription',
+            'idnumber' => 'rlipidnumber',
+            'institution' => 'rlipinstitution',
+            'department' => 'rlipdepartment'
+        );
         $exists = $DB->record_exists_select('user', $select, $params);
         $this->assertEquals($exists, true);
     }
