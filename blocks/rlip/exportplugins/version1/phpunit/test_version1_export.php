@@ -189,6 +189,7 @@ class version1ExportTest extends rlip_test {
         $result = array('grade_items' => 'moodle',
                         'grade_grades' => 'moodle',
                         'user' => 'moodle',
+                        'config' => 'moodle',
                         'course' => 'moodle',
                         'course_categories' => 'moodle',
                         'grade_grades_history' => 'moodle',
@@ -342,7 +343,7 @@ class version1ExportTest extends rlip_test {
      * @param string $header The string to display as a CSV column header
      * @param int $fieldorder A number used to order fields in the export
      */
-    private function create_field_mapping($fieldid, $header = 'Header', $fieldorder = 0) {
+    private function create_field_mapping($fieldid, $header = 'Header', $fieldorder = 1) {
         global $CFG, $DB;
         $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
         require_once($file);
@@ -453,6 +454,9 @@ class version1ExportTest extends rlip_test {
 
         $this->load_csv_data();
 
+        // Clear the config admin list
+        set_config('siteadmins', '');
+
         //delete the user the "correct" way
         $user = $DB->get_record('user', array('id' => 2));
         delete_user($user);
@@ -472,6 +476,9 @@ class version1ExportTest extends rlip_test {
         set_config('nonincremental', 1, 'rlipexport_version1');
 
         $this->load_csv_data();
+
+        // Clear the config admin list
+        set_config('siteadmins', '');
 
         //delete the user record
         $DB->delete_records('user', array('id' => 2));
@@ -981,7 +988,7 @@ class version1ExportTest extends rlip_test {
         $categoryid = $this->create_custom_field_category();
         $fieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
         $this->create_data_record(2, $fieldid, 'rliptext2');
-        $this->create_field_mapping($fieldid, 'Header2', 1);
+        $this->create_field_mapping($fieldid, 'Header2', 2);
         $fieldid = $this->create_profile_field('rliptext', 'text', $categoryid);
         $this->create_data_record(2, $fieldid, 'rliptext');
         $this->create_field_mapping($fieldid);
@@ -1080,7 +1087,7 @@ class version1ExportTest extends rlip_test {
 
         //set up a second field and mapping record
         $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
-        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+        $this->create_field_mapping($secondfieldid, 'Header2', 2);
 
         //move the second field up
         $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $secondfieldid));
@@ -1088,9 +1095,9 @@ class version1ExportTest extends rlip_test {
 
         //validation
         $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
-                                                                           'fieldorder' => 1));
+                                                                           'fieldorder' => 2));
         $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $secondfieldid,
-                                                                           'fieldorder' => 0));
+                                                                           'fieldorder' => 1));
     }
 
     /**
@@ -1109,7 +1116,7 @@ class version1ExportTest extends rlip_test {
 
         //set up a second field and mapping record
         $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
-        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+        $this->create_field_mapping($secondfieldid, 'Header2', 2);
 
         //move the first field down
         $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $firstfieldid));
@@ -1117,9 +1124,9 @@ class version1ExportTest extends rlip_test {
 
         //validation
         $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
-                                                                           'fieldorder' => 1));
+                                                                           'fieldorder' => 2));
         $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $secondfieldid,
-                                                                           'fieldorder' => 0));
+                                                                           'fieldorder' => 1));
     }
 
     /**
@@ -1161,7 +1168,7 @@ class version1ExportTest extends rlip_test {
 
         //set up a second field and mapping record
         $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
-        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+        $this->create_field_mapping($secondfieldid, 'Header2', 2);
 
         //obtain DB record ids
         $firstid = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $firstfieldid));
@@ -1195,7 +1202,7 @@ class version1ExportTest extends rlip_test {
 
         //set up a second field and mapping record
         $secondfieldid = $this->create_profile_field('rliptext2', 'text', $categoryid);
-        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+        $this->create_field_mapping($secondfieldid, 'Header2', 2);
 
         //track whether each expected record was found
         $found_first = false;
@@ -1206,9 +1213,9 @@ class version1ExportTest extends rlip_test {
             foreach ($recordset as $record) {
                 //conditions for matching the first and second expected records
                 $is_first = $record->name == 'rliptext' && $record->header == 'Header' &&
-                            $record->fieldorder == 0;
+                            $record->fieldorder == 1;
                 $is_second = $record->name == 'rliptext2' && $record->header == 'Header2' &&
-                             $record->fieldorder == 1;
+                             $record->fieldorder == 2;
 
                 if ($is_first) {
                     //first record found
@@ -1290,11 +1297,11 @@ class version1ExportTest extends rlip_test {
 
         //set up a second mapping record without a field
         $secondfieldid = 9999;
-        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+        $this->create_field_mapping($secondfieldid, 'Header2', 2);
 
         //set up a third field with a mapping record
         $thirdfieldid = $this->create_profile_field('rliptext3', 'text', $categoryid);
-        $this->create_field_mapping($thirdfieldid, 'Header3', 2);
+        $this->create_field_mapping($thirdfieldid, 'Header3', 3);
 
         //move the third field up
         $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $thirdfieldid));
@@ -1302,9 +1309,9 @@ class version1ExportTest extends rlip_test {
 
         //validate that the first and third fields swapped, ignoring the second field
         $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
-                                                                           'fieldorder' => 2));
+                                                                           'fieldorder' => 3));
         $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $thirdfieldid,
-                                                                           'fieldorder' => 0));
+                                                                           'fieldorder' => 1));
     }
 
     /**
@@ -1323,11 +1330,11 @@ class version1ExportTest extends rlip_test {
 
         //set up a second mapping record without a field
         $secondfieldid = 9999;
-        $this->create_field_mapping($secondfieldid, 'Header2', 1);
+        $this->create_field_mapping($secondfieldid, 'Header2', 2);
 
         //set up a third field with a mapping record
         $thirdfieldid = $this->create_profile_field('rliptext3', 'text', $categoryid);
-        $this->create_field_mapping($thirdfieldid, 'Header3', 2);
+        $this->create_field_mapping($thirdfieldid, 'Header3', 3);
 
         //move the first field down
         $id = $DB->get_field(RLIPEXPORT_VERSION1_FIELD_TABLE, 'id', array('fieldid' => $firstfieldid));
@@ -1335,9 +1342,9 @@ class version1ExportTest extends rlip_test {
 
         //validate that the first and third fields swapped, ignoring the second field
         $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $firstfieldid,
-                                                                           'fieldorder' => 2));
+                                                                           'fieldorder' => 3));
         $this->assert_record_exists(RLIPEXPORT_VERSION1_FIELD_TABLE, array('fieldid' => $thirdfieldid,
-                                                                           'fieldorder' => 0));
+                                                                           'fieldorder' => 1));
     }
 
     /**
@@ -1610,24 +1617,42 @@ class version1ExportTest extends rlip_test {
         set_config('export_path', 'invalidexportpath', 'rlipexport_version1');
         $filepath = $CFG->dataroot.'/invalidexportpath';
 
-        //create a folder and make it executable only
+        // create a folder and make it executable only
+        // cleanup the folder first if it already exists
+        if (file_exists($filepath)) {
+            // Remove any files
+            if (!empty($filepath)) {
+                foreach (glob("{$filepath}/*") as $logfile) {
+                    unlink($logfile);
+                }
+            }
+            rmdir($filepath);
+        }
         mkdir($filepath, 0100);
 
-        //set up the export file path
+        // Check if test is being run as root
+        $isroot = false;
+        if (!posix_geteuid()) {
+            $isroot = true;
+            // Set effective uid to something other than root
+            posix_setuid(1);
+        }
+
+        // set up the export file path
         $filename = 'rliptestexport.csv';
         set_config('export_file', $filename, 'rlipexport_version1');
 
-        //set up data for one course and one enroled user
+        // set up data for one course and one enroled user
         $this->load_csv_data();
 
-        //create a scheduled job
+        // create a scheduled job
         $data = array('plugin' => 'rlipexport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
                       'type' => 'rlipexport');
         $taskid = rlip_schedule_add_job($data);
 
-        //change the next runtime to a known value in the past
+        // change the next runtime to a known value in the past
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = 99;
@@ -1638,38 +1663,45 @@ class version1ExportTest extends rlip_test {
         $job->nextruntime = 99;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
-        //lower bound on starttime
+        // lower bound on starttime
         $starttime = time();
-        //run the export
+        // run the export
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
-        //database error log validation
+        // database error log validation
         $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
         $params = array('message' => "Export file rliptestexport.csv cannot be processed because the folder: {$dataroot}/invalidexportpath/ is not accessible. Please fix the export path.");
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
 
-        $records = $DB->get_records(RLIP_LOG_TABLE);
-//        foreach ($records as $record) {
-//            print_object($record);
-//        }
+        if ($isroot) {
+            // Set effective uid back to root
+            posix_setuid(0);
+        }
 
-        //cleanup the folder
+        // cleanup the folder
         if (file_exists($filepath)) {
+            // Remove any files
+            if (!empty($filepath)) {
+                foreach (glob("{$filepath}/*") as $logfile) {
+                    unlink($logfile);
+                }
+            }
             rmdir($filepath);
         }
+
         $this->assertEquals($exists, true);
 
-        //fs logger error log validation
+        // fs logger error log validation
         $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
         $expected_error = "Export file rliptestexport.csv cannot be processed because the folder: {$dataroot}/invalidexportpath/ is not accessible. Please fix the export path.\n";
 
-        //validate that a log file was created
+        // validate that a log file was created
         $plugin_type = 'export';
         $plugin = 'rlipexport_version1';
-        $format = get_string('logfile_timestamp','block_rlip');
-        //get most recent record
+        $format = get_string('logfile_timestamp', 'block_rlip');
+        // get most recent record
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {
             $logfile = $record->logpath;
@@ -1679,17 +1711,17 @@ class version1ExportTest extends rlip_test {
         $filename = self::get_current_logfile($testfilename);
         $this->assertTrue(file_exists($filename));
 
-        //fetch log line
+        // fetch log line
         $pointer = fopen($filename, 'r');
         $line = fgets($pointer);
         fclose($pointer);
 
         if ($line == false) {
-            //no line found
+            // no line found
             $this->assertEquals(0, 1);
         }
 
-        //data validation
+        // data validation
         $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
         $actual_error = substr($line, $prefix_length);
         $this->assertEquals($expected_error, $actual_error);
