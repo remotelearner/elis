@@ -1979,6 +1979,7 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportDeletesUserBasedOnUsername() {
         global $CFG, $DB;
+        set_config('siteguest', 0);
 
         $this->run_core_user_import(array());
         $userid = $DB->get_field('user', 'id', array('username' => 'rlipusername',
@@ -2279,6 +2280,8 @@ class version1UserImportTest extends elis_database_test {
      */
     public function testVersion1ImportDeleteUserDeletesAssociations() {
         global $CFG, $DB;
+        set_config('siteadmins', 0);
+
         require_once($CFG->dirroot.'/cohort/lib.php');
         require_once($CFG->dirroot.'/course/lib.php');
         require_once($CFG->dirroot.'/group/lib.php');
