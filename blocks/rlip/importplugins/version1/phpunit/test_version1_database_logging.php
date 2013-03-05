@@ -270,10 +270,13 @@ class version1DatabaseLoggingTest extends rlip_test {
             'course_completion_crit_compl' => 'moodle',
             'course_completion_criteria' => 'moodle',
             'course_completions' => 'moodle',
+            'course_format_options' => 'moodle',
             'course_modules' => 'moodle',
             'course_modules_availability' => 'moodle',
+            'course_modules_avail_fields' => 'moodle',
             'course_modules_completion' => 'moodle',
             'course_sections' => 'moodle',
+            'course_sections_avail_fields' => 'moodle',
             'enrol' => 'moodle',
             'events_handlers' => 'moodle',
             'files' => 'moodle',
@@ -286,6 +289,7 @@ class version1DatabaseLoggingTest extends rlip_test {
             'grade_letters' => 'moodle',
             'grade_outcomes_courses' => 'moodle',
             'grade_settings' => 'moodle',
+            'grading_areas' => 'moodle',
             'groupings' => 'moodle',
             'groupings_groups' => 'moodle',
             'groups' => 'moodle',
@@ -630,16 +634,13 @@ class version1DatabaseLoggingTest extends rlip_test {
      * update
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseUpdate() {
-        global $CFG, $DB, $UNITTEST;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
         require_once($file);
 
-        //prevent problem with cached contexts
-        $UNITTEST = new stdClass;
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        // prevent problem with cached contexts
+        accesslib_clear_all_caches(true);
 
         $prefix = self::$origdb->get_prefix();
 
@@ -706,15 +707,13 @@ class version1DatabaseLoggingTest extends rlip_test {
      * delete
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnCourseDelete() {
-        global $CFG, $DB, $UNITTEST;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
         require_once($file);
 
-        //prevent problem with cached contexts
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        // prevent problem with cached contexts
+        accesslib_clear_all_caches(true);
 
         $prefix = self::$origdb->get_prefix();
 
@@ -862,15 +861,13 @@ class version1DatabaseLoggingTest extends rlip_test {
      * delete
      */
     public function testVersion1DBLoggingLogsSuccessMessageOnEnrolmentDelete() {
-        global $CFG, $DB, $UNITTEST;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        //prevent problem with cached contexts
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        // prevent problem with cached contexts
+        accesslib_clear_all_caches(true);
 
         //set up config values
         set_config('enrol_plugins_enabled', 'manual');
