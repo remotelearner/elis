@@ -21,10 +21,10 @@ if ($ADMIN->fulltree) {
         $roles = array();
     }
 
-    //combine the default option with the list of roles
+    // combine the default option with the list of roles
     $options = array(0 => get_string('no_default_role', 'elis_program'));
     foreach ($roles as $id => $role) {
-        $options[$id] = $role->name;
+        $options[$id] = !empty($role->name) ? $role->name : $role->shortname;
     }
 
     //setting header

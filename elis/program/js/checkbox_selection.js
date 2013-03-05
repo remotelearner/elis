@@ -23,6 +23,7 @@
  */
 
 // Globals
+var cbsYAHOO;
 
 // whether or not the scripts from the innerhtml have already been run
 var innerhtml_scripts_run = false;
@@ -41,8 +42,11 @@ var set_content_callback = {
 };
 
 // initialize page settings once the DOM has finished loading
-YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', function(Y) {
-    var YAHOO = Y.YUI2;
+YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+    if (!cbsYAHOO) {
+        cbsYAHOO = Y.YUI2;
+    }
+    var YAHOO = cbsYAHOO;
     YAHOO.util.Event.onDOMReady(function() {
     make_links_internal();
     window.selection_field = get_element_by_name("_selection");
@@ -67,8 +71,11 @@ var onbeforeunload = function(e) {
     }
 }
 
-YUI().use('yui2-event', function(Y) {
-    var YAHOO = Y.YUI2;
+YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+    if (!cbsYAHOO) {
+        cbsYAHOO = Y.YUI2;
+    }
+    var YAHOO = cbsYAHOO;
     YAHOO.util.Event.addListener(document, 'unload', onbeforeunload);
 });
 
@@ -79,8 +86,11 @@ YUI().use('yui2-event', function(Y) {
  */
 function get_element_by_name(name) {
     var result;
-    YUI().use('yui2-dom', function(Y) {
-        var YAHOO = Y.YUI2;
+    YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+        if (!cbsYAHOO) {
+            cbsYAHOO = Y.YUI2;
+        }
+        var YAHOO = cbsYAHOO; // Y.YUI2;
         result = YAHOO.util.Dom.getElementsBy(function(el) { return el.getAttribute("name") == name; })[0];
     });
     return result;
@@ -91,8 +101,11 @@ function get_element_by_name(name) {
  */
 function update_checkbox_selection() {
     // Send the selected checkboxes synchronously
-    YUI().use("io-base", "yui2-json", function(Y) {
-        var YAHOO = Y.YUI2;
+    YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+        if (!cbsYAHOO) {
+            cbsYAHOO = Y.YUI2;
+        }
+        var YAHOO = cbsYAHOO;
         var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
         var uri = basepage + "&action=checkbox_selection_session";
         var cfg = {
@@ -111,8 +124,11 @@ function update_checkbox_selection() {
 function make_links_internal() {
     var list_display = document.getElementById('list_display');
 
-    YUI().use("yui2-dom", "yui2-event", "yui2-json", function(Y) {
-        var YAHOO = Y.YUI2;
+    YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+        if (!cbsYAHOO) {
+            cbsYAHOO = Y.YUI2;
+        }
+        var YAHOO = cbsYAHOO; // Y.YUI2;
         // catch any click events, to catch user clicking on a link
         YAHOO.util.Event.addListener(list_display, "click", load_link);
         // catch any form submit events
@@ -138,8 +154,11 @@ function set_content(resp) {
     make_links_internal();
     mark_selected();
     if (!innerhtml_scripts_run) {
-        YUI().use("yui2-dom", function(Y) {
-            var YAHOO = Y.YUI2;
+        YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+            if (!cbsYAHOO) {
+                cbsYAHOO = Y.YUI2;
+            }
+            var YAHOO = cbsYAHOO; // Y.YUI2;
             YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'script', div.id, function(el) {
                 eval(el.text);
             });
@@ -152,8 +171,12 @@ function set_content(resp) {
  */
 function load_link(ev) {
     YUI().use("yui2-connection", "yui2-dom", "yui2-event", "yui2-json", function(Y) {
-        var YAHOO = Y.YUI2;
+        if (!cbsYAHOO) {
+            cbsYAHOO = Y.YUI2;
+        }
+        var YAHOO = cbsYAHOO; // Y.YUI2;
         var target = YAHOO.util.Event.getTarget(ev);
+        // console.log('checkbox_selection.js::load_link(): target = ' + target);
         if (!target.getAttribute("href")) return;
         window.lastrequest = target.getAttribute("href");
         var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
@@ -167,10 +190,14 @@ function load_link(ev) {
  */
 function load_form(ev) {
     YUI().use("yui2-connection", "yui2-dom", "yui2-event", "yui2-json", function(Y) {
-        var YAHOO = Y.YUI2;
+        if (!cbsYAHOO) {
+            cbsYAHOO = Y.YUI2;
+        }
+        var YAHOO = cbsYAHOO; // Y.YUI2;
         var target = YAHOO.util.Event.getTarget(ev);
         var data = YAHOO.util.Connect.setForm(target);
         var link = target.getAttribute('action');
+        // console.log('checkbox_selection.js::load_form(): target = ' + target);
         window.lastrequest = link + '?' + data;
         var selectedcheckboxes = YAHOO.lang.JSON.stringify(window.selection);
         YAHOO.util.Connect.asyncRequest("POST", link + "?mode=bare", set_content_callback, "selected_checkboxes=" + selectedcheckboxes);
@@ -183,8 +210,11 @@ function load_form(ev) {
  */
 function change_selected_display() {
     var selected_only = get_element_by_name("selectedonly");
-    YUI().use("yui2-connection", function(Y) {
-        var YAHOO = Y.YUI2;
+    YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+        if (!cbsYAHOO) {
+            cbsYAHOO = Y.YUI2;
+        }
+        var YAHOO = cbsYAHOO; // Y.YUI2;
         if (selected_only.checked) {
             if (window.selection != null) {
                 var data = '[' + window.selection.join(',') + ']';
@@ -278,8 +308,11 @@ function mark_selected() {
     var table = document.getElementById('selectiontable');
     var numselected = 0;
     if (table) {
-        YUI().use("yui2-dom", function(Y) {
-            var YAHOO = Y.YUI2;
+        YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+            if (!cbsYAHOO) {
+                cbsYAHOO = Y.YUI2;
+            }
+            var YAHOO = cbsYAHOO; // Y.YUI2;
             YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
                 var id = el.name.substr(6);
                 if (checkbox_selection_index(id) == -1) {
@@ -315,8 +348,11 @@ function mark_selected() {
 function checkbox_select(checked) {
     var table = document.getElementById('selectiontable');
     if (table) {
-        YUI().use("yui2-dom", function(Y) {
-            var YAHOO = Y.YUI2;
+        YUI().use('yui2-connection', 'yui2-dom', 'yui2-event', 'yui2-json', function(Y) {
+            if (!cbsYAHOO) {
+                cbsYAHOO = Y.YUI2;
+            }
+            var YAHOO = cbsYAHOO; // Y.YUI2;
             YAHOO.util.Dom.getElementsBy(function(el) { return true; }, 'input', table, function(el) {
                 el.checked = checked;
                 id = el.name.substr(6);

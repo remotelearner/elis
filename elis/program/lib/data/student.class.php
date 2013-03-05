@@ -809,7 +809,7 @@ class student extends elis_data_object {
 
                             case 'grade':
                                 if (isset($element->studentgradeid)) {
-                                 $name = 'grade['.$element->studentgradeid.']';
+                                    $name = 'grade['.$element->studentgradeid.']';
                                     $value = $element->grade;
                                 } else {
                                     $name = 'newgrade['.$element->id.']';
