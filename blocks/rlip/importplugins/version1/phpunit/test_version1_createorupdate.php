@@ -257,62 +257,68 @@ class version1CreateorupdateTest extends rlip_test {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        return array(RLIP_LOG_TABLE => 'block_rlip',
-                     'block_instances' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'assignment' => 'moodle',
-                     'assignment_submissions' => 'moodle',
-                     'backup_courses' => 'moodle',
-                     'backup_log' => 'moodle',
-                     'cohort_members' => 'moodle',
-                     'comments' => 'moodle',
-                     'course_completions' => 'moodle',
-                     'course_completion_aggr_methd' => 'moodle',
-                     'course_completion_criteria' => 'moodle',
-                     'course_completion_crit_compl' => 'moodle',
-                     'course_display' => 'moodle',
-                     'course_modules' => 'moodle',
-                     'course_modules_availability' => 'moodle',
-                     'course_modules_completion' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'event' => 'moodle',
-                     'events_queue' => 'moodle',
-                     'events_queue_handlers' => 'moodle',
-                     'external_services_users' => 'moodle',
-                     'external_tokens' => 'moodle',
-                     'feedback_template' => 'moodle',
-                     'filter_active' => 'moodle',
-                     'filter_config' => 'moodle',
-                     'forum' => 'moodle',
-                     'forum_discussions' => 'moodle',
-                     'forum_posts' => 'moodle',
-                     'forum_read' => 'moodle',
-                     'forum_subscriptions' => 'moodle',
-                     'grade_categories_history' => 'moodle',
-                     'grade_grades' => 'moodle',
-                     'grade_grades_history' => 'moodle',
-                     'grade_items_history' => 'moodle',
-                     'grade_letters' => 'moodle',
-                     'grade_outcomes_courses' => 'moodle',
-                     'grade_settings' => 'moodle',
-                     'groupings' => 'moodle',
-                     'groupings_groups' => 'moodle',
-                     'groups' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'log' => 'moodle',
-                     'quiz' => 'moodle',
-                     'quiz_attempts' => 'moodle',
-                     'quiz_feedback' => 'moodle',
-                     'quiz_grades' => 'moodle',
-                     'quiz_question_instances' => 'moodle',
-                     'rating' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'role_names' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     'user_preferences' => 'moodle',
-                     'url' => 'moodle',
-                     'sessions' => 'moodle');
+        return array(
+            RLIP_LOG_TABLE => 'block_rlip',
+            'block_instances' => 'moodle',
+            'block_positions' => 'moodle',
+            'assignment' => 'moodle',
+            'assignment_submissions' => 'moodle',
+            'backup_courses' => 'moodle',
+            'backup_log' => 'moodle',
+            'cohort_members' => 'moodle',
+            'comments' => 'moodle',
+            'course_completions' => 'moodle',
+            'course_completion_aggr_methd' => 'moodle',
+            'course_completion_criteria' => 'moodle',
+            'course_completion_crit_compl' => 'moodle',
+            'course_display' => 'moodle',
+            'course_format_options' => 'moodle',
+            'course_modules' => 'moodle',
+            'course_modules_availability' => 'moodle',
+            'course_modules_avail_fields' => 'moodle',
+            'course_modules_completion' => 'moodle',
+            'course_sections_avail_fields' => 'moodle',
+            'cache_flags' => 'moodle',
+            'event' => 'moodle',
+            'events_queue' => 'moodle',
+            'events_queue_handlers' => 'moodle',
+            'external_services_users' => 'moodle',
+            'external_tokens' => 'moodle',
+            'feedback_template' => 'moodle',
+            'filter_active' => 'moodle',
+            'filter_config' => 'moodle',
+            'forum' => 'moodle',
+            'forum_discussions' => 'moodle',
+            'forum_posts' => 'moodle',
+            'forum_read' => 'moodle',
+            'forum_subscriptions' => 'moodle',
+            'grade_categories_history' => 'moodle',
+            'grade_grades' => 'moodle',
+            'grade_grades_history' => 'moodle',
+            'grade_items_history' => 'moodle',
+            'grade_letters' => 'moodle',
+            'grade_outcomes_courses' => 'moodle',
+            'grade_settings' => 'moodle',
+            'grading_areas' => 'moodle',
+            'groupings' => 'moodle',
+            'groupings_groups' => 'moodle',
+            'groups' => 'moodle',
+            'groups_members' => 'moodle',
+            'log' => 'moodle',
+            'quiz' => 'moodle',
+            'quiz_attempts' => 'moodle',
+            'quiz_feedback' => 'moodle',
+            'quiz_grades' => 'moodle',
+            'quiz_question_instances' => 'moodle',
+            'rating' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'role_names' => 'moodle',
+            'user_enrolments' => 'moodle',
+            'user_info_data' => 'moodle',
+            'user_preferences' => 'moodle',
+            'url' => 'moodle',
+            'sessions' => 'moodle'
+        );
     }
 
     /**
@@ -733,6 +739,7 @@ class version1CreateorupdateTest extends rlip_test {
      */
     public function testVersion1CreateorupdateDeletesUser() {
         global $CFG, $DB;
+        $CFG->siteguest = 0;
 
         //set up initial conditions
         set_config('createorupdate', 1, 'rlipimport_version1');
@@ -764,7 +771,8 @@ class version1CreateorupdateTest extends rlip_test {
                              'action' => 'delete',
                              'username' => 'rlipusername');
         $this->run_core_user_import($import_data);
-        $exists = $DB->record_exists('user', array('username' => 'rlipusername'));
+        $all = $DB->get_records('user');
+        $exists = $DB->record_exists('user', array('username' => 'rlipusername', 'deleted' => 0));
         $this->assertEquals($exists, false);
     }
 

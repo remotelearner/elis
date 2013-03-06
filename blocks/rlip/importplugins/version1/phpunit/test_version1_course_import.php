@@ -184,10 +184,13 @@ class version1CourseImportTest extends rlip_test {
             'course_completion_crit_compl' => 'moodle',
             'course_completion_criteria' => 'moodle',
             'course_completions' => 'moodle',
+            'course_format_options' => 'moodle',
             'course_modules' => 'moodle',
             'course_modules_completion' => 'moodle',
             'course_modules_availability' => 'moodle',
+            'course_modules_avail_fields' => 'moodle',
             'course_sections' => 'moodle',
+            'course_sections_avail_fields' => 'moodle',
             'enrol' => 'moodle',
             'feedback_template' => 'mod_feedback',
             'files' => 'moodle',
@@ -207,6 +210,7 @@ class version1CourseImportTest extends rlip_test {
             'grade_outcomes_courses' => 'moodle',
             'grade_outcomes_history' => 'moodle',
             'grade_settings' => 'moodle',
+            'grading_areas' => 'moodle',
             'groupings' => 'moodle',
             'groupings_groups' => 'moodle',
             'groups' => 'moodle',
@@ -272,17 +276,16 @@ class version1CourseImportTest extends rlip_test {
      * This method is called before the first test of this test class is run.
      */
     public static function setUpBeforeClass() {
-        // called before each test function
         global $DB;
         self::$origdb = $DB;
 
-        //use our custom overlay database type that supports temporary tables
+        // Use our custom overlay database type that supports temporary tables
         self::$overlaydb = new overlay_course_database($DB, static::get_overlay_tables(), static::get_ignored_tables());
         self::create_admin_user();
 
         $DB = self::$overlaydb;
 
-        //create data we need for many test cases
+        // Create data we need for many test cases
         self::create_guest_user();
         self::init_contexts_and_site_course();
         self::set_up_category_structure(true);
@@ -290,6 +293,11 @@ class version1CourseImportTest extends rlip_test {
         set_config('defaultenrol', 1, 'enrol_guest');
         set_config('status', ENROL_INSTANCE_DISABLED, 'enrol_guest');
         set_config('enrol_plugins_enabled', 'manual,guest');
+
+        // New config settings needed for course format refactoring in 2.4
+        set_config('numsections', 15, 'moodlecourse');
+        set_config('hiddensections', 0, 'moodlecourse');
+        set_config('coursedisplay', 1, 'moodlecourse');
 
         self::get_csv_files();
         self::get_logfilelocation_files();
@@ -528,6 +536,44 @@ class version1CourseImportTest extends rlip_test {
     }
 
     /**
+     * Assert a course exists
+     *
+     * @param array $data The fields to check
+     * @return int The course id
+     */
+    private function assert_core_course_exists($data) {
+        global $DB;
+
+        $sql    = 'SELECT c.id';
+        $tables = '{course} c';
+
+        $criteria = array();
+
+        foreach ($data as $column => $value) {
+
+            if ($column == 'summary') {
+                $criteria[] = 'c.'. $DB->sql_compare_text('summary', 255).' = :summary';
+            } else if ($column == 'numsections') {
+                // Only the topics and weeks formats have numsections settings
+                if ((array_key_exists('format', $data)) && ($data['format'] == 'topics' || $data['format'] == 'weeks')) {
+                    $tables .= ' LEFT JOIN {course_format_options} cfo ON cfo.courseid = c.id AND cfo.name = \'numsections\'';
+                    $criteria[] = 'cfo.value = :numsections';
+                }
+            } else {
+                $criteria[] = "c.$column = :$column";
+            }
+        }
+
+        $sql .= " FROM $tables WHERE ". implode($criteria, ' AND ');
+
+        $records = $DB->get_records_sql($sql, $data);
+        $this->assertEquals(1, count($records), 'Should find 1 and only 1 course!');
+
+        $course = array_shift($records);
+        return $course->id;
+    }
+
+    /**
      * Asserts that a record in the given table exists
      *
      * @param string $table The database table to check
@@ -537,6 +583,7 @@ class version1CourseImportTest extends rlip_test {
         global $DB;
 
         $exists = $DB->record_exists($table, $params);
+
         $this->assertEquals($exists, true);
     }
 
@@ -607,57 +654,38 @@ class version1CourseImportTest extends rlip_test {
         //setup
         set_config('maxsections', 20, 'moodlecourse');
 
-        $data = array('shortname' => 'nonrequiredfields',
-                      'idnumber' => 'nonrequiredfieldsidnumber',
-                      'summary' => 'nonrequiredfieldssummary',
-                      'format' => 'social',
-                      'numsections' => '15',
-                      'startdate' => 'Jan/01/2012',
-                      'newsitems' => 8,
-                      'showgrades' => 0,
-                      'showreports' => 1,
-                      'maxbytes' => 10240,
-                      'guest' => 1,
-                      'password' => 'nonrequiredfieldspassword',
-                      'visible' => 0,
-                      'lang' => 'en');
+        $data = array(
+            'shortname'   => 'nonrequiredfields',
+            'idnumber'    => 'nonrequiredfieldsidnumber',
+            'summary'     => 'nonrequiredfieldssummary',
+            'format'      => 'social',
+            'numsections' => '15',
+            'startdate'   => 'Jan/01/2012',
+            'newsitems'   => 8,
+            'showgrades'  => 0,
+            'showreports' => 1,
+            'maxbytes'    => 10240,
+            'visible'     => 0,
+            'lang'        => 'en',
+            'guest'       => 1,
+            'password'    => 'nonrequiredfieldspassword',
+        );
 
         $this->run_core_course_import($data);
 
-        $select = "shortname = :shortname AND
-                   idnumber = :idnumber AND
-                   summary = :summary AND
-                   format = :format AND
-                   numsections = :numsections AND
-                   startdate = :startdate AND
-                   newsitems = :newsitems AND
-                   showgrades = :showgrades AND
-                   showreports = :showreports AND
-                   maxbytes = :maxbytes AND ".
-                   "visible = :visible AND
-                   lang = :lang";
-        $params = array('shortname' => 'nonrequiredfields',
-                        'idnumber' => 'nonrequiredfieldsidnumber',
-                        'summary' => 'nonrequiredfieldssummary',
-                        'format' => 'social',
-                        'numsections' => '15',
-                        'startdate' => mktime(0, 0, 0, 1, 1, 2012),
-                        'newsitems' => 8,
-                        'showgrades' => 0,
-                        'showreports' => 1,
-                        'maxbytes' => 10240,
-                        'visible' => 0,
-                        'lang' => 'en');
+        $data['startdate'] = mktime(0, 0, 0, 1, 1, 2012);
+        unset($data['guest']);
+        unset($data['password']);
 
-        $exists = $DB->record_exists_select('course', $select, $params);
+        $courseid = $this->assert_core_course_exists($data);
 
-        $this->assertEquals($exists, true);
-
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'nonrequiredfields'));
-        $this->assert_record_exists('enrol', array('courseid' => $courseid,
-                                                   'enrol' => 'guest',
-                                                   'password' => 'nonrequiredfieldspassword',
-                                                   'status' => ENROL_INSTANCE_ENABLED));
+        $data = array(
+            'courseid' => $courseid,
+            'enrol'    => 'guest',
+            'password' => 'nonrequiredfieldspassword',
+            'status'   => ENROL_INSTANCE_ENABLED,
+        );
+        $this->assert_record_exists('enrol', $data);
     }
 
     /**
@@ -677,23 +705,25 @@ class version1CourseImportTest extends rlip_test {
         $new_category->name = 'updatecategory';
         $new_category->id = $DB->insert_record('course_categories', $new_category);
 
-        $data = array('action' => 'update',
-                      'shortname' => 'updateshortname',
-                      'fullname' => 'updatedfullname',
-                      'idnumber' => 'rlipidnumber',
-                      'summary' => 'rlipsummary',
-                      'format' => 'social',
-                      'numsections' => 7,
-                      'startdate' => 'Jan/12/2012',
-                      'newsitems' => 7,
-                      'showgrades' => 0,
-                      'showreports' => 1,
-                      'maxbytes' => 0,
-                      'guest' => 1,
-                      'password' => 'password',
-                      'visible' => 0,
-                      'lang' => 'en',
-                      'category' => 'updatecategory');
+        $data = array(
+            'action'       => 'update',
+            'shortname'   => 'updateshortname',
+            'fullname'    => 'updatedfullname',
+            'idnumber'    => 'rlipidnumber',
+            'summary'     => 'rlipsummary',
+            'format'      => 'social',
+            'startdate'   => 'Jan/12/2012',
+            'newsitems'   => 7,
+            'showgrades'  => 0,
+            'showreports' => 1,
+            'maxbytes'    => 0,
+            'guest'       => 1,
+            'password'    => 'password',
+            'visible'     => 0,
+            'lang'        => 'en',
+            'category'    => 'updatecategory',
+            'numsections' => 7,
+        );
         $this->run_core_course_import($data, false);
 
         unset($data['action']);
@@ -702,28 +732,15 @@ class version1CourseImportTest extends rlip_test {
         $data['startdate'] = mktime(0, 0, 0, 1, 12, 2012);
         $data['category'] = $new_category->id;
 
-        $select = "shortname = :shortname AND
-                   fullname = :fullname AND
-                   idnumber = :idnumber AND
-                   ".$DB->sql_compare_text('summary', 255)." = :summary AND
-                   format = :format AND
-                   numsections = :numsections AND
-                   startdate = :startdate AND
-                   newsitems = :newsitems AND
-                   showgrades = :showgrades AND
-                   showreports = :showreports AND
-                   maxbytes = :maxbytes AND
-                   visible = :visible AND
-                   lang = :lang AND
-                   category = :category";
+        $courseid = $this->assert_core_course_exists($data);
 
-        $this->assertTrue($DB->record_exists_select('course', $select, $data));
-
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'updateshortname'));
-        $this->assert_record_exists('enrol', array('courseid' => $courseid,
-                                                   'enrol' => 'guest',
-                                                   'password' => 'password',
-                                                   'status' => ENROL_INSTANCE_ENABLED));
+        $data = array(
+            'courseid' => $courseid,
+            'enrol' => 'guest',
+            'password' => 'password',
+            'status' => ENROL_INSTANCE_ENABLED
+        );
+        $this->assert_record_exists('enrol', $data);
     }
 
     /**
@@ -731,20 +748,34 @@ class version1CourseImportTest extends rlip_test {
      * during creates
      */
     public function testVersion1ImportSupportsLegacyStartdateOnCourseCreate() {
-        //create the course
-        $data = array('action' => 'create',
-                      'shortname' => 'legacystartdatecreate',
-                      'fullname' => 'legacystartdatecreate',
-                      'category' => 'childcategory',
-                      'startdate' => '01/02/2012');
+        global $DB;
+
+        // Create the course
+        $data = array(
+            'action'    => 'create',
+            'shortname' => 'legacystartdatecreate',
+            'fullname'  => 'legacystartdatecreate',
+            'category'  => 'childcategory',
+            'startdate' => '01/02/2012',
+            'guest'     => 1,
+        );
         $this->run_core_course_import($data, false);
 
-        //data validation
+        // Data validation
         unset($data['action']);
         unset($data['category']);
+        unset($data['guest']);
         $data['startdate'] = mktime(0, 0, 0, 1, 2, 2012);
 
-        $this->assert_record_exists('course', $data);
+        $courseid = $this->assert_core_course_exists($data);
+
+        $data = array(
+            'courseid' => $courseid,
+            'enrol'    => 'guest',
+            'status'   => ENROL_INSTANCE_ENABLED
+        );
+
+        $this->assert_record_exists('enrol', $data);
     }
 
     /**
@@ -790,23 +821,25 @@ class version1CourseImportTest extends rlip_test {
         $new_category->name = 'mapcategory';
         $new_category->id = $DB->insert_record('course_categories', $new_category);
 
-        $data = array('action' => 'update',
-                      'shortname' => 'mapshortname',
-                      'fullname' => 'mapfullname',
-                      'idnumber' => 'rlipidnumber2',
-                      'summary' => 'rlipsummary',
-                      'format' => 'social',
-                      'numsections' => 7,
-                      'startdate' => 'Jan/12/2012',
-                      'newsitems' => 7,
-                      'showgrades' => 'no',
-                      'showreports' => 'yes',
-                      'maxbytes' => 0,
-                      'guest' => 'yes',
-                      'password' => 'password',
-                      'visible' => 'no',
-                      'lang' => 'en',
-                      'category' => 'mapcategory');
+        $data = array(
+            'action' => 'update',
+            'shortname' => 'mapshortname',
+            'fullname' => 'mapfullname',
+            'idnumber' => 'rlipidnumber2',
+            'summary' => 'rlipsummary',
+            'format' => 'social',
+            'numsections' => 7,
+            'startdate' => 'Jan/12/2012',
+            'newsitems' => 7,
+            'showgrades' => 'no',
+            'showreports' => 'yes',
+            'maxbytes' => 0,
+            'guest' => 'yes',
+            'password' => 'password',
+            'visible' => 'no',
+            'lang' => 'en',
+            'category' => 'mapcategory'
+        );
         $this->run_core_course_import($data, false);
 
         foreach ($data as $key => $val) {
@@ -820,28 +853,16 @@ class version1CourseImportTest extends rlip_test {
         $data['startdate'] = mktime(0, 0, 0, 1, 12, 2012);
         $data['category'] = $new_category->id;
 
-        $select = "shortname = :shortname AND
-                   fullname = :fullname AND
-                   idnumber = :idnumber AND
-                   summary = :summary AND
-                   format = :format AND
-                   numsections = :numsections AND
-                   startdate = :startdate AND
-                   newsitems = :newsitems AND
-                   showgrades = :showgrades AND
-                   showreports = :showreports AND
-                   maxbytes = :maxbytes AND
-                   visible = :visible AND
-                   lang = :lang AND
-                   category = :category";
+        $courseid = $this->assert_core_course_exists($data);
 
-        $exists = $DB->record_exists_select('course', $select, $data);
-        $this->assertEquals($exists, true);
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'mapshortname'));
-        $this->assert_record_exists('enrol', array('courseid' => $courseid,
-                                                   'enrol' => 'guest',
-                                                   'password' => 'password',
-                                                   'status' => ENROL_INSTANCE_ENABLED));
+        $data = array(
+            'courseid' => $courseid,
+            'enrol' => 'guest',
+            'password' => 'password',
+            'status' => ENROL_INSTANCE_ENABLED
+        );
+        $this->assert_record_exists('enrol', $data);
+
     }
 
     /**
@@ -896,8 +917,7 @@ class version1CourseImportTest extends rlip_test {
         $this->run_core_course_import($data, false);
 
         //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'invalidcoursenumsectionscreate',
-                                                    'numsections' => 7));
+        $this->assert_core_course_exists(array('shortname' => 'invalidcoursenumsectionscreate', 'numsections' => 7));
     }
 
     /**
@@ -3022,23 +3042,25 @@ class version1CourseImportTest extends rlip_test {
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'childcategory'));
 
         //set up our mapping of standard field names to custom field names
-        $mapping = array('action' => 'action1',
-                         'shortname' => 'shortname1',
-                         'fullname' => 'fullname1',
-                         'idnumber' => 'idnumber1',
-                         'summary' => 'summary1',
-                         'format' => 'format1',
-                         'numsections' => 'numsections1',
-                         'startdate' => 'startdate1',
-                         'newsitems' => 'newsitems1',
-                         'showgrades' => 'showgrades1',
-                         'showreports' => 'showreports1',
-                         'maxbytes' => 'maxbytes1',
-                         'guest' => 'guest1',
-                         'password' => 'password1',
-                         'visible' => 'visible1',
-                         'lang' => 'lang1',
-                         'category' => 'category1');
+        $mapping = array(
+            'action'      => 'action1',
+            'shortname'   => 'shortname1',
+            'fullname'    => 'fullname1',
+            'idnumber'    => 'idnumber1',
+            'summary'     => 'summary1',
+            'format'      => 'format1',
+            'startdate'   => 'startdate1',
+            'newsitems'   => 'newsitems1',
+            'showgrades'  => 'showgrades1',
+            'showreports' => 'showreports1',
+            'maxbytes'    => 'maxbytes1',
+            'guest'       => 'guest1',
+            'password'    => 'password1',
+            'visible'     => 'visible1',
+            'lang'        => 'lang1',
+            'category'    => 'category1',
+            'numsections' => 'numsections1',
+        );
 
         //store the mapping records in the database
         foreach ($mapping as $standardfieldname => $customfieldname) {
@@ -3050,65 +3072,58 @@ class version1CourseImportTest extends rlip_test {
         }
 
         //run the import
-        $data = array('entity' => 'course',
-                      'action1' => 'create',
-                      'shortname1' => 'fieldmapping',
-                      'fullname1' => 'fieldmappingfullname',
-                      'idnumber1' => 'fieldmappingidnumber',
-                      'summary1' => 'fieldmappingsummary',
-                      'format1' => 'social',
-                      'numsections1' => 15,
-                      'startdate1' => 'Jan/01/2012',
-                      'newsitems1' => 8,
-                      'showgrades1' => 0,
-                      'showreports1' => 1,
-                      'maxbytes1' => 0,
-                      'guest1' => 1,
-                      'password1' => 'fieldmappingpassword',
-                      'visible1' => 0,
-                      'lang1' => 'en',
-                      'category1' => 'childcategory');
+        $data = array(
+            'entity'       => 'course',
+            'action1'      => 'create',
+            'shortname1'   => 'fieldmapping',
+            'fullname1'    => 'fieldmappingfullname',
+            'idnumber1'    => 'fieldmappingidnumber',
+            'summary1'     => 'fieldmappingsummary',
+            'format1'      => 'social',
+            'startdate1'   => 'Jan/01/2012',
+            'newsitems1'   => 8,
+            'showgrades1'  => 0,
+            'showreports1' => 1,
+            'maxbytes1'    => 0,
+            'guest1'       => 1,
+            'password1'    => 'fieldmappingpassword',
+            'visible1'     => 0,
+            'lang1'        => 'en',
+            'category1'    => 'childcategory',
+            'numsections1' => 15,
+        );
         $this->run_core_course_import($data, false);
 
-        //validate course record
-        $select = "shortname = :shortname AND
-                   fullname = :fullname AND
-                   idnumber = :idnumber AND
-                   summary = :summary AND
-                   format = :format AND
-                   numsections = :numsections AND
-                   startdate = :startdate AND
-                   newsitems = :newsitems AND
-                   showgrades = :showgrades AND
-                   showreports = :showreports AND
-                   maxbytes = :maxbytes AND
-                   visible = :visible AND
-                   lang = :lang AND
-                   category = :category";
-        $params = array('shortname' => 'fieldmapping',
-                        'fullname' => 'fieldmappingfullname',
-                        'idnumber' => 'fieldmappingidnumber',
-                        'summary' => 'fieldmappingsummary',
-                        'format' => 'social',
-                        'numsections' => 15,
-                        'startdate' => mktime(0, 0, 0, 1, 1, 2012),
-                        'newsitems' => 8,
-                        'showgrades' => 0,
-                        'showreports' => 1,
-                        'maxbytes' => 0,
-                        'visible' => 0,
-                        'lang' => 'en',
-                        'category' => $categoryid);
-        $exists = $DB->record_exists_select('course', $select, $params);
-        $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
-        $this->assertEquals($exists, true);
+        $params = array(
+            'shortname'   => 'fieldmapping',
+            'fullname'    => 'fieldmappingfullname',
+            'idnumber'    => 'fieldmappingidnumber',
+            'summary'     => 'fieldmappingsummary',
+            'format'      => 'social',
+            'numsections' => 15,
+            'startdate'   => mktime(0, 0, 0, 1, 1, 2012),
+            'newsitems'   => 8,
+            'showgrades'  => 0,
+            'showreports' => 1,
+            'maxbytes'    => 0,
+            'visible'     => 0,
+            'lang'        => 'en',
+            'category'    => $categoryid
+        );
+
+        $courseid = $this->assert_core_course_exists($params);
 
         //validate enrolment record
-        $courseid = $DB->get_field('course', 'id', array('shortname' => 'fieldmapping'));
-        $this->assert_record_exists('enrol', array('courseid' => $courseid,
-                                                   'enrol' => 'guest',
-                                                   'password' => 'fieldmappingpassword',
-                                                   'status' => ENROL_INSTANCE_ENABLED));
+        $data = array(
+            'courseid' => $courseid,
+            'enrol'    => 'guest',
+            'password' => 'fieldmappingpassword',
+            'status'   => ENROL_INSTANCE_ENABLED
+        );
+        $this->assert_record_exists('enrol', $data);
+
+        // Clean up the mess
+        $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE, array('entitytype' => 'course'));
     }
 
     /**
@@ -3195,43 +3210,52 @@ class version1CourseImportTest extends rlip_test {
 
     }
 
-    /** Validate that an import uses moodlecourse defaults
-     *
+    /**
+     *  Validate that an import uses moodlecourse defaults
      */
     public function testVersion1ImportCourseCreateUsesDefaults() {
         global $DB;
 
         //backup current course defaults...
-        $config_backup = get_config('moodlecourse');
+        $backup = get_config('moodlecourse');
 
         //set course defaults
-        $default_values = array('format'=>'weeks',
-                                'numsections'=>10,
-                                'hiddensections'=>0,
-                                'newsitems'=>5,
-                                'showgrades'=>1,
-                                'showreports'=>0,
-                                'maxbytes'=>5368709120,
-                                'groupmode'=>0,
-                                'groupmodeforce'=>0,
-                                'visible'=>1,
-                                'lang'=>'');
-        foreach($default_values as $default=>$value) {
+        $defaults = array(
+            'format'         => 'weeks',
+            'newsitems'      => 5,
+            'showgrades'     => 1,
+            'showreports'    => 0,
+            'maxbytes'       => 5368709120,
+            'groupmode'      => 0,
+            'groupmodeforce' => 0,
+            'visible'        => 1,
+            'lang'           => '',
+            'numsections'    => 10,
+            'hiddensections' => 0,
+        );
+
+        foreach($defaults as $default => $value) {
             set_config($default, $value, 'moodlecourse');
         }
 
-        //create a course - visible by default
+        // Create a course - visible by default
         $this->run_core_course_import(array('shortname' => 'crsdefaults'));
 
-        //data validation
-        foreach($default_values as $field=>$value) {
-            $test_value = $DB->get_field('course', $field, array('shortname' => 'crsdefaults'));
-            $this->assertEquals($test_value, $value);
+        $sql = 'SELECT c.*, cfo1.value as numsections, cfo2.value as hiddensections
+                  FROM {course} c
+                  LEFT JOIN {course_format_options} cfo1 ON cfo1.courseid=c.id AND cfo1.name = \'numsections\'
+                  LEFT JOIN {course_format_options} cfo2 ON cfo2.courseid=c.id AND cfo2.name = \'hiddensections\'
+                 WHERE c.shortname = \'crsdefaults\'';
+
+        // Data validation
+        $course = $DB->get_record_sql($sql);
+        foreach($defaults as $field => $value) {
+            $this->assertEquals($course->$field, $value);
             unset_config($field, 'moodlecourse');
         }
 
-        //reset moodlecourse config values
-        foreach($config_backup as $default=>$value) {
+        // Reset moodlecourse config values
+        foreach($backup as $default => $value) {
             set_config($default, $value, 'moodlecourse');
         }
     }

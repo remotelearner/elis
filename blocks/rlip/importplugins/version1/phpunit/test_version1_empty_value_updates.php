@@ -115,21 +115,22 @@ class version1EmptyValueUpdatesTest extends rlip_test {
         require_once($file);
 
         $tables = array(
-            'user' => 'moodle',
-            'course' => 'moodle',
-            'course_categories' => 'moodle',
-            'role' => 'moodle',
-            'role_context_levels' => 'moodle',
-            'context' => 'moodle',
-            'config_plugins' => 'moodle',
-            'enrol' => 'moodle',
-            'role_assignments' => 'moodle',
-            'role_capabilities' => 'moodle',
+            'config'                          => 'moodle',
+            'config_plugins'                  => 'moodle',
+            'context'                         => 'moodle',
+            'course'                          => 'moodle',
+            'course_categories'               => 'moodle',
+            'course_format_options'           => 'moodle',
+            'enrol'                           => 'moodle',
+            'role'                            => 'moodle',
+            'role_assignments'                => 'moodle',
+            'role_capabilities'               => 'moodle',
+            'role_context_levels'             => 'moodle',
+            'user'                            => 'moodle',
             RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
-            field_data_int::TABLE => 'elis_core',
-            field_data_char::TABLE => 'elis_core',
-            field_data_text::TABLE => 'elis_core',
-            'config' => 'moodle'
+            field_data_int::TABLE             => 'elis_core',
+            field_data_char::TABLE            => 'elis_core',
+            field_data_text::TABLE            => 'elis_core',
         );
 
         // Detect if we are running this test on a site with the ELIS PM system in place
@@ -257,13 +258,18 @@ class version1EmptyValueUpdatesTest extends rlip_test {
 
         set_config('createorupdate', 0, 'rlipimport_version1');
 
-        //set up the site course record
+        // New config settings required by course format refactoring in 2.4
+        set_config('numsections', 15, 'moodlecourse');
+        set_config('hiddensections', 0, 'moodlecourse');
+        set_config('coursedisplay', 1, 'moodlecourse');
+
+        // Set up the site course record
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
             unset($record->id);
             $DB->insert_record('course', $record);
         }
 
-        //create key context records
+        // Create key context records
         $prefix = self::$origdb->get_prefix();
         $DB->execute("INSERT INTO {context}
                       SELECT * FROM
@@ -274,7 +280,7 @@ class version1EmptyValueUpdatesTest extends rlip_test {
                       {$prefix}context
                       WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
 
-        //create, then update a course
+        // Create, then update a course
         $data = array(array('entity' => 'course',
                             'action' => 'create',
                             'shortname' => 'rlipshortname',
