@@ -665,15 +665,15 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                 $elements = $pmclass->course->get_completion_elements();
                 $compelems_valid = (!empty($elements) && $elements->valid() === true) ? true : false;
                 foreach ($elements as $element) {
-                    // In Moodle 1.9, Moodle actually stores the "slashes" on the idnumber field in the grade_items
-                    // table so we to check both with and without addslashes. =(  - ELIS-1830
-                    $idnumber = $DB->get_field('course_modules', 'id', array('idnumber' => $element->idnumber)); // new in Moodle2.4
+                    // In Moodle 2.4 the idnumber in grade_items *maybe* a foreign key index into course_modules
+                    // so we must check for both possibilities
+                    $idnumber = $DB->get_field('course_modules', 'id', array('idnumber' => $element->idnumber));
                     if ($gi = $DB->get_record('grade_items', array('courseid' => $class->moodlecourseid,
-                                                                   'idnumber' => $idnumber))) {
+                                                                   'idnumber' => $element->idnumber))) {
                         $gis[$gi->id] = $gi;
                         $comp_elements[$gi->id] = $element;
-                    } else if ($gi = $DB->get_record('grade_items', array('courseid' => $class->moodlecourseid,
-                                                                          'idnumber' => addslashes($idnumber)))) {
+                    } else if ($idnumber && ($gi = $DB->get_record('grade_items', array('courseid' => $class->moodlecourseid,
+                            'idnumber' => $idnumber)))) {
                         $gis[$gi->id] = $gi;
                         $comp_elements[$gi->id] = $element;
                     }
