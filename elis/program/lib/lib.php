@@ -667,13 +667,19 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                 foreach ($elements as $element) {
                     // In Moodle 2.4 the idnumber in grade_items *maybe* a foreign key index into course_modules
                     // so we must check for both possibilities
+                    $params1 =  array(
+                        'courseid' => $class->moodlecourseid,
+                        'idnumber' => $element->idnumber
+                    );
                     $idnumber = $DB->get_field('course_modules', 'id', array('idnumber' => $element->idnumber));
-                    if ($gi = $DB->get_record('grade_items', array('courseid' => $class->moodlecourseid,
-                                                                   'idnumber' => $element->idnumber))) {
+                    $params2 =  array(
+                        'courseid' => $class->moodlecourseid,
+                        'idnumber' => $idnumber
+                    );
+                    if ($gi = $DB->get_record('grade_items', $params1)) {
                         $gis[$gi->id] = $gi;
                         $comp_elements[$gi->id] = $element;
-                    } else if ($idnumber && ($gi = $DB->get_record('grade_items', array('courseid' => $class->moodlecourseid,
-                            'idnumber' => $idnumber)))) {
+                    } else if ($idnumber && ($gi = $DB->get_record('grade_items', $params2))) {
                         $gis[$gi->id] = $gi;
                         $comp_elements[$gi->id] = $element;
                     }
