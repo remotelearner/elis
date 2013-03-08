@@ -2206,7 +2206,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      */
     function enrolment_add($record, $filename) {
         //note: this is only here due to legacy 1.9 weirdness
-        return $this->enrolment_create($record);
+        return $this->enrolment_create($record, $filename);
     }
 
     /**
