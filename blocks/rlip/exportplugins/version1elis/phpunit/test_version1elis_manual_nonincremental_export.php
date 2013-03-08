@@ -118,6 +118,7 @@ class version1elisManualNonincrementalExportTest extends elis_database_test {
                      'context' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
+                     'course_format_options' => 'moodle',
                      'grade_letters' => 'moodle',
                      classmoodlecourse::TABLE => 'elis_program',
                      course::TABLE => 'elis_program',

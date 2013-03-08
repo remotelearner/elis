@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlip
+ * @subpackage rlipexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -28,12 +28,14 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
     define('CLI_SCRIPT', true);
 }
 
-//required classes / libraries
+// Required classes / libraries.
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/phpunit/rlip_fileplugin_export.class.php');
+require_once(dirname(__FILE__).'/../lib.php');
+require_once(dirname(__FILE__).'/mock_obj.php');
 
 /**
  * Test class for validating basic export data during a manual, nonincremental
@@ -50,16 +52,16 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
         $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
-        //set the incremental time delta
+        // set the incremental time delta
         set_config('incrementaldelta', '1d', 'rlipexport_version1elis');
 
-        //plugin for file IO
-    	$fileplugin = new rlip_fileplugin_export();
-    	$fileplugin->open(RLIP_FILE_WRITE);
+        // plugin for file IO
+        $fileplugin = new rlip_fileplugin_export();
+        $fileplugin->open(RLIP_FILE_WRITE);
 
-    	//our specific export
+        // our specific export
         $exportplugin = new rlip_exportplugin_version1elis($fileplugin, $manual);
         $exportplugin->init($targetstarttime, $lastruntime);
         $exportplugin->export_records(0);
@@ -82,21 +84,21 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
-	    $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
 
-	    if ($multiple_users) {
-	        //data for multiple users
-	        $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourses.csv');
-	        $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclasses.csv');
-	        $dataset->addTable(student::TABLE, dirname(__FILE__).'/students.csv');
-	        $dataset->addTable(user::TABLE, dirname(__FILE__).'/pmusers.csv');
-	    } else {
-	        //data for a single user
-	        $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourse.csv');
-	        $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclass.csv');
-	        $dataset->addTable(student::TABLE, dirname(__FILE__).'/student.csv');
-	        $dataset->addTable(user::TABLE, dirname(__FILE__).'/pmuser.csv');
-	    }
+        if ($multiple_users) {
+            // data for multiple users
+            $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourses.csv');
+            $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclasses.csv');
+            $dataset->addTable(student::TABLE, dirname(__FILE__).'/students.csv');
+            $dataset->addTable(user::TABLE, dirname(__FILE__).'/pmusers.csv');
+        } else {
+            // data for a single user
+            $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourse.csv');
+            $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclass.csv');
+            $dataset->addTable(student::TABLE, dirname(__FILE__).'/student.csv');
+            $dataset->addTable(user::TABLE, dirname(__FILE__).'/pmuser.csv');
+        }
 
         load_phpunit_data_set($dataset, true, self::$overlaydb);
     }
@@ -121,6 +123,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
                      'context' => 'moodle',
                      'course' => 'moodle',
                      'course_categories' => 'moodle',
+                     'course_format_options' => 'moodle',
                      'grade_letters' => 'moodle',
                      RLIPEXPORT_VERSION1ELIS_FIELD_TABLE => 'rlipexport_version1elis',
                      classmoodlecourse::TABLE => 'elis_program',
@@ -174,7 +177,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
                       SELECT * FROM
                       {$prefix}context
                       WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, SITEID));
-        //set up the site course record
+        // set up the site course record
         if ($record = self::$origdb->get_record('course', array('id' => SITEID))) {
             unset($record->id);
             $DB->insert_record('course', $record);
@@ -228,21 +231,23 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      * @param string $ui_type The string identifier of the UI / control type to use
      * @param int $categoryid PM custom field category id
      * @param string $options Extra parameter, used for select options
-     * @param string $defaultdata Default value
+     * @param string $defaultdata Default value.
+     *
      * @return int The id of the created field
      */
-    private function create_test_field($contextlevelname = 'user', $name = 'testfieldname', $data_type, $ui_type, $categoryid, $options = NULL, $defaultdata = NULL) {
+    private function create_test_field($contextlevelname = 'user', $name = 'testfieldname', $data_type, $ui_type, $categoryid,
+                                       $options = null, $defaultdata = null) {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
-        //category contextlevel
+        // category contextlevel
         $contextlevel = context_elis_helper::get_level_from_name($contextlevelname);
         $field_category_contextlevel = new field_category_contextlevel(array('categoryid' => $categoryid,
                                                                              'contextlevel' => $contextlevel));
         $field_category_contextlevel->save();
 
-        //field
+        // field
         $field = new field(array('shortname' => 'testfieldshortname',
                                  'name' => $name,
                                  'categoryid' => $categoryid,
@@ -250,25 +255,25 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
 
         $field->save();
 
-        //field_data if a default value needs to be set
-        if ($defaultdata !== NULL) {
+        // field_data if a default value needs to be set
+        if ($defaultdata !== null) {
             $classname = 'field_data_'.$data_type;
             $field_data = new $classname(array('fieldid' => $field->id,
                                                'data'    => $defaultdata));
             $field_data->save();
         }
 
-        //field contextlevel
+        // field contextlevel
         $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
                                                            'contextlevel' => $contextlevel));
 
         $field_contextlevel->save();
 
-        //field owner
+        // field owner
         $owner_data = array('control' => $ui_type);
 
-        if ($options !== NULL) {
-            //set options
+        if ($options !== null) {
+            // set options
             $options = (is_array($options)) ? implode("\n", $options) : $options;
             $owner_data['options'] = $options;
         }
@@ -279,22 +284,30 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Create a database record maps a field to an export column
+     * Create a database record maps a field to an export column.
      *
-     * @param int $fieldid The database id of the PM custom field
-     * @param string $header The string to display as a CSV column header
-     * @param int $fieldorder A number used to order fields in the export
+     * @param string $fieldset   The fieldset to map.
+     * @param string    $field      The field to map.
+     * @param string $header     The string to display as a CSV column header
+     * @param int    $fieldorder A number used to order fields in the export
      */
-    private function create_field_mapping($fieldid, $header = 'Header', $fieldorder = 0) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1elis').'/lib.php';
-        require_once($file);
+    protected function create_field_mapping($fieldset, $field, $header = 'Header', $fieldorder = null) {
+        global $DB;
 
-        //set up and insert the record
+        // Set up and insert the record.
         $mapping = new stdClass;
-        $mapping->fieldid = $fieldid;
-        $mapping->header = $header;
-        $mapping->fieldorder = $fieldorder;
+        $mapping->fieldset = $fieldset;
+        $mapping->field = $field;
+        if (!empty($header)) {
+            $mapping->header = $header;
+        }
+
+        if ($fieldorder !== null) {
+            $mapping->fieldorder = $fieldorder;
+        } else {
+            $mapping->fieldorder = ($DB->get_field_sql('SELECT MAX(fieldorder) FROM {'.RLIPEXPORT_VERSION1ELIS_FIELD_TABLE.'}')+1);
+        }
+
         $DB->insert_record(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, $mapping);
     }
 
@@ -316,17 +329,19 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      *
      * @return array The expected header structure
      */
-    function valid_header_provider() {
-        $expectedheader = array(get_string('header_firstname', 'rlipexport_version1elis'),
-                                get_string('header_lastname', 'rlipexport_version1elis'),
-                                get_string('header_username', 'rlipexport_version1elis'),
-                                get_string('header_useridnumber', 'rlipexport_version1elis'),
-                                get_string('header_courseidnumber', 'rlipexport_version1elis'),
-                                get_string('header_startdate', 'rlipexport_version1elis'),
-                                get_string('header_enddate', 'rlipexport_version1elis'),
-                                get_string('header_status', 'rlipexport_version1elis'),
-                                get_string('header_grade', 'rlipexport_version1elis'),
-                                get_string('header_letter', 'rlipexport_version1elis'));
+    public function valid_header_provider() {
+        $expectedheader = array(
+            get_string('header_firstname', 'rlipexport_version1elis'),
+            get_string('header_lastname', 'rlipexport_version1elis'),
+            get_string('header_username', 'rlipexport_version1elis'),
+            get_string('header_useridnumber', 'rlipexport_version1elis'),
+            get_string('header_courseidnumber', 'rlipexport_version1elis'),
+            get_string('header_startdate', 'rlipexport_version1elis'),
+            get_string('header_enddate', 'rlipexport_version1elis'),
+            get_string('header_status', 'rlipexport_version1elis'),
+            get_string('header_grade', 'rlipexport_version1elis'),
+            get_string('header_letter', 'rlipexport_version1elis')
+        );
         return array(array($expectedheader));
     }
 
@@ -336,11 +351,11 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      * @param array $expectedheader The expected header data
      * @dataProvider valid_header_provider
      */
-    public function testExportContainsCorrectHeader($expectedheader) {
-        //setup
+    public function test_export_contains_correct_header($expectedheader) {
+        // setup
         $data = $this->get_export_data();
 
-        //validation
+        // validation
         $this->assertEquals($expectedheader, $data[0]);
     }
 
@@ -349,7 +364,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      *
      * @return array The expected column data
      */
-    function valid_data_provider() {
+    public function valid_data_provider() {
         $expecteddata = array('exportfirstname', 'exportlastname', 'exportusername', 'exportidnumber',
                               'testcourseidnumber', date('M/d/Y', 1000000000), date('M/d/Y', 1500000000),
                               'COMPLETED', '70.00000', 'C-');
@@ -363,12 +378,12 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      * @param array $expecteddata The expected column data
      * @dataProvider valid_data_provider
      */
-    public function testExportContainsValidData($expecteddata) {
-        //setup
+    public function test_export_contains_valid_data($expecteddata) {
+        // setup
         $this->load_csv_data();
         $data = $this->get_export_data();
 
-        //validation
+        // validation
         $this->assertEquals(2, count($data));
         $this->assertEquals($expecteddata, $data[1]);
     }
@@ -376,14 +391,14 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     /**
      * Validate that the export works with the minimum amount of required data
      */
-    public function testExportWorksWithMinimalAssociations() {
+    public function test_export_works_with_minimal_associations() {
         global $CFG, $DB;
 
-        //setup
+        // setup
         $this->load_csv_data();
         $data = $this->get_export_data();
 
-        //validation
+        // validation
         $this->assertEquals(2, count($data));
     }
 
@@ -392,7 +407,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      *
      * @return array The list of tables containing required data
      */
-    function necessary_associations_provider() {
+    public function necessary_associations_provider() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
@@ -414,16 +429,16 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      * @param string $tablename The name of a necessary database table
      * @dataProvider necessary_associations_provider
      */
-    public function testExportRespectsNecessaryAssociations($tablename) {
+    public function test_exportrespects_necessaryassociations($tablename) {
         global $DB;
 
-        //setup
+        // setup
         $this->load_csv_data();
-        //delete records from required table
+        // delete records from required table
         $DB->delete_records($tablename);
         $data = $this->get_export_data();
 
-        //validation (should only have the header row)
+        // validation (should only have the header row)
         $this->assertEquals(1, count($data));
     }
 
@@ -432,7 +447,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      *
      * @return array An array containing each possible completion status state
      */
-    function completion_status_provider() {
+    public function completion_status_provider() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
@@ -448,12 +463,12 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      * @param int $status A completion status to use on the student enrolment
      * @dataProvider completion_status_provider
      */
-    public function testExportRespectsCompletionStatus($status) {
+    public function test_exportrespects_completionstatus($status) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
 
-        //setup
+        // setup
         $this->load_csv_data();
         $sql = "UPDATE {".student::TABLE."}
                 SET completestatusid = ?";
@@ -462,12 +477,12 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
 
         $data = $this->get_export_data();
 
-        //validation
+        // validation
         if ($status == student::STUSTATUS_PASSED) {
-            //the record should be included
+            // the record should be included
             $this->assertEquals(2, count($data));
         } else {
-            //should only have a header
+            // should only have a header
             $this->assertEquals(1, count($data));
         }
     }
@@ -477,7 +492,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      *
      * @return array An array specifying grade-"letter" pairs
      */
-    function grade_letter_provider() {
+    public function grade_letter_provider() {
         return array(array(10, 1),
                      array(20, 2),
                      array(30, 3),
@@ -498,34 +513,34 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      * @param int $letter The expected enrolment grade letter
      * @dataProvider grade_letter_provider
      */
-    public function testExportRespectsGradeLetters($grade, $letter) {
+    public function test_exportrespects_gradeletters($grade, $letter) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
 
-        //setup
+        // setup
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //create a Moodle course category
+        // create a Moodle course category
         $categorydata = new stdClass;
         $categorydata->name = 'testcategory';
         $categorydata->id = $DB->insert_record('course_categories', $categorydata);
 
-        //create a Moodle course
+        // create a Moodle course
         $coursedata = new stdClass;
         $coursedata->category = $categorydata->id;
         $coursedata->fullname = 'testcourse';
         $coursedata = create_course($coursedata);
 
-        //associate the PM class instance to the Moodle course
+        // associate the PM class instance to the Moodle course
         $classmoodle = new classmoodlecourse(array('classid' => 200,
                                                    'moodlecourseid' => $coursedata->id));
         $classmoodle->save();
 
-        //create grade letter mappings
+        // create grade letter mappings
         $context = context_course::instance($coursedata->id);
         $mappings = array(10 => 1,
                           20 => 2,
@@ -545,7 +560,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
             $DB->insert_record('grade_letters', $record);
         }
 
-        //set the enrolment grade
+        // set the enrolment grade
         $sql = "UPDATE {".student::TABLE."}
                 SET grade = ?";
         $params = array($grade);
@@ -553,7 +568,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
 
         $data = $this->get_export_data();
 
-        //validation
+        // validation
         $this->assertEquals(2, count($data));
         $this->assertEquals((string)$letter, $data[1][9]);
     }
@@ -563,14 +578,14 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      *
      * @return array Data needed for testing sort orders
      */
-    function sort_order_provider() {
+    public function sort_order_provider() {
         $data = array();
 
-        //set up some times that will be valid
+        // set up some times that will be valid
         $firsttime = time();
         $secondtime = $firsttime + DAYSECS;
 
-        //sort first based on idnumber
+        // sort first based on idnumber
         $data[] = array(array('idnumber' => 'a'),
                         array(),
                         array(),
@@ -587,7 +602,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
                         array(),
                         3,
                         'a');
-        //sort second based on course idnumber
+        // sort second based on course idnumber
         $data[] = array(array('idnumber' => 'a'),
                         array('idnumber' => 'a'),
                         array(),
@@ -604,7 +619,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
                         array(),
                         4,
                         'a');
-        //sort third based on completion time / date
+        // sort third based on completion time / date
         $data[] = array(array('idnumber' => 'a'),
                         array('idnumber' => 'a'),
                         array('completetime' => $firsttime),
@@ -621,7 +636,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
                         array('completetime' => $firsttime),
                         6,
                         date("M/d/Y", $firsttime));
-        //sort fourth based on completion grade
+        // sort fourth based on completion grade
         $data[] = array(array('idnumber' => 'a'),
                        array('idnumber' => 'a'),
                        array('completetime' => $firsttime,
@@ -642,7 +657,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
                               'grade' => 2),
                         8,
                         2);
-        //sort last based on record id
+        // sort last based on record id
         $data[] = array(array('username' => 'firstuser',
                               'idnumber' => 'a'),
                         array('idnumber' => 'a'),
@@ -656,7 +671,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
                         2,
                         'firstuser');
 
-        //return all the appropriate data
+        // return all the appropriate data
         return $data;
     }
 
@@ -673,19 +688,19 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      * @param string checkvalue Value to valdate atains
      * @dataProvider sort_order_provider
      */
-    public function testExportRespectsSortOrder($user1attributes, $cd1attributes, $enrolment1attributes,
-                                                $user2attributes, $cd2attributes, $enrolment2attributes,
-                                                $checkfield, $checkvalue) {
+    public function test_export_respects_sortorder($user1attributes, $cd1attributes, $enrolment1attributes,
+                                                   $user2attributes, $cd2attributes, $enrolment2attributes,
+                                                   $checkfield, $checkvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
-        //setup
+        // setup
         $this->load_csv_data(true);
 
-        //persist the specified attributes
+        // persist the specified attributes
         if (count($user1attributes) > 0) {
             $record = (object)$user1attributes;
             $record->id = 200;
@@ -724,7 +739,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
 
         $data = $this->get_export_data();
 
-        //validation
+        // validation
         $this->assertEquals(3, count($data));
         $this->assertEquals($checkvalue, $data[1][$checkfield]);
     }
@@ -734,12 +749,14 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      *
      * @return array A variety of completion times
      */
-    function completion_time_provider() {
-        return array(array(0, 1),
-                     array(1000000000, 1),
-                     array(time() - 25 * HOURSECS, 1),
-                     array(time() - 23 * HOURSECS, 2),
-                     array(time(), 2));
+    public function completion_time_provider() {
+        return array(
+                array(0, 1),
+                array(1000000000, 1),
+                array(time() - 25 * HOURSECS, 1),
+                array(time() - 23 * HOURSECS, 2),
+                array(time(), 2)
+        );
     }
 
     /**
@@ -749,19 +766,19 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      * @param int $numrows The total number of rows to expect, including the header
      * @dataProvider completion_time_provider
      */
-    public function testExportRespectsCompletionTime($completiontime, $numrows) {
+    public function test_export_respects_completiontime($completiontime, $numrows) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
 
-        //data setup
+        // data setup
         $this->load_csv_data();
         $sql = "UPDATE {".student::TABLE."}
                 SET completetime = ?";
         $params = array($completiontime);
         $DB->execute($sql, $params);
 
-        //validation
+        // validation
         $data = $this->get_export_data();
         $this->assertEquals($numrows, count($data));
     }
@@ -769,104 +786,106 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     /**
      * Validate that the export resets state appropriately
      */
-    public function testExportResetsState() {
+    public function test_export_resetsstate() {
         global $CFG;
         $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
-        //data setup
+        // data setup
         $this->load_csv_data();
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
-        //plugin for file IO
-    	$fileplugin = new rlip_fileplugin_export();
-    	$fileplugin->open(RLIP_FILE_WRITE);
+        // plugin for file IO
+        $fileplugin = new rlip_fileplugin_export();
+        $fileplugin->open(RLIP_FILE_WRITE);
 
-    	//our specific export
+        // our specific export
         $exportplugin = new rlip_exportplugin_version1elis($fileplugin, true);
         $exportplugin->init(0, 0);
 
-        //validate setup
+        // validate setup
         $this->assertTrue($exportplugin->recordset->valid());
 
         $exportplugin->close();
 
-        //validate result
+        // validate result
         $this->assertNull($exportplugin->recordset);
 
         $fileplugin->close();
     }
 
     public function entity_provider() {
-        return array(array('user','crlm_user'));
+        return array(array('user', 'crlm_user'));
     }
 
-   /**
-     * Validate that the version 1 export includes custom field headers in
-     * the output     *
+    /**
+     * Validate that the version 1 export includes custom field headers in the output
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCorrectCustomFieldHeaderInfo($entityname,$entitytable) {
+    public function test_exportincludes_correct_customfield_header_info($entityname, $entitytable) {
         global $CFG, $DB;
 
         $file = get_plugin_directory('rlipexport', 'version1elis').'/lib.php';
         require_once($file);
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create categpry
         $categoryid = $this->create_custom_field_category();
         // create custom field
         $field = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
         $this->assertEquals(count($data), 1);
 
-        $expectedheader = array(get_string('header_firstname', 'rlipexport_version1elis'),
-                                get_string('header_lastname', 'rlipexport_version1elis'),
-                                get_string('header_username', 'rlipexport_version1elis'),
-                                get_string('header_useridnumber', 'rlipexport_version1elis'),
-                                get_string('header_courseidnumber', 'rlipexport_version1elis'),
-                                get_string('header_startdate', 'rlipexport_version1elis'),
-                                get_string('header_enddate', 'rlipexport_version1elis'),
-                                get_string('header_status', 'rlipexport_version1elis'),
-                                get_string('header_grade', 'rlipexport_version1elis'),
-                                get_string('header_letter', 'rlipexport_version1elis'),
-                                 'Header');
+        $expectedheader = array(
+                get_string('header_firstname', 'rlipexport_version1elis'),
+                get_string('header_lastname', 'rlipexport_version1elis'),
+                get_string('header_username', 'rlipexport_version1elis'),
+                get_string('header_useridnumber', 'rlipexport_version1elis'),
+                get_string('header_courseidnumber', 'rlipexport_version1elis'),
+                get_string('header_startdate', 'rlipexport_version1elis'),
+                get_string('header_enddate', 'rlipexport_version1elis'),
+                get_string('header_status', 'rlipexport_version1elis'),
+                get_string('header_grade', 'rlipexport_version1elis'),
+                get_string('header_letter', 'rlipexport_version1elis'),
+                'Header'
+        );
 
-        //make sure the data matches the expected header
-        $this->assertEquals($expectedheader,$data[0]);
+        // make sure the data matches the expected header
+        $this->assertEquals($expectedheader, $data[0]);
     }
 
     /**
-     * Validate that the version 1 export includes custom field checkbox data
-     * in the output
+     * Validate that the version 1 export includes custom field checkbox data in the output.
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldCheckboxData($entityname,$entitytable) {
+    public function test_exportincludes_customfield_checkbox_data($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');;
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
+
         // create custom field
         $field = $this->create_test_field($entityname, 'rlipcheckbox', 'int', 'checkbox', $categoryid);
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
+
         // create data record for custom field
         $entity = $DB->get_records($entitytable);
         $entity = current($entity);
@@ -874,7 +893,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
 
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -892,33 +911,33 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 export uses custom field default values for
-     * checkbox fields
+     * Validate that the version 1 export uses custom field default values for checkbox fields.
+     *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldCheckboxDefault($entityname,$entitytable) {
+    public function test_exportincludes_customfield_checkbox_default($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
         // create custom field
-        $field = $this->create_test_field($entityname, 'rlipcheckbox', 'int', 'checkbox', $categoryid, NULL, '0');
-        $this->create_field_mapping($field->id);
+        $field = $this->create_test_field($entityname, 'rlipcheckbox', 'int', 'checkbox', $categoryid, null, '0');
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
 
         // get data record for custom field
         $entity = $DB->get_records($entitytable);
         $entity = current($entity);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -927,7 +946,7 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
         // test with other value
         $result = $this->update_data_record($entityname, $entity, $field, 1);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
         $this->assertEquals(2, count($data));
@@ -937,34 +956,33 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 export includes custom field datetime data
-     * in the output
+     * Validate that the version 1 export includes custom field datetime data in the output.
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldDatetimeData($entityname,$entitytable) {
+    public function test_exportincludes_customfield_datetime_data($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
         // create custom field
         $field = $this->create_test_field($entityname, 'rlipdate', 'int', 'datetime', $categoryid);
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
         // create data record for custom field
         $entity = $DB->get_records($entitytable);
         $entity = current($entity);
         $result = $this->update_data_record($entityname, $entity, $field, mktime(0, 0, 0, 1, 1, 2012));
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -989,35 +1007,34 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 export adds a special marker for unset
-     * datetime custom fields
+     * Validate that the version 1 export adds a special marker for unset datetime custom fields.
      *
      * @dataProvider entity_provider
      */
-    public function testExportHandlesCustomFieldDatetimeUnset($entityname,$entitytable) {
+    public function test_exporthandles_customfield_datetime_unset($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
         // create custom field
         $field = $this->create_test_field($entityname, 'rlipdate', 'int', 'datetime', $categoryid);
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
         // create data record for custom field
         $entity = $DB->get_records($entitytable);
         $entity = current($entity);
         $result = $this->update_data_record($entityname, $entity, $field, 0);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -1030,35 +1047,34 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      */
 
     /**
-     * Validate that the version 1 export includes custom field menu data
-     * in the output
+     * Validate that the version 1 export includes custom field menu data in the output
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldMenuData($entityname,$entitytable) {
+    public function test_exportincludes_customfield_menu_data($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
         // create custom field
         $field = $this->create_test_field($entityname, 'rlipmenu', 'char', 'menu', $categoryid, 'rlipoption1');
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
         // create data record for custom field
         $entity = $DB->get_records($entitytable);
         $entity = current($entity);
         $result = $this->update_data_record($entityname, $entity, $field, 'rlipoption1');
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -1066,33 +1082,32 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 export uses custom field default values for
-     * menu fields
+     * Validate that the version 1 export uses custom field default values for menu fields.
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldMenuDefault($entityname,$entitytable) {
+    public function test_exportincludes_customfield_menu_default($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
         // create custom field
         $options = "rlipoption1
                     rlipoption2";
         $field = $this->create_test_field($entityname, 'rlipmenu', 'char', 'menu', $categoryid, $options, 'rlipoption2');
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -1100,35 +1115,36 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 export includes custom field textarea data
-     * in the output
+     * Validate that the version 1 export includes custom field textarea data in the output
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldTextareaData($entityname,$entitytable) {
+    public function test_exportincludes_customfield_textarea_data($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
+
         // create custom field
         $field = $this->create_test_field($entityname, 'rliptextarea', 'char', 'textarea', $categoryid);
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
+
         // create data record for custom field
         $entity = $DB->get_records($entitytable);
         $entity = current($entity);
         $result = $this->update_data_record($entityname, $entity, $field, 'rliptextarea');
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -1136,31 +1152,30 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 export uses custom field default values for
-     * textarea fields
+     * Validate that the version 1 export uses custom field default values for textarea fields
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldTextareaDefault($entityname,$entitytable) {
+    public function test_exportincludes_customfield_textarea_default($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
         // create custom field
-        $field = $this->create_test_field($entityname, 'rliptextarea', 'char', 'textarea', $categoryid, NULL, 'rliptextareadefault');
-        $this->create_field_mapping($field->id);
+        $field = $this->create_test_field($entityname, 'rliptextarea', 'char', 'textarea', $categoryid, null, 'rliptextareadefault');
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -1168,35 +1183,36 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 export includes custom field textinput data
-     * in the output
+     * Validate that the version 1 export includes custom field textinput data in the output.
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldTextinputData($entityname,$entitytable) {
+    public function test_exportincludes_customfield_textinput_data($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
+
         // create custom field
         $field = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
+
         // create data record for custom field and attach to entity
         $entity = $DB->get_records($entitytable);
         $entity = current($entity);
         $result = $this->update_data_record($entityname, $entity, $field, 'rliptext');
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -1209,26 +1225,26 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
      *
      * @dataProvider entity_provider
      */
-    public function testExportIncludesCustomFieldTextinputDefault($entityname,$entitytable) {
+    public function test_exportincludes_customfield_textinput_default($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
         // create category
         $categoryid = $this->create_custom_field_category();
         // create custom field
-        $field = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid, NULL, 'rliptextdefault');
-        $this->create_field_mapping($field->id);
+        $field = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid, null, 'rliptextdefault');
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
@@ -1236,486 +1252,127 @@ class version1elisManualIncrementalExportTest extends elis_database_test {
     }
 
     /**
-     * Validate that the version 1 export does not include information about
-     * delete custom fields
+     * Validate that the version 1 export does not include information about delete custom fields
      *
      * @dataProvider entity_provider
      */
-    public function testExportIgnoresDeletedCustomFields($entityname,$entitytable) {
+    public function test_exportignores_deleted_customfields($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
-        $this->create_field_mapping(1);
+        // set up necessary custom field information in the database
+        $this->create_field_mapping('testcustomfields', 'field_1');
 
-        //set up the expected output
-        $expected_header = array(get_string('header_firstname', 'rlipexport_version1elis'),
-                                 get_string('header_lastname', 'rlipexport_version1elis'),
-                                 get_string('header_username', 'rlipexport_version1elis'),
-                                 get_string('header_useridnumber', 'rlipexport_version1elis'),
-                                 get_string('header_courseidnumber', 'rlipexport_version1elis'),
-                                 get_string('header_startdate', 'rlipexport_version1elis'),
-                                 get_string('header_enddate', 'rlipexport_version1elis'),
-                                 get_string('header_status', 'rlipexport_version1elis'),
-                                 get_string('header_grade', 'rlipexport_version1elis'),
-                                 get_string('header_letter', 'rlipexport_version1elis'),);
-        $expected_body = array('exportfirstname',
-                               'exportlastname',
-                               'exportusername',
-                               'exportidnumber',
-                               'testcourseidnumber',
-                               date('M/d/Y', 1000000000),
-                               date('M/d/Y', 1500000000),
-                               'COMPLETED',
-                               '70.00000',
-                               'C-');
+        // set up the expected output
+        $expected_header = array(
+                get_string('header_firstname', 'rlipexport_version1elis'),
+                get_string('header_lastname', 'rlipexport_version1elis'),
+                get_string('header_username', 'rlipexport_version1elis'),
+                get_string('header_useridnumber', 'rlipexport_version1elis'),
+                get_string('header_courseidnumber', 'rlipexport_version1elis'),
+                get_string('header_startdate', 'rlipexport_version1elis'),
+                get_string('header_enddate', 'rlipexport_version1elis'),
+                get_string('header_status', 'rlipexport_version1elis'),
+                get_string('header_grade', 'rlipexport_version1elis'),
+                get_string('header_letter', 'rlipexport_version1elis'),
+        );
+        $expected_body = array(
+                'exportfirstname',
+                'exportlastname',
+                'exportusername',
+                'exportidnumber',
+                'testcourseidnumber',
+                date('M/d/Y', 1000000000),
+                date('M/d/Y', 1500000000),
+                'COMPLETED',
+                '70.00000',
+                'C-'
+        );
         $expected_data = array($expected_header, $expected_body);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals($expected_data, $data);
     }
 
     /**
-     * Validate that the version 1 export shows custom field columns in the
-     * configured order, after non-configurable fields
+     * Validate that the version 1 export shows custom field columns in the configured order, after non-configurable fields
      *
      * @dataProvider entity_provider
      */
-    public function testExportRespectsCustomFieldOrder($entityname,$entitytable) {
+    public function test_exportrespects_customfieldorder($entityname, $entitytable) {
         global $CFG, $DB;
 
-        //set the export to be incremental
+        // set the export to be incremental
         set_config('nonincremental', 0, 'rlipexport_version1elis');
 
         // this loads a single user, so get_records only ever returns a single object
         $this->init_contexts_and_site_course();
         $this->load_csv_data();
 
-        //set up necessary custom field information in the database
+        // set up necessary custom field information in the database
+
         // create category
         $categoryid = $this->create_custom_field_category();
+
         // create custom field
         $field = $this->create_test_field($entityname, 'rliptext2', 'char', 'text', $categoryid);
         // create data record for custom field and attach to entity
         $entity = $DB->get_records($entitytable);
         $entity = current($entity);
         $result = $this->update_data_record($entityname, $entity, $field, 'rliptext2');
-        $this->create_field_mapping($field->id, 'Header2', 1);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id, 'Header2', 1);
+
         // create second custom field
         $field = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
         // create data record for custom field and attach to entity
         $entity->idnumber = 'testuseridnumber2';
         $entity->username = 'testuserusername2';
         $result = $this->update_data_record($entityname, $entity, $field, 'rliptext');
-        $this->create_field_mapping($field->id);
+        $this->create_field_mapping('testcustomfields', 'field_'.$field->id, 'Header', 0);
 
-        //set up the expected output
-        $expected_header = array(get_string('header_firstname', 'rlipexport_version1elis'),
-                                 get_string('header_lastname', 'rlipexport_version1elis'),
-                                 get_string('header_username', 'rlipexport_version1elis'),
-                                 get_string('header_useridnumber', 'rlipexport_version1elis'),
-                                 get_string('header_courseidnumber', 'rlipexport_version1elis'),
-                                 get_string('header_startdate', 'rlipexport_version1elis'),
-                                 get_string('header_enddate', 'rlipexport_version1elis'),
-                                 get_string('header_status', 'rlipexport_version1elis'),
-                                 get_string('header_grade', 'rlipexport_version1elis'),
-                                 get_string('header_letter', 'rlipexport_version1elis'),
-                                 'Header',
-                                 'Header2');
-        $expected_body = array('exportfirstname',
-                               'exportlastname',
-                               'exportusername',
-                               'exportidnumber',
-                               'testcourseidnumber',
-                               date('M/d/Y', 1000000000),
-                               date('M/d/Y', 1500000000),
-                               'COMPLETED',
-                               '70.00000',
-                               'C-',
-                               'rliptext',
-                               'rliptext2');
+        // set up the expected output
+        $expected_header = array(
+                get_string('header_firstname', 'rlipexport_version1elis'),
+                get_string('header_lastname', 'rlipexport_version1elis'),
+                get_string('header_username', 'rlipexport_version1elis'),
+                get_string('header_useridnumber', 'rlipexport_version1elis'),
+                get_string('header_courseidnumber', 'rlipexport_version1elis'),
+                get_string('header_startdate', 'rlipexport_version1elis'),
+                get_string('header_enddate', 'rlipexport_version1elis'),
+                get_string('header_status', 'rlipexport_version1elis'),
+                get_string('header_grade', 'rlipexport_version1elis'),
+                get_string('header_letter', 'rlipexport_version1elis'),
+                'Header',
+                'Header2'
+        );
+        $expected_body = array(
+                'exportfirstname',
+                'exportlastname',
+                'exportusername',
+                'exportidnumber',
+                'testcourseidnumber',
+                date('M/d/Y', 1000000000),
+                date('M/d/Y', 1500000000),
+                'COMPLETED',
+                '70.00000',
+                'C-',
+                'rliptext',
+                'rliptext2'
+        );
         $expected_data = array($expected_header, $expected_body);
 
-        //obtain our export data based on the current DB state
+        // obtain our export data based on the current DB state
         $data = $this->get_export_data();
 
-        //data validation
+        // data validation
         $this->assertEquals($expected_data, $data);
-    }
-
-    /**
-     * Validate that the API call for removing a custom profile field from the
-     * export works as expected
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportDeletesField($entityname,$entitytable) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set the export to be incremental <= wasn't in orig test
-//        set_config('nonincremental', 0, 'rlipexport_version1elis');
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-        // create custom field
-        $field = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($field->id);
-
-        //verify setup
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $field->id));
-
-        //remove the field from the export
-        $id = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'id', array('fieldid' => $field->id));
-        rlipexport_version1elis_config::delete_field_from_export($id);
-
-        //validation
-        $exists = $DB->record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $field->id));
-        $this->assertEquals(false, $exists);
-    }
-
-    /**
-     * Validate that the API call for adding a custom profile field to the
-     * export works as expected
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportAddsField($entityname,$entitytable) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set the export to be incremental <= wasn't in original test
-//        set_config('nonincremental', 0, 'rlipexport_version1elis');
-
-        //set up the category and field
-        // create category
-        $categoryid = $this->create_custom_field_category();
-        // create custom field
-        $field = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-
-        //add the field to the export
-        rlipexport_version1elis_config::add_field_to_export($field->id);
-
-        //validation
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $field->id));
-    }
-
-    /**
-     * Validate that the API call for moving a custom profile field up in the
-     * export field order works as expected
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportMovesFieldUp($entityname,$entitytable) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-        // create custom field
-        $firstfield = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($firstfield->id);
-
-        //set up a second custom field and mapping record
-        $secondfield = $this->create_test_field($entityname, 'rliptext2', 'char', 'text', $categoryid);
-        $this->create_field_mapping($secondfield->id, 'Header2', 1);
-
-        //move the second field up
-        $id = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'id', array('fieldid' => $secondfield->id));
-        rlipexport_version1elis_config::move_field($id, rlipexport_version1elis_config::DIR_UP);
-
-        //validation
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $firstfield->id,
-                                                                           'fieldorder' => 1));
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $secondfield->id,
-                                                                           'fieldorder' => 0));
-    }
-
-    /**
-     * Validate that the API call for moving a custom profile field down in the
-     * export field order works as expected
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportMovesFieldDown($entityname,$entitytable) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-        // create custom field
-        $firstfield = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($firstfield->id);
-
-        //set up a second custom field and mapping record
-        $secondfield = $this->create_test_field($entityname, 'rliptext2', 'char', 'text', $categoryid);
-        $this->create_field_mapping($secondfield->id, 'Header2', 1);
-
-        //move the first field down
-        $id = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'id', array('fieldid' => $firstfield->id));
-        rlipexport_version1elis_config::move_field($id, rlipexport_version1elis_config::DIR_DOWN);
-
-        //validation
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $firstfield->id,
-                                                                           'fieldorder' => 1));
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $secondfield->id,
-                                                                           'fieldorder' => 0));
-    }
-
-    /**
-     * Validate that the API call for updating the header text for a single
-     * configured custom profile field works as expected
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportUpdatesHeader($entityname,$entitytable) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-        // create custom field
-        $field = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($field->id);
-
-        //update the header
-        $id = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'id', array('fieldid' => $field->id));
-        rlipexport_version1elis_config::update_field_header($id, 'Updatedvalue');
-
-        //validation
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $field->id,
-                                                                           'header' => 'Updatedvalue'));
-    }
-
-    /**
-     * Validate that the API call for updating the header text for multiple
-     * configured custom profile fields works as expected
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportUpdatesHeaders($entityname,$entitytable) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-        // create custom field
-        $firstfield = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($firstfield->id);
-
-        //set up a second custom field and mapping record
-        $secondfield = $this->create_test_field($entityname, 'rliptext2', 'char', 'text', $categoryid);
-        $this->create_field_mapping($secondfield->id, 'Header2', 1);
-
-        //obtain DB record ids
-        $firstid = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'id', array('fieldid' => $firstfield->id));
-        $secondid = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'id', array('fieldid' => $secondfield->id));
-
-        //update the headers
-        $data = array('header_'.$firstid => 'Updatedvalue1',
-                      'header_'.$secondid => 'Updatedvalue2');
-        rlipexport_version1elis_config::update_field_headers($data);
-
-        //validation
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $firstfield->id,
-                                                                           'header' => 'Updatedvalue1'));
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $secondfield->id,
-                                                                           'header' => 'Updatedvalue2'));
-    }
-
-    /**
-     * Validate that the API call for obtaining the recordset of configured
-     * export fields works as expected
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportReportsConfiguredFields($entityname,$entitytable) {
-        global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-        // create custom field
-        $firstfield = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($firstfield->id);
-
-        //set up a second custom field and mapping record
-        $secondfield = $this->create_test_field($entityname, 'rliptext2', 'char', 'text', $categoryid);
-        $this->create_field_mapping($secondfield->id, 'Header2', 1);
-
-        //track whether each expected record was found
-        $found_first = false;
-        $found_second = false;
-
-        //look through the configured fields recordset
-        if ($recordset = rlipexport_version1elis_config::get_configured_fields()) {
-            foreach ($recordset as $record) {
-                //conditions for matching the first and second expected records
-                $is_first = $record->name == 'rliptext' && $record->header == 'Header' &&
-                            $record->fieldorder == 0;
-                $is_second = $record->name == 'rliptext2' && $record->header == 'Header2' &&
-                             $record->fieldorder == 1;
-
-                if ($is_first) {
-                    //first record found
-                    $found_first = true;
-                } else if ($is_second) {
-                    //second record found
-                    $found_second = true;
-                } else {
-                    //invalid record found
-                    $this->assertEquals(true, false);
-                }
-            }
-        } else {
-            //problem fetching recordset
-            $this->assertEquals(true, false);
-        }
-
-        //validate that both records were found
-        $this->assertEquals(true, $found_first);
-        $this->assertEquals(true, $found_second);
-    }
-
-    /**
-     * Validate that the API call for obtaining the recordset of available
-     * export fields works as expected
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportReportsAvailableFields($entityname,$entitytable) {
-        global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-        // create custom field
-        $firstfield = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($firstfield->id);
-
-        //set up a second custom field without mapping record
-        $secondfield = $this->create_test_field($entityname, 'rliptext2', 'char', 'text', $categoryid);
-
-        //track whether each expected record was found
-        $found_second = false;
-
-        //look through the available fields recordset
-        if ($recordset = rlipexport_version1elis_config::get_available_fields()) {
-            foreach ($recordset as $record) {
-                //condition for matching the expected record
-                $is_second =  $secondfield->id && $record->name = 'rliptext2';
-
-                if ($is_second) {
-                    //expected record found
-                    $found_second = true;
-                } else {
-                    //invalid record found
-                    $this->assertEquals(true, false);
-                }
-            }
-        } else {
-            //problem fetching recordset
-            $this->assertEquals(true, false);
-        }
-
-        //validate that the record was found
-        $this->assertEquals(true, $found_second);
-    }
-
-    /**
-     * Validate that the API call for moving a profile field up in export
-     * position deals with deleted user profile fields correctly
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportHandlesDeletedFieldsWhenMovingUp($entityname,$entitytable) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-         // create custom field
-        $firstfield = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($firstfield->id);
-
-        //set up a second mapping record without a field
-        $secondfieldid = 9999;
-        $this->create_field_mapping($secondfieldid, 'Header2', 1);
-
-        //set up a third custom field with a mapping record
-        $thirdfield = $this->create_test_field($entityname, 'rliptext3', 'char', 'text', $categoryid);
-        $this->create_field_mapping($thirdfield->id, 'Header3', 2);
-
-        //move the third field up
-        $id = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'id', array('fieldid' => $thirdfield->id));
-        rlipexport_version1elis_config::move_field($id, rlipexport_version1elis_config::DIR_UP);
-
-        //validate that the first and third fields swapped, ignoring the second field
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $firstfield->id,
-                                                                           'fieldorder' => 2));
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $thirdfield->id,
-                                                                           'fieldorder' => 0));
-    }
-
-    /**
-     * Validate that the API call for moving a profile field down in export
-     * position deals with deleted user profile fields correctly
-     *
-     * @dataProvider entity_provider
-     */
-    public function testExportHandlesDeletedFieldsWhenMovingDown($entityname,$entitytable) {
-        global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
-        require_once($file);
-
-        //set up the category and field, along with the export mapping
-        // create category
-        $categoryid = $this->create_custom_field_category();
-         // create custom field
-        $firstfield = $this->create_test_field($entityname, 'rliptext', 'char', 'text', $categoryid);
-        $this->create_field_mapping($firstfield->id);
-
-        //set up a second mapping record without a field
-        $secondfieldid = 9999;
-        $this->create_field_mapping($secondfieldid, 'Header2', 1);
-
-        //set up a third custom field with a mapping record
-        $thirdfield = $this->create_test_field($entityname, 'rliptext3', 'char', 'text', $categoryid);
-        $this->create_field_mapping($thirdfield->id, 'Header3', 2);
-
-        //move the first field down
-        $id = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'id', array('fieldid' => $firstfield->id));
-        rlipexport_version1elis_config::move_field($id, rlipexport_version1elis_config::DIR_DOWN);
-
-        //validate that the first and third fields swapped, ignoring the second field
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $firstfield->id,
-                                                                           'fieldorder' => 2));
-        $this->assert_record_exists(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array('fieldid' => $thirdfield->id,
-                                                                           'fieldorder' => 0));
     }
 }
