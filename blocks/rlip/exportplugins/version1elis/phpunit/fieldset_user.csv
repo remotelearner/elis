@@ -1,0 +1,2 @@
+id,username,idnumber,firstname,lastname,mi,email,email2,address,address2,city,state,postalcode,country,phone,phone2,fax,birthdate,gender,language,transfercredits,comments,notes,timecreated,timemodified
+200,exportusername,exportidnumber,exportfirstname,exportlastname,export_mi,export_email,export_email2,export_address,export_address2,export_city,export_state,export_postalcode,CA,1234567890,0987654321,1112223333,1912/01/17,M,en,2,export_comments,export_notes,100,200
