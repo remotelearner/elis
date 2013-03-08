@@ -239,6 +239,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             'backup_courses' => 'moodle',
             'block' => 'moodle',
             'block_positions' => 'moodle',
+            'cache_flags' => 'moodle',
             'config' => 'moodle',
             'config_plugins' => 'moodle',
             'context' => 'moodle',
@@ -253,6 +254,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             'forum' => 'mod_forum',
             'grade_categories' => 'moodle',
             'grade_items' => 'moodle',
+            'grading_areas' => 'moodle',
             'groupings' => 'moodle',
             'groupings_groups' => 'moodle',
             'groups' => 'moodle',
@@ -262,6 +264,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             'user_enrolments' => 'moodle',
             'user_info_category' => 'moodle',
             'user_info_field' => 'moodle',
+            'user_lastaccess' => 'moodle',
             'user_preferences' => 'moodle',
             'role' => 'moodle',
             'role_assignments' => 'moodle',
@@ -1471,6 +1474,9 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the user delete action
      */
     public function testVersion1ImportLogsSuccesfulUserDelete() {
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
+
         //base data used every time
         $basedata = array('action' => 'delete');
 
@@ -5835,12 +5841,27 @@ class version1FilesystemLoggingTest extends rlip_test {
     function testVersion1ImportInvalidLogPath() {
         global $CFG, $DB, $USER;
 
+        // Check if test is being run as root
+        if (posix_getuid() === 0) {
+            $this->markTestSkipped('This test will always fail when run as root.');
+        }
+
         require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         $filepath = $CFG->dataroot.'/invalidlogpath';
 
-        //create a folder and make it executable only
+        // create a folder and make it executable only
+        // cleanup the folder first if it already exists
+        if (file_exists($filepath)) {
+            // Remove any files
+            if (!empty($filepath)) {
+                foreach (glob("{$filepath}/*") as $logfile) {
+                    unlink($logfile);
+                }
+            }
+            rmdir($filepath);
+        }
         mkdir($filepath, 0100);
 
         set_config('logfilelocation', 'invalidlogpath', 'rlipimport_version1');
