@@ -239,28 +239,36 @@ class version1FilesystemLoggingTest extends rlip_test {
             'backup_courses' => 'moodle',
             'block' => 'moodle',
             'block_positions' => 'moodle',
+            'cache_flags' => 'moodle',
             'config' => 'moodle',
             'config_plugins' => 'moodle',
             'context' => 'moodle',
             'course' => 'moodle',
             'course_categories' => 'moodle',
+            'course_format_options' => 'moodle',
             //needed for course delete to prevent errors / warnings
             'course_modules' => 'moodle',
+            'course_modules_avail_fields' => 'moodle',
             'course_sections' => 'moodle',
+            'course_sections_avail_fields' => 'moodle',
             'enrol' => 'moodle',
+            'events_handlers' => 'moodle',
             'events_queue_handlers' => 'moodle',
             'events_queue' => 'moodle',
             'forum' => 'mod_forum',
             'grade_categories' => 'moodle',
             'grade_items' => 'moodle',
+            'grading_areas' => 'moodle',
             'groupings' => 'moodle',
             'groupings_groups' => 'moodle',
             'groups' => 'moodle',
             'groups_members' => 'moodle',
+            'user_lastaccess' => 'moodle',
             'tag_instance' => 'moodle',
             'user' => 'moodle',
             'user_enrolments' => 'moodle',
             'user_info_category' => 'moodle',
+            'user_info_data' => 'moodle',
             'user_info_field' => 'moodle',
             'user_preferences' => 'moodle',
             'role' => 'moodle',
@@ -268,6 +276,7 @@ class version1FilesystemLoggingTest extends rlip_test {
             'role_capabilities' => 'moodle',
             'role_context_levels' => 'moodle',
             'message_working' => 'moodle',
+            'modules' => 'moodle',
             'elis_scheduled_tasks' => 'elis_core',
             RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1',
             RLIP_SCHEDULE_TABLE => 'block_rlip',
@@ -1471,6 +1480,9 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the user delete action
      */
     public function testVersion1ImportLogsSuccesfulUserDelete() {
+        set_config('siteguest', 0);
+        set_config('siteadmins', 0);
+
         //base data used every time
         $basedata = array('action' => 'delete');
 
@@ -1600,13 +1612,10 @@ class version1FilesystemLoggingTest extends rlip_test {
      * Validates success message for the role assignment create action on courses
      */
     public function testVersion1ImportLogsSuccesfulCourseRoleAssignmentCreate() {
-        global $CFG, $DB, $UNITTEST;
+        global $CFG, $DB;
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        $UNITTEST = new stdClass;
-        $UNITTEST->running = true;
-        accesslib_clear_all_caches_for_unit_testing();
-        unset($UNITTEST->running);
+        accesslib_clear_all_caches(true);
 
         //set up dependencies
         $this->create_contexts_and_site_course();
@@ -5835,12 +5844,27 @@ class version1FilesystemLoggingTest extends rlip_test {
     function testVersion1ImportInvalidLogPath() {
         global $CFG, $DB, $USER;
 
+        // Check if test is being run as root
+        if (posix_getuid() === 0) {
+            $this->markTestSkipped('This test will always fail when run as root.');
+        }
+
         require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
         $filepath = $CFG->dataroot.'/invalidlogpath';
 
-        //create a folder and make it executable only
+        // create a folder and make it executable only
+        // cleanup the folder first if it already exists
+        if (file_exists($filepath)) {
+            // Remove any files
+            if (!empty($filepath)) {
+                foreach (glob("{$filepath}/*") as $logfile) {
+                    unlink($logfile);
+                }
+            }
+            rmdir($filepath);
+        }
         mkdir($filepath, 0100);
 
         set_config('logfilelocation', 'invalidlogpath', 'rlipimport_version1');
