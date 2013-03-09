@@ -139,7 +139,7 @@ if ($ADMIN->fulltree) {
     $roles[NO_ROLE_ID] = get_string('noroleselected', 'elis_program');
     $role_records = $DB->get_recordset('role'); // TBD: sort order?
     foreach($role_records as $id => $role_record) {
-        $roles[$id] = $role_record->name;
+        $roles[$id] = !empty($role_record->name) ? $role_record->name : $role_record->shortname;
     }
     unset($role_records);
     $settings->add(new admin_setting_configselect('elis_program/default_instructor_role',
