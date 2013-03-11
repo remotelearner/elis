@@ -125,13 +125,13 @@ class overlay_course_database extends overlay_database {
             $structure = $xmldb_file->getStructure();
             $table = $structure->getTable($tablename);
             // FIXME: when http://bugs.mysql.com/bug.php?id=10327 gets fixed,
-            // we can switch this back to drop_temp_table
+            // we can switch this back to a simple drop_table
             if ($table === null) {
                 //most likely a temporary table
                 try {
                     //attempt to drop the temporary table
                     $table = new xmldb_table($tablename);
-                    $manager->drop_temp_table($table);
+                    $manager->drop_table($table);
                 } catch (Exception $e) {
                     //temporary table was already dropped
                 }
