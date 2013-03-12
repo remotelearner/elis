@@ -1082,15 +1082,15 @@ class student extends elis_data_object {
                             if (!empty($mcourse)) {
                                 $userobj = new user($user);
                                 $muser = $userobj->get_moodleuser();
-                                $role_assignment_exists = $this->_db->record_exists_select('role_assignments',
-                                                                                           "userid = ? AND contextid = ? AND component != 'enrol_elis'",
-                                                                                           array($muser->id, $ctx->id));
-
-                                if (!empty($muser) && $role_assignment_exists) {
-                                    // user is assigned a role other than via the elis
-                                    // enrolment plugin
-                                    $tabobj->{$column} = '';
-                                    break;
+                                if (!empty($muser)) {
+                                    $role_assignment_exists = $this->_db->record_exists_select('role_assignments',
+                                        "userid = ? AND contextid = ? AND component != 'enrol_elis'", array($muser->id, $ctx->id));
+                                    if ($role_assignment_exists) {
+                                        // user is assigned a role other than via the elis
+                                        // enrolment plugin
+                                        $tabobj->{$column} = '';
+                                        break;
+                                    }
                                 }
                             }
                             $tabobj->{$column} = '<input type="checkbox" id="unenrol'.$user->id.'" name="users[' . $user->id . '][unenrol]" '.
