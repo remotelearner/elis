@@ -475,15 +475,13 @@ class studentpage extends associationpage {
 
         echo '<h2>'.get_string('confirm_bulk_enrol_edit', 'elis_program').'</h2>';
 
+        $changes_by_change = array();
+        $fullname_lookup = array();
         $pagename = $page.$pageid.'bulkedit';
         if (!empty($SESSION->associationpage[$pagename])) {
             // adds users saved from other pages.
             if (!empty($SESSION->associationpage[$pagename]) && is_array($SESSION->associationpage[$pagename])) {
                 $sess_userids = array_keys($SESSION->associationpage[$pagename]);
-
-                $changes_by_change = array();
-                $fullname_lookup = array();
-
                 while (!empty($sess_userids)) {
 
                     $userids_this_pass = array_splice($sess_userids, 0, 100);
