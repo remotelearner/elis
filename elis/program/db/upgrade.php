@@ -599,5 +599,26 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2012062901, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2012062902) {
+        // ELIS-8066: remove blank/empty menu options from custom field menu/checkbox and defaults using them
+        $customfields = $DB->get_recordset('elis_field', null, '', 'id');
+        foreach ($customfields as $id => $unused) {
+            $field = new field($id);
+            $field->load();
+            $manual = new field_owner($field->owners['manual']);
+            $control = $manual->param_control;
+            $options = $manual->param_options;
+            if (!empty($options) && empty($manual->param_options_source) && ($control == 'menu' || $control == 'checkbox')) {
+                $options = str_replace("\r", '', $options); // strip CRs
+                $options = preg_replace("/\n+/", "\n", $options);
+                $manual->param_options = rtrim($options, "\n");
+                $manual->save();
+                // Remove any empty defaults
+                $DB->delete_records_select($field->data_table(), "contextid IS NULL AND fieldid = ? AND data = ''", array($id));
+            }
+        }
+        upgrade_plugin_savepoint($result, 2012062902, 'elis', 'program');
+    }
+
     return $result;
 }
