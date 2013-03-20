@@ -106,7 +106,7 @@ class moodlecourseurl {
         return $courses;
     }
 
-    function printCourses($courseObj) {
+    public function printCourses($courseObj) {
         global $CFG;
         // ELIS-8338 BJB130313: single quote must be backslashed but double quote must be changed to 'entity'
         $js_escaped_name = str_replace(array('\\', "'"), array('\\\\', "\'"), "{$courseObj->fullname} ({$courseObj->shortname})");
