@@ -459,7 +459,7 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
                 $value = fullname($cmuser->to_object());
             }
             $a->value = '"'.s($value).'"';
-            $a->operator = get_string('isequalto','filters');
+            $a->operator = get_string('isequalto', 'filters');
 
             return get_string('selectlabel', 'filters', $a);
         }
