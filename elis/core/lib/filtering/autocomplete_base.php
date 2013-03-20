@@ -282,7 +282,7 @@ abstract class generalized_filter_autocomplete_base extends generalized_filter_t
         $a = new object();
         $a->label    = $this->_label;
         $a->value    = '"'.s($value).'"';
-        $a->operator = get_string('contains','filters');
+        $a->operator = get_string('contains', 'filters');
 
         return get_string('selectlabel', 'filters', $a);
     }
