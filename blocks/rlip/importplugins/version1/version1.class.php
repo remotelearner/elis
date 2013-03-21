@@ -465,9 +465,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //apply "createorupdate" flag, if necessary
-        //using "add" for legacy support
-        if ($action == 'create' || $action == 'add') {
+        // apply "createorupdate" flag, if necessary
+        // using "add" for legacy support
+        if ($action == 'create' || $action == 'add' || $action == 'update') {
             $action = $this->handle_user_createorupdate($record, $action);
         }
         $record->action = $action;
@@ -1068,8 +1068,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //apply "createorupdate" flag, if necessary
-        if ($action == 'create') {
+        // apply "createorupdate" flag, if necessary
+        if ($action == 'create' || $action == 'update') {
             $action = $this->handle_course_createorupdate($record, $action);
         }
         $record->action = $action;
