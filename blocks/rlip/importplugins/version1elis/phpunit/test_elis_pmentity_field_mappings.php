@@ -115,12 +115,13 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array(
+        $overlaytables = array(
             'config' => 'moodle',
             'config_plugins' => 'moodle',
             'context' => 'moodle',
             'course' => 'moodle',
             'course_categories' => 'moodle',
+            'grading_areas' => 'moodle',
             RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
             RLIP_LOG_TABLE => 'block_rlip',
             classmoodlecourse::TABLE => 'elis_program',
@@ -142,6 +143,10 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
             usertrack::TABLE => 'elis_program',
             waitlist::TABLE => 'elis_program'
         );
+        if (file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
+            $overlaytables += array('elis_files_userset_store' => 'repository_elis_files');
+        }
+        return $overlaytables;
     }
 
     /**

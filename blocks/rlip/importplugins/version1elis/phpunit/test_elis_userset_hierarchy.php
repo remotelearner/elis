@@ -58,7 +58,7 @@ class elis_userset_hierarchy_test extends elis_database_test {
         require_once(elispm::lib('data/usertrack.class.php'));
         require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
 
-        return array(
+        $overlaytables = array(
             'block_instances' => 'moodle',
             'block_positions' => 'moodle',
             'cache_flags' => 'moodle',
@@ -88,6 +88,10 @@ class elis_userset_hierarchy_test extends elis_database_test {
             usertrack::TABLE => 'elis_program',
             userset_profile::TABLE => 'elis_program'
         );
+        if (file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
+            $overlaytables += array('elis_files_userset_store' => 'repository_elis_files');
+        }
+        return $overlaytables;
     }
 
     /**

@@ -116,7 +116,7 @@ class overlay_course_database_fs extends overlay_database {
                 try {
                     //attempt to drop the temporary table
                     $table = new xmldb_table($tablename);
-                    $manager->drop_temp_table($table);
+                    $manager->drop_table($table);
                 } catch (Exception $e) {
                     //temporary table was already dropped
                 }
@@ -141,7 +141,7 @@ class overlay_course_database_fs extends overlay_database {
             if ($table === null) {
                 $table = new xmldb_table($tablename);
                 try {
-                    $manager->drop_temp_table($table);
+                    $manager->drop_table($table);
                 } catch (Exception $e) {
 
                 }

@@ -60,8 +60,11 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        return array(
+        $overlaytables = array(
             'context'                             => 'moodle',
+            'grading_areas'                       => 'moodle',
+            'message'                             => 'moodle',
+            'message_working'                     => 'moodle',
             'role'                                => 'moodle',
             'user'                                => 'moodle',
             RLIP_LOG_TABLE                        => 'block_rlip',
@@ -82,6 +85,10 @@ class version1elisFilesystemSuccessLoggingTest extends rlip_test {
             userset::TABLE                        => 'elis_program',
             waitlist::TABLE                       => 'elis_program'
         );
+        if (file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
+            $overlaytables += array('elis_files_userset_store' => 'repository_elis_files');
+        }
+        return $overlaytables;
     }
 
     /**

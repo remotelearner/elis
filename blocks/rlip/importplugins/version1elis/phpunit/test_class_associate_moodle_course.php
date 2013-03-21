@@ -122,7 +122,7 @@ class overlay_class_associate_moodle_course_database extends overlay_database {
                 try {
                     //attempt to drop the temporary table
                     $table = new xmldb_table($tablename);
-                    $manager->drop_temp_table($table);
+                    $manager->drop_table($table);
                 } catch (Exception $e) {
                     //temporary table was already dropped
                 }
@@ -164,6 +164,8 @@ class elis_class_associate_moodle_course_test extends elis_database_test {
             'grade_categories' => 'moodle',
             'grade_items' => 'moodle',
             'groups' => 'moodle',
+            'message' => 'moodle',
+            'message_working' => 'moodle',
             'role' => 'moodle',
             'role_assignments' => 'moodle',
             'role_capabilities' => 'moodle',
