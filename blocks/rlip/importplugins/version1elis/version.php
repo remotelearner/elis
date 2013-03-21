@@ -27,6 +27,6 @@
 $plugin->version = 2012080100;
 $plugin->release = '2.2.1.3 (Build: 20130321)';
 $plugin->dependencies = array(
-    'elis_core'    => 2012032103
+    'elis_core'    => 2012032103,
     'elis_program' => 2012062902
 );
