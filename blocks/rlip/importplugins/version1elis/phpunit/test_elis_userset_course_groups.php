@@ -38,6 +38,8 @@ require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
  * Validate that IP actions trigger the appropriate userset course groups functionality
  */
 class elis_userset_course_groups_test extends elis_database_test {
+    protected $courseid;
+
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -46,6 +48,7 @@ class elis_userset_course_groups_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+        require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/clustertrack.class.php'));
@@ -65,6 +68,8 @@ class elis_userset_course_groups_test extends elis_database_test {
             'course' => 'moodle',
             'course_categories' => 'moodle',
             'enrol' => 'moodle',
+            'groupings' => 'moodle',
+            'groupings_groups' => 'moodle',
             'groups' => 'moodle',
             'groups_members' => 'moodle',
             'role' => 'moodle',
@@ -91,7 +96,8 @@ class elis_userset_course_groups_test extends elis_database_test {
             usermoodle::TABLE => 'elis_program',
             userset::TABLE => 'elis_program',
             userset_profile::TABLE => 'elis_program',
-            usertrack::TABLE => 'elis_program'
+            usertrack::TABLE => 'elis_program',
+            usersetclassification::TABLE => 'pmplugins_userset_classification'
         );
     }
 
@@ -135,8 +141,9 @@ class elis_userset_course_groups_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
+        require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
 
-        //set up the necessary "site course" information
+        // set up the necessary "site course" information
         $DB->execute("INSERT INTO {course}
                       SELECT * FROM ".self::$origdb->get_prefix()."course
                       WHERE id = ?", array(SITEID));
@@ -144,54 +151,63 @@ class elis_userset_course_groups_test extends elis_database_test {
                       SELECT * FROM ".self::$origdb->get_prefix()."context
                       WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
 
-        //set up "cluster groups"-related fields
+        // set up "cluster groups"-related fields
         $field_category = new field_category(array('name' => 'Associated Group'));
         $field_category->save();
 
-        $field = new field(array('categoryid' => $field_category->id,
-                                 'shortname' => 'userset_group',
-                                 'name' => 'Enable Corresponding Group',
-                                 'datatype' => 'bool'));
+        $flddata = array(
+            'categoryid' => $field_category->id,
+            'shortname'  => 'userset_group',
+            'name'       => 'Enable Corresponding Group',
+            'datatype'   => 'bool'
+        );
+        $field = new field($flddata);
         $field->save();
 
-        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                           'contextlevel' => CONTEXT_ELIS_USERSET));
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USERSET));
         $field_contextlevel->save();
 
-        $field = new field(array('categoryid' => $field_category->id,
-                                 'shortname' => 'userset_groupings',
-                                 'name' => 'Autoenrol users in groupings',
-                                 'datatype' => 'bool'));
+        $flddata = array(
+            'categoryid' => $field_category->id,
+            'shortname'  => 'userset_groupings',
+            'name'       => 'Autoenrol users in groupings',
+            'datatype'   => 'bool'
+        );
+        $field = new field($flddata);
         $field->save();
 
-        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                           'contextlevel' => CONTEXT_ELIS_USERSET));
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USERSET));
         $field_contextlevel->save();
 
-        //set up the test user
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'test@useremail.com',
-                               'country' => 'CA'));
+        // set up the test user
+        $userdata = array(
+            'idnumber'  => 'testuseridnumber',
+            'username'  => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'email'     => 'test@useremail.com',
+            'country'   => 'CA'
+        );
+        $user = new user($userdata);
         $user->save();
 
-        //set up the test course description and class instance
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        // set up the test course description and class instance
+        $crsdata = array(
+            'name'     => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        );
+        $course = new course($crsdata);
         $course->save();
 
-        $pmclass = new pmclass(array('courseid' => $course->id,
-                                     'idnumber' => 'testclassidnumber'));
+        $pmclass = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $pmclass->save();
 
         $category = new stdClass;
         $category->name = 'testcategoryname';
         $category->id = $DB->insert_record('course_categories', $category);
 
-        //set up the test Moodle course
+        // set up the test Moodle course
         set_config('enrol_plugins_enabled', 'manual');
         set_config('defaultenrol', 1, 'enrol_manual');
         set_config('status', ENROL_INSTANCE_ENABLED, 'enrol_manual');
@@ -201,31 +217,40 @@ class elis_userset_course_groups_test extends elis_database_test {
         $course->shortname = 'testcourseshortname';
         $course->fullname = 'testcoursefullname';
         $course = create_course($course);
+        $this->courseid = $course->id;
 
         if ($assign_course_to_class) {
-            //assign the Moodle course to a class instance
-            $classmoodlecourse = new classmoodlecourse(array('classid' => $pmclass->id,
-                                                             'moodlecourseid' => $course->id));
+            // assign the Moodle course to a class instance
+            $classmoodlecourse = new classmoodlecourse(array('classid' => $pmclass->id, 'moodlecourseid' => $course->id));
             $classmoodlecourse->save();
         }
 
-        //set up the test program and track
+        // set up the test program and track
         $curriculum = new curriculum(array('idnumber' => 'testcurriculumidnumber'));
         $curriculum->save();
 
-        $track = new track(array('curid' => $curriculum->id,
-                                 'idnumber' => 'testtrackidnumber'));
+        $track = new track(array('curid' => $curriculum->id, 'idnumber' => 'testtrackidnumber'));
         $track->save();
 
         if ($assign_track_to_class) {
-            //assign the test track to the test class instance
-            $trackassignment = new trackassignment(array('trackid' => $track->id,
-                                                         'classid' => $pmclass->id,
-                                                         'autoenrol' => 1));
+            // assign the test track to the test class instance
+            $tadata = array(
+                'trackid'   => $track->id,
+                'classid'   => $pmclass->id,
+                'autoenrol' => 1
+            );
+            $trackassignment = new trackassignment($tadata);
             $trackassignment->save();
         }
 
-        //set up the test userset
+        // set up the test userset
+        $usclassification = new usersetclassification();
+        $usclassification->param_autoenrol_curricula = 1;
+        $usclassification->param_autoenrol_tracks = 1;
+        $usclassification->param_autoenrol_groups = 1;
+        $usclassification->param_autoenrol_groupings = 1;
+        $usclassification->save();
+
         $userset = new userset();
         $userset_data = array('name' => 'testusersetname');
         if ($init_userset_field_data) {
@@ -235,40 +260,43 @@ class elis_userset_course_groups_test extends elis_database_test {
         $userset->set_from_data((object)$userset_data);
         $userset->save();
 
-        //assign the test user to the test track
-        $usertrack = new usertrack(array('userid' => $user->id,
-                                         'trackid' => $track->id));
+        // assign the test user to the test track
+        $usertrack = new usertrack(array('userid' => $user->id, 'trackid' => $track->id));
         $usertrack->save();
 
-        $clustertrack = new clustertrack(array('clusterid' => $userset->id,
-                                               'trackid' => $track->id));
+        $clustertrack = new clustertrack(array('clusterid' => $userset->id, 'trackid' => $track->id));
         $clustertrack->save();
 
         if ($assign_user_to_userset) {
-            //assign the test user to the test userset
-            $clusterassignment = new clusterassignment(array('userid' => $user->id,
-                                                             'clusterid' => $userset->id,
-                                                             'plugin' => 'manual'));
+            // assign the test user to the test userset
+            $cadata = array(
+                'userid'    => $user->id,
+                'clusterid' => $userset->id,
+                'plugin'    => 'manual'
+            );
+            $clusterassignment = new clusterassignment($cadata);
             $clusterassignment->save();
         }
 
         if ($init_cluster_profile) {
-            //set up a file we can use to auto-associate users to a userset
-            $field = new field(array('categoryid' => $field_category->id,
-                                     'shortname' => 'autoassociate',
-                                     'name' => 'autoassociate',
-                                     'datatype' => 'bool'));
+            // set up a file we can use to auto-associate users to a userset
+            $flddata = array(
+                'categoryid' => $field_category->id,
+                'shortname'  => 'autoassociate',
+                'name'       => 'autoassociate',
+                'datatype'   => 'bool'
+            );
+            $field = new field($flddata);
             $field->save();
 
             field_owner::ensure_field_owner_exists($field, 'moodle_profile');
             $DB->execute("UPDATE {".field_owner::TABLE."}
                           SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
 
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                               'contextlevel' => CONTEXT_ELIS_USER));
+            $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USER));
             $field_contextlevel->save();
 
-            //the associated Moodle user profile field
+            // the associated Moodle user profile field
             require_once($CFG->dirroot.'/user/profile/definelib.php');
             require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
 
@@ -279,24 +307,28 @@ class elis_userset_course_groups_test extends elis_database_test {
             $data->shortname = 'autoassociate';
             $data->name = 'autoassociate';
             $profile_define_checkbox->define_save($data);
+            $mdlfldid = $DB->get_field('user_info_field', 'id', array('shortname' => 'autoassociate'));
 
-            //the "cluster-profile" association
-            $userset_profile = new userset_profile(array('clusterid' => $userset->id,
-                                                         'fieldid' => 1,
-                                                         'value' => true));
+            // the "cluster-profile" association
+            $updata = array(
+                'clusterid' => $userset->id,
+                'fieldid'   => $mdlfldid,
+                'value'     => true
+            );
+            $userset_profile = new userset_profile($updata);
             $userset_profile->save();
         }
 
-        //enrol the user in the Moodle course
+        // enrol the user in the Moodle course
         $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
         $roleid = create_role('testrole', 'testrole', 'testrole');
         enrol_try_internal_enrol($course->id, $mdluserid, $roleid);
 
-        //set up the necessary config data
+        // set up the necessary config data
         set_config('userset_groups', 1, 'pmplugins_userset_groups');
         set_config('siteguest', '');
 
-        //validate setup
+        // validate setup
         $this->assertEquals(0, $DB->count_records('groups'));
     }
 
@@ -308,7 +340,7 @@ class elis_userset_course_groups_test extends elis_database_test {
         require_once($CFG->dirroot.'/lib/grouplib.php');
 
         //validate group creation
-        $groupid = groups_get_group_by_name(2, 'testusersetname');
+        $groupid = groups_get_group_by_name($this->courseid, 'testusersetname');
         $this->assertNotEquals(false, $groupid);
 
         //validate user-group assignment
@@ -390,6 +422,10 @@ class elis_userset_course_groups_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
+        set_config('groupmode', 1, 'moodlecourse');
+        set_config('userset_groups', 1, 'pmplugins_userset_groups');
+        set_config('userset_groupings', 1, 'pmplugins_userset_groups');
+
         $this->set_up_required_data(false, true, true, true);
 
         //run the user update action
@@ -398,9 +434,9 @@ class elis_userset_course_groups_test extends elis_database_test {
         $record->username = 'testuserusername';
         $record->email = 'test@useremail.com';
         $record->idnumber = 'testuseridnumber';
-        $record->autoassociate = 1;
+        $record->autoassociate = '1';
 
-        $temp = new user();
+        $temp = new user(array('username' => 'testuserusername'));
         $temp->reset_custom_field_list();
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
@@ -417,13 +453,16 @@ class elis_userset_course_groups_test extends elis_database_test {
 
         $this->set_up_required_data(true, true, true, false, false);
 
+        set_config('userset_groups', 1, 'pmplugins_userset_groups');
+        set_config('userset_groupings', 1, 'pmplugins_userset_groups');
+
         //run the userset update action
         $record = new stdClass;
         $record->action = 'update';
         $record->context = 'cluster';
         $record->name = 'testusersetname';
-        $record->userset_group = 1;
-        $record->userset_groupings = 1;
+        $record->userset_group = '1';
+        $record->userset_groupings = '1';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);

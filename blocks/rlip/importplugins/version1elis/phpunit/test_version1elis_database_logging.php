@@ -86,6 +86,8 @@ class rlip_importprovider_manual_delay
  * import
  */
 class version1elisMaxFieldLengthsTest extends elis_database_test {
+    protected $backupGlobalsBlacklist = array('USER');
+
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -103,6 +105,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
 
         return array(
+            'config'                => 'moodle',
             'config_plugins'        => 'moodle',
             'context'               => 'moodle',
             'elis_scheduled_tasks'  => 'elis_core',
@@ -214,6 +217,8 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
+        $CFG->siteguest = '';
+
         $user = new user(array(
             'idnumber' => 'testuseridnumber',
             'username' => 'testuserusername',
@@ -246,6 +251,9 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
     public function testUserDeleteLogsSuccessMessage() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+
+        $CFG->siteguest = '';
+        set_config('siteguest', '');
 
         $user = new user(array(
             'idnumber' => 'testuseridnumber',

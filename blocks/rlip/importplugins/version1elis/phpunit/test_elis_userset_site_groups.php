@@ -47,33 +47,39 @@ class elis_userset_site_groups_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+        require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
+        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
 
-        return array('config' => 'moodle',
-                     'config_plugins' => 'moodle',
-                     'context' => 'moodle',
-                     'groupings' => 'moodle',
-                     'groupings_groups' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'groups' => 'moodle',
-                     'role' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'user' => 'moodle',
-                     'user_info_field' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     clusterassignment::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     field_category::TABLE => 'elis_core',
-                     field_contextlevel::TABLE => 'elis_core',
-                     field_data_int::TABLE => 'elis_core',
-                     field_owner::TABLE => 'elis_core',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program',
-                     userset_profile::TABLE => 'elis_program');
+        return array(
+            'config' => 'moodle',
+            'config_plugins' => 'moodle',
+            'context' => 'moodle',
+            'groupings' => 'moodle',
+            'groupings_groups' => 'moodle',
+            'groups_members' => 'moodle',
+            'groups' => 'moodle',
+            'role' => 'moodle',
+            'role_assignments' => 'moodle',
+            'user' => 'moodle',
+            'user_info_field' => 'moodle',
+            'user_info_data' => 'moodle',
+            clusterassignment::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            field_category::TABLE => 'elis_core',
+            field_contextlevel::TABLE => 'elis_core',
+            field_data_int::TABLE => 'elis_core',
+            field_owner::TABLE => 'elis_core',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program',
+            userset_profile::TABLE => 'elis_program',
+            usersetclassification::TABLE => 'pmplugins_userset_classification'
+        );
     }
 
     /**
@@ -96,54 +102,69 @@ class elis_userset_site_groups_test extends elis_database_test {
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::file('accesslib.php'));
         require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+        require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        //set up "clsuter groups"-related fields
+        // set up "clsuter groups"-related fields
         $field_category = new field_category(array('name' => 'Associated Group'));
         $field_category->save();
 
-        $field = new field(array('categoryid' => $field_category->id,
-                                 'shortname' => 'userset_group',
-                                 'name' => 'Enable Corresponding Group',
-                                 'datatype' => 'bool'));
+        $flddata = array(
+            'categoryid' => $field_category->id,
+            'shortname'  => 'userset_group',
+            'name'       => 'Enable Corresponding Group',
+            'datatype'   => 'bool'
+        );
+        $field = new field($flddata);
         $field->save();
 
-        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                           'contextlevel' => CONTEXT_ELIS_USERSET));
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USERSET));
         $field_contextlevel->save();
 
-        $field = new field(array('categoryid' => $field_category->id,
-                                 'shortname' => 'userset_groupings',
-                                 'name' => 'Autoenrol users in groupings',
-                                 'datatype' => 'bool'));
+        $flddata = array(
+            'categoryid' => $field_category->id,
+            'shortname'  => 'userset_groupings',
+            'name'       => 'Autoenrol users in groupings',
+            'datatype'   => 'bool'
+        );
+        $field = new field($flddata);
         $field->save();
 
-        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                           'contextlevel' => CONTEXT_ELIS_USERSET));
+        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USERSET));
         $field_contextlevel->save();
 
-        //set up the test user
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'test@useremail.com',
-                               'country' => 'CA'));
+        // set up the test user
+        $userdata = array(
+            'idnumber'  => 'testuseridnumber',
+            'username'  => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname'  => 'testuserlastname',
+            'email'     => 'test@useremail.com',
+            'country'   => 'CA'
+        );
+        $user = new user($userdata);
         $user->save();
 
         $user->synchronize_moodle_user();
 
-        //we need a system-level role assignment
+        // we need a system-level role assignment
         $roleid = create_role('systemrole', 'systemrole', 'systemrole');
         $userid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
         $context = context_system::instance();
 
         role_assign($roleid, $userid, $context->id);
 
-        //set up the userset
+        // set up the userset
+        $usclassification = new usersetclassification();
+        $usclassification->param_autoenrol_curricula = 1;
+        $usclassification->param_autoenrol_tracks = 1;
+        $usclassification->param_autoenrol_groups = 1;
+        $usclassification->param_autoenrol_groupings = 1;
+        $usclassification->save();
+
         $userset = new userset();
         $userset_data = array('name' => 'testusersetname');
         if ($setcustomfielddata) {
@@ -154,22 +175,24 @@ class elis_userset_site_groups_test extends elis_database_test {
         $userset->save();
 
         if ($setautoassociatefields) {
-            //set up a file we can use to auto-associate users to a userset
-            $field = new field(array('categoryid' => $field_category->id,
-                                     'shortname' => 'autoassociate',
-                                     'name' => 'autoassociate',
-                                     'datatype' => 'bool'));
+            // set up a file we can use to auto-associate users to a userset
+            $flddata = array(
+                'categoryid' => $field_category->id,
+                'shortname'  => 'autoassociate',
+                'name'       => 'autoassociate',
+                'datatype'   => 'bool'
+            );
+            $field = new field($flddata);
             $field->save();
 
             field_owner::ensure_field_owner_exists($field, 'moodle_profile');
             $DB->execute("UPDATE {".field_owner::TABLE."}
                           SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
 
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                               'contextlevel' => CONTEXT_ELIS_USER));
+            $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USER));
             $field_contextlevel->save();
 
-            //the associated Moodle user profile field
+            // the associated Moodle user profile field
             require_once($CFG->dirroot.'/user/profile/definelib.php');
             require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
 
@@ -180,19 +203,26 @@ class elis_userset_site_groups_test extends elis_database_test {
             $data->shortname = 'autoassociate';
             $data->name = 'autoassociate';
             $profile_define_checkbox->define_save($data);
+            $mdlfldid = $DB->get_field('user_info_field', 'id', array('shortname' => 'autoassociate'));
 
-            //the "cluster-profile" association
-            $userset_profile = new userset_profile(array('clusterid' => $userset->id,
-                                                         'fieldid' => 1,
-                                                         'value' => 1));
+            // the "cluster-profile" association
+            $updata = array(
+                'clusterid' => $userset->id,
+                'fieldid'   => $mdlfldid,
+                'value'     => '1'
+            );
+            $userset_profile = new userset_profile($updata);
             $userset_profile->save();
         }
     
         if ($assignuser) {
-            //assign the user to the user set
-            $clusterassignment = new clusterassignment(array('clusterid' => $userset->id,
-                                                             'userid' => $user->id,
-                                                             'plugin' => 'manual'));
+            // assign the user to the user set
+            $cadata = array(
+                'clusterid' => $userset->id,
+                'userid'    => $user->id,
+                'plugin'    => 'manual'
+            );
+            $clusterassignment = new clusterassignment($cadata);
             $clusterassignment->save();
         }
     }
@@ -208,7 +238,7 @@ class elis_userset_site_groups_test extends elis_database_test {
         $groupid = groups_get_group_by_name(SITEID, 'testusersetname');
         $this->assertNotEquals(false, $groupid);
 
-        //validate user-group assignment
+        // validate user-group assignment
         $userid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
         $this->assertTrue(groups_is_member($groupid, $userid));
 
@@ -231,12 +261,13 @@ class elis_userset_site_groups_test extends elis_database_test {
                       SELECT * FROM ".self::$origdb->get_prefix()."context
                       WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
 
-        $this->set_up_required_data(false, true);
-
         //set up the necessary config data
+        set_config('userset_groups', 1, 'pmplugins_userset_groups');
         set_config('site_course_userset_groups', 1, 'pmplugins_userset_groups');
         set_config('userset_groupings', 1, 'pmplugins_userset_groups');
         set_config('siteguest', '');
+
+        $this->set_up_required_data(false, true);
 
         //validate setup
         $this->assertEquals(0, $DB->count_records('groups'));
@@ -262,12 +293,13 @@ class elis_userset_site_groups_test extends elis_database_test {
      * functionality
      */
     public function test_userset_assignment_triggers_group_and_grouping_setup() {
-        $this->set_up_required_data(true, false);
-
         //set up the necessary config data
+        set_config('userset_groups', 1, 'pmplugins_userset_groups');
         set_config('site_course_userset_groups', 1, 'pmplugins_userset_groups');
         set_config('userset_groupings', 1, 'pmplugins_userset_groups');
         set_config('siteguest', '');
+
+        $this->set_up_required_data(true, false);
 
         //run the user set enrolment action
         $record = new stdClass;
@@ -289,28 +321,32 @@ class elis_userset_site_groups_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        $this->set_up_required_data(true, false, true);
-
-        //set up the necessary config data
+        // set up the necessary config data
+        set_config('userset_groups', 1, 'pmplugins_userset_groups');
         set_config('site_course_userset_groups', 1, 'pmplugins_userset_groups');
         set_config('userset_groupings', 1, 'pmplugins_userset_groups');
         set_config('siteguest', '');
+
+        $this->set_up_required_data(true, false, true);
 
         //run the user update action
         $record = new stdClass;
         $record->action = 'update';
         $record->idnumber = 'testuseridnumber';
-        //TODO: remove the next two fields once we can updated based on just idnumber
+        // TODO: remove the next two fields once we can updated based on just idnumber
         $record->username = 'testuserusername';
         $record->email = 'test@useremail.com';
         $record->autoassociate = 1;
 
-        $temp = new user();
-        $temp->reset_custom_field_list();
+        $user = new user(array('username' => 'testuserusername'));
+        $user->reset_custom_field_list();
+
+        $userset = new userset(array('name' => 'testusersetname'));
+        $userset->reset_custom_field_list();
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
-        //need to call process_record so that custom field mappings are handled
+        // need to call process_record so that custom field mappings are handled
         $importplugin->process_record('user', $record, 'bogus');
 
         $this->validate_end_result();
