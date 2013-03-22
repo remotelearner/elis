@@ -37,11 +37,11 @@ require_login();
 $context = get_context_instance(CONTEXT_SYSTEM);
 require_capability('moodle/site:config', $context);
 
-//need base URL for form
-$baseurl = $CFG->wwwroot.'/blocks/rlip/importplugins/manualrun.php';
-
 //determine which plugin we're using
 $plugin = required_param('plugin', PARAM_CLEAN);
+
+// Need base URL for form and Moodle block management
+$baseurl = $CFG->wwwroot.'/blocks/rlip/importplugins/manualrun.php?plugin='.$plugin;
 
 //header
 $plugin_display = get_string('pluginname', $plugin);
