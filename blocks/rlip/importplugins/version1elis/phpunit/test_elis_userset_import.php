@@ -58,22 +58,29 @@ class elis_userset_import_test extends elis_database_test {
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
 
-        return array(clusterassignment::TABLE => 'elis_program',
-                     clustercurriculum::TABLE => 'elis_program',
-                     clustertrack::TABLE => 'elis_program',
-                     curriculum::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     field_data_char::TABLE => 'elis_core',
-                     field_data_int::TABLE => 'elis_core',
-                     field_data_num::TABLE => 'elis_core',
-                     field_data_text::TABLE => 'elis_core',
-                     track::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program',
-                     userset_profile::TABLE => 'elis_program',
-                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-                     'user' => 'moodle');
+        $overlaytables = array(
+            clusterassignment::TABLE => 'elis_program',
+            clustercurriculum::TABLE => 'elis_program',
+            clustertrack::TABLE => 'elis_program',
+            curriculum::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            field_data_char::TABLE => 'elis_core',
+            field_data_int::TABLE => 'elis_core',
+            field_data_num::TABLE => 'elis_core',
+            field_data_text::TABLE => 'elis_core',
+            'grading_areas'  => 'moodle',
+            track::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program',
+            userset_profile::TABLE => 'elis_program',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            'user' => 'moodle'
+        );
+        if (file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
+            $overlaytables += array('elis_files_userset_store' => 'repository_elis_files');
+        }
+        return $overlaytables;
     }
 
     /**

@@ -95,28 +95,33 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array('context' => 'moodle',
-                     'role' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'user' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-                     clusterassignment::TABLE => 'elis_program',
-                     course::TABLE => 'elis_program',
-                     curriculum::TABLE => 'elis_program',
-                     curriculumstudent::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     instructor::TABLE => 'elis_program',
-                     pmclass::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program',
-                     track::TABLE => 'elis_program',
-                     trackassignment::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program',
-                     waitlist::TABLE => 'elis_program');
+        return array(
+            'context' => 'moodle',
+            'role' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'user' => 'moodle',
+            RLIP_LOG_TABLE => 'block_rlip',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            clusterassignment::TABLE => 'elis_program',
+            clustercurriculum::TABLE => 'elis_program',
+            clustertrack::TABLE => 'elis_program',
+            course::TABLE => 'elis_program',
+            curriculum::TABLE => 'elis_program',
+            curriculumstudent::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            instructor::TABLE => 'elis_program',
+            pmclass::TABLE => 'elis_program',
+            student::TABLE => 'elis_program',
+            track::TABLE => 'elis_program',
+            trackassignment::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program',
+            userset_profile::TABLE => 'elis_program',
+            usertrack::TABLE => 'elis_program',
+            waitlist::TABLE => 'elis_program'
+        );
     }
 
     /**
