@@ -18,8 +18,7 @@
  *
  * The renderer for configuration page for the version1elis export plugin.
  *
- * @package    rlip
- * @subpackage rlipexport_version1elis
+ * @package    rlipexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
@@ -111,7 +110,7 @@ class rlipexport_version1elis_renderer extends plugin_renderer_base {
      * @return sttring The HTML for the list of active fields.
      */
     protected function generate_active_field_list(array $fieldsets, array $fields_by_fieldset, array $active_fields_by_fieldset,
-                                                  array $overridden_names=array()) {
+                                                  array $overridden_names = array()) {
         $html = '';
         $rename_default = get_string('rename', 'rlipexport_version1elis');
         foreach ($active_fields_by_fieldset as $fieldsetfield => $header) {
@@ -129,7 +128,7 @@ class rlipexport_version1elis_renderer extends plugin_renderer_base {
                 'data-field' => $field,
                 'class' => 'fieldset_'.$fieldset.' field_'.$field
             );
-            $field_body = html_writer::tag('span', 'X', array('class'=>'remove'));
+            $field_body = html_writer::tag('span', 'X', array('class' => 'remove'));
             $field_body .= html_writer::tag('span', $fieldset_label.': '.$header);
 
             // Field input.
@@ -149,7 +148,7 @@ class rlipexport_version1elis_renderer extends plugin_renderer_base {
             $field_body .= html_writer::empty_tag('input', $fieldname_attrs);
 
             // Rename link.
-            $rename_link_attrs = array('class'=>'rename', 'data-default' => $rename_default, 'href'=>'javascript:;');
+            $rename_link_attrs = array('class' => 'rename', 'data-default' => $rename_default, 'href' => 'javascript:;');
             $field_body .= html_writer::tag('a', $name_override_display, $rename_link_attrs);
 
             $html .= html_writer::tag('li', $field_body, $field_attrs);
@@ -196,7 +195,7 @@ class rlipexport_version1elis_renderer extends plugin_renderer_base {
      * @return sttring The HTML for the config page.
      */
     public function display_config_ui(array $fieldsets, array $fields_by_fieldset, array $active_fields_by_fieldset,
-                                      array $overridden_names=array()) {
+                                      array $overridden_names = array()) {
         global $PAGE;
 
         $PAGE->requires->js('/blocks/rlip/exportplugins/version1elis/jquery-ui-1.10.2.custom.min.js');
@@ -208,7 +207,7 @@ class rlipexport_version1elis_renderer extends plugin_renderer_base {
         $html_active_fields = $this->generate_active_field_list($fieldsets, $fields_by_fieldset, $active_fields_by_fieldset,
                                                                 $overridden_names);
 
-        $html = html_writer::start_tag('form', array('method'=>'post'));
+        $html = html_writer::start_tag('form', array('method' => 'post'));
 
         // Sesskey.
         $sesskey_attrs = array(
@@ -219,34 +218,34 @@ class rlipexport_version1elis_renderer extends plugin_renderer_base {
         $html .= html_writer::empty_tag('input', $sesskey_attrs);
 
         // Header.
-        $html .= html_writer::tag('h2', get_string('configuretitle', 'rlipexport_version1elis'), array('class'=>'config_header'));
+        $html .= html_writer::tag('h2', get_string('configuretitle', 'rlipexport_version1elis'), array('class' => 'config_header'));
 
-        $html .= html_writer::start_tag('div', array('class'=>'config_form'));
+        $html .= html_writer::start_tag('div', array('class' => 'config_form'));
 
         // Categories.
-        $html .= html_writer::start_tag('div', array('class'=>'fieldsets'));
+        $html .= html_writer::start_tag('div', array('class' => 'fieldsets'));
         $html .= html_writer::tag('h3', get_string('configheader_field_categories', 'rlipexport_version1elis'));
-        $html .= html_writer::tag('ul', $html_fieldsets, array('class'=>'fieldsets'));
+        $html .= html_writer::tag('ul', $html_fieldsets, array('class' => 'fieldsets'));
         $html .= html_writer::end_tag('div');
 
         // Available Fields.
-        $html .= html_writer::start_tag('div', array('class'=>'available_fields'));
+        $html .= html_writer::start_tag('div', array('class' => 'available_fields'));
         $html .= html_writer::tag('h3', get_string('configheader_available_fields', 'rlipexport_version1elis'));
-        $html .= html_writer::tag('ul', $html_available_fields, array('class'=>'fieldlist'));
+        $html .= html_writer::tag('ul', $html_available_fields, array('class' => 'fieldlist'));
         $html .= html_writer::end_tag('div');
 
         // Active Fields.
-        $html .= html_writer::start_tag('div', array('class'=>'active_fields'));
+        $html .= html_writer::start_tag('div', array('class' => 'active_fields'));
         $html .= html_writer::tag('h3', get_string('configheader_active_fields', 'rlipexport_version1elis'));
-        $html .= html_writer::tag('ul', $html_active_fields, array('class'=>'fieldlist'));
+        $html .= html_writer::tag('ul', $html_active_fields, array('class' => 'fieldlist'));
         $html .= html_writer::end_tag('div');
 
         $html .= html_writer::end_tag('div');
 
         // Hidden Inputs.
-        $html .= html_writer::empty_tag('input', array('type'=>'hidden', 'name'=>'data_submitted', 'value'=>1));
+        $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'data_submitted', 'value' => 1));
 
-        $attr = array('type'=>'submit', 'value'=>get_string('updateheaders', 'rlipexport_version1elis'));
+        $attr = array('type' => 'submit', 'value' => get_string('updateheaders', 'rlipexport_version1elis'));
         $html .= html_writer::empty_tag('input', $attr);
 
         // End form.

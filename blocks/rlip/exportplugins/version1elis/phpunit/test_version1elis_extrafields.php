@@ -18,8 +18,7 @@
  *
  * Class for testing extra field functions.
  *
- * @package    rlip
- * @subpackage rlipexport_version1elis
+ * @package    rlipexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
