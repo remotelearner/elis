@@ -133,7 +133,7 @@ class student extends elis_data_object {
         }
 
         $limit = $this->pmclass->maxstudents;
-        if (!empty($limit) && $limit <= $this->count_enroled()) {
+        if (!empty($limit) && $limit <= static::count_enroled($this->classid)) {
             // class is full
             throw new pmclass_enrolment_limit_validation_exception($this->pmclass);
         }
@@ -402,7 +402,7 @@ class student extends elis_data_object {
 
         if ($this->completestatusid == STUSTATUS_NOTCOMPLETE) {
             $pmclass = $this->pmclass;
-            if (empty($pmclass->maxstudents) || $pmclass->maxstudents > $this->count_enroled($pmclass->id)) {
+            if (empty($pmclass->maxstudents) || $pmclass->maxstudents > static::count_enroled($pmclass->id)) {
                 $wlst = waitlist::get_next($this->classid);
 
                 if (!empty($wlst)) {
@@ -1616,26 +1616,23 @@ class student extends elis_data_object {
      * @param STR $alpha starting letter of the user being searched for
      * @return INT
      */
-    public function count_enroled($classid = 0, $namesearch = '', $alpha = '') {
-        global $DB; // NOTE: method called statically from pmclassform.class.php::validation()
+    public static function count_enroled($classid = 0, $namesearch = '', $alpha = '') {
+        global $DB; // NOTE: method called statically from pmclassform.class.php::validation().
 
-        if (!$classid) {
-            if (empty($this->classid)) {
-                return 0;
-            }
-            $classid = $this->classid;
+        if (empty($classid)) {
+            return 0;
         }
 
         $params = array();
-        $FULLNAME = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
-        $FULLNAME_LIKE = $DB->sql_like($FULLNAME, ':name_like', FALSE);
-        $LASTNAME_STARTSWITH = $DB->sql_like('usr.lastname', ':lastname_startswith', FALSE);
+        $fullname = $DB->sql_concat('usr.firstname', "' '", 'usr.lastname');
+        $fullnamelike = $DB->sql_like($fullname, ':name_like', false);
+        $lastnamestartswith = $DB->sql_like('usr.lastname', ':lastname_startswith', false);
 
         $select  = 'SELECT COUNT(stu.id) ';
-        $tables  = 'FROM {'. student::TABLE .'} stu ';
-        $join    = 'JOIN {'. user::TABLE .'} usr ';
+        $tables  = 'FROM {'.static::TABLE.'} stu ';
+        $join    = 'JOIN {'.user::TABLE.'} usr ';
         $on      = 'ON stu.userid = usr.id ';
-        $where   = 'stu.completestatusid = ' . STUSTATUS_NOTCOMPLETE . ' AND stu.classid = :clsid ';
+        $where   = 'stu.completestatusid = '.STUSTATUS_NOTCOMPLETE.' AND stu.classid = :clsid ';
         $params['clsid']= $classid;
 
         if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
@@ -1644,18 +1641,18 @@ class student extends elis_data_object {
 
         if (!empty($namesearch)) {
             $namesearch = trim($namesearch);
-            $where .= ' AND ('. $FULLNAME_LIKE .') ';
+            $where .= ' AND ('.$fullnamelike.') ';
             $params['name_like'] = "%{$namesearch}%";
         }
 
         if ($alpha) {
-            $where .= ' AND ('. $LASTNAME_STARTSWITH .') ';
+            $where .= ' AND ('.$lastnamestartswith.') ';
             $params['lastname_startswith'] = "{$alpha}%";
         }
 
-        $where = 'WHERE '. $where .' ';
+        $where = 'WHERE '.$where.' ';
 
-        $sql = $select . $tables . $join . $on . $where;
+        $sql = $select.$tables.$join.$on.$where;
         return $DB->count_records_sql($sql, $params);
     }
 
