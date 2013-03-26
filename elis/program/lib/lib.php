@@ -2490,3 +2490,23 @@ function pm_fix_orphaned_fields() {
     }
 }
 
+/**
+ * Function for selecting roles in PM admin settings
+ *
+ * @param  array $roles  Output role array of roleids mapped to role names
+ * @params array $contextlevels Optional assignable context-levels, i.e. array(CONTEXT_COURSE), leave null for all (default)
+ * @uses $DB
+ */
+function pm_get_select_roles_for_contexts(&$roles, array $contextlevels = null) {
+    global $DB;
+    $sql = 'SELECT r.* FROM {role} r';
+    if (!empty($contextlevels)) {
+        $sql .= ' JOIN {role_context_levels} rcl ON r.id = rcl.roleid WHERE rcl.contextlevel IN ('.implode(',', $contextlevels).')';
+    }
+    $rolers = $DB->get_recordset_sql($sql);
+    foreach ($rolers AS $id => $role) {
+        $roles[$id] = strip_tags(format_string(!empty($role->name) ? $role->name : $role->shortname, true));
+    }
+    unset($rolers);
+}
+
