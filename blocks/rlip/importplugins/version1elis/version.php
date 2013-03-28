@@ -24,9 +24,11 @@
  *
  */
 
-$plugin->version = 2012111200;
-$plugin->release = '2.3.1.6 (Build: 20130321)';
+$plugin->version = 2012111201;
+$plugin->release = '2.3.1.7 (Build: 20130328)';
 $plugin->dependencies = array(
-    'elis_core'    => 2013022700,
-    'elis_program' => 2012123100
+    'elis_core' => 2013022700
 );
+if (file_exists(dirname(__FILE__).'/../../../../elis/program/version.php')) {
+    $plugin->dependencies['elis_program'] = 2012123100;
+}
