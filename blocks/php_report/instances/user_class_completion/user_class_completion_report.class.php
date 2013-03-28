@@ -517,13 +517,8 @@ class user_class_completion_report extends table_report {
 
                     //store custom field information we need later
                     $field = new field($fieldid);
-                    if ($default_records = $DB->get_records_select($field->data_table(), "contextid IS NULL AND fieldid = ?", array($field->id))) {
-                        foreach ($default_records as $default_record) {
-                            $this->_defaultfieldvalues[$fieldid] = $default_record->data;
-                            //note: if we need to support multi-select fields, this will need to be
-                            //further generalized
-                            break;
-                        }
+                    if (($default_value = $field->get_default()) !== false) {
+                        $this->_defaultfieldvalues[$fieldid] = $default_value;
                     }
 
                     //store the data type
@@ -657,12 +652,14 @@ class user_class_completion_report extends table_report {
         $on_or_where = strtoupper($on_or_where);
         $join = ($on_or_where != 'ON') ? ' WHERE TRUE ' : '';
         $ccc_sql = $this->get_course_class_condition_sql();
-        if (!empty($ccc_sql)) {
-            $join = 'JOIN {crlm_class_enrolment} cce';
+        if (get_class($this) == 'user_class_completion_report' || !empty($ccc_sql)) {
+            // ELIS-4070: ELIS class table now always required by UCC report
+            $jointype = empty($ccc_sql) ? 'LEFT' : '';
+            $join = "{$jointype} JOIN {crlm_class_enrolment} cce";
             if ($on_or_where == 'ON') {
                 $join .= ' ON u.id = cce.userid';
             }
-            $join .= ' JOIN {'. pmclass::TABLE .'} cls'
+            $join .= " {$jointype} JOIN {". pmclass::TABLE .'} cls'
                     ." ON cce.classid = cls.id {$ccc_sql}";
             if ($on_or_where != 'ON') {
                 $join .= ' WHERE u.id = cce.userid';
@@ -715,8 +712,8 @@ class user_class_completion_report extends table_report {
                 if ($contextlevel != $context->contextlevel) {
                     $contextlevel = $context->contextlevel;
                     $contextname = $ctxname.'_'; // TBD
-                    $instancefield = $instancefields[$ctxname];
-                    //have one ot more profile field we're joining, so join the context table at the top level
+                    list($instancefield, $_as, $_var) = explode(' ', $instancefields[$ctxname]);
+                    // have one or more profile field we're joining, so join the context table at the top level
                     $fragment[$ctxname] =
                              " LEFT JOIN {context} {$contextname}context
                                       ON {$instancefield} = {$contextname}context.instanceid
@@ -858,6 +855,19 @@ class user_class_completion_report extends table_report {
     }
 
     /**
+     * Method to return mapping of custom field entities to DB field instance
+     * @return array  mapping of custom field entities to DB field instance
+     */
+    protected function get_custom_instance_fields() {
+        return array(
+            'user'       => 'u.id AS uid',
+            'curriculum' => 'cur.id AS prgid',
+            'course'     => 'cls.courseid AS clscrsid',
+            'class'      => 'cls.id AS clsid'
+        );
+    }
+
+    /**
      * Specifies an SQL statement that will produce the required report
      *
      * @param   array   $columns  The list of columns automatically calculated
@@ -890,13 +900,10 @@ class user_class_completion_report extends table_report {
             $params = array_merge($params, $filter_sql['where_parameters']);
         }
 
-        $instancefields = array('user' => 'u.id', 'curriculum' => 'cur.id',
-                                'course' => 'cls.courseid', 'class' => 'cls.id');
-
         $field_joins = '';
         // Add joins related to CM custom user fields
         if (!empty($this->_customfieldids)) {
-            $field_joins = $this->get_custom_field_sql($this->_customfieldids, $instancefields);
+            $field_joins = $this->get_custom_field_sql($this->_customfieldids, $this->get_custom_instance_fields());
         }
 
         // Add joins related to CM custom user fields
@@ -1171,7 +1178,7 @@ class user_class_completion_report extends table_report {
                     {$status_sql}
                        AND {$permissions_filter3}";
         }
-        //error_log("UCCR::get_report_sql(): filter_clause = {$filter_clause}, sql = {$sql}");
+        // error_log("UCCR::get_report_sql(): filter_clause = {$filter_clause}, sql = {$sql}");
         return array($sql, $params);
     }
 
@@ -1182,8 +1189,8 @@ class user_class_completion_report extends table_report {
      * @return  string  Comma-separated list of columns to group by,
      *                  or '' if no grouping should be used
      */
-    function get_report_sql_groups() {
-        return '';
+    function get_report_sql_multiline_groups() {
+        return implode(', ', array_values($this->get_custom_instance_fields()));
     }
 
     /**
@@ -1918,7 +1925,7 @@ class user_class_completion_report extends table_report {
      */
     function get_order_by_clause() {
         //always want to start by sorting on user info
-        $result = " ORDER BY lastname, firstname, userid";
+        $result = " ORDER BY lastname, firstname, userid, clsid";
 
         //determine whether we're showing the curriculum name
         $filters = php_report_filtering_get_active_filter_values(
@@ -1936,19 +1943,21 @@ class user_class_completion_report extends table_report {
     /**
      * Takes a record representing a report row and transforms its custom field data,
      * including adding defaults and handling any specific rendering work
+     *
+     * @param object $record        the data record to transform
      */
     function transform_custom_field_data($record) {
         $excluded_fieldids = array();
 
-        //set up default custom field values if appropriate
+        // set up default custom field values if appropriate
         foreach ($this->_defaultfieldvalues as $fieldid => $defaultvalue) {
             $key = "customfielddata_{$fieldid}";
-            if (is_null($record->$key)) {
-                $record->$key = $defaultvalue;
+            if (!isset($record->$key)) { // is_null
+                $record->$key = $this->format_default_data($defaultvalue);
             }
         }
 
-        //make sure we don't display curriculum custom field default for non-curriculum entries
+        // make sure we don't display curriculum custom field default for non-curriculum entries
         foreach ($this->_fielddatatypes as $fieldid => $datatype) {
             if (empty($record->curid) && $this->_fielddatacontexts[$fieldid] == 'curriculum') {
                 $key = "customfielddata_{$fieldid}";

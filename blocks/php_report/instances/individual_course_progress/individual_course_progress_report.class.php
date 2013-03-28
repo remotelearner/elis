@@ -414,8 +414,7 @@ class individual_course_progress_report extends table_report {
                 $custom_course_field = new field($custom_course_id);
 
                 // Obtain custom field default values IFF set
-                if (($default_value = $custom_course_field->get_default())
-                    !== false) {
+                if (($default_value = $custom_course_field->get_default()) !== false) {
                     // save in array { record_field => default_value }
                     $this->field_default['custom_data_'. $custom_course_id] =
                               $default_value;
@@ -597,8 +596,8 @@ class individual_course_progress_report extends table_report {
      * @return  string  Comma-separated list of columns to group by,
      *                  or '' if no grouping should be used
      */
-    function get_report_sql_groups() {
-        return "enrol.id";
+    function get_report_sql_multiline_groups() {
+        return 'enrol.id AS enrolid';
     }
 
     /**
@@ -607,12 +606,16 @@ class individual_course_progress_report extends table_report {
      * @return  array List of objects containing grouping id, field names, display labels and sort order
      */
      function get_grouping_fields() {
-         return array(new table_report_grouping('user', 'crlmuser.id', '', 'ASC', array(), 'above', '1'),
-                      new table_report_grouping('enrol_status',
-                              'enrol.completestatusid != 0',
-                              get_string('grouping_progress', $this->lang_file) .': ',
-                              'ASC')
-                     );
+         return array(
+                    new table_report_grouping('user', 'crlmuser.id', '', 'ASC', array(), 'above', '1'),
+                  // TBD: the following was causing extra headers in the PDF output
+                  /*
+                    new table_report_grouping('enrol_status',
+                        'enrol.completestatusid != 0',
+                        get_string('grouping_progress', $this->lang_file) .': ',
+                        'ASC')
+                  */
+                );
      }
 
     /**
@@ -873,9 +876,9 @@ class individual_course_progress_report extends table_report {
 
         // Default values for custom fields IF not set
         foreach ($this->field_default as $key => $value) {
-            //error_log("ICPR:transform_record(), checking default for {$key} => {$value}");
+            // error_log("ICPR:transform_record(), checking default for {$key} => {$value}");
             if (!isset($record->$key)) {
-                $record->$key = $value;
+                $record->$key = $this->format_default_data($value);
             }
         }
 

@@ -176,6 +176,19 @@ class user_class_completion_details_report extends user_class_completion_report 
         parent::require_dependencies();
     }
 
+    /**
+     * Method to return mapping of custom field entities to DB field instance
+     * @return array  mapping of custom field entities to DB field instance
+     */
+    protected function get_custom_instance_fields() {
+        return array(
+          /*
+            'curriculum' => 'cur.id AS prgid',
+            'course'     => 'crs.id AS crsid', // TBD
+          */
+            'class'      => 'cls.id AS clsid'
+        );
+    }
 
     /**
      * Specifies an SQL statement that will produce the required report
@@ -214,7 +227,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         if (!empty($this->_customfieldids)) {
             // For the program portion, only care about program-level fields
             $instancefields = array(
-                'curriculum' => 'cur.id',
+                'curriculum' => 'cur.id AS prgid',
             );
 
             $curriculum_custom_field_join = $this->get_custom_field_sql($this->_customfieldids, $instancefields);
@@ -222,8 +235,8 @@ class user_class_completion_details_report extends user_class_completion_report 
             // For the class instance portion, we consider class instance and
             // course description custom fields
             $instancefields = array(
-                'class'  => 'cls.id',
-                'course' => 'crs.id'
+                'class'  => 'cls.id AS clsid',
+                'course' => 'crs.id AS crsid'
             );
 
             $class_custom_field_join = $this->get_custom_field_sql($this->_customfieldids, $instancefields);
