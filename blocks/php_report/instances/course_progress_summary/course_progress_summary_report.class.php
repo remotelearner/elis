@@ -254,7 +254,7 @@ class course_progress_summary_report extends table_report {
         return 'ASC';
     }
 
-/**
+    /**
      * Specifies the fields to group by in the report
      * (needed so we can wedge filter conditions in after the main query)
      *
@@ -404,11 +404,41 @@ class course_progress_summary_report extends table_report {
             $record->studentspassing = get_string('na','rlreport_course_progress_summary');
         }
 
+        // We must manually get multi-valued custom field data
+        // Since report SQL requires COUNTs & SUMs
+        $filter_params = php_report_filtering_get_active_filter_values(
+                             $this->get_report_shortname(),
+                             'field'. $this->get_report_shortname(),
+                             $this->filter);
+
+        $filter_params = $filter_params[0]['value'];
+        $filter_params = $filter_params ? explode(',', $filter_params) : array();
+        if (isset($filter_params) && is_array($filter_params)) {
+            foreach ($filter_params as $custom_course_id) {
+                $custom_course_field = new field($custom_course_id);
+                if ($custom_course_field->multivalued) {
+                    $context = context_elis_course::instance($record->courseid);
+                    $field_data = "custom_data_{$custom_course_id}";
+                    $record->$field_data = '';
+                    $datarecs = field_data::get_for_context_and_field($context, $custom_course_field, false);
+                    foreach ($datarecs as $rec) {
+                        if (!empty($record->$field_data)) {
+                            $record->$field_data .= $this->get_multivalued_separator($export_format);
+                        }
+                        $record->$field_data .= $rec->data;
+                    }
+                    if (empty($record->$field_data)) {
+                        unset($record->$field_data);
+                    }
+                }
+            }
+        }
+
         // Default values for custom fields IF not set
         foreach ($this->field_default as $key => $value) {
-            //error_log("CPSR:transform_record(), checking default for {$key} => {$value}");
+            // error_log("CPSR:transform_record(), checking default for {$key} => {$value}");
             if (!isset($record->$key)) {
-                $record->$key = $value;
+                $record->$key = $this->format_default_data($value);
             }
         }
 

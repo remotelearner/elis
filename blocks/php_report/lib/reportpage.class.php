@@ -86,9 +86,13 @@ class report_page extends elis_page {
 
     /**
      * Performs the default action (display the report specified by URL)
+     * @uses $CFG
+     * @uses $PAGE
      */
     function display_default() {
         global $CFG, $PAGE;
+
+        $perpage = $this->optional_param('perpage', 25, PARAM_INT);
 
         // needed for AJAX calls
         $PAGE->requires->js('/elis/core/js/associate.class.js');
@@ -100,7 +104,7 @@ class report_page extends elis_page {
         $PAGE->requires->js_init_code($init_code);
 
         // output the report contents
-        $this->report_instance->main('', '', 0, 20, '', $this->report_shortname);
+        $this->report_instance->main('', '', 0, $perpage, '', $this->report_shortname);
     }
 
     function build_navbar_default() {
