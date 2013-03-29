@@ -454,7 +454,6 @@ class user_class_completion_report extends table_report {
 
         $filters[] = new generalized_filter_entry('filter-completerange','stu','completetime', $this->get_string('completed_range'),false,'date');
 
-
         $schemas = array(
                 $classfilter,
                 array('completionstatus', 'filter_completionstatus', false,
@@ -576,7 +575,7 @@ class user_class_completion_report extends table_report {
         $result = array_merge($result, $summary_custom_field_columns);
 
         foreach ($optionalcols as $key => $col) {
-            if (! empty($cols[$key])) {
+            if (!empty($cols[$key])) {
                 $heading = get_string('column_'. $col['name'], $this->languagefile);
                 $column  = new table_report_column($col['id'], $heading, $col['name']);
                 $result[] = $column;
@@ -593,7 +592,7 @@ class user_class_completion_report extends table_report {
         $result[] = $numcredits_column;
 
         // Details Column
-        $details_column = new table_report_column('u.id', '', 'details');
+        $details_column = new table_report_column('u.id', '', 'details', 'left', false, true, true, array(php_report::$EXPORT_FORMAT_HTML));
         $result[] = $details_column;
 
         return $result;
@@ -645,24 +644,27 @@ class user_class_completion_report extends table_report {
     /**
      * Returns an SQL fragment needed to join the class table (if needed)
      *
-     * @param  string $on_or_where  Either string 'ON' or 'WHERE' depending
+     * @param  string  $on_or_where  Either string 'ON' or 'WHERE' depending
+     * @param  boolean $include_stu  Whether or not to JOIN on the crlm_class_enrolment table or not.
      * @return string The appropriate SQL fragment
      */
-    function get_class_join_sql($on_or_where = 'ON') {
+    function get_class_join_sql($on_or_where = 'ON', $include_stu = true) {
         $on_or_where = strtoupper($on_or_where);
         $join = ($on_or_where != 'ON') ? ' WHERE TRUE ' : '';
         $ccc_sql = $this->get_course_class_condition_sql();
         if (get_class($this) == 'user_class_completion_report' || !empty($ccc_sql)) {
             // ELIS-4070: ELIS class table now always required by UCC report
-            $jointype = empty($ccc_sql) ? 'LEFT' : '';
-            $join = "{$jointype} JOIN {crlm_class_enrolment} cce";
-            if ($on_or_where == 'ON') {
-                $join .= ' ON u.id = cce.userid';
+            if ($include_stu) {
+                $join = 'JOIN {'.student::TABLE.'} stu';
+                if ($on_or_where == 'ON') {
+                    $join .= ' ON u.id = stu.userid';
+                }
+            } else {
+                $join = '';
             }
-            $join .= " {$jointype} JOIN {". pmclass::TABLE .'} cls'
-                    ." ON cce.classid = cls.id {$ccc_sql}";
+            $join .= ' JOIN {'. pmclass::TABLE .'} cls  ON stu.classid = cls.id '.$ccc_sql;
             if ($on_or_where != 'ON') {
-                $join .= ' WHERE u.id = cce.userid';
+                $join .= ' WHERE u.id = stu.userid';
             }
         }
         return $join;
@@ -859,12 +861,15 @@ class user_class_completion_report extends table_report {
      * @return array  mapping of custom field entities to DB field instance
      */
     protected function get_custom_instance_fields() {
-        return array(
-            'user'       => 'u.id AS uid',
-            'curriculum' => 'cur.id AS prgid',
-            'course'     => 'cls.courseid AS clscrsid',
-            'class'      => 'cls.id AS clsid'
-        );
+        $custominstancefields = array();
+        $custominstancefields['user'] = 'u.id AS uid';
+        if ($this->check_curricula()) {
+            $custominstancefields['curriculum'] = 'cur.id AS prgid';
+        }
+        // TBD: add lines below to add duplicate Program rows
+        // $custominstancefields['course'] = 'cls.courseid AS clscrsid';
+        // $custominstancefields['class']  = 'cls.id AS clsid';
+        return $custominstancefields;
     }
 
     /**
@@ -953,7 +958,7 @@ class user_class_completion_report extends table_report {
             $status_sql = ' AND EXISTS
                                 (SELECT stu.userid
                                    FROM {'. student::TABLE .'} stu
-                                '. $this->get_class_join_sql('WHERE')
+                                '. $this->get_class_join_sql('WHERE', false)
                                  .' AND stu.userid = u.id
                                 '. $this->get_class_status_sql($status) .')';
             $status_join = ' JOIN {'. student::TABLE .'} stu
@@ -1058,12 +1063,9 @@ class user_class_completion_report extends table_report {
 
             $credits_query = 'SELECT SUM(stu.credits)
                                 FROM {'. student::TABLE .'} stu
-                                JOIN {'. pmclass::TABLE .'} cls
-                                  ON stu.classid = cls.id
-                                JOIN {'. curriculumcourse::TABLE .'} curcrs
-                                  ON cls.courseid = curcrs.courseid
-                             -- JOIN {'. curriculum::TABLE ."} cur
-                             --   ON curcrs.curriculumid = cur.id
+                                JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
+                                JOIN {'. curriculumcourse::TABLE .'} curcrs ON cls.courseid = curcrs.courseid
+                             -- JOIN {'. curriculum::TABLE ."} cur ON curcrs.curriculumid = cur.id
                                WHERE stu.completestatusid = {$status}
                                  AND stu.userid = u.id
                                  AND cur.id = curcrs.curriculumid
@@ -1082,8 +1084,9 @@ class user_class_completion_report extends table_report {
                         ON u.id = curstu.userid
                       JOIN {'. curriculum::TABLE ."} cur
                         ON curstu.curriculumid = cur.id
+                      ".(empty($class_join) && empty($status_join) ? 'INNER JOIN {'.student::TABLE.'} stu' : '')."
                     {$class_join}
-                    {$status_join}
+                    ".(empty($class_join) ? $status_join : '')."
                     {$field_joins}
                      WHERE ". table_report::PARAMETER_TOKEN ."
                     {$status_where}
@@ -1107,8 +1110,9 @@ class user_class_completion_report extends table_report {
                         ON curstu.id = 0
                  LEFT JOIN {'. curriculum::TABLE ."} cur
                         ON cur.id = 0
+                 ".(empty($class_join) && empty($status_join) ? 'INNER JOIN {'.student::TABLE.'} stu' : '')."
                     {$class_join}
-                    {$status_join}
+                    ".(empty($class_join) ? $status_join : '')."
                     {$field_joins}
                      WHERE (EXISTS ({$exists_query})
                         OR (NOT EXISTS ({$stu_not_exists_query})
@@ -1136,12 +1140,9 @@ class user_class_completion_report extends table_report {
 
                 $credits_query = 'SELECT SUM(stu.credits)
                                     FROM {'. student::TABLE .'} stu
-                                    JOIN {'. pmclass::TABLE .'} cls
-                                      ON stu.classid = cls.id
-                                    JOIN {'. curriculumcourse::TABLE .'} curcrs
-                                      ON cls.courseid = curcrs.courseid
-                                 -- JOIN {'. curriculum::TABLE ."} cur
-                                 --   ON cur.id = curcrs.curriculumid
+                                    JOIN {'. pmclass::TABLE .'} cls ON stu.classid = cls.id
+                                    JOIN {'. curriculumcourse::TABLE .'} curcrs ON cls.courseid = curcrs.courseid
+                                 -- JOIN {'. curriculum::TABLE ."} cur ON cur.id = curcrs.curriculumid
                                    WHERE stu.completestatusid = {$status}
                                      AND stu.userid = u.id
                                  --  AND cur.id = curcrs.curriculumid
@@ -1170,8 +1171,9 @@ class user_class_completion_report extends table_report {
                            -- fields for sorting
                            u.id AS userid
                       FROM {". user::TABLE ."} u
+                      ".(empty($class_join) && empty($status_join) ? 'INNER JOIN {'.student::TABLE.'} stu' : '')."
                     {$class_join}
-                    {$status_join}
+                    ".(empty($class_join) ? $status_join : '')."
                     {$field_joins}
                      WHERE ". table_report::PARAMETER_TOKEN ."
                     {$status_where}
@@ -1300,7 +1302,7 @@ class user_class_completion_report extends table_report {
 
         if (isset($record->id)) {
             //add a default curriculum name if appropriate
-            if ($showcurricula && empty($record->name)) {
+            if ($showcurricula && (empty($record->curid) || empty($record->name))) {
                 if (!empty($record->preservecurname)) {
                     //actually corresponds to class enrolments
                     $record->name = get_string('noncurriculumcourses', $this->languagefile);
@@ -1325,9 +1327,23 @@ class user_class_completion_report extends table_report {
             $url = "{$CFG->wwwroot}/blocks/php_report/render_report_page.php";
 
             //params being passed via url
-            $url_params = array('report'      => 'user_class_completion_details',
-                                'filter-up-idnumber'    => urlencode($record->useridnumber),
-                                'filter-up-idnumber_op' => generalized_filter_text::$OPERATOR_IS_EQUAL_TO);
+            $url_params = array(
+                'report'      => 'user_class_completion_details',
+                'filter-up-idnumber'    => urlencode($record->useridnumber),
+                'filter-up-idnumber_op' => generalized_filter_text::$OPERATOR_IS_EQUAL_TO
+            );
+
+            $preferences = php_report_filtering_get_user_preferences($this->reportname);
+
+            if (!empty($preferences)) {
+                foreach ($preferences as $key => $val) {
+                    // Determine if this is one of the completion range filter values
+                    preg_match('/.+\/(filter\-completerange\_[a-z]{3})/', $key, $matches);
+                    if (isset($matches[1])) {
+                        $url_params[$matches[1]] = $val;
+                    }
+                }
+            }
 
             //used to track whether to add a ? or a &
             $first = true;
@@ -1365,22 +1381,13 @@ class user_class_completion_report extends table_report {
                 $attribute_string .= " $key=$value";
             }
 
-            //details label for the link.  First check to see if this is the first instance of the
+            // details label for the link.  First check to see if this is the first instance of the
             // student's record.  If so then show the details link.
-            $link_text = '';
-            if (0 != strcmp($this->student_id_num, $record->useridnumber)) {
+            $record->id = '';
+            if ($this->student_id_num != $record->useridnumber) {
                 $link_text = get_string('details', $this->languagefile);
                 $this->student_id_num = $record->useridnumber;
-            }
-
-            if ($export_format == table_report::$EXPORT_FORMAT_HTML) {
-                //replace the empty column with the appropriate link
-                $record->id = '<span class="external_report_link"><a href="'.
-                              $url .'"'. $attribute_string .'>'. $link_text
-                              .'</a></span>';
-            } else {
-                //in an export, so don't show link
-                $record->id = '';
+                $record->id = '<span class="external_report_link"><a href="'.$url.'"'.$attribute_string.'>'.$link_text.'</a></span>';
             }
         }
 
@@ -1610,7 +1617,7 @@ class user_class_completion_report extends table_report {
             $status_clause = $this->get_class_status_sql($status);
             $status_sql = ' AND EXISTS (SELECT stu.userid
                                           FROM {'. student::TABLE .'} stu
-                                     '. $this->get_class_join_sql('WHERE')
+                                     '. $this->get_class_join_sql('WHERE', false)
                                       ." AND stu.userid = u.id
                                         {$status_clause})";
             $status_join = ' JOIN {'. student::TABLE .'} stu
@@ -1655,13 +1662,9 @@ class user_class_completion_report extends table_report {
             //subquery to retreive the number of credits
             $subquery = '(SELECT SUM(stu.credits)
                             FROM {'. student::TABLE .'} stu
-                            JOIN {'. pmclass::TABLE ."} cls
-                              ON stu.classid = cls.id {$ccc_sql}
+                            JOIN {'. pmclass::TABLE ."} cls ON stu.classid = cls.id {$ccc_sql}
                        LEFT JOIN ({". curriculumcourse::TABLE .'} curcrs
-                                  JOIN {'. curriculumstudent::TABLE .'} curstu
-                                    ON curcrs.curriculumid = curstu.curriculumid)
-                              ON cls.courseid = curcrs.courseid
-                             AND stu.userid = curstu.userid
+                            JOIN {'. curriculumstudent::TABLE .'} curstu ON curcrs.curriculumid = curstu.curriculumid) ON cls.courseid = curcrs.courseid AND stu.userid = curstu.userid
                            WHERE curstu.id IS NULL
                              AND stu.completestatusid = '. STUSTATUS_PASSED ."
                              AND {$startdate_condition}
@@ -1698,8 +1701,9 @@ class user_class_completion_report extends table_report {
                                 ON u.id = curstu.userid
                               JOIN {'. curriculum::TABLE ."} cur
                                 ON curstu.curriculumid = cur.id
+                            ".(empty($class_join) && empty($status_join) ? 'INNER JOIN {'.student::TABLE.'} stu' : '')."
                             {$class_join}
-                            {$status_join}
+                            ".(empty($class_join) ? $status_join : '')."
                              WHERE ". table_report::PARAMETER_TOKEN ."
                             {$status_where}
                             {$status_sql}
@@ -1712,8 +1716,9 @@ class user_class_completion_report extends table_report {
                                 ON curstu.id = 0
                          LEFT JOIN {'. curriculum::TABLE ."} cur
                                 ON cur.id = 0
+                            ".(empty($class_join) && empty($status_join) ? 'INNER JOIN {'.student::TABLE.'} stu' : '')."
                             {$class_join}
-                            {$status_join}
+                            ".(empty($class_join) ? $status_join : '')."
                              WHERE (EXISTS ({$exists_query}) OR
                                     (NOT EXISTS ({$stu_not_exists_query})
                                      AND NOT EXISTS ({$curr_not_exists_query})
@@ -1727,8 +1732,9 @@ class user_class_completion_report extends table_report {
             //we are not showing curricula, so this is a simple count of users
             //based on filters
             $sql = 'SELECT COUNT(DISTINCT u.id) FROM {'. user::TABLE ."} u
+                    ".(empty($class_join) && empty($status_join) ? 'INNER JOIN {'.student::TABLE.'} stu' : '')."
                     {$class_join}
-                    {$status_join}
+                    ".(empty($class_join) ? $status_join : '')."
                      WHERE ". table_report::PARAMETER_TOKEN ."
                     {$status_where}
                     {$status_sql}
@@ -1764,20 +1770,14 @@ class user_class_completion_report extends table_report {
                 $filter_clause = str_replace('u.id = cca.userid', 'u.id = cca.userid AND curcrs.curriculumid = cca.curriculumid', $filter_clause);
             }
 
-            $curriculum_sql = 'SELECT SUM(credits) FROM (
+            $curriculum_sql = 'SELECT SUM(c.credits) FROM (
                                    SELECT DISTINCT u.id AS userid, cls.id AS classid, stu.credits
                                      FROM {'. user::TABLE .'} u
-                                     JOIN {'. student::TABLE ."} stu
-                                       ON u.id = stu.userid {$status_clause}
-                                     JOIN {". pmclass::TABLE .'} cls
-                                       ON stu.classid = cls.id
-                                     JOIN {'. curriculumcourse::TABLE .'} curcrs
-                                       ON cls.courseid = curcrs.courseid
-                                     JOIN {'. curriculumstudent::TABLE .'} curstu
-                                       ON u.id = curstu.userid
-                                     JOIN {'. curriculum::TABLE .'} cur
-                                       ON curstu.curriculumid = cur.id
-                                      AND curcrs.curriculumid = curstu.curriculumid
+                                     JOIN {'. student::TABLE ."} stu ON u.id = stu.userid {$status_clause}
+                                     JOIN {". pmclass::TABLE .'} cls ON stu.classid = cls.id
+                                     JOIN {'. curriculumcourse::TABLE .'} curcrs ON cls.courseid = curcrs.courseid
+                                     JOIN {'. curriculumstudent::TABLE .'} curstu ON u.id = curstu.userid
+                                     JOIN {'. curriculum::TABLE .'} cur ON curstu.curriculumid = cur.id AND curcrs.curriculumid = curstu.curriculumid
                                     WHERE stu.completestatusid = '. STUSTATUS_PASSED ."
                                       AND {$filter_clause}
                                       AND {$permissions_filter3}
@@ -1792,17 +1792,13 @@ class user_class_completion_report extends table_report {
             } else {
                 $noncurriculum_sql = 'SELECT SUM(stu.credits)
                                         FROM {'. user::TABLE .'} u
-                                        JOIN {'. student::TABLE ."} stu
-                                          ON u.id = stu.userid {$status_clause}
-                                        JOIN {". pmclass::TABLE ."} cls
-                                          ON stu.classid = cls.id {$ccc_sql}
-                                   LEFT JOIN ({". curriculumcourse::TABLE .'} curcrs
-                                              JOIN {'. curriculumstudent::TABLE .'} curstu
-                                                ON curcrs.curriculumid = curstu.curriculumid)
-                                          ON cls.courseid = curcrs.courseid
-                                         AND stu.userid = curstu.userid
-                                   LEFT JOIN {'. curriculum::TABLE .'} cur
-                                          ON cur.id = 0
+                                        JOIN {'. student::TABLE ."} stu ON u.id = stu.userid {$status_clause}
+                                        JOIN {". pmclass::TABLE ."} cls ON stu.classid = cls.id {$ccc_sql}
+                                   LEFT JOIN (
+                                       {". curriculumcourse::TABLE .'} curcrs
+                                       JOIN {'. curriculumstudent::TABLE .'} curstu ON curcrs.curriculumid = curstu.curriculumid
+                                   ) ON cls.courseid = curcrs.courseid AND stu.userid = curstu.userid
+                                   LEFT JOIN {'. curriculum::TABLE .'} cur ON cur.id = 0
                                        WHERE curstu.id IS NULL
                                          AND stu.userid = u.id
                                          AND stu.completestatusid = '. STUSTATUS_PASSED .'
@@ -1821,10 +1817,8 @@ class user_class_completion_report extends table_report {
             //we are not showing curricula, so this is simply an aggregation over class
             //enrolments, based on filters
             $sql = 'SELECT SUM(stu.credits) FROM {'. user::TABLE .'} u
-                      JOIN {'. student::TABLE ."} stu
-                        ON u.id = stu.userid {$status_clause}
-                      JOIN {". pmclass::TABLE ."} cls
-                        ON stu.classid = cls.id {$ccc_sql}
+                      JOIN {'. student::TABLE ."} stu ON u.id = stu.userid {$status_clause}
+                      JOIN {". pmclass::TABLE ."} cls ON stu.classid = cls.id {$ccc_sql}
                      WHERE stu.completestatusid = ". STUSTATUS_PASSED .'
                        AND '. table_report::PARAMETER_TOKEN ."
                        AND {$permissions_filter5}
@@ -1856,9 +1850,10 @@ class user_class_completion_report extends table_report {
     /**
      * Get Header Entries
      *
+     * @param  mixed $exportformat   the report export format constant
      * @return array The headers for the report.
      */
-    function get_header_entries($export_format) {
+    function get_header_entries($exportformat) {
         $header_array = array();
         $shortname = $this->get_report_shortname();
 
@@ -1877,7 +1872,7 @@ class user_class_completion_report extends table_report {
             $startdate = get_string('past', $this->languagefile);
             $filters   = php_report_filtering_get_active_filter_values($shortname, 'filter-ccc-class_startdate_sck', $this->filter);
 
-            if (! empty($filters[0]['value'])) {
+            if (!empty($filters[0]['value'])) {
                 $filters = php_report_filtering_get_active_filter_values($shortname, 'filter-ccc-class_startdate_sdt', $this->filter);
 
                 if (is_array($filters)) {
@@ -1888,7 +1883,7 @@ class user_class_completion_report extends table_report {
             $enddate  = get_string('present', $this->languagefile);
             $filters  = php_report_filtering_get_active_filter_values($shortname, 'filter-ccc-class_startdate_eck', $this->filter);
 
-            if (! empty($filters[0]['value'])) {
+            if (!empty($filters[0]['value'])) {
                 $filters = php_report_filtering_get_active_filter_values($shortname, 'filter-ccc-class_startdate_edt', $this->filter);
 
                 if (is_array($filters)) {
@@ -1924,20 +1919,30 @@ class user_class_completion_report extends table_report {
      * @return  string  The appropriate order by clause
      */
     function get_order_by_clause() {
-        //always want to start by sorting on user info
-        $result = " ORDER BY lastname, firstname, userid, clsid";
+        // always want to start by sorting on user info
+        $result = array();
+        foreach ($this->get_custom_instance_fields() as $key => $val) {
+            list($entity, $_as, $dbvar) = explode(" ", $val);
+            if ($entity == 'user') {
+                $result[] = 'lastname';
+                $result[] = 'firstname';
+            }
+            $result[] = $dbvar;
+        }
 
-        //determine whether we're showing the curriculum name
+        // determine whether we're showing the curriculum name
         $filters = php_report_filtering_get_active_filter_values(
                        $this->get_report_shortname(), 'filter-summarycolumns',
                        $this->filter);
         $cols = $filters[0]['value'];
 
         if ($cols['cur_name']) {
-            //also sort on curriculum name if displayed
-            $result .= ", curid IS NULL, name";
+            // also sort on curriculum name if displayed
+            $result[] = "curid IS NULL";
+            $result[] = "name";
         }
-        return $result;
+
+        return ' ORDER BY '.implode(', ', $result);
     }
 
     /**
@@ -2031,6 +2036,7 @@ class user_class_completion_report extends table_report {
                 $result .= " {$conditional_symbol} ({$sql_filter})";
             }
         }
+
         return array($result, $sql_params);
     }
 }
