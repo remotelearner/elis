@@ -1620,7 +1620,7 @@ abstract class table_report extends php_report {
      */
     public function append_data(&$lastrow, $lastrec, $currentrec, $exportformat) {
         foreach ($lastrec as $key => $value) {
-            $curvalues = explode($this->get_multivalued_separator($exportformat), $lastrow->$key);
+            $curvalues = empty($lastrow->$key) ? array() : explode($this->get_multivalued_separator($exportformat), $lastrow->$key);
             if (!empty($currentrec->$key) && $value != $currentrec->$key && !in_array($currentrec->$key, $curvalues)) {
                 if (empty($lastrow->$key)) {
                     $lastrow->$key = '';
@@ -1642,7 +1642,11 @@ abstract class table_report extends php_report {
         $nochange = false;
         foreach ($last as $key => $value) {
             if (in_array($key, $this->pseudogroupby)) {
-                if (empty($current->$key) || $value != $current->$key) {
+                if (empty($current->$key)) {
+                    if (!empty($value)) {
+                        return false;
+                    }
+                } else if ($value != $current->$key) {
                     return false;
                 }
                 $nochange = true;
@@ -1667,12 +1671,11 @@ abstract class table_report extends php_report {
         $offset = $paging_info[table_report::offset];
         $limit = $paging_info[table_report::limit];
 
-        if ($report_results = $DB->get_recordset_sql($sql, $params, $offset, $limit) and
-           $report_results->valid()) {
+        if (($report_results = $DB->get_recordset_sql($sql, $params, $offset, $limit)) && $report_results->valid()) {
             $this->data = array();
             $this->summary = array();
             $report_result = $report_results->current();
-            while($report_result) {
+            while ($report_result) {
                 $last_result = clone($report_result); // save before transform!
                 //clone the object because transform_record will alter it in-place
                 $this->data[] = $this->transform_record(clone($report_result), php_report::$EXPORT_FORMAT_HTML);
