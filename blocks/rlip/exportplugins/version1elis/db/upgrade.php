@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * @subpackage core
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -68,6 +68,43 @@ function xmldb_rlipexport_version1elis_upgrade($oldversion=0) {
 
         // plugin savepoint reached
         upgrade_plugin_savepoint($result, 2012080100, 'rlipexport', 'version1elis');
+    }
+
+    if ($result && $oldversion < 2013022801) {
+
+        // Add fieldset field, migrate data, update indexes.
+        if ($dbman->field_exists('rlipexport_version1elis_fld', 'fieldset') === false) {
+            $existing_fields = $DB->get_recordset('rlipexport_version1elis_fld');
+
+            $table = new xmldb_table('rlipexport_version1elis_fld');
+
+            // Remove old fieldid field and associated index.
+            $fieldid_ix = new xmldb_index('fieldid_ix', XMLDB_INDEX_UNIQUE, array('fieldid'));
+            $dbman->drop_index($table, $fieldid_ix);
+            $dbman->drop_field($table, new xmldb_field('fieldid'));
+
+            // Add new fields.
+            $set_field = new xmldb_field('fieldset', XMLDB_TYPE_CHAR, '127', null, XMLDB_NOTNULL, null, null);
+            $field_field = new xmldb_field('field', XMLDB_TYPE_CHAR, '127', null, XMLDB_NOTNULL, null, null);
+            $dbman->add_field($table, $set_field);
+            $dbman->add_field($table, $field_field);
+
+            // Update rows.
+            foreach ($existing_fields as $orig_rec) {
+                $record = new stdClass;
+                $record->id = $orig_rec->id;
+                $record->fieldset = 'user';
+                $record->field = 'field_'.$orig_rec->fieldid;
+                $DB->update_record('rlipexport_version1elis_fld', $record);
+            }
+
+            // Add index for new fields.
+            $index = new xmldb_index('setfield_idx', XMLDB_INDEX_UNIQUE, array('fieldset', 'field'));
+            $dbman->add_index($table, $index);
+        }
+
+        // Plugin savepoint reached.
+        upgrade_plugin_savepoint($result, 2013022801, 'rlipexport', 'version1elis');
     }
 
     return $result;

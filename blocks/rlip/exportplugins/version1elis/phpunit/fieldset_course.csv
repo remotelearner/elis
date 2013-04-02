@@ -1,0 +1,2 @@
+id,name,idnumber,syllabus,code,lengthdescription,length,credits,completion_grade,cost,timecreated,timemodified,version
+200,testcoursename,testcourseidnumber,testsyllabus,testcode,testlengthdesc,50,4,88,testcost,100,200,testversion
