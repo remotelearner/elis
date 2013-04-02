@@ -653,6 +653,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         // must count import files lines in case of error
         $filelines = 0;
         $fileplugin->open(RLIP_FILE_READ);
+        $filename = $fileplugin->get_filename();
         while ($fileplugin->read()) {
             ++$filelines;
         }
@@ -663,6 +664,23 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         $this->dblogger->set_totalrecords($filelines - 1);
         $fileplugin->close();
 
+        //set up fslogger with this starttime for this entity
+        $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
+
+        $this->dblogger->set_log_path($this->provider->get_log_path());
+        $this->dblogger->set_entity_type($entity);
+
+        if ($filelines == 1) {
+            // header but no records or lines end with CR only
+            if ($this->fslogger) {
+                $message = 'Could not read data, make sure import file lines end with LF (linefeed) character: 0x0A';
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+            }
+            $this->dblogger->track_success(false, true);
+            $this->dblogger->flush($filename);
+            return null;
+        }
+
         $fileplugin->open(RLIP_FILE_READ);
         if (!$header = $fileplugin->read()) {
             return false; // no error cause we're just gonna skip this entity
@@ -672,11 +690,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         //header read, so increment line number
         $this->linenumber++;
-
-        $filename = $fileplugin->get_filename();
-
-        //set up fslogger with this starttime for this entity
-        $this->fslogger = $this->provider->get_fslogger($this->dblogger->plugin, $entity, $this->manual, $starttime);
 
         //check that the file directory is valid
         $filepath = get_config($this->dblogger->plugin, 'logfilelocation');
@@ -692,10 +705,6 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
             $this->fslogger->set_logfile_status(true);
             $this->dblogger->set_logfile_status(true);
         }
-
-        $this->dblogger->set_log_path($this->provider->get_log_path());
-
-        $this->dblogger->set_entity_type($entity);
 
         $this->header_read_hook($entity, $header, $fileplugin->get_filename());
 
@@ -752,7 +761,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
         $this->dblogger->set_endtime(time());
 
         //flush db log record
-        $filename = $fileplugin->get_filename();
+        //$filename = $fileplugin->get_filename();
         $this->dblogger->flush($filename);
 
         if (!$this->manual) {
