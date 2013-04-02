@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
  * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,126 +24,78 @@
  */
 
 require_once('../../../../config.php');
+$PAGE->requires->js('/blocks/rlip/js/jquery-1.9.1.min.js', true);
+$PAGE->requires->css('/blocks/rlip/exportplugins/version1elis/config_fields.css');
 $file = get_plugin_directory('rlipexport', 'version1elis').'/lib.php';
 require_once($file);
 
-//permissions checking
+// Permissions checking.
 require_login();
 
 $context = get_context_instance(CONTEXT_SYSTEM);
 require_capability('moodle/site:config', $context);
 
-//handle submitted actions
+// Handle submitted actions.
 $baseurl = $CFG->wwwroot.'/blocks/rlip/exportplugins/version1elis/config_fields.php';
-rlipexport_version1elis_config::handle_field_action($baseurl);
+$data_submitted = optional_param('data_submitted', false, PARAM_INT);
+if (!empty($data_submitted)) {
+    require_sesskey();
+    $submitted_fields = optional_param_array('fields', array(), PARAM_SAFEPATH); // Safepath needed for '/'.
+    $submitted_fieldnames = optional_param_array('fieldnames', array(), PARAM_ALPHANUM);
+    $submitted_data = array(
+        'fields' => $submitted_fields,
+        'fieldnames' => $submitted_fieldnames
+    );
 
-//page header
-rlipexport_version1elis_page_setup($baseurl);
+    $processed_formdata = rlipexport_version1elis_extrafields::process_config_formdata($submitted_data);
+    rlipexport_version1elis_extrafields::update_config($processed_formdata);
+    redirect($baseurl);
+}
+
+
+$available_fields = rlipexport_version1elis_extrafields::get_available_fields();
+$enabled_fields = rlipexport_version1elis_extrafields::get_enabled_fields();
+
+$fieldsets = array();
+$fields_by_fieldset = array();
+$active_fields_by_fieldset_unordered = array();
+$active_fields_by_fieldset_order = array();
+$name_overrides = array();
+
+foreach ($available_fields as $fieldset => $fields) {
+    $fieldset_class = rlipexport_version1elis_extrafields::FIELDSET_PREFIX.$fieldset;
+    $fieldsets[$fieldset] = $fieldset_class::get_label();
+    foreach ($fields as $field => $header) {
+        if (isset($enabled_fields[$fieldset][$field])) {
+            $enabled_field_rec = $enabled_fields[$fieldset][$field];
+            if ($enabled_field_rec->header !== '' && $enabled_field_rec->header !== null) {
+                $name_overrides[$fieldset.'/'.$field] = $enabled_field_rec->header;
+            }
+            $active_fields_by_fieldset_unordered[$fieldset.'/'.$field] = $header;
+            $active_fields_by_fieldset_order[$enabled_fields[$fieldset][$field]->fieldorder] = $fieldset.'/'.$field;
+        }
+
+        $fields_by_fieldset[$fieldset][$field] = $header;
+    }
+}
+
+ksort($active_fields_by_fieldset_order);
+
+// Generate sorted active fields.
+$active_fields_by_fieldset_ordered = array();
+foreach ($active_fields_by_fieldset_order as $fieldsetfield) {
+    $active_fields_by_fieldset_ordered[$fieldsetfield] = $active_fields_by_fieldset_unordered[$fieldsetfield];
+}
+
+// Page header.
+$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_pagelayout('admin');
+$renderer = $PAGE->get_renderer('rlipexport_version1elis');
+$renderer->page_setup($baseurl);
 echo $OUTPUT->header();
 
-//TODO: implement all necessary calls, etc, to make the rest of this code work
+// Main Output.
+echo $renderer->display_config_ui($fieldsets, $fields_by_fieldset, $active_fields_by_fieldset_ordered, $name_overrides);
 
-//initialize the display table
-$table = new html_table();
-$table->head = array(get_string('customfieldname', 'rlipexport_version1elis'),
-                     get_string('columnheader', 'rlipexport_version1elis'), '', '', '');
-$table->data = array();
-
-//fill table rows with selected field information
-
-//information used to track first / last rows
-$first = true;
-$max_order = $DB->get_field(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, 'MAX(fieldorder)', array());
-
-if ($recordset = rlipexport_version1elis_config::get_configured_fields()) {
-    foreach ($recordset as $record) {
-        //text box for setting header
-        $attributes = array('type' => 'text',
-                            'name' => 'header_'.$record->id,
-                            'value' => $record->header);
-        $header = html_writer::empty_tag('input', $attributes);
-
-        //"move up" link
-        if (!$first) {
-            $url = $baseurl.'?up='.$record->id;
-            $uplink = rlipexport_version1elis_linked_image($url, 't/up');
-        } else {
-            //first record
-            $uplink = '';
-        }
-
-        //"move down" link
-        if ($record->fieldorder != $max_order) {
-            $url = $baseurl.'?down='.$record->id;
-            $downlink = rlipexport_version1elis_linked_image($url, 't/down');
-        } else {
-            //last record
-            $downlink = '';
-        }
-
-        //delete link
-        $url = $baseurl.'?delete='.$record->id;
-        $deletelink = rlipexport_version1elis_linked_image($url, 't/delete');
-
-        //append the row
-        $table->data[] = array($record->name, $header, $downlink, $uplink, $deletelink);
-
-        //no longer the first record
-        $first = false;
-    }
-}
-
-//output the table within a form
-if (!empty($table->data)) {
-    //open form
-    $attributes = array('action' => $baseurl,
-                        'method' => 'post');
-    echo html_writer::start_tag('form', $attributes);
-
-    //table
-    echo html_writer::table($table);
-
-    //button to revert headers to last saved state
-    $attributes = array('type' => 'submit',
-                        'value' => get_string('revertheaders', 'rlipexport_version1elis'),
-                        'name' => 'revertfields');
-    echo html_writer::empty_tag('input', $attributes);
-    echo $OUTPUT->spacer(null, true);
-    echo $OUTPUT->spacer(null, true);
-
-    //button to save changes to headers
-    $attributes = array('type' => 'submit',
-                        'value' => get_string('updateheaders', 'rlipexport_version1elis'),
-                        'name' => 'updatefields');
-    echo html_writer::empty_tag('input', $attributes);
-    echo $OUTPUT->spacer(null, true);
-    echo $OUTPUT->spacer(null, true);
-
-    //close form
-    echo html_writer::end_tag('form');
-}
-
-//fetch all available custom fields
-$options = array();
-if ($recordset = rlipexport_version1elis_config::get_available_fields()) {
-    foreach ($recordset as $record) {
-        $options[$record->id] = $record->name;
-    }
-}
-
-if (empty($options)) {
-    if (empty($table->data)) {
-        echo html_writer::tag('span', get_string('customfieldnotconfig', 'rlipexport_version1elis'));
-    } else {
-        echo html_writer::tag('span', get_string('customfieldalladded', 'rlipexport_version1elis'));
-    }
-} else {
-    echo html_writer::tag('span', get_string('addfieldinstructions', 'rlipexport_version1elis'));
-    echo $OUTPUT->spacer(null, true);
-
-    $displaystring = get_string('addcustomfield', 'rlipexport_version1elis');
-    echo $OUTPUT->single_select($baseurl, 'field', $options, '', array('' => $displaystring));
-}
-
-//page footer
+// Page footer.
 echo $OUTPUT->footer();

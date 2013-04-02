@@ -124,10 +124,10 @@ class version1elisScheduledNonincrementalExportTest extends rlip_test {
      * @return array The appropriate data row
      */
     private function get_second_row() {
-        return array('exportfirstname',
-                     'exportlastname',
-                     'exportusername',
-                     'exportidnumber',
+        return array('exportfirstname2',
+                     'exportlastname2',
+                     'exportusername2',
+                     'exportidnumber2',
                      'testcourseidnumber',
                      date('M/d/Y', 1000000000),
                      date('M/d/Y', 1500000000),
