@@ -129,8 +129,8 @@ if ($ADMIN->fulltree) {
 
     // Automatically assign an ID number to Moodle users without one
     $settings->add(new admin_setting_configcheckbox('elis_program/auto_assign_user_idnumber',
-                           get_string('auto_idnumber_setting', 'elis_program'),
-                           get_string('auto_idnumber_help', 'elis_program'), 1));
+            get_string('auto_idnumber_setting', 'elis_program'),
+            get_string('auto_idnumber_help', 'elis_program'), 1));
     // Default Instructor Role
     $crsroles = array();
     if (!defined('NO_ROLE_ID')) { // TBD
@@ -179,43 +179,43 @@ if ($ADMIN->fulltree) {
     $allroles = array(0 => get_string('no_default_role', 'elis_program'));
     pm_get_select_roles_for_contexts($allroles, array(CONTEXT_ELIS_USERSET));
     $settings->add(new admin_setting_configselect('elis_program/default_cluster_role_id',
-                           get_string('cluster_role_setting', 'elis_program'), get_string('cluster_role_help', 'elis_program'), 0,
-                           $allroles));
+            get_string('cluster_role_setting', 'elis_program'), get_string('cluster_role_help', 'elis_program'), 0,
+            $allroles));
 
     // Default Curriculum Role
     $allroles = array(0 => get_string('no_default_role', 'elis_program'));
     pm_get_select_roles_for_contexts($allroles, array(CONTEXT_ELIS_PROGRAM));
     $settings->add(new admin_setting_configselect('elis_program/default_curriculum_role_id',
-                           get_string('curriculum_role_setting', 'elis_program'), get_string('curriculum_role_help', 'elis_program'), 0,
-                           $allroles));
+            get_string('curriculum_role_setting', 'elis_program'), get_string('curriculum_role_help', 'elis_program'), 0,
+            $allroles));
 
     // Default Course Role
     $allroles = array(0 => get_string('no_default_role', 'elis_program'));
     pm_get_select_roles_for_contexts($allroles, array(CONTEXT_ELIS_COURSE));
     $settings->add(new admin_setting_configselect('elis_program/default_course_role_id',
-                           get_string('course_role_setting', 'elis_program'), get_string('course_role_help', 'elis_program'), 0,
-                           $allroles));
+            get_string('course_role_setting', 'elis_program'), get_string('course_role_help', 'elis_program'), 0,
+            $allroles));
 
     // Default Class Role
     $allroles = array(0 => get_string('no_default_role', 'elis_program'));
     pm_get_select_roles_for_contexts($allroles, array(CONTEXT_ELIS_CLASS));
     $settings->add(new admin_setting_configselect('elis_program/default_class_role_id',
-                           get_string('class_role_setting', 'elis_program'), get_string('class_role_help', 'elis_program'), 0,
-                           $allroles));
+            get_string('class_role_setting', 'elis_program'), get_string('class_role_help', 'elis_program'), 0,
+            $allroles));
 
     // Default Track Role
     $allroles = array(0 => get_string('no_default_role', 'elis_program'));
     pm_get_select_roles_for_contexts($allroles, array(CONTEXT_ELIS_TRACK));
     $settings->add(new admin_setting_configselect('elis_program/default_track_role_id',
-                           get_string('track_role_setting', 'elis_program'), get_string('track_role_help', 'elis_program'), 0,
-                           $allroles));
+            get_string('track_role_setting', 'elis_program'), get_string('track_role_help', 'elis_program'), 0,
+            $allroles));
 
     // ***Auto-create  Settings
     $settings->add(new admin_setting_heading('auto_create_settings', get_string('auto_create_settings', 'elis_program'), '' /* get_string('auto_create_settings_info', 'elis_program') */));
     // Moodle courses with unknown status treated as auto-created
     $settings->add(new admin_setting_configcheckbox('elis_program/autocreated_unknown_is_yes',
-                           get_string('auto_create_setting', 'elis_program'),
-                           get_string('auto_create_help', 'elis_program'), 1));
+            get_string('auto_create_setting', 'elis_program'),
+            get_string('auto_create_help', 'elis_program'), 1));
 
     //include settings for all subplugins
     include(elispm::file('db/subplugins.php'));
@@ -239,8 +239,8 @@ if ($ADMIN->fulltree) {
 
     // Legacy toggle for showing inactive users on pm pages
     $settings->add(new admin_setting_configcheckbox('elis_program/legacy_show_inactive_users',
-                           get_string('legacy_show_inactive_users', 'elis_program'),
-                           get_string('legacy_show_inactive_users_help', 'elis_program'), 0));
+            get_string('legacy_show_inactive_users', 'elis_program'),
+            get_string('legacy_show_inactive_users_help', 'elis_program'), 0));
 
     $ADMIN->add('elis_program', $settings);
 }
