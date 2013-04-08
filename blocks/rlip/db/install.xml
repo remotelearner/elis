@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common Integration Point version 1 import plugin"
+<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 logs and scheduling"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -34,11 +34,11 @@
         <INDEX NAME="endtime_ix" UNIQUE="false" FIELDS="endtime" PREVIOUS="starttime_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="block_rlip_schedule" COMMENT="Scheduled IP imports and exports" PREVIOUS="block_rlip_summary_logs">
+    <TABLE NAME="block_rlip_schedule" COMMENT="Scheduled DH imports and exports" PREVIOUS="block_rlip_summary_logs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="schedule owner" PREVIOUS="id" NEXT="plugin"/>
-        <FIELD NAME="plugin" TYPE="char" LENGTH="63" NOTNULL="true" SEQUENCE="false" COMMENT="The IP plugin type" PREVIOUS="userid" NEXT="config"/>
+        <FIELD NAME="plugin" TYPE="char" LENGTH="63" NOTNULL="true" SEQUENCE="false" COMMENT="The DH plugin type" PREVIOUS="userid" NEXT="config"/>
         <FIELD NAME="config" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="Serialized configuration for the scheduled task" PREVIOUS="plugin" NEXT="lastruntime"/>
         <FIELD NAME="lastruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Mirror of elis scheduled task last runtime" PREVIOUS="config" NEXT="nextruntime"/>
         <FIELD NAME="nextruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Mirror of elis scheduled task next runtime" PREVIOUS="lastruntime"/>

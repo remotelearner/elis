@@ -534,6 +534,7 @@ function rlip_get_export_filename($plugin, $tz = 99) {
 function rlip_get_run_instance($prefix, $plugin, $type, $userid, $state) {
     global $CFG, $DB;
     $instance = null;
+    $rlipshortname = 'DH';
     switch ($type) { // TBD
         case 'rlipimport':
             $baseinstance = rlip_dataplugin_factory::factory($plugin);
@@ -579,7 +580,7 @@ function rlip_get_run_instance($prefix, $plugin, $type, $userid, $state) {
             break;
 
         default:
-            mtrace("{$prefix}: IP plugin '{$plugin}' not supported!");
+            mtrace("{$prefix}: {$rlipshortname} plugin '{$plugin}' not supported!");
             break;
     }
     return $instance;
@@ -617,6 +618,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
     $fcnname = "run_ipjob({$taskname}, {$maxruntime})";
     $disabledincron = get_config('block_rlip', 'disableincron');
+    $rlipshortname = 'DH';
 
     if (empty($maxruntime)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
@@ -630,7 +632,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     list($prefix, $id) = explode('_', $taskname);
     $ipjob = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $id));
     if (empty($ipjob)) {
-        mtrace("{$fcnname}: DB Error retrieving IP schedule record - aborting!");
+        mtrace("{$fcnname}: DB Error retrieving {$rlipshortname} schedule record - aborting!");
         return false;
     }
 
@@ -666,7 +668,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
     // Must set last & next run times before exiting!
     if (!empty($disabledincron)) {
-        mtrace("{$fcnname}: Internal IP cron disabled by settings - aborting job!");
+        mtrace("{$fcnname}: Internal {$rlipshortname} cron disabled by settings - aborting job!");
         return false; // TBD
     }
 
@@ -682,7 +684,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     //run the task, specifying the ideal start time, maximum run time & state
     if (($newstate = $instance->run($targetstarttime, $lastruntime, $maxruntime, $state)) !== null) {
         // Task did not complete - RESET nextruntime back & save new state!
-        mtrace("{$fcnname}: IP scheduled task exceeded time limit of {$maxruntime} secs");
+        mtrace("{$fcnname}: {$rlipshortname} scheduled task exceeded time limit of {$maxruntime} secs");
         //update next runtime on the scheduled task record
         $task->nextruntime = $targetstarttime;
         $task->lastruntime = $ipjob->lastruntime = $lastruntime;
