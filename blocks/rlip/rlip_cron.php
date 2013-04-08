@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
  * @subpackage blocks_rlip
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -43,6 +43,8 @@ if (empty($disabledincron)) {
 global $USER;
 $USER = get_admin();
 
+$rlipshortname = 'DH';
+
 // TBD: adjust some php variables for the execution of this script
 set_time_limit(0);
 @ini_set('max_execution_time', '3000');
@@ -52,7 +54,7 @@ if (empty($CFG->extramemorylimit)) {
     raise_memory_limit($CFG->extramemorylimit);
 }
 
-mtrace('RLIP external cron start - Server Time: '. date('r', time()) ."\n");
+mtrace('RL'.$rlipshortname.' external cron start - Server Time: '. date('r', time()) ."\n");
 
 $pluginstorun = array('rlipimport', 'rlipexport');
 
@@ -71,7 +73,7 @@ if ($tasks && $tasks->valid()) {
         // Get ipjob from ip_schedule
         $ipjob = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $id));
         if (empty($ipjob)) {
-            mtrace("{$filename}: DB Error retrieving IP schedule record for taskname '{$task->taskname}' - aborting!");
+            mtrace("{$filename}: DB Error retrieving {$rlipshortname} schedule record for taskname '{$task->taskname}' - aborting!");
             continue;
         }
 
@@ -79,14 +81,14 @@ if ($tasks && $tasks->valid()) {
         $plugin = $ipjob->plugin;
         $plugparts = explode('_', $plugin);
         if (!in_array($plugparts[0], $pluginstorun)) {
-            mtrace("{$filename}: RLIP plugin '{$plugin}' not configured to run externally - aborting!");
+            mtrace("{$filename}: RL{$rlipshortname} plugin '{$plugin}' not configured to run externally - aborting!");
             continue;
         }
 
         $rlip_plugins = get_plugin_list($plugparts[0]);
         //print_object($rlip_plugins);
         if (!array_key_exists($plugparts[1], $rlip_plugins)) {
-            mtrace("{$filename}: RLIP plugin '{$plugin}' unknown!");
+            mtrace("{$filename}: RL{$rlipshortname} plugin '{$plugin}' unknown!");
             continue;
         }
 
@@ -124,6 +126,6 @@ if ($tasks && $tasks->valid()) {
     }
 }
 
-mtrace("\nRLIP external cron end - Server Time: ". date('r', time()) ."\n\n");
+mtrace("\nRL{$rlipshortname} external cron end - Server Time: ". date('r', time()) ."\n\n");
 
 // end of file
