@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,20 @@
  * @subpackage importplugins_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
+$rlipshortname = 'DH';
+
 $string['allowduplicateemails'] = 'Allow duplicate email addresses.';
 $string['configallowduplicateemails'] = 'If on, duplicate email addresses will be allowed.';
 $string['config_schedule_files_path'] = 'The directory path, relative to moodledata, to the location of import files.';
-$string['config_course_schedule_file'] = 'The filename of the \'course\' IP import file.';
-$string['config_enrolment_schedule_file'] = 'The filename of the \'enrolment\' IP import file.';
-$string['config_user_schedule_file'] = 'The filename of the \'user\' IP import file.';
+$string['config_course_schedule_file'] = 'The filename of the \'course\' '.$rlipshortname.' import file.';
+$string['config_enrolment_schedule_file'] = 'The filename of the \'enrolment\' '.$rlipshortname.' import file.';
+$string['config_user_schedule_file'] = 'The filename of the \'user\' '.$rlipshortname.' import file.';
 $string['configcreategroupsandgroupings'] = 'If enabled, groups and groupings can be created in the enrolment import.';
 $string['configcreateorupdate'] = 'If enabled, all create or update actions on users and courses are converted to create
 actions if the entity does not already exist, or update actions if the entity exists.';

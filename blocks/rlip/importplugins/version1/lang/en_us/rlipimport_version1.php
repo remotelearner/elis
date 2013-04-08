@@ -26,7 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['config_enrolment_schedule_file'] = 'The filename of the \'enrollment\' IP import file.';
+$rlipshortname = 'DH';
+
+$string['config_enrolment_schedule_file'] = 'The filename of the \'enrollment\' '.$rlipshortname.' import file.';
 $string['configcreategroupsandgroupings'] = 'If enabled, groups and groupings can be created in the enrollment import.';
 $string['enrolment_schedule_file'] = 'Enrollment import filename';
 $string['enrolmentfile'] = 'Enrollment file';

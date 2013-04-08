@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,14 +20,14 @@
  * @subpackage blocks_rlip
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $string['automatic'] = 'Automatic';
-$string['confirm_delete_ipjob'] = 'Are you sure to delete IP job #{$a}?';
+$string['confirm_delete_ipjob'] = 'Are you sure to delete DH job #{$a}?';
 $string['configdisableincron'] = 'If enabled, this setting disables this plugin from running in the Moodle cron. Use this setting when running imports & exports via a separate system-level cron.';
 $string['dateformat'] = 'M/d/Y';
 $string['dblogimportexceedstimelimit'] = 'Failed importing all lines from import file {$a->filename} due to time limit exceeded. Processed {$a->recordsprocessed} of {$a->totalrecords} records.';
@@ -45,10 +45,10 @@ $string['importexceedstimelimit'] = 'Import processing of entity \'{$a->entity}\
 $string['importexceedstimelimit_b'] = 'Import processing of entity \'{$a->entity}\' partially processed due to time restrictions. Processed {$a->recordsprocessed} of {$a->totalrecords} total records. Import will continue at next cron.';
 $string['importinvalidlogfilepath'] = 'Log file access failed while importing lines from import file {$a->filename} due to invalid logfile path. Change \'{$a->logfilepath}\' to a valid logfile location on the settings page. Processed {$a->recordsprocessed} of {$a->totalrecords} records.';
 $string['importwarning'] = 'Manual processing of import files should only be used for testing purposes and only with small files. Bulk import actions should be performed using the scheduling system.';
-$string['iptypenotsupported'] = 'IP plugin type: \'{$a}\' not supported!';
+$string['iptypenotsupported'] = 'DH plugin type: \'{$a}\' not supported!';
 $string['log'] = 'Log';
 $string['logdownload'] = 'Download';
-$string['logs'] = 'Integration Point logs';
+$string['logs'] = 'Data Hub logs';
 $string['logend'] = 'End time';
 $string['logentitytype'] = 'Entity Type';
 $string['logexecution'] = 'Execution';
@@ -72,28 +72,28 @@ $string['manualstatus'] = '{$a->statusmessage} ({$a->filesuccesses} of {$a->tota
 $string['na'] = 'N/A';
 $string['no_lastruntime'] = 'Never run';
 $string['nologmessage'] = 'Sorry, no logs found.';
-$string['notificationemailmessage'] = 'The Integration Point {$a} plugin has run and generated the attached log file(s). Please view log file content for information regarding the success of the associated Integration Point task. ';
-$string['notificationemailsubject'] = 'Integration Point {$a} logs(s)';
-$string['pluginname'] = 'Integration Point';
-$string['plugins'] = 'Integration Point plugins';
+$string['notificationemailmessage'] = 'The Data Hub {$a} plugin has run and generated the attached log file(s). Please view log file content for information regarding the success of the associated Data Hub task. ';
+$string['notificationemailsubject'] = 'Data Hub {$a} logs(s)';
+$string['pluginname'] = 'Data Hub';
+$string['plugins'] = 'Data Hub plugins';
 $string['restoredefaults'] = 'Restore defaults';
-$string['rlip_form_export_header'] = '<b>Schedule IP job for: Export</b>';
-$string['rlip_form_import_header'] = '<b>Schedule IP job for: Import</b>';
+$string['rlip_form_export_header'] = '<b>Schedule '.$rlipshortname.' job for: Export</b>';
+$string['rlip_form_import_header'] = '<b>Schedule '.$rlipshortname.' job for: Import</b>';
 $string['rlip_form_label'] = 'Label:';
-$string['rlip_form_label_help'] = 'Enter a unique label for your IP schedule job.';
+$string['rlip_form_label_help'] = 'Enter a unique label for your DH schedule job.';
 $string['rlip_form_period'] = 'Period:';
-$string['rlip_form_period_error'] = 'IP schedule period must be of form: *d*h*m and greater than 5 minutes!';
-$string['rlip_form_period_help'] = 'This setting controls how often the IP schedule job is run. Values can be entered in the form \*d\*h\*m to represent days, hours, and minutes. Please set this value to five minutes or longer to allow ample time for processing.';
+$string['rlip_form_period_error'] = 'DH schedule period must be of form: *d*h*m and greater than 5 minutes!';
+$string['rlip_form_period_help'] = 'This setting controls how often the DH schedule job is run. Values can be entered in the form \*d\*h\*m to represent days, hours, and minutes. Please set this value to five minutes or longer to allow ample time for processing.';
 $string['rlip_global_scheduling'] = 'Scheduling';
 $string['rlip_jobs_header_label'] = 'Label';
 $string['rlip_jobs_header_lastran'] = 'Last ran at';
 $string['rlip_jobs_header_modified'] = 'Modified';
 $string['rlip_jobs_header_nextrun'] = 'Will run next at*';
 $string['rlip_jobs_header_owner'] = 'Owner';
-$string['rlip_jobs_heading_fullinstructions'] = 'Click a scheduled job\'s label to edit it or click the "New job" button below to schedule an IP job.<br/>&nbsp;';
-$string['rlip_jobs_heading_jobs'] = 'Current scheduled IP jobs for: {$a}';
-$string['rlip_jobs_heading_nojobs'] = 'There are no scheduled IP jobs for: {$a}';
-$string['rlip_jobs_heading_instructions'] = 'Click the "New job" button below to schedule an IP job.';
+$string['rlip_jobs_heading_fullinstructions'] = 'Click a scheduled job\'s label to edit it or click the "New job" button below to schedule an DH job.<br/>&nbsp;';
+$string['rlip_jobs_heading_jobs'] = 'Current scheduled DH jobs for: {$a}';
+$string['rlip_jobs_heading_nojobs'] = 'There are no scheduled DH jobs for: {$a}';
+$string['rlip_jobs_heading_instructions'] = 'Click the "New job" button below to schedule an DH job.';
 $string['rlip_new_job'] = 'New job';
 $string['rlipexportplugins'] = 'Export Plugins';
 $string['rlipimportplugins'] = 'Import Plugins';
@@ -101,5 +101,5 @@ $string['rlipmanageplugins'] = 'Manage plugins';
 $string['runnow'] = 'Run Now';
 $string['runmanually'] = 'Run manually';
 $string['scheduled'] = 'scheduled';
-$string['schedulepagetitle'] = 'Schedule IP';
+$string['schedulepagetitle'] = 'Schedule DH';
 $string['schedulingtime'] = "*Scheduled jobs may not run exactly at the specified time.";
