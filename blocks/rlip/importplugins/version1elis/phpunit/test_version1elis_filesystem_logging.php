@@ -716,6 +716,77 @@ class version1elisFilesystemLoggingTest extends rlip_test {
     }
 
     /**
+     * Validate that the correct error message is logged when an import file has 'no records', i.e. no LFs
+     */
+    public function test_version1elis_import_norecs_logs_runtime_error() {
+        global $CFG, $DB;
+
+        // set the file path to the dataroot
+        $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR).RLIP_DEFAULT_LOG_PATH;
+        set_config('logfilelocation', '', 'rlipimport_version1elis');
+
+        // set up a "user" import provider, using a single fixed file
+        $file_name = 'userfilenorecs.csv';
+        // File WILL BE DELETED after import so must copy to moodledata area
+        // Note: file_path now relative to moodledata ($CFG->dataroot)
+        $file_path = '/block_rlip_phpunit/';
+        $testdir = $CFG->dataroot.$file_path;
+        @mkdir($testdir, 0777, true);
+        @copy(dirname(__FILE__) ."/{$file_name}", $testdir . $file_name);
+        $provider = new rlip_importprovider_file_delay($CFG->dataroot.$file_path.$file_name, 'user');
+
+        // run the import
+        $manual = true;
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, $manual);
+        ob_start();
+        $result = $importplugin->run(0, 0, 60); // maxruntime 60 sec
+        $ui = ob_get_contents(); // TBD: test this UI string
+        ob_end_clean();
+
+        // validate that a log file was created
+        $plugin_type = 'import';
+        $plugin = 'rlipimport_version1elis';
+        $format = get_string('logfile_timestamp','block_rlip');
+        $entity = 'user';
+        // get most recent record
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
+        foreach ($records as $record) {
+            $starttime = $record->starttime;
+            $endtime = $record->endtime;
+            break;
+        }
+
+        // Verify endtime >= starttime
+        $this->assertGreaterThanOrEqual($starttime, $endtime);
+
+        $testfilename = $filepath.'/'.$plugin_type.'_version1elis_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
+
+        $filename = self::get_current_logfile($testfilename);
+        // echo "test_version1elis_import_norecs_logs_runtime_error(): logfile ?=> {$filename}\n";
+        $this->assertTrue(file_exists($filename));
+        // fetch log line
+        $pointer = fopen($filename, 'r');
+        $line = fgets($pointer);
+        fclose($pointer);
+
+        if (empty($line)) {
+            // no line found
+            $this->assertTrue(false);
+        } else {
+            // expected error
+            $expected_error = 'Could not read data, make sure import file lines end with LF (linefeed) character: 0x0A'."\n";
+
+            // data validation
+            $actual_error = preg_replace('/^\[.*\] \[.*\] /', '', $line);
+            $this->assertEquals($expected_error, $actual_error);
+        }
+
+        // clean-up data file & test dir
+        @unlink($testdir.$file_name);
+        @rmdir($testdir);
+    }
+
+    /**
      * Validate that the correct error message is logged when an import runs
      * too long
      */
