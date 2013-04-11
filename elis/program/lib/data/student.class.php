@@ -728,12 +728,14 @@ class student extends elis_data_object {
         if (empty($this->id)) {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="savenew" />'."\n";
+            echo '<input type="hidden" name="sesskey" value="'.sesskey().'"/>';
         } else {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="update" />'."\n";
             echo '<input type="hidden" name="association_id" value="' . $this->id . '" />' . "\n";
             echo '<input type="hidden" name="id" value="' . $this->classid . '" />' . "\n";
             echo '<input type="hidden" name="userid" value="' . $this->userid . '" />' . "\n";
+            echo '<input type="hidden" name="sesskey" value="'.sesskey().'"/>';
         }
 
         if (!empty($newarr)) { // TBD: $newarr or $table
@@ -1160,10 +1162,12 @@ class student extends elis_data_object {
         if (empty($this->id)) {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="updatemultiple_confirm" />'."<br />\n";
+            echo '<input type="hidden" name="sesskey" value="'.sesskey().'"/>';
             echo $this->get_bulk_edit_ui();
         } else {
             echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $classid . '" >'."\n";
             echo '<input type="hidden" name="action" value="updatemultiple" />'."\n";
+            echo '<input type="hidden" name="sesskey" value="'.sesskey().'"/>';
             echo '<input type="hidden" name="association_id" value="' . $this->id . '" />' . "\n";
             echo '<input type="hidden" name="id" value="' . $this->classid . '" />' . "\n";
             echo '<input type="hidden" name="userid" value="' . $this->userid . '" />' . "\n";

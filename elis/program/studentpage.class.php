@@ -189,6 +189,7 @@ class studentpage extends associationpage {
             return;
         }
 
+        require_sesskey();
         $stu = new student($stuid);
         $user = $DB->get_record(user::TABLE, array('id' => $stu->userid));
         $sparam = new stdClass;
@@ -229,6 +230,7 @@ class studentpage extends associationpage {
         $users = pm_process_user_enrolment_data();  // ELIS-4089 -- JJF
 
         if (!empty($users)) {
+            require_sesskey();
             $this->attempt_enrol($clsid, $users);
         } else {
             $this->display_add();
@@ -304,6 +306,7 @@ class studentpage extends associationpage {
         global $DB;
         $stuid = $this->required_param('association_id', PARAM_INT);
         $clsid = $this->required_param('id', PARAM_INT);
+        require_sesskey();
         $users = pm_process_user_enrolment_data();
         //error_log("studentpage::do_update() stuid = {$stuid} clsid = {$clsid} ...");
         $uid   = key($users);
@@ -427,6 +430,7 @@ class studentpage extends associationpage {
 
     function display_updatemultiple_confirm() {
         global $SESSION, $CFG, $DB;
+        require_sesskey();
 
         $clsid = $this->required_param('id', PARAM_INT);
         $pageid = optional_param('id', 1, PARAM_INT);
@@ -661,6 +665,7 @@ class studentpage extends associationpage {
         echo '</div>';
         echo '<form method="post" action="index.php?s=stu&amp;section=curr&amp;id=' . $clsid . '" >'."\n";
         echo '<input type="hidden" name="action" value="updatemultiple" />'."<br />\n";
+        echo '<input type="hidden" name="sesskey" value="'.sesskey().'" />'."<br />\n";
         echo '<input type="submit" value="'.get_string('save_enrolment_changes', self::LANG_FILE).'">'."<br />\n";
         echo '</form>'."<br />\n";
     }
@@ -674,6 +679,7 @@ class studentpage extends associationpage {
         $users = pm_process_user_enrolment_data();  // ELIS-4089 -- JJF
         $pageid = optional_param('id', 1, PARAM_INT);
         $page = optional_param('s', '', PARAM_ALPHA);
+        require_sesskey();
 
         $pagename = $page.$pageid.'bulkedit';
         if (!empty($SESSION->associationpage[$pagename])) {
