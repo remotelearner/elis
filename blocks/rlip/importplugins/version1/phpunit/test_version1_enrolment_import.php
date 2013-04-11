@@ -867,7 +867,7 @@ class version1EnrolmentImportTest extends rlip_test {
     public function testVersion1ImportCreatesEnrolmentBasedOnEmail() {
         //run the import
         $data = array('entity' => 'enrolment',
-                      'action' => 'create',
+                      'action' => 'add',
                       'email' => 'rlipuser@rlipdomain.com',
                       'context' => 'course',
                       'instance' => 'rlipshortname',
