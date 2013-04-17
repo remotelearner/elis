@@ -235,8 +235,8 @@ class php_report_export_csv extends php_report_export {
                             $this->report->update_current_grouping($grouping,
                                                                    $datum,
                                            $grouping_object->grouping_current);
-                            // var_dump($grouping);
-                            // TBD: if (in_array(php_report::$EXPORT_FORMAT_CSV, $this->report->groupexportformats[$grouping->id]))
+                            //var_dump($grouping);
+                            //TBD: if (in_array(php_report::$EXPORT_FORMAT_CSV, $this->report->groupexportformats[$grouping->id]))
                             {
                                 if ($grouping->position == 'below') {
                                     $datum_group = clone($datum);
@@ -285,7 +285,7 @@ class php_report_export_csv extends php_report_export {
 
                 $row = array();
 
-                // iterate through groupings
+                //iterate through groupings
                 if (!empty($this->report->groupings)) {
                     foreach ($this->report->groupings as $grouping) {
                         $this->report->update_current_grouping($grouping,
@@ -331,11 +331,11 @@ class php_report_export_csv extends php_report_export {
 
                 // iterate through columns
                 foreach ($this->report->headers as $id => $unused) {
-                    // make sure this column is exportable
+                    //make sure this column is exportable
                     if (in_array(php_report::$EXPORT_FORMAT_CSV, $this->report->columnexportformats[$id])) {
                         $effective_id = $this->report->get_object_index($id);
 
-                        // retrieve actual data
+                        //retrieve actual data
                         if (isset($datum->$effective_id)) {
                             $row[] = $this->csv_escape_string($datum->$effective_id);
                         } else {

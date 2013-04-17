@@ -88,10 +88,8 @@ abstract class table_report extends php_report {
     //constant used to define a token we are replacing with filter sql
     const PARAMETER_TOKEN = "''php_report_parameters''";
 
-    /**
-     * array to track groupbys that are required for multi-line/record fields
-     */
-    var $pseudogroupby;
+    /** @var array To track groupbys that are required for multi-line/record fields */
+    public $pseudogroupby;
 
     /**
      * Contructor.
@@ -152,8 +150,8 @@ abstract class table_report extends php_report {
     /**
      * Helper method to format custom field default data
      * porperly formating multi-valued arrays
-     * @param mixed $defaultdata  either scalar value or a multi-valued array
-     * @return string             the formatted default data
+     * @param mixed $defaultdata either scalar value or a multi-valued array
+     * @return string the formatted default data
      */
     public function format_default_data($defaultdata) {
         return is_array($defaultdata) ? implode(', ', $defaultdata) : $defaultdata;
@@ -1572,7 +1570,7 @@ abstract class table_report extends php_report {
             //ordering
             $sql .= $this->get_order_by_clause();
         }
-        // error_log("table_report::get_complete_sql_query(): sql = {$sql}");
+        //error_log("table_report::get_complete_sql_query(): sql = {$sql}");
         return array($sql, $params);
     }
 
@@ -1596,8 +1594,8 @@ abstract class table_report extends php_report {
     /**
      * Method to get the multivalued separator string for export format
      *
-     * @param  mixed   $exportformat data export format
-     * @return string  the separator string for specified export format
+     * @param mixed $exportformat data export format
+     * @return string the separator string for specified export format
      */
     public function get_multivalued_separator($exportformat) {
         switch ($exportformat) {
@@ -1613,10 +1611,10 @@ abstract class table_report extends php_report {
     /**
      * Method to append multi-line groupby fields to previous row data
      *
-     * @param object $lastrow      the previous data row to modify
-     * @param object $lastrec      the previous table data record
-     * @param object $currentrec   the current table data record to compare
-     * @param mixed  $exportformat data export format
+     * @param object $lastrow the previous data row to modify
+     * @param object $lastrec the previous table data record
+     * @param object $currentrec the current table data record to compare
+     * @param mixed $exportformat data export format
      */
     public function append_data(&$lastrow, $lastrec, $currentrec, $exportformat) {
         foreach ($lastrec as $key => $value) {
@@ -1634,9 +1632,9 @@ abstract class table_report extends php_report {
      * Method to determine if the only change from last data row is mutli-line
      * groupby fields
      *
-     * @param array $last     the previous table data record
-     * @param array $current  the current table data record to compare
-     * @return bool           true if multi-line groupby fields all the same
+     * @param array $last the previous table data record
+     * @param array $current the current table data record to compare
+     * @return bool true if multi-line groupby fields all the same
      */
     public function multiline_groupby($last, $current) {
         $nochange = false;
@@ -2064,7 +2062,7 @@ function print_table($table, $return=false) {
         // we must locate multiline groupby data
         $pseudogroupby = $table->pseudogroupby;
         foreach ($table->data as $key => $row) {
-            // this needs to be row and grouping specific
+            //this needs to be row and grouping specific
             $oddeven = $oddeven ? 0 : 1;
             if (!isset($table->rowclass[$key])) {
                 $table->rowclass[$key] = '';

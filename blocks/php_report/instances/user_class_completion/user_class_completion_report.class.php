@@ -858,7 +858,7 @@ class user_class_completion_report extends table_report {
 
     /**
      * Method to return mapping of custom field entities to DB field instance
-     * @return array  mapping of custom field entities to DB field instance
+     * @return array mapping of custom field entities to DB field instance
      */
     protected function get_custom_instance_fields() {
         $custominstancefields = array();
@@ -1180,7 +1180,7 @@ class user_class_completion_report extends table_report {
                     {$status_sql}
                        AND {$permissions_filter3}";
         }
-        // error_log("UCCR::get_report_sql(): filter_clause = {$filter_clause}, sql = {$sql}");
+        //error_log("UCCR::get_report_sql(): filter_clause = {$filter_clause}, sql = {$sql}");
         return array($sql, $params);
     }
 
@@ -1949,7 +1949,7 @@ class user_class_completion_report extends table_report {
      * Takes a record representing a report row and transforms its custom field data,
      * including adding defaults and handling any specific rendering work
      *
-     * @param object $record        the data record to transform
+     * @param object $record the data record to transform
      */
     function transform_custom_field_data($record) {
         $excluded_fieldids = array();

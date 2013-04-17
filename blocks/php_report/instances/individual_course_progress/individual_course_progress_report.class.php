@@ -414,7 +414,8 @@ class individual_course_progress_report extends table_report {
                 $custom_course_field = new field($custom_course_id);
 
                 // Obtain custom field default values IFF set
-                if (($default_value = $custom_course_field->get_default()) !== false) {
+                if (($default_value = $custom_course_field->get_default())
+                    !== false) {
                     // save in array { record_field => default_value }
                     $this->field_default['custom_data_'. $custom_course_id] =
                               $default_value;
@@ -607,14 +608,7 @@ class individual_course_progress_report extends table_report {
      */
      function get_grouping_fields() {
          return array(
-                    new table_report_grouping('user', 'crlmuser.id', '', 'ASC', array(), 'above', '1'),
-                  // TBD: the following was causing extra headers in the PDF output
-                  /*
-                    new table_report_grouping('enrol_status',
-                        'enrol.completestatusid != 0',
-                        get_string('grouping_progress', $this->lang_file) .': ',
-                        'ASC')
-                  */
+                    new table_report_grouping('user', 'crlmuser.id', '', 'ASC', array(), 'above', '1')
                 );
      }
 

@@ -178,15 +178,11 @@ class user_class_completion_details_report extends user_class_completion_report 
 
     /**
      * Method to return mapping of custom field entities to DB field instance
-     * @return array  mapping of custom field entities to DB field instance
+     * @return array mapping of custom field entities to DB field instance
      */
     protected function get_custom_instance_fields() {
         return array(
-          /*
-            'curriculum' => 'cur.id AS prgid',
-            'course'     => 'crs.id AS crsid', // TBD
-          */
-            'class'      => 'cls.id AS clsid'
+            'class' => 'cls.id AS clsid'
         );
     }
 
