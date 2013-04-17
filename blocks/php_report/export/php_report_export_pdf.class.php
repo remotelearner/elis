@@ -691,19 +691,19 @@ class php_report_export_pdf extends php_report_export {
         //iterate through the core report data
         if ($recordset = $DB->get_recordset_sql($query, $params)) {
 
-            // need to track both so we can detect grouping changes
+            //need to track both so we can detect grouping changes
             $datum = $recordset->current();
             $next_datum = false;
 
-            // tracks the state of alternating background colours
+            //tracks the state of alternating background colours
             $column_colour_state = 0;
 
             while ($datum !== false) {
                 $cur_datum = clone($datum); // copy BEFORE transform_record()
 
-                // pre-emptively fetch the next record for grouping changes
+                //pre-emptively fetch the next record for grouping changes
                 $recordset->next();
-                // fetch the current record
+                //fetch the current record
                 $next_datum = $recordset->current();
                 if (!$recordset->valid()) {
                     //make sure the current record is a valid one

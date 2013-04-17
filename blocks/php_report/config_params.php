@@ -24,7 +24,7 @@
  *
  */
 
-// define('DEBUG_BROWSER_EMBEDDED_JS', 1);
+//define('DEBUG_BROWSER_EMBEDDED_JS', 1);
 
 require_once(dirname(__FILE__) .'/../../config.php');
 require_once($CFG->dirroot .'/blocks/php_report/parameter_form.class.php');
@@ -32,12 +32,12 @@ require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
 require_once($CFG->libdir .'/formslib.php');
 require_once($CFG->dirroot .'/blocks/php_report/lib/filtering.php');
 
-// not using require_login here because permissions are determined
-// by the reports themselves
+//not using require_login here because permissions are determined
+//by the reports themselves
 
-// report shortname
+//report shortname
 $report_shortname = required_param('id', PARAM_CLEAN);
-// optional action url for form
+//optional action url for form
 $action = optional_param('url', null, PARAM_CLEAN);
 $perpage = optional_param('perpage', 25, PARAM_INT);
 
@@ -47,26 +47,26 @@ if (empty($this)) {
     $PAGE->set_pagelayout('embedded');
 }
 
-// require dependencies for filters
+//require dependencies for filters
 php_report_filtering_require_dependencies();
 
-// key report data
+//key report data
 $instance = php_report::get_default_instance($report_shortname);
-// NOTE: this is slow because it populates filter values
+//NOTE: this is slow because it populates filter values
 $filters = $instance->get_filters();
 
-// obtain any necessary information regarding secondary filterings
+//obtain any necessary information regarding secondary filterings
 $dynamic_report_filter_url = $CFG->wwwroot .'/blocks/php_report/dynamicreport.php?id='. $report_shortname;
 $secondary_filterings = $instance->get_secondary_filterings(
                                        $dynamic_report_filter_url,
                                        $report_shortname, $report_shortname);
 
-// when set, show the cancel button
+//when set, show the cancel button
 $showcancel = optional_param('showcancel', 0, PARAM_INT);
 
-// create the form, whose contents depend on on the current report's available filters
+//create the form, whose contents depend on on the current report's available filters
 if (!empty($filters)) {
-    // report has filters
+    //report has filters
     $dynamic_report_filter_url = $CFG->wwwroot.'/blocks/php_report/dynamicreport.php?id='.$report_shortname;
     $filter_object = new php_report_default_capable_filtering($filters,
                              $dynamic_report_filter_url, null, $report_shortname, $report_shortname, $secondary_filterings);
@@ -74,41 +74,41 @@ if (!empty($filters)) {
                     'showcancel' => $showcancel);
     $parameter_form = new parameter_form($action, $params);
 } else {
-    // report does not have filters
+    //report does not have filters
     $params = array('showcancel' => $showcancel);
     $parameter_form = new parameter_form($action, $params);
 }
 
-// send report id to the form
+//send report id to the form
 $parameter_form->set_data(array('id' => $report_shortname, 'showcancel' => $showcancel));
 
-// update form with current settings
+//update form with current settings
 php_report_filtering_update_form($report_shortname, $parameter_form);
 
-// determine if we are resetting the form
+//determine if we are resetting the form
 $reset_form = optional_param('reset_form', '', PARAM_CLEAN);
 
 if (!empty($reset_form)) {
-    // reset case - do not use get_data because it performs validation
+    //reset case - do not use get_data because it performs validation
     $data = data_submitted();
 
-    // store form settings as report-specific user preferences
+    //store form settings as report-specific user preferences
     php_report_filtering_reset_form($data, $filter_object, $report_shortname, $parameter_form);
 } else if ($data = $parameter_form->get_data()) {
-    // NOTE: this has to be checked after get_data in this case
-    // because get_data calls definition_after_data, which adds the cancel button
+    //NOTE: this has to be checked after get_data in this case
+    //because get_data calls definition_after_data, which adds the cancel button
     if ($parameter_form->is_cancelled()) {
-        // just re-display the report
+        //just re-display the report
         $instance->main('', '', 0, $perpage, '', $report_shortname);
         die;
     } else if (isset($data->save_defaults)) {
-        // store form settings as report-specific user preferences
+        //store form settings as report-specific user preferences
         php_report_filtering_save_preferences($data, $filter_object, $report_shortname);
     } else if (isset($data->show_report)) {
-        // store temporary preferences
+        //store temporary preferences
         php_report_filtering_save_preferences($data, $filter_object, $report_shortname, true);
 
-        // re-display the report
+        //re-display the report
         $instance->main('', '', 0, $perpage, '', $report_shortname);
         die;
     }
@@ -143,3 +143,4 @@ M.form.dependencyManager = null;
     echo $jscode;
     //error_log('config_params.php (AJAX): '. $jscode);
 }
+
