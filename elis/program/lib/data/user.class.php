@@ -1651,14 +1651,6 @@ class pm_user_filtering extends user_filtering {
             }
         }
 
-        /// Remove filters if missing capability...
-        $context = get_context_instance(CONTEXT_SYSTEM);
-        if (!has_capability('elis/program:viewreports', $context)) {
-            if (has_capability('elis/program:viewgroupreports', $context)) {
-                unset($fieldnames['clusterid']);
-            }
-        }
-
         parent::user_filtering($fieldnames, $baseurl, $extraparams);
     }
 
