@@ -599,5 +599,16 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2012062901, 'elis', 'program');
     }
 
+    // ELIS-7780: remove deprecated capabilites
+    if ($result && $oldversion < 2013041900) {
+        $capstodelete = array('elis/program:viewgroupreports', 'elis/program:viewreports');
+        list($inorequal, $params) = $DB->get_in_or_equal($capstodelete);
+        $where = "capability $inorequal";
+        $DB->delete_records_select('role_capabilities', $where, $params);
+        $where = "name $inorequal";
+        $DB->delete_records_select('capabilities', $where, $params);
+        upgrade_plugin_savepoint($result, 2013041900, 'elis', 'program');
+    }
+
     return $result;
 }
