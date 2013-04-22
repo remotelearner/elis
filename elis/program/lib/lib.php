@@ -516,7 +516,7 @@ function get_date_item_display($column, $item) {
     } else {
         $timestamp = $item->$column;
         return is_numeric($timestamp)
-               ? date(get_string('pm_date_format', 'elis_program'), $timestamp)
+               ? userdate($timestamp, get_string('pm_date_format', 'elis_program'))
                : '';
     }
 }
@@ -2407,5 +2407,24 @@ function pm_fix_orphaned_fields() {
         }
         $rs->close();
     }
+}
+
+/**
+ * Function to convert time in user's timezone to GMT
+ * Note: Moodle function usertime() doesn't include DST offset
+ * @param int $usertime timestamp in user's timezone
+ * @param float|int|string $timezone optional timezone to use, defaults to user's
+ * @return int  timestamp in GMT
+ */
+function pm_gmt_from_usertime($usertime, $timezone = 99) {
+    $tz = get_user_timezone_offset($timezone);
+    if (abs($tz) > 13) {
+        return $usertime;
+    }
+    $usertime -= (int)($tz * HOURSECS);
+    if ($timezone == 99 || !is_numeric($timezone)) {
+        $usertime -= dst_offset_on($usertime, $timezone);
+    }
+    return $usertime;
 }
 
