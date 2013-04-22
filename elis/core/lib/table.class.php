@@ -331,15 +331,25 @@ class display_table {
  * Display function for a date element
  */
 class display_date_item {
-    public function __construct($format = "M j, Y") {
+    /**
+     * constructor for display_date_item
+     * @param string $format optional format for userdate(), defaults to '%b %d, %Y'
+     */
+    public function __construct($format = '%b %d, %Y') {
         $this->format = $format;
     }
 
+    /**
+     * display method for display_date_item
+     * @param string $column the column's field name
+     * @param object $item the current record object
+     * @return string the formatted date string or '-' if 'empty' date
+     */
     public function display($column, $item) {
         if (empty($item->$column)) {
             return '-';
         } else {
-            return date($this->format, $item->$column);
+            return userdate($item->$column, $this->format);
         }
     }
 }
