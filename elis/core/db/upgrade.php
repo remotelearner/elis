@@ -455,7 +455,9 @@ function xmldb_elis_core_upgrade($oldversion=0) {
 
         // Get rid of the 'context_levels' table as it's no longer needed
         $table = new xmldb_table('context_levels');
-        $dbman->drop_table($table);
+        if ($dbman->table_exists($table)) {
+            $dbman->drop_table($table);
+        }
 
         upgrade_plugin_savepoint(true, 2012032100, 'elis', 'core');
     }
