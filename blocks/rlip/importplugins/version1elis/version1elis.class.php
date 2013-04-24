@@ -1141,9 +1141,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        //apply "createorupdate" flag, if necessary
-        //using "add" for legacy support
-        if ($action == 'create' || $action == 'add') {
+        // apply "createorupdate" flag, if necessary
+        // using "add" for legacy support
+        if ($action == 'create' || $action == 'add' || $action == 'update') {
             $action = $this->handle_user_createorupdate($record, $action);
         }
         $record->action = $action;
@@ -1561,8 +1561,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        //apply "createorupdate" flag, if necessary
-        if ($action == 'create') {
+        // apply "createorupdate" flag, if necessary
+        if ($action == 'create' || $action == 'update') {
             $method = "handle_{$context}_createorupdate";
             if (method_exists($this, $method)) {
                 $action = $this->$method($record, $action);
@@ -3043,8 +3043,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         switch ($context) {
             case 'class':
-                //apply "createorupdate" flag, if necessary
-                if ($action == 'create' || $action == 'enrol' || $action == 'enroll') {
+                // apply "createorupdate" flag, if necessary
+                if ($action == 'create' || $action == 'enrol' || $action == 'enroll' || $action == 'update') {
                     $action = $this->handle_enrolment_createorupdate($record, $action);
                 }
                 $record->action = $action;
@@ -3996,6 +3996,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //need to call load because saving a student needs the full object for events
         //and dynamic loading will blow away changes otherwise
         $student->load();
+        $student->userid = $userid;
 
         //enrolment and completion times
         if (isset($record->enrolmenttime)) {
