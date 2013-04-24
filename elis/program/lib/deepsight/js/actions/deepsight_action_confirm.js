@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -142,14 +141,27 @@ $.fn.deepsight_action_confirm = function(options) {
                 elements: opts.parentid,
                 actionname: main.name,
             },
-            dataType: 'json',
+            dataType: 'text',
             success: function(data) {
-                main.hide_action();
-                ds_debug('[deepsight_action_confirm.complete_action] Completed action, recevied data:', data);
-                if (opts.parentid != 'bulklist') {
-                    opts.parent.addClass('confirmed').delay(1000).fadeOut(500);
+                try {
+                    data = ds_parse_safe_json(data);
+                } catch(err) {
+                    opts.datatable.render_error(err);
+                    return false;
                 }
-                main.trigger('action_complete', {opts:opts});
+
+                main.hide_action();
+
+                if (typeof(data.result) != 'undefined' && data.result == 'success') {
+                    ds_debug('[deepsight_action_confirm.complete_action] Completed action, recevied data:', data);
+                    if (opts.parentid != 'bulklist') {
+                        opts.parent.addClass('confirmed').delay(1000).fadeOut(500);
+                    }
+                    main.trigger('action_complete', {opts:opts});
+                } else {
+                    opts.datatable.render_error(data.msg);
+                }
+
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 main.hide_action();
@@ -209,7 +221,22 @@ $.fn.deepsight_action_confirm = function(options) {
         }
     }
 
-    this.click(main.toggle_action);
+    /**
+     * Set up action.
+     */
+    this.initialize = function() {
+        if (opts.parentid == 'bulklist') {
+            var actionicon = $('<i title="'+opts.label+'" class="deepsight_action_'+opts.type+' '+opts.icon+'">'+opts.label+'</i>');
+        } else {
+            var actionicon = $('<i title="'+opts.label+'" class="deepsight_action_'+opts.type+' '+opts.icon+'"></i>');
+            actionicon.fancy_tooltip();
+        }
+
+        actionicon.click(main.toggle_action);
+        main.append(actionicon);
+    }
+
+    this.initialize();
     return this;
 }
 

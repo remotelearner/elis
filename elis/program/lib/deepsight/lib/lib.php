@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanager
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
@@ -203,6 +202,11 @@ abstract class deepsight_action_standard implements deepsight_action {
     const TYPE = null;
 
     /**
+     * Whether the action supports bulk actions.
+     */
+    public $canbulk = true;
+
+    /**
      * The name of the action. Used to point requests to the right action.
      */
     protected $name;
@@ -294,11 +298,11 @@ abstract class deepsight_action_standard implements deepsight_action {
             if (!empty($output)) {
                 throw new Exception('Unexpected output: '.$output);
             } else {
-                echo json_encode($result);
+                echo safe_json_encode($result);
             }
         } catch (Exception $e) {
             // Format exceptions as readable failure responses.
-            echo json_encode(array('result' => 'fail', 'msg' => $e->getMessage()));
+            echo safe_json_encode(array('result' => 'fail', 'msg' => $e->getMessage()));
         }
     }
 
@@ -307,10 +311,10 @@ abstract class deepsight_action_standard implements deepsight_action {
      *
      * @param array $elements    An array of elements to perform the action on. Although the values will differ, the indexes
      *                           will always be element IDs.
-     * @param bool  $bulk_action Whether this is a bulk-action or not.
+     * @param bool  $bulkaction Whether this is a bulk-action or not.
      * @return array An array to format as JSON and return to the Javascript.
      */
-    abstract protected function _respond_to_js(array $elements, $bulk_action);
+    abstract protected function _respond_to_js(array $elements, $bulkaction);
 
     /**
      * Provides basic information to set up the action.
@@ -319,7 +323,9 @@ abstract class deepsight_action_standard implements deepsight_action {
      */
     public function get_js_opts() {
         return array(
+            'canbulk' => $this->canbulk,
             'icon' => $this->icon,
+            'name' => $this->name,
             'label' => $this->label,
             'type' => static::TYPE,
             'opts' => array(
@@ -349,12 +355,76 @@ abstract class deepsight_action_standard implements deepsight_action {
 }
 
 /**
+ * A base action class for links.
+ */
+class deepsight_action_link extends deepsight_action_standard {
+    const TYPE = 'link';
+    public $canbulk = false;
+    public $icon = 'elisicon-assoc';
+    public $label = null;
+    public $baseurl = null;
+    public $params = null;
+
+    /**
+     * Constructor.
+     *
+     * Sets internal data.
+     *
+     * @param moodle_database $DB The active database connection.
+     * @param string $name The unique name of the action to use.
+     * @param string $baseurl The base url of the page to link to, minus query string, and relative to wwwroot.
+     * @param array $params An array of parameters to add to the url, formatted like key=>value. To add rowdata, set value to the
+     *                      key of the data in the rowdata member of the javascript opts variable (see js class for more info),
+     *                      surrounded by curly braces - i.e. array('id' => '{element_id}');
+     */
+    public function __construct(moodle_database &$DB, $name, $label='', $baseurl='', array $params=array()) {
+        parent::__construct($DB, $name);
+        $this->label = $label;
+
+        if (!empty($baseurl)) {
+            $this->baseurl = $baseurl;
+        }
+
+        if (!empty($params)) {
+            $this->params = $params;
+        }
+    }
+
+    /**
+     * Provide options to the javascript.
+     *
+     * @return array An array of options.
+     */
+    public function get_js_opts() {
+        global $CFG;
+        $opts = parent::get_js_opts();
+        $opts['icon'] = $this->icon;
+        $opts['opts']['linkwwwroot'] = $CFG->wwwroot;
+        $opts['opts']['linkbaseurl'] = $this->baseurl;
+        $opts['opts']['linkparams'] = $this->params;
+        return $opts;
+    }
+
+    /**
+     * Perform action-specific tasks. This action doesn't have any tasks, so do nothing.
+     *
+     * @param array $elements    An array of elements to perform the action on. Although the values will differ, the indexes
+     *                           will always be element IDs.
+     * @param bool  $bulkaction Whether this is a bulk-action or not.
+     * @return array An array to format as JSON and return to the Javascript.
+     */
+    protected function _respond_to_js(array $elements, $bulkaction) {
+        return array();
+    }
+}
+
+/**
  * A base action class for confirmation actions.
  */
 abstract class deepsight_action_confirm extends deepsight_action_standard {
     const TYPE = 'confirm';
-    public $desc_single = '';
-    public $desc_multiple = '';
+    public $descsingle = '';
+    public $descmultiple = '';
 
     /**
      * Constructor.
@@ -363,10 +433,10 @@ abstract class deepsight_action_confirm extends deepsight_action_standard {
      *
      * @param moodle_database $DB            The active database connection.
      * @param string          $name          The unique name of the action to use.
-     * @param string          $desc_single   The description when the confirmation is for a single element.
-     * @param string          $desc_multiple The description when the confirmation is for the bulk list.
+     * @param string          $descsingle   The description when the confirmation is for a single element.
+     * @param string          $descmultiple The description when the confirmation is for the bulk list.
      */
-    public function __construct(moodle_database &$DB, $name, $desc_single = '', $desc_multiple = '') {
+    public function __construct(moodle_database &$DB, $name, $descsingle = '', $descmultiple = '') {
         parent::__construct($DB, $name);
         $this->label = get_string('assign', 'elis_program');
     }
@@ -380,8 +450,8 @@ abstract class deepsight_action_confirm extends deepsight_action_standard {
         $opts = parent::get_js_opts();
         $opts['condition'] = $this->condition;
         $opts['opts']['actionurl'] = $this->endpoint;
-        $opts['opts']['desc_single'] = $this->desc_single;
-        $opts['opts']['desc_multiple'] = $this->desc_multiple;
+        $opts['opts']['desc_single'] = $this->descsingle;
+        $opts['opts']['desc_multiple'] = $this->descmultiple;
         $opts['opts']['lang_bulk_confirm'] = get_string('ds_bulk_confirm', 'elis_program');
         $opts['opts']['lang_working'] = get_string('ds_working', 'elis_program');
         return $opts;
@@ -676,8 +746,8 @@ class deepsight_bulkactionpanel_standard implements deepsight_bulkactionpanel {
      */
     public function get_init_js() {
         // Language strings.
-        $langselecteduser = get_string('ds_selecteduser', 'elis_program');
-        $langselectedusers = get_string('ds_selectedusers', 'elis_program');
+        $langselectedelement = get_string('ds_selectedelement', 'elis_program');
+        $langselectedelements = get_string('ds_selectedelements', 'elis_program');
         $langdefaultstatus = get_string('ds_bulk_defaultstatus', 'elis_program');
         $langaddall = get_string('ds_bulk_addall', 'elis_program');
         $langsearchresults = get_string('ds_searchresults', 'elis_program');
@@ -691,14 +761,16 @@ class deepsight_bulkactionpanel_standard implements deepsight_bulkactionpanel {
         // Actions.
         $actionsjs = array();
         foreach ($this->actions as $action) {
-            $actionsjs[] = $action->get_js_opts();
+            if ($action->canbulk === true) {
+                $actionsjs[] = $action->get_js_opts();
+            }
         }
         $actionsjs = json_encode_with_functions($actionsjs);
 
         $opts = "datatable: {$this->datatable->get_name()}_datatable,
                 lang_title: '{$this->label}',
-                lang_selected_element: '{$langselecteduser}',
-                lang_selected_elements: '{$langselectedusers}',
+                lang_selected_element: '{$langselectedelement}',
+                lang_selected_elements: '{$langselectedelements}',
                 lang_default_status: '{$langdefaultstatus}',
                 lang_add_all: '{$langaddall}',
                 lang_search_results: '{$langsearchresults}',
@@ -1496,6 +1568,16 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
     }
 
     /**
+     * Get any GROUP BYs needed for the full SQL query.
+     *
+     * @param array $filters An array of active filters to use to determne group by sql.
+     * @return array An array of GROUP BY field names to group results.
+     */
+    protected function get_groupby_sql(array $filters=array()) {
+        return array();
+    }
+
+    /**
      * Transforms an array of [fieldname]=>[direction] into an SQL ORDER BY clause.
      *
      * @param array $sort An array of field=>direction to specify sorting for the results.
@@ -1621,5 +1703,162 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
             }
         }
         return $columnlabels;
+    }
+
+    /**
+     * Gets all userset ids that are subsets of the given userset.
+     * @param int $usersetid The ID of the userset to get subsets for.
+     * @param bool $includeparent Whether to include the passed parent userset ID in the return array.
+     * @return array An array of userset IDs
+     */
+    public static function get_userset_subsets($usersetid, $includeparent = true) {
+        global $DB;
+        $parentctx = context_elis_userset::instance($usersetid);
+        if (empty($parentctx)) {
+            return array();
+        }
+
+        $usersets = array();
+
+        $path = ($includeparent === true) ? $parentctx->path.'%' : $parentctx->path.'/%';
+
+        // Get sub usersets.
+        $sql = 'SELECT userset.id as clusterid,
+                       userset.*
+                  FROM {'.userset::TABLE.'} userset
+                  JOIN {context} ctx
+                       ON userset.id = ctx.instanceid
+                 WHERE ctx.contextlevel = ?
+                       AND ctx.path LIKE ?';
+        $params = array(CONTEXT_ELIS_USERSET, $path);
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
+     * Get standard permission filters for a user - element available table.
+     *
+     * This takes into account the elis/program:[element]_enrol, and elis:program/[element]_enrol_userset_user permissions.
+     *
+     * @param string $elementtype The type of element we're associating to. I.e. program, track, class, userset.
+     * @param string $elementidsfromclusterids An SQL query to get ids for associated $elementtype from a list of clusters. Use
+     *                                         the placeholder {clusterids} to include the $DB->get_in_or_equal call for the
+     *                                         cluster ids.
+     * @return array An array consisting of an array of additional filters as 0, and parameters as 1
+     */
+    protected function get_filter_sql_permissions_userelement_available($elementtype, $elementidsfromclusterids) {
+        global $USER, $DB;
+
+        $elementtype2ctxlevel = array(
+            'program' => 'curriculum',
+            'track' => 'track',
+            'class' => 'class',
+            'userset' => 'cluster'
+        );
+
+        if (!isset($elementtype2ctxlevel[$elementtype])) {
+            throw new Exception('Bad element type specified for get_filter_sql_permissions_userelement_available');
+        }
+
+        $enrolperm = 'elis/program:'.$elementtype.'_enrol';
+        $usersetenrolperm = 'elis/program:'.$elementtype.'_enrol_userset_user';
+        $ctxlevel = $elementtype2ctxlevel[$elementtype];
+
+        $additionalfilters = array();
+        $additionalparams = array();
+
+        // Get filter for contexts/elements where user has $enrolperm permission.
+        $elementenrolctxs = pm_context_set::for_user_with_capability($ctxlevel, $enrolperm, $USER->id);
+        $elementenrolctxsfilterobject = $elementenrolctxs->get_filter('id', $ctxlevel);
+        $elementenrolfilter = $elementenrolctxsfilterobject->get_sql(false, 'element', SQL_PARAMS_QM);
+
+        // Get elements that are associated with a userset where:
+        //     - $this->userid is a member of the userset.
+        //     - $USER has $usersetenrolperm permission on the userset.
+        $elementenrolusersetuserctxs = pm_context_set::for_user_with_capability('cluster', $usersetenrolperm, $USER->id);
+        $assigneeclusters = cluster_get_user_clusters($this->userid);
+        $clusters = array();
+        foreach ($assigneeclusters as $assigneecluster) {
+            $subsets = static::get_userset_subsets($assigneecluster->clusterid, true);
+            $clusters = array_merge($clusters, $subsets);
+        }
+
+        $allowedclusters = $elementenrolusersetuserctxs->get_allowed_instances($clusters, 'cluster', 'clusterid');
+
+        // Create the final filters.
+        if (isset($elementenrolfilter['where'])) {
+            if (empty($allowedclusters)) {
+                // If there's no $usersetenrolperm clusters to worry about, just use elements where assigner
+                // has $enrolperm perms.
+                $additionalfilters[] = $elementenrolfilter['where'];
+                $additionalparams = array_merge($additionalparams, $elementenrolfilter['where_parameters']);
+            } else {
+                // If we do have $usersetenrolperm clusters to worry about, we add a filter to require element ids to be either
+                // elements associated with the clusters where that permission exists, or contexts where the assigner has
+                // the $enrolperm permissions.
+                list($allowclusterswhere, $allowclustersparams) = $DB->get_in_or_equal($allowedclusters);
+                $elementidsfromclusterids = str_replace('{clusterids}', $allowclusterswhere, $elementidsfromclusterids);
+
+                $additionalfilters[] = '(element.id IN ('.$elementidsfromclusterids.') OR '.$elementenrolfilter['where'].')';
+                $additionalparams = array_merge($additionalparams, $allowclustersparams, $elementenrolfilter['where_parameters']);
+            }
+        }
+
+        return array($additionalfilters, $additionalparams);
+    }
+
+    /**
+     * Get standard permission filters for an element - user available table.
+     *
+     * This takes into account the elis/program:[element]_enrol, and elis:program/[element]_enrol_userset_user permissions.
+     *
+     * @param string $elementtype The type of element we're associating to. I.e. program, track, class, userset.
+     * @param int $elementid The ID of the base element we're associating to.
+     * @param string $elementid2clusterscallable A callable that will get the associated cluster ids from an element id.
+     * @return array An array consisting of an array of additional filters as 0, and parameters as 1
+     */
+    protected function get_filter_sql_permissions_elementuser_available($elementtype, $elementid, $elementid2clusterscallable) {
+        global $USER, $DB;
+
+        $elementtype2ctxlevel = array(
+            'program' => 'curriculum',
+            'track' => 'track',
+            'class' => 'class',
+            'userset' => 'cluster'
+        );
+
+        if (!isset($elementtype2ctxlevel[$elementtype])) {
+            throw new Exception('Bad element type specified for get_filter_sql_permissions_userelement_available');
+        }
+
+        $enrolperm = 'elis/program:'.$elementtype.'_enrol';
+        $usersetenrolperm = 'elis/program:'.$elementtype.'_enrol_userset_user';
+        $ctxlevel = $elementtype2ctxlevel[$elementtype];
+
+        $additionalfilters = array();
+        $additionalparams = array();
+
+        // If $USER has $enrolperm permission for this element, we don't have to go any further.
+        $enrolctxs = pm_context_set::for_user_with_capability($ctxlevel, $enrolperm, $USER->id);
+        if ($enrolctxs->context_allowed($elementid, $ctxlevel) !== true) {
+
+            // We now cross-reference the clusters the assigner has the $usersetenrolperm permission with clusters the element is
+            // assigned to. We limit the users returned in the search results to users that are in the resulting clusters.
+            $enrolusersetuserctxs = pm_context_set::for_user_with_capability('cluster', $usersetenrolperm, $USER->id);
+
+            // Get the clusters and check the context against them.
+            $clusters = call_user_func($elementid2clusterscallable, $elementid);
+            $allowedclusters = $enrolusersetuserctxs->get_allowed_instances($clusters, 'cluster', 'clusterid');
+
+            if (!empty($allowedclusters)) {
+                list($clusterfilterwhere, $clusterfilterparams) = $DB->get_in_or_equal($allowedclusters);
+                $useridsfromclusters = 'SELECT userid FROM {'.clusterassignment::TABLE.'} WHERE clusterid '.$clusterfilterwhere;
+                $additionalfilters[] = 'element.id IN ('.$useridsfromclusters.')';
+                $additionalparams = array_merge($additionalparams, $clusterfilterparams);
+            } else {
+                $additionalfilters[] = 'FALSE';
+            }
+        }
+
+        return array($additionalfilters, $additionalparams);
     }
 }

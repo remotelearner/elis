@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanager
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
@@ -50,18 +49,22 @@ class deepsight_action_enroledit extends deepsight_action_standard {
      * Processes incoming information and updates the relevant user's information, including learning objectives.
      * Also responds to a request for enrolment data, used when editing a single user.
      *
-     * @param array $elements    An array of elements to perform the action on. Although the values will differ, the indexes
-     *                           will always be element IDs.
-     * @param bool  $bulk_action Whether this is a bulk-action or not.
+     * @param array $elements An array of elements to perform the action on. Although the values will differ, the indexes
+     *                        will always be element IDs.
+     * @param bool $bulkaction Whether this is a bulk-action or not.
      * @return array A response array, consisting of result and msg.
      */
-    protected function _respond_to_js(array $elements, $bulk_action) {
+    protected function _respond_to_js(array $elements, $bulkaction) {
         $classid = required_param('id', PARAM_INT);
         $mode = optional_param('mode', 'complete', PARAM_ALPHA);
 
         if ($mode == 'getinfo') {
             foreach ($elements as $userid => $label) {
-                return $this->get_enrol_data($userid, $classid);
+                return array(
+                    'result' => 'success',
+                    'msg' => 'Success',
+                    'enroldata' => $this->get_enrol_data($userid, $classid),
+                );
             }
         } else {
             set_time_limit(0);
@@ -192,7 +195,7 @@ class deepsight_action_enroledit extends deepsight_action_standard {
      *
      * Includes all enrolment data, as well as learning objective information.
      *
-     * @param int $userid  The userid to get information for.
+     * @param int $userid The userid to get information for.
      * @param int $classid The classid to get enrolment data for.
      * @return array An array of enrolment and learning objective data.
      */
@@ -245,10 +248,10 @@ class deepsight_action_enroledit extends deepsight_action_standard {
                            JOIN {'.pmclass::TABLE.'} pmclass
                                 ON pmclass.courseid = comp.courseid
                       LEFT JOIN {'.student_grade::TABLE.'} grade
-                                ON grade.completionid = comp.id AND grade.userid=?
-                          WHERE pmclass.id=?
+                                ON grade.completionid = comp.id AND grade.classid = ? AND grade.userid = ?
+                          WHERE pmclass.id = ?
                        ORDER BY comp.id ASC';
-        $objectiveparams = array($userid, $classid);
+        $objectiveparams = array($classid, $userid, $classid);
         $objectivedata = $DB->get_records_sql($objectivesql, $objectiveparams);
         foreach ($objectivedata as $objective) {
             $timegraded = (!empty($objective->timegraded)) ? $objective->timegraded : time();
@@ -277,7 +280,7 @@ class deepsight_action_enroledit extends deepsight_action_standard {
     /**
      * Processes incoming enrolment data, sent from javascript.
      *
-     * @param int   $classid      The class ID we're editing enrolment data for.
+     * @param int $classid The class ID we're editing enrolment data for.
      * @param array $rawenroldata The array of raw enrolment data to process.
      * @return array An array of processed enrolment data, ready to be used to construct a student object.
      */
@@ -387,12 +390,12 @@ class deepsight_action_enroledit extends deepsight_action_standard {
     /**
      * Perform an update for a single user/class pair.
      *
-     * @param int   $userid              The user ID we're updating.
-     * @param int   $classid             The class ID we're updating information for.
-     * @param array $enroldata           The updated enrolment data.
-     * @param array $learning_objectives The updated learning objective data.
+     * @param int $userid The user ID we're updating.
+     * @param int $classid The class ID we're updating information for.
+     * @param array $enroldata The updated enrolment data.
+     * @param array $learningobjectives The updated learning objective data.
      */
-    protected function do_update($userid, $classid, array $enroldata, array $learning_objectives) {
+    protected function do_update($userid, $classid, array $enroldata, array $learningobjectives) {
         global $DB;
         if (student::can_manage_assoc($userid, $classid) !== true) {
             throw new Exception('Unauthorized');
@@ -417,18 +420,17 @@ class deepsight_action_enroledit extends deepsight_action_standard {
             $status = $stu->save();
         }
 
-        foreach ($learning_objectives as $id => $data) {
-            $graderec = array(
-                'userid' => $userid,
-                'classid' => $classid,
-                'completionid' => $id,
-                'timegraded' => $data['timegraded'],
-                'grade' => $data['grade'],
-                'locked' => $data['locked']
-            );
-            if (isset($data['gradeid'])) {
-                $graderec['id'] = $data['gradeid'];
+        foreach ($learningobjectives as $id => $data) {
+            $graderec = array('userid' => $userid, 'classid' => $classid, 'completionid' => $id);
+            $existingrec = $DB->get_record(student_grade::TABLE, $graderec);
+            if (!empty($existingrec)) {
+                $graderec = (array)$existingrec;
             }
+
+            $graderec['timegraded'] = $data['timegraded'];
+            $graderec['grade'] = $data['grade'];
+            $graderec['locked'] = $data['locked'];
+
             $sgrade = new student_grade($graderec);
             $sgrade->save();
         }

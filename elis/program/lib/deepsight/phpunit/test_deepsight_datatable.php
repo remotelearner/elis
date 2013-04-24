@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanager
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
@@ -44,8 +43,69 @@ class deepsight_datatable_test extends elis_database_test {
      */
     protected static function get_overlay_tables() {
         return array(
-            'crlm_user' => 'elis_program'
+            'context' => 'moodle',
+            user::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program',
         );
+    }
+
+    /**
+     * Dataprovider for test_get_userset_subsets.
+     * @return array Array of test parameters.
+     */
+    public function dataprovider_get_userset_subsets() {
+        return array(
+                // Test userset with no children and includeparent off returns nothing.
+                array(
+                        3,
+                        false,
+                        array(),
+                ),
+                // Test userset with no children and includeparent on returns parent.
+                array(
+                        3,
+                        true,
+                        array(3),
+                ),
+                // Test userset with children and includeparent off returns children.
+                array(
+                        1,
+                        false,
+                        array(2, 4, 5, 6),
+                ),
+                // Test userset with children and includeparent on returns parent and descendants.
+                array(
+                        1,
+                        true,
+                        array(1, 2, 4, 5, 6),
+                ),
+        );
+    }
+
+    /**
+     * Tests deepsight_datatable_usersetuser_base::get_userset_subsets
+     * @dataProvider dataprovider_get_userset_subsets
+     * @param int $parentuserset The ID of a userset to pass to the function as the parent userset ID.
+     * @param bool $includeparent Whether to include the parent ID in the return array.
+     * @param array $expectedresults The expected return value.
+     */
+    public function test_get_userset_subsets($parentuserset, $includeparent, $expectedresults) {
+        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
+        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
+        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_usersetwithsubsets.csv'));
+        load_phpunit_data_set($dataset, true, self::$overlaydb);
+
+        accesslib_clear_all_caches(true);
+
+        // Set up contexts.
+        for ($i=1; $i<=6; $i++) {
+            $ctx = context_elis_userset::instance($i);
+        }
+
+        accesslib_clear_all_caches(true);
+
+        $actualresults = deepsight_datatable_standard::get_userset_subsets($parentuserset, $includeparent);
+        $this->assertEquals($expectedresults, array_keys($actualresults));
     }
 
     /**
@@ -165,11 +225,11 @@ class deepsight_datatable_test extends elis_database_test {
         ob_start();
         $_POST['actionname'] = 'testaction';
         $_POST['sesskey'] = sesskey();
-        $_POST['elements'] = json_encode(array());
+        $_POST['elements'] = safe_json_encode(array());
         $datatable->respond('action');
         $actual = ob_get_contents();
         ob_end_clean();
-        $expected = json_encode(array('result' => 'success'));
+        $expected = safe_json_encode(array('result' => 'success'));
         $this->assertEquals($expected, $actual);
 
         // Empty bulklist list.

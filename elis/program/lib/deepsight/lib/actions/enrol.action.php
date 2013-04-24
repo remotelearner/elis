@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanager
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
@@ -43,7 +42,6 @@ class deepsight_action_enrol extends deepsight_action_standard {
 
     /**
      * Gets the currently assigned endpoint.
-     *
      * @return string The currently assigned endpoint.
      */
     public function get_endpoint() {
@@ -52,7 +50,6 @@ class deepsight_action_enrol extends deepsight_action_standard {
 
     /**
      * Sets the endpoint.
-     *
      * @param string $endpoint The endpoint to assign.
      */
     public function set_endpoint($endpoint) {
@@ -61,7 +58,6 @@ class deepsight_action_enrol extends deepsight_action_standard {
 
     /**
      * Gets options for the javascript object.
-     *
      * @return array An options array.
      */
     public function get_js_opts() {
@@ -133,12 +129,12 @@ class deepsight_action_enrol extends deepsight_action_standard {
      *
      * Can handle initial enrolment attempts, as well as waitlist/over-enrol attempts.
      *
-     * @param array $elements    An array of elements to perform the action on. Although the values will differ, the indexes
-     *                           will always be element IDs.
-     * @param bool  $bulk_action Whether this is a bulk-action or not.
+     * @param array $elements An array of elements to perform the action on. Although the values will differ, the indexes
+     *                        will always be element IDs.
+     * @param bool $bulkaction Whether this is a bulk-action or not.
      * @return array A response array, consisting of result and msg.
      */
-    protected function _respond_to_js(array $elements, $bulk_action) {
+    protected function _respond_to_js(array $elements, $bulkaction) {
         $result = array();
 
         if (empty($elements) || !is_array($elements)) {
@@ -152,7 +148,7 @@ class deepsight_action_enrol extends deepsight_action_standard {
 
         if (empty($waitlistconfirm)) {
             $enroldata = required_param('enroldata', PARAM_CLEAN);
-            $result = $this->attempt_enrolment($elements, $classid, $enroldata, $bulk_action);
+            $result = $this->attempt_enrolment($elements, $classid, $enroldata, $bulkaction);
         } else {
             $useractions = required_param('actions', PARAM_CLEAN);
             $enroldata = required_param('enroldata', PARAM_CLEAN);
@@ -166,13 +162,13 @@ class deepsight_action_enrol extends deepsight_action_standard {
      *
      * Over-enrols, adds to waitlist, or skips enrolment based on user selection.
      *
-     * @param array  $elements       An array of elements to perform the action on.
-     * @param int    $classid        The ID of the class we're enrolling into.
+     * @param array $elements An array of elements to perform the action on.
+     * @param int $classid The ID of the class we're enrolling into.
      * @param string $rawuseractions The JSON string containing the actions we want to perform. This will be an array, indexed by
      *                               element ID, with values being "waitlist" for add to waitlist, "overenrol" for overenrol, or
      *                               anything else being skip enrolment. If we are performing a bulk enrolment, a "bulk_enrol" key
      *                               will be present, which will take precendence.
-     * @param string $enroldata      A JSON string containing enrolment data for the users we want to overenrol.
+     * @param string $enroldata A JSON string containing enrolment data for the users we want to overenrol.
      * @return array An array consisting of 'result' and 'num_affected', indicating success, and the number of users either enroled,
      *               or added to waitlist, respectively.
      */
@@ -259,10 +255,10 @@ class deepsight_action_enrol extends deepsight_action_standard {
      * This performs an initial attempt at enroling the selected users. This has not yet taken into account the enrolment limit
      * or permissions.
      *
-     * @param array  $elements    An array of elements to perform the action on.
-     * @param int    $classid     The ID of the class we're enrolling into.
-     * @param string $enroldata   A JSON string containing enrolment data for the users we want to overenrol.
-     * @param bool   $bulk_action Whether this attempt is a bulk action or not.
+     * @param array $elements An array of elements to perform the action on.
+     * @param int $classid The ID of the class we're enrolling into.
+     * @param string $enroldata A JSON string containing enrolment data for the users we want to overenrol.
+     * @param bool $bulkaction Whether this attempt is a bulk action or not.
      * @return array An array consisting of "result", and optionally "users" and "total", explained below:
      *                   result: Will be "success" if all users were enrolled successfully, or "waitlist", if we have users that
      *                           need to be waitlisted.
@@ -272,7 +268,7 @@ class deepsight_action_enrol extends deepsight_action_standard {
      *                   total:  If we're performing a bulk action, and some users need enrolment limit resolution, this will be
      *                           included, indicating the number of users needed resolution.
      */
-    protected function attempt_enrolment($elements, $classid, $enroldata, $bulk_action) {
+    protected function attempt_enrolment($elements, $classid, $enroldata, $bulkaction) {
         set_time_limit(0);
 
         // Enrolment data.
@@ -313,7 +309,7 @@ class deepsight_action_enrol extends deepsight_action_standard {
             }
         }
 
-        if ($bulk_action === true) {
+        if ($bulkaction === true) {
             if (!empty($waitlist)) {
                 list($bulklistdisplay, $totalusers) = $this->datatable->bulklist_get_display(1);
                 return array(
@@ -334,7 +330,7 @@ class deepsight_action_enrol extends deepsight_action_standard {
     /**
      * Process incoming enrolment data into an array ready to construct a student object.
      *
-     * @param int   $classid      The class ID we're enroling into.
+     * @param int $classid The class ID we're enroling into.
      * @param array $rawenroldata The raw enrolment data received from javascript.
      * @return array An array ready to construct a student object.
      */

@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanager
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
@@ -222,6 +221,10 @@ class deepsight_datatable_user extends deepsight_datatable_standard {
         // Filtering.
         list($filtersql, $filterparams) = $this->get_filter_sql($filters);
 
+        // Grouping.
+        $groupby = $this->get_groupby_sql($filters);
+        $groupby = (!empty($groupby)) ? ' GROUP BY '.implode(', ', $groupby).' ' : '';
+
         // Sorting.
         $sortsql = $this->get_sort_sql($sort);
 
@@ -233,13 +236,13 @@ class deepsight_datatable_user extends deepsight_datatable_standard {
         }
 
         // Get the number of results in the full dataset.
-        $query = 'SELECT count(1) as count FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql;
+        $query = 'SELECT count(1) as count FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql.' '.$groupby;
         $results = $this->DB->get_record_sql($query, $filterparams);
         $totalresults = (int)$results->count;
 
         // Generate and execute query for a single page of results.
         $query = 'SELECT '.implode(', ', $selectfields).' FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql.' ';
-        $query .= $sortsql;
+        $query .= $groupby.' '.$sortsql;
         $results = $this->DB->get_recordset_sql($query, $filterparams, $limitfrom, $limitnum);
 
         // Process results.
