@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -149,6 +148,9 @@ $.fn.deepsight_action_enroledit = function(options) {
 
     /**
      * Renders the HTML for the action panel.
+     * @param object preselecteddata An object containing preselected data. Possible keys are enroltime, completetime, grade,
+     *                               credits, completestatus, locked, and association_id
+     * @return object A jQuery object representing the rendered action panel.
      */
     this.render_action = function(preselecteddata) {
 
@@ -373,6 +375,9 @@ $.fn.deepsight_action_enroledit = function(options) {
                 html += '<span>'+lockcheck+lockonlabel+lockofflabel+'</span>';
 
                 // time graded
+                if (typeof(curlo.date_graded.month) != 'undefined') {
+                    curlo.date_graded.month--;
+                }
                 html += '<span>';
                 html += deepsight_render_date_selectors(curlo.objectiveid+'_', '', curlo.date_graded, opts.lang_months);
                 html += '</span>';
@@ -485,9 +490,17 @@ $.fn.deepsight_action_enroledit = function(options) {
                     actions: actions,
                     enroldata: enroldata
                 },
-                dataType: 'json',
+                dataType: 'text',
                 success: function(data) {
                     modal.removeClass('loading');
+
+                    try {
+                        data = ds_parse_safe_json(data);
+                    } catch(err) {
+                        modal.render_error(errormsg);
+                        return false;
+                    }
+
                     if (typeof(data) == 'object' && data != null && typeof(data.result) != 'undefined') {
                         if (data.result == 'success') {
                             modal.remove_modal();
@@ -710,11 +723,9 @@ $.fn.deepsight_action_enroledit = function(options) {
      * The user has entered whatever information is required and has click the checkmark.
      *
      * @param object e The jquery event object that initialized the completion.
+     * @return bool Success status.
      */
     this.complete_action = function(e, enroldata) {
-
-        main.actiontr.find('.deepsight_actionpanel').html('<h1>'+opts.lang_working+'</h1>').addClass('loading');
-        main.trigger('action_started');
 
         var ajaxdata = {
             uniqid: opts.datatable.uniqid,
@@ -728,13 +739,24 @@ $.fn.deepsight_action_enroledit = function(options) {
             ajaxdata.learnobjdata = JSON.stringify(main.learnobjform.serializeArray());
         }
 
+        main.actiontr.find('.deepsight_actionpanel').html('<h1>'+opts.lang_working+'</h1>').addClass('loading');
+        main.trigger('action_started');
+
         $.ajax({
             type: 'POST',
             url: opts.actionurl,
             data: ajaxdata,
-            dataType: 'json',
+            dataType: 'text',
             success: function(data) {
                 main.hide_action();
+
+                try {
+                    data = ds_parse_safe_json(data);
+                } catch(err) {
+                    opts.datatable.render_error(err);
+                    return false;
+                }
+
                 if (opts.mode == 'enrol') {
                     if (typeof(data) == 'object' && data != null && typeof(data.result) != 'undefined') {
                         if (data.result == 'success') {
@@ -784,7 +806,7 @@ $.fn.deepsight_action_enroledit = function(options) {
             completestatusid: 'field_enrol_completestatusid',
             grade: 'field_enrol_grade',
             credits: 'field_enrol_credits',
-            locked: 'field_enrol_locked',
+            locked: 'field_enrol_locked'
         }
 
         for (var k in fields) {
@@ -794,7 +816,6 @@ $.fn.deepsight_action_enroledit = function(options) {
         }
 
         row.addClass('confirmed', 500).delay(1000).removeClass('confirmed', 500);
-
     }
 
     /**
@@ -822,10 +843,21 @@ $.fn.deepsight_action_enroledit = function(options) {
                     actionname: main.name,
                     mode: 'getinfo'
                 },
-                dataType: 'json',
+                dataType: 'text',
                 success: function(data) {
-                    clickedele.removeClass('loading');
-                    main.do_show_action(data);
+                    try {
+                        data = ds_parse_safe_json(data);
+                    } catch(err) {
+                        opts.datatable.render_error(err);
+                        return false;
+                    }
+
+                    if (typeof(data.result) != 'undefined' && data.result == 'success') {
+                        clickedele.removeClass('loading');
+                        main.do_show_action(data.enroldata);
+                    } else {
+                        opts.datatable.render_error(data.msg);
+                    }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
                     main.hide_action();
@@ -890,7 +922,22 @@ $.fn.deepsight_action_enroledit = function(options) {
         }
     }
 
-    this.click(main.toggle_action);
+    /**
+     * Set up action.
+     */
+    this.initialize = function() {
+        if (opts.parentid == 'bulklist') {
+            var actionicon = $('<i title="'+opts.label+'" class="deepsight_action_'+opts.type+' '+opts.icon+'">'+opts.label+'</i>');
+        } else {
+            var actionicon = $('<i title="'+opts.label+'" class="deepsight_action_'+opts.type+' '+opts.icon+'"></i>');
+            actionicon.fancy_tooltip();
+        }
+
+        actionicon.click(main.toggle_action);
+        main.append(actionicon);
+    }
+
+    this.initialize();
     return this;
 }
 

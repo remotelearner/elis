@@ -15,9 +15,166 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    elis_program
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @author     James McQuillan <james.mcquillan@remote-learner.net>
+ *
  */
 
 require(dirname(__FILE__).'/../lib/lib.php');
+require_once(elispm::lib('deepsightpage.class.php'));
+require_once(elispm::lib('selectionpage.class.php'));
+require_once(elispm::lib('data/clusterassignment.class.php'));
+require_once(elispm::lib('data/user.class.php'));
+require_once(elispm::lib('data/userset.class.php'));
+require_once(elispm::lib('data/usertrack.class.php'));
+require_once(elispm::lib('data/usermoodle.class.php'));
+
+/**
+ * Base unit test class providing useful functions to test the search results of a datatable.
+ */
+abstract class deepsight_datatable_searchresults_test extends elis_database_test {
+    protected $backupGlobalsBlacklist = array('DB');
+
+    /**
+     * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
+     */
+    abstract protected function set_up_tables();
+
+    /**
+     * Transform an element from a csv into a search result array.
+     * @return array A single search result array.
+     */
+    abstract protected function create_search_result_from_csvelement($element);
+
+    /**
+     * Return overlay tables.
+     * @return array An array of overlay tables.
+     */
+    protected static function get_overlay_tables() {
+        return array(
+            'cache_flags' => 'moodle',
+            'config' => 'moodle',
+            'context' => 'moodle',
+            'role' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'user' => 'moodle',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            usertrack::TABLE => 'elis_program',
+        );
+    }
+
+    /**
+     * Perform setup before every test.
+     */
+    protected function setUp() {
+        parent::setUp();
+        $this->set_up_tables();
+    }
+
+    /**
+     * Perform all assertions to verify search results.
+     * @param array $expectedresults The array of expected results.
+     * @param int $expectedtotal The expect total number of results.
+     * @param array $actualresults The direct return value of a $table->get_search_results() call.
+     */
+    protected function assert_search_results($expectedresults, $expectedtotal, $actualresults) {
+        // Assert general structure of return val.
+        $this->assertInternalType('array', $actualresults);
+        $this->assertEquals(array(0, 1), array_keys($actualresults));
+        $this->assertInternalType('array', $actualresults[0]);
+        $this->assertInternalType('int', $actualresults[1]);
+
+        // Assert search results.
+        $this->assertEquals($expectedresults, $actualresults[0]);
+
+        // Assert total count.
+        $this->assertEquals($expectedtotal, $actualresults[1]);
+    }
+
+    /**
+     * Give a user a permission at a context.
+     * @param int $userid The ID of the user to give the permission to.
+     * @param string $permission The permission to assign.
+     * @param object $context The context object to assign the permission at.
+     */
+    protected function give_permission_for_context($userid, $permission, $context) {
+        $roleid = create_role('userrole'.uniqid(), 'userrole'.uniqid(), 'userrole'.uniqid());
+        assign_capability($permission, CAP_ALLOW, $roleid, $context->id);
+        role_assign($roleid, $userid, $context->id);
+    }
+
+    /**
+     * Perform necessary functions to start a test involving roles and permissions.
+     * @return object A user that can be used as $USER for testing permissions.
+     */
+    protected function setup_permissions_test() {
+        global $DB, $USER;
+
+        accesslib_clear_all_caches(true);
+
+        set_config('siteguest', '');
+        set_config('siteadmins', '');
+
+        // Insert base contexts.
+        $sql = "INSERT INTO {context} SELECT * FROM ".self::$origdb->get_prefix()."context WHERE contextlevel = ?";
+        $params = array(CONTEXT_SYSTEM);
+        $DB->execute($sql, $params);
+        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+
+        // Create moodle user.
+        $assigninguserdata = array(
+            'idnumber' => 'assigninguser',
+            'username' => 'assigninguser',
+            'firstname' => 'assigninguser',
+            'lastname' => 'assigninguser',
+            'email' => 'assigninguser@testuserdomain.com',
+            'country' => 'CA'
+        );
+        $assigninguser = new user($assigninguserdata);
+        $assigninguser->save();
+
+        return $DB->get_record('user', array('username' => 'assigninguser'));
+    }
+
+    /**
+     * The the search result array for a given element id.
+     * This is useful for generating expected search results.
+     * @param string $csv The CSV file to pull information from.
+     * @param int $elementid The ID of the element to get the information for.
+     * @return array The expected search result array for the given id.
+     */
+    protected function get_search_result_row($csv, $elementid) {
+        static $results = array();
+
+        if (empty($results[$csv])) {
+            // Parse the csv to get information and create element arrays, indexed by element id.
+            $csvdata = file_get_contents(dirname(__FILE__).'/'.$csv);
+            $csvdata = explode("\n", $csvdata);
+            $keys = explode(',', $csvdata[0]);
+            $lines = count($csvdata);
+            $csvelements = array();
+            for ($i=1; $i<$lines; $i++) {
+                $curele = explode(',', $csvdata[$i]);
+                $csvelements[$curele[0]] = array_combine($keys, $curele);
+            }
+            unset($csvdata, $keys);
+
+            // Create search result arrays, indexed by element id.
+            $results[$csv] = array();
+            foreach ($csvelements as $id => $element) {
+                $results[$csv][$id] = $this->create_search_result_from_csvelement($element);
+            }
+        }
+
+        return (isset($results[$csv][$elementid])) ? $results[$csv][$elementid] : array();
+    }
+}
 
 /**
  * Test an implementation of the deepsight_datatable_standard class.

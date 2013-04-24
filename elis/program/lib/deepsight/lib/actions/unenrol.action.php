@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanager
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
@@ -33,30 +32,30 @@ class deepsight_action_unenrol extends deepsight_action_confirm {
     public $icon = 'icon-exit';
 
     /**
-     * Constructor.
-     *
-     * Sets internal data.
+     * Constructor
+     * @param moodle_database $DB The active database connection.
+     * @param string $name The unique name of the action to use.
+     * @param string $descsingle The description when the confirmation is for a single element.
+     * @param string $descmultiple The description when the confirmation is for the bulk list.
      */
-    public function __construct(moodle_database &$DB, $name, $desc_single='', $desc_multiple='') {
+    public function __construct(moodle_database &$DB, $name, $descsingle='', $descmultiple='') {
         parent::__construct($DB, $name);
         $this->label = get_string('ds_action_unenrol', 'elis_program');
 
-        $this->desc_single = (!empty($desc_single))
-            ? $desc_single
-            : get_string('ds_action_unenrol_confirm', 'elis_program');
-        $this->desc_multiple = (!empty($desc_multiple))
-            ? $desc_multiple
-            : get_string('ds_action_unenrol_confirm_multi', 'elis_program');
+        $this->descsingle = (!empty($descsingle))
+                ? $descsingle : get_string('ds_action_unenrol_confirm', 'elis_program');
+        $this->descmultiple = (!empty($descmultiple))
+                ? $descmultiple : get_string('ds_action_unenrol_confirm_multi', 'elis_program');
     }
 
     /**
      * Unenrol the user from the class.
      *
-     * @param array $elements    An array of elements to perform the action on.
-     * @param bool  $bulk_action Whether this is a bulk-action or not.
+     * @param array $elements An array of elements to perform the action on.
+     * @param bool $bulkaction Whether this is a bulk-action or not.
      * @return array An array to format as JSON and return to the Javascript.
      */
-    protected function _respond_to_js(array $elements, $bulk_action) {
+    protected function _respond_to_js(array $elements, $bulkaction) {
         global $DB;
         $classid = required_param('id', PARAM_INT);
 

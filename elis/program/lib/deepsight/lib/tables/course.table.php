@@ -47,15 +47,18 @@ class deepsight_datatable_course extends deepsight_datatable_standard {
         $langcost = get_string('cost', 'elis_program');
         $langcreated = get_string('timecreated', 'elis_program');
 
-        return array(
+        $filters = array(
             new deepsight_filter_textsearch($this->DB, 'name', $langname, array('element.name' => $langname)),
             new deepsight_filter_textsearch($this->DB, 'idnumber', $langidnumber, array('element.idnumber' => $langidnumber)),
             new deepsight_filter_textsearch($this->DB, 'credits', $langcredits, array('element.credits' => $langcredits)),
             new deepsight_filter_textsearch($this->DB, 'completiongrade', $langcompletiongrade,
                                             array('element.completion_grade' => $langcompletiongrade)),
             new deepsight_filter_textsearch($this->DB, 'cost', $langcost, array('element.cost' => $langcost)),
-            new deepsight_filter_date($this->DB, 'timecreated', $langcreated, array('element.timecreate' => $langcreated)),
+            new deepsight_filter_date($this->DB, 'timecreated', $langcreated, array('element.timecreated' => $langcreated)),
         );
+
+        $customfieldfilters = $this->get_custom_field_info(CONTEXT_ELIS_COURSE);
+        return array_merge($filters, $customfieldfilters);
     }
 
     /**
@@ -111,12 +114,17 @@ class deepsight_datatable_course extends deepsight_datatable_standard {
     }
 
     /**
-     * Formats the timecreated parameter, if present, and adds a link to view the user's ELIS profile around the idnumber parameter.
+     * Formats the timecreated parameter, if present.
      *
      * @param array $row An array for a single result.
      * @return array The transformed result.
      */
     protected function results_row_transform(array $row) {
+        if (isset($row['element_timecreated'])) {
+            $row['element_timecreated'] = ($row['element_timecreated'] > 0)
+                    ? date(get_string('pm_date_format', 'elis_program'), $row['element_timecreated'])
+                    : '-';
+        }
         return $row;
     }
 
@@ -172,6 +180,10 @@ class deepsight_datatable_course extends deepsight_datatable_standard {
         // Filtering.
         list($filtersql, $filterparams) = $this->get_filter_sql($filters);
 
+        // Grouping.
+        $groupby = $this->get_groupby_sql($filters);
+        $groupby = (!empty($groupby)) ? ' GROUP BY '.implode(', ', $groupby).' ' : '';
+
         // Sorting.
         $sortsql = $this->get_sort_sql($sort);
 
@@ -183,13 +195,13 @@ class deepsight_datatable_course extends deepsight_datatable_standard {
         }
 
         // Get the number of results in the full dataset.
-        $query = 'SELECT count(1) as count FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql;
+        $query = 'SELECT count(1) as count FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql.' '.$groupby;
         $results = $this->DB->get_record_sql($query, $filterparams);
         $totalresults = (int)$results->count;
 
         // Generate and execute query for a single page of results.
         $query = 'SELECT '.implode(', ', $selectfields).' FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql.' ';
-        $query .= $sortsql;
+        $query .= $groupby.' '.$sortsql;
         $results = $this->DB->get_recordset_sql($query, $filterparams, $limitfrom, $limitnum);
 
         // Process results.
