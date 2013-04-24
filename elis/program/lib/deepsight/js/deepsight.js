@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -475,6 +474,9 @@ $.fn.deepsight_bulkactionpanel = function(options) {
      *
      * Updates the display of the panel to match the current elements stored in main.selected_elements. Writes the list of
      * elements, as well as updates the status display (number of elements selected, show/hide action buttons)
+     *
+     * @param object e The jQuery event object
+     * @param object data Information to display. Contain total_results, page_results_ids, and page_results_values.
      */
     this.update_display = function(e, data) {
         eleclearall.prop('disabled', false);
@@ -687,13 +689,17 @@ $.fn.deepsight_bulkactionpanel = function(options) {
 
         // add actions
         for (var i in opts.actions) {
-            var actioniconhtml = '<i class="'+opts.actions[i].icon+'" style="cursor:pointer"> '+opts.actions[i].label+'</i>';
+            var actioniconhtml = '<i class="deepsight_action_'+opts.actions[i].type+'"></i>';
             eleactionbuttons[opts.actions[i].type] = $(actioniconhtml);
 
             // assemble options to pass to action object - combination of these defaults and opts.actions[i].opts
             var defaultopts = {
                 parent: eleaddallsearch,
+                parentid: 'bulklist',
                 datatable: opts.datatable,
+                label: opts.actions[i].label,
+                icon: opts.actions[i].icon,
+                type: opts.actions[i].type
             };
             if (typeof(opts.actions[i].opts) == 'undefined') {
                 opts.actions[i].opts = {};
@@ -1305,6 +1311,7 @@ $.fn.deepsight_datatable = function(options) {
 
     /**
      * Start a timeout to get a page of the bulklist
+     * @param int page The page number to fetch.
      */
     this.bulklist_get = function(page) {
         if (main.bulklist_get_queue.timeout != null) {
@@ -1624,8 +1631,7 @@ $.fn.deepsight_datatable = function(options) {
         for (var j in opts.actions) {
             if (typeof(opts.actions[j].condition) == 'undefined' || opts.actions[j].condition == null
                     || (typeof(opts.actions[j].condition) == 'function' && opts.actions[j].condition(data) === true)) {
-                actionhtml += '<i title="'+opts.actions[j].label+'" class="deepsight_action_'+opts.actions[j].type+' ';
-                actionhtml += opts.actions[j].icon+'"></i>';
+                actionhtml += '<span class="deepsight_action_'+opts.actions[j].type+' deepsight_action_'+opts.actions[j].name+'"></span>';
             }
         }
 
@@ -1635,14 +1641,9 @@ $.fn.deepsight_datatable = function(options) {
             row = opts.rowfilter(row, data);
         }
 
-        // add tooltip
-        row.find('td.actions').find('i').each(function() {
-            $(this).fancy_tooltip();
-        });
-
         // initialize actions
         for (var i in opts.actions) {
-            var actioninitiator = row.find('.deepsight_action_'+opts.actions[i].type);
+            var actioninitiator = row.find('.deepsight_action_'+opts.actions[i].name);
             var numtds = row.children('td').length;
             var func = 'deepsight_action_'+opts.actions[i].type;
 
@@ -1656,6 +1657,9 @@ $.fn.deepsight_datatable = function(options) {
                 parent: row,
                 parentid: parentid,
                 datatable: main,
+                label: opts.actions[i].label,
+                icon: opts.actions[i].icon,
+                type: opts.actions[i].type,
                 wrapper: '<tr><td style="padding:0;margin:0;" colspan="'+numtds+'"></td></tr>'
             };
             if (typeof(opts.actions[i].opts) == 'undefined') {
@@ -2009,7 +2013,7 @@ $.fn.deepsight_multiselect = function(options) {
         if (main.focused == true) {
             var multimode = 'single';
             if (e.ctrlKey == true) {
-                multimode = 'ctrl'
+                multimode = 'ctrl';
             } else if (e.shiftKey == true) {
                 multimode = 'shift';
             }
@@ -2049,7 +2053,7 @@ $.fn.deepsight_multiselect = function(options) {
             .click(function(e) {
                 var multimode = 'single';
                 if (e.ctrlKey == true) {
-                    multimode = 'ctrl'
+                    multimode = 'ctrl';
                 } else if (e.shiftKey == true) {
                     multimode = 'shift';
                 }

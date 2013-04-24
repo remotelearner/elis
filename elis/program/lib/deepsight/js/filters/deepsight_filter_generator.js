@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -48,6 +47,8 @@
  *     string css_choice_class   A CSS class to add to each option in the dropdown.
  *
  * Note: All elements this is run on must have an "id" attribute.
+ *
+ * @param object options Options for the class.
  */
 $.fn.deepsight_filter_generator = function(options) {
     this.default_opts = {
@@ -124,7 +125,7 @@ $.fn.deepsight_filter_generator = function(options) {
 
         //translate opts.available filters into an associative object and record the names in an array so we
         //can sort the array and display the available filters in alphabetical order
-        var filternames = []
+        var filternames = [];
         for (var i in main.available_filters) {
             filternames.push(main.available_filters[i].opts.name);
         }

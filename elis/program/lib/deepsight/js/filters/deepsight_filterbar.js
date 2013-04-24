@@ -15,12 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -73,7 +72,7 @@ $.fn.deepsight_filterbar = function(options) {
 
                 curfilter = $('#filter_'+i);
                 var default_filter_opts = {
-                    datatable: opts.datatable,
+                    datatable: opts.datatable
                 }
                 var filter_opts = $.extend({}, default_filter_opts, opts.filters[i].opts);
                 var filterfunc = 'deepsight_filter_'+opts.filters[i].type;

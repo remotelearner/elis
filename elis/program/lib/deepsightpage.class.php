@@ -219,7 +219,7 @@ abstract class deepsightpage extends pm_page {
 
         if ($mode === 'action') {
             // We'll use page-specific can_do actions to authorize access to each requested action.
-            $actionname = required_param('actionname', PARAM_ALPHA);
+            $actionname = required_param('actionname', PARAM_ALPHAEXT);
             $candoactionmethod = 'can_do_action_'.$actionname;
             if (method_exists($this, $candoactionmethod) && $this->$candoactionmethod() === true) {
                 $table->respond($mode);
