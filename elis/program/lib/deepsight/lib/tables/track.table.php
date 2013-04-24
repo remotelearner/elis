@@ -49,7 +49,7 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
         $langstartdate = get_string('track_startdate', 'elis_program');
         $langenddate = get_string('track_enddate', 'elis_program');
 
-        return array(
+        $filters = array(
             new deepsight_filter_textsearch($this->DB, 'name', $langname, array('element.name' => $langname)),
             new deepsight_filter_textsearch($this->DB, 'idnumber', $langidnumber, array('element.idnumber' => $langidnumber)),
             new deepsight_filter_searchselect($this->DB, 'program_name', $langpgmname, array('pgm.name' => $langpgmname),
@@ -57,6 +57,9 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
             new deepsight_filter_date($this->DB, 'startdate', $langstartdate, array('element.startdate' => $langstartdate)),
             new deepsight_filter_date($this->DB, 'enddate', $langenddate, array('element.enddate' => $langenddate)),
         );
+
+        $customfieldfilters = $this->get_custom_field_info(CONTEXT_ELIS_TRACK);
+        return array_merge($filters, $customfieldfilters);
     }
 
     /**
@@ -181,6 +184,10 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
         // Filtering.
         list($filtersql, $filterparams) = $this->get_filter_sql($filters);
 
+        // Grouping.
+        $groupby = $this->get_groupby_sql($filters);
+        $groupby = (!empty($groupby)) ? ' GROUP BY '.implode(', ', $groupby).' ' : '';
+
         // Sorting.
         $sortsql = $this->get_sort_sql($sort);
 
@@ -192,13 +199,13 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
         }
 
         // Get the number of results in the full dataset.
-        $query = 'SELECT count(1) as count FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql;
+        $query = 'SELECT count(1) as count FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql.' '.$groupby;
         $results = $this->DB->get_record_sql($query, $filterparams);
         $totalresults = (int)$results->count;
 
         // Generate and execute query for a single page of results.
         $query = 'SELECT '.implode(', ', $selectfields).' FROM {'.$this->main_table.'} element '.$joinsql.' '.$filtersql.' ';
-        $query .= $sortsql;
+        $query .= $groupby.' '.$sortsql;
         $results = $this->DB->get_recordset_sql($query, $filterparams, $limitfrom, $limitnum);
 
         // Process results.

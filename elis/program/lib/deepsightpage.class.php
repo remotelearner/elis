@@ -67,9 +67,39 @@ abstract class deepsightpage extends pm_page {
      */
     abstract protected function construct_unassigned_table($uniqid = null);
 
+    /**
+     * Determine whether the current user has certain permissions for a given ID and context level.
+     * @param array $perms An array of permissions the user must have to return true.
+     * @param int $ctxlevel The context level name.
+     * @param int $id The instance ID to check for.
+     * @return bool Whether the user has all required permissions.
+     */
+    protected function has_perms_for_element(array $perms, $ctxlevel, $id) {
+        global $USER;
+        foreach ($perms as $perm) {
+            $ctx = pm_context_set::for_user_with_capability($ctxlevel, $perm, $USER->id);
+            if ($ctx->context_allowed($id, $ctxlevel) !== true) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Whether the user can see and manage current associations.
+     * @return bool Whether the user can see and manage current associations.
+     */
     public function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
         return has_capability('elis/program:manage', $context);
+    }
+
+    /**
+     * Whether the user can add new associations - Implement in subclass.
+     * @return bool Whether the user can add new associations.
+     */
+    public function can_do_add() {
+        return false;
     }
 
     /**
@@ -219,7 +249,7 @@ abstract class deepsightpage extends pm_page {
 
         if ($mode === 'action') {
             // We'll use page-specific can_do actions to authorize access to each requested action.
-            $actionname = required_param('actionname', PARAM_ALPHA);
+            $actionname = required_param('actionname', PARAM_ALPHAEXT);
             $candoactionmethod = 'can_do_action_'.$actionname;
             if (method_exists($this, $candoactionmethod) && $this->$candoactionmethod() === true) {
                 $table->respond($mode);
