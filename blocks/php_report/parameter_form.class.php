@@ -203,4 +203,51 @@ if ((reportdiv = document.getElementById('php_report_block')) &&
         }
         return $reset_js;
     }
+
+    /**
+     * Load in existing data as form defaults ...
+     * Overloads /lib/formslib.php::moodleform::set_data() to convert certain fields to group fields
+     * Required to get UCCR auto-complete 'fullname' field to display correctly
+     *
+     * @param stdClass|array $values object or array of default values
+     */
+    public function set_data($values) {
+        if (isset($this->_customdata['filterobject'])) {
+            // filter object was passed, because the report uses filters
+            $filterobject = $this->_customdata['filterobject'];
+            if (isset($filterobject->_fields)) {
+                if (is_object($values)) {
+                    $values = (array)$values;
+                }
+                foreach ($values as $field => $val) {
+                    if (isset($filterobject->_fields[$field])) {
+                        $fieldfilter = $filterobject->_fields[$field];
+                        // Convert array fields to serialized as required
+                        if (is_array($val)) {
+                            $fixed = false;
+                            // Check if filter default or options are arrays
+                            if (isset($fieldfilter->_default)) {
+                                if (is_array($fieldfilter->_default)) {
+                                    $values[$field] = serialize($val);
+                                    $fixed = true;
+                                }
+                            }
+                            if (!$fixed && isset($fieldfilter->_options) && is_array($fieldfilter->_options)) {
+                                foreach ($fieldfilter->_options as $optkey => $optval) {
+                                    if (is_array($optval)) {
+                                        $values[$field] = serialize($val);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (get_class($fieldfilter) == 'generalized_filter_autocomplete_eliswithcustomfields') {
+                            $values['grp['.$field.']'] = $val;
+                        }
+                    }
+                }
+            }
+        }
+        parent::set_data($values);
+    }
 }
