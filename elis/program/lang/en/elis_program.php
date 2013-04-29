@@ -67,6 +67,7 @@ $string['association_instructor'] = 'Associate Instructor';
 $string['association_student'] = 'Associate Student'; // TBD
 $string['association_trackassignment'] = 'Associate Track';
 $string['association_usertrack'] = 'Associate User';
+$string['auto_assign'] = 'Automatically Assigned';
 $string['autocomplete_noinstance'] = 'No "instance_fields" option received when constructing autocomplete_eliswithcustomfields.';
 $string['autocomplete_nocontext'] = 'No valid "contextlevel" option received when constructing autocomplete_eliswithcustomfields.';
 $string['autocreate'] = 'Auto Create Moodle course from template';
