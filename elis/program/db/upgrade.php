@@ -599,5 +599,27 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2012062901, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2013042900) {
+        // Add indexes to {crlm_user_track} table
+        $table = new xmldb_table('crlm_user_track');
+        if ($dbman->table_exists($table)) {
+            $index = new xmldb_index('userid_ix', XMLDB_INDEX_NOTUNIQUE, array('userid'));
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+
+            $index = new xmldb_index('trackid_ix', XMLDB_INDEX_NOTUNIQUE, array('trackid'));
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+
+            $index = new xmldb_index('userid_trackid_ix', XMLDB_INDEX_NOTUNIQUE, array('userid', 'trackid'));
+            if (!$dbman->index_exists($table, $index)) {
+                $dbman->add_index($table, $index);
+            }
+        }
+        upgrade_plugin_savepoint($result, 2013042900, 'elis', 'program');
+    }
+
     return $result;
 }
