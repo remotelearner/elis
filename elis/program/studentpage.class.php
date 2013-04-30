@@ -243,12 +243,12 @@ class studentpage extends associationpage {
         $startyear  = $user['startyear'];
         $startmonth = $user['startmonth'];
         $startday   = $user['startday'];
-        $sturecord['enrolmenttime'] = pm_gmt_from_usertime(mktime(0, 0, 0, $startmonth, $startday, $startyear));
+        $sturecord['enrolmenttime'] = pm_timestamp(0, 0, 0, $startmonth, $startday, $startyear);
 
         $endyear  = $user['endyear'];
         $endmonth = $user['endmonth'];
         $endday   = $user['endday'];
-        $sturecord['completetime'] = pm_gmt_from_usertime(mktime(0, 0, 0, $endmonth, $endday, $endyear));
+        $sturecord['completetime'] = pm_timestamp(0, 0, 0, $endmonth, $endday, $endyear);
 
         $sturecord['completestatusid'] = $user['completestatusid'];
         $sturecord['grade']            = $user['grade'];
@@ -317,12 +317,12 @@ class studentpage extends associationpage {
         $startyear  = $user['startyear'];
         $startmonth = $user['startmonth'];
         $startday   = $user['startday'];
-        $sturecord['enrolmenttime'] = pm_gmt_from_usertime(mktime(0, 0, 0, $startmonth, $startday, $startyear));
+        $sturecord['enrolmenttime'] = pm_timestamp(0, 0, 0, $startmonth, $startday, $startyear);
 
         $endyear  = $user['endyear'];
         $endmonth = $user['endmonth'];
         $endday   = $user['endday'];
-        $sturecord['completetime'] = pm_gmt_from_usertime(mktime(0, 0, 0, $endmonth, $endday, $endyear));
+        $sturecord['completetime'] = pm_timestamp(0, 0, 0, $endmonth, $endday, $endyear);
 
         $sturecord['completestatusid'] = $user['completestatusid'];
         $sturecord['grade']            = $user['grade'];
@@ -355,7 +355,7 @@ class studentpage extends associationpage {
             $graderec['userid'] = $uid;
             $graderec['classid'] = $clsid;
             $graderec['completionid'] = $element;
-            $graderec['timegraded'] = pm_gmt_from_usertime(mktime(0, 0, 0, $timegraded[$gradeid]['startmonth'], $timegraded[$gradeid]['startday'], $timegraded[$gradeid]['startyear']));
+            $graderec['timegraded'] = pm_timestamp(0, 0, 0, $timegraded[$gradeid]['startmonth'], $timegraded[$gradeid]['startday'], $timegraded[$gradeid]['startyear']);
             $graderec['grade'] = $grade[$gradeid];
             $graderec['locked'] = isset($locked[$gradeid]) ? $locked[$gradeid] : '0';
 
@@ -368,7 +368,7 @@ class studentpage extends associationpage {
             $graderec['userid'] = $uid;
             $graderec['classid'] = $clsid;
             $graderec['completionid'] = $element;
-            $graderec['timegraded'] = pm_gmt_from_usertime(mktime(0, 0, 0, $newtimegraded[$elementid]['startmonth'], $newtimegraded[$elementid]['startday'], $newtimegraded[$elementid]['startyear']));
+            $graderec['timegraded'] = pm_timestamp(0, 0, 0, $newtimegraded[$elementid]['startmonth'], $newtimegraded[$elementid]['startday'], $newtimegraded[$elementid]['startyear']);
             $graderec['grade'] = $newgrade[$elementid];
             $graderec['locked'] = isset($newlocked[$elementid]) ? $newlocked[$elementid] : '0';
 
@@ -504,7 +504,7 @@ class studentpage extends associationpage {
 
                                     if (($newmonth != $oldmonth) || ($newday != $oldday) || ($newyear != $oldyear)) {
                                         $oldenroldate = userdate($user->enrolmenttime, $date_format);
-                                        $newenroldate = userdate(pm_gmt_from_usertime(mktime(0, 0, 0, $newmonth, $newday, $newyear)), $date_format);
+                                        $newenroldate = userdate(pm_timestamp(0, 0, 0, $newmonth, $newday, $newyear), $date_format);
 
                                         $changes[] = array($lang_enroldate, $oldenroldate, $newenroldate);
                                         $changes_by_change[$lang_enroldate][$newenroldate][] = $userid;
@@ -537,7 +537,7 @@ class studentpage extends associationpage {
                                                 $oldcompletetime = get_string('confirm_bulk_enrol_none', 'elis_program');
                                             }
 
-                                            $newcompletetime = userdate(pm_gmt_from_usertime(mktime(0, 0, 0, $newmonth, $newday, $newyear)), $date_format);
+                                            $newcompletetime = userdate(pm_timestamp(0, 0, 0, $newmonth, $newday, $newyear), $date_format);
 
                                             $changes[] = array($lang_completedate, $oldcompletetime, $newcompletetime);
                                             $changes_by_change[$lang_completedate][$newcompletetime][] = $userid;
@@ -708,14 +708,14 @@ class studentpage extends associationpage {
                 $startyear  = $user['startyear'];
                 $startmonth = $user['startmonth'];
                 $startday   = $user['startday'];
-                $sturecord['enrolmenttime'] = pm_gmt_from_usertime(mktime(0, 0, 0, $startmonth, $startday, $startyear));
+                $sturecord['enrolmenttime'] = pm_timestamp(0, 0, 0, $startmonth, $startday, $startyear);
             }
 
             if (!empty($user['endyear']) && !empty($user['endmonth']) && !empty($user['endday'])) {
                 $endyear  = $user['endyear'];
                 $endmonth = $user['endmonth'];
                 $endday   = $user['endday'];
-                $sturecord['completetime'] = pm_gmt_from_usertime(mktime(0, 0, 0, $endmonth, $endday, $endyear));
+                $sturecord['completetime'] = pm_timestamp(0, 0, 0, $endmonth, $endday, $endyear);
             }
 
             if (isset($user['completestatusid'])) {
