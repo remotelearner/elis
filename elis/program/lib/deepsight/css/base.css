@@ -516,6 +516,15 @@ body.ie8 .deepsight_actionpanel label.buttonset.on {
     background: none;
 }
 
+.deepsight_actionpanel.deepsight_action_usersettrack_assignedit form {
+    margin-top: 10px;
+    display: block;
+}
+.deepsight_actionpanel.deepsight_action_usersettrack_assignedit form input[type="checkbox"] {
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
 /* Panels */
 .deepsight_panel {
     display: inline-block;
