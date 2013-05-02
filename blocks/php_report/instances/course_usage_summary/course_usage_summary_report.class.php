@@ -325,18 +325,18 @@ class course_usage_summary_report extends icon_config_report {
     function get_resource_modules() {
         global $CFG, $SITE;
 
-        //course API
+        // course API
         require_once($CFG->dirroot.'/course/lib.php');
 
-        //retrieve information about all modules on the site
-        get_all_mods($SITE->id, $mods, $modnames, $modnamesplural, $modnamesused);
+        // retrieve information about all modules on the site
+        $modnames = get_module_types_names();
 
-        //make sure to always count 'resource' for legacy reasons
+        // make sure to always count 'resource' for legacy reasons
         $result = array('resource');
 
-        foreach($modnames as $modname => $modnamestr) {
-            //make sure the module is valid
-	        $libfile = "$CFG->dirroot/mod/$modname/lib.php";
+        foreach ($modnames as $modname => $modnamestr) {
+            // make sure the module is valid
+            $libfile = "$CFG->dirroot/mod/$modname/lib.php";
             if (!file_exists($libfile)) {
                 continue;
             }
