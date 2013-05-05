@@ -34,7 +34,7 @@ require_once(elispm::lib('data/pmclass.class.php'));
 class deepsight_action_enroledit extends deepsight_action_standard {
     const TYPE = 'enroledit';
     public $label = 'Edit User';
-    public $icon = 'icon-pencil';
+    public $icon = 'elisicon-edit';
 
     /**
      * Sets the action's label from language string.
