@@ -80,11 +80,11 @@ $.fn.deepsight_action_confirm = function(options) {
         var desc = (opts.parentid == 'bulklist') ? opts.desc_multiple : opts.desc_single;
         var actionpanel = $('<div><div>').addClass(opts.actionclass).addClass('deepsight_action_confirm').css('display', 'none');
         var actionpanelbody = '<div class="body">'+desc+'</div>\n\
-                                <div class="actions"><i class="icon-checkmark"></i><i class="icon-cancel"></i></div>';
+                                <div class="actions"><i class="elisicon-confirm"></i><i class="elisicon-cancel"></i></div>';
 
         actionpanel.html('<div class="deepsight_actionpanel_inner">'+actionpanelbody+'</div>');
-        actionpanel.find('i.icon-checkmark').bind('click', main.precomplete_action);
-        actionpanel.find('i.icon-cancel').click(main.hide_action);
+        actionpanel.find('i.elisicon-confirm').bind('click', main.precomplete_action);
+        actionpanel.find('i.elisicon-cancel').click(main.hide_action);
         return actionpanel;
     }
 
@@ -113,7 +113,7 @@ $.fn.deepsight_action_confirm = function(options) {
     this.precomplete_action = function(e) {
         if (opts.parentid == 'bulklist' && typeof(bulkconfirmed) == 'undefined') {
             main.actiontr.find('.body').html(opts.lang_bulk_confirm);
-            main.actiontr.find('i.icon-checkmark')
+            main.actiontr.find('i.elisicon-confirm')
                 .unbind('click', main.precomplete_action)
                 .bind('click', main.complete_action);
         } else {

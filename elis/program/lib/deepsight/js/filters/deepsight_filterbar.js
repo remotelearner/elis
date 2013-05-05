@@ -91,7 +91,7 @@ $.fn.deepsight_filterbar = function(options) {
             }
         }
 
-        main.generator = $('<button id="filter_generator" class="icon-plus">'+opts.lang_add+'</button>');
+        main.generator = $('<button id="filter_generator" class="elisicon-more">'+opts.lang_add+'</button>');
         main.generator.deepsight_filter_generator({
             datatable: opts.datatable,
             available_filters: available_filters

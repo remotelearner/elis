@@ -192,7 +192,7 @@ $.fn.deepsight_action_enroledit = function(options) {
         var bulkeditui = (opts.mode == 'edit' && opts.parentid == 'bulklist') ? true : false;
         var enroldata = main.render_action_enroldata(data, bulkeditui);
         var learningobjectives = main.render_action_learningobjectives(data);
-        var actionpanelactionshtml = '<div class="actions"><i class="icon-checkmark"></i><i class="icon-cancel"></i></div>';
+        var actionpanelactionshtml = '<div class="actions"><i class="elisicon-confirm"></i><i class="elisicon-cancel"></i></div>';
         var actionpanelbody = $('<div class="body"></div>').append(enroldata).append(learningobjectives);
 
         // render the action panel
@@ -205,8 +205,8 @@ $.fn.deepsight_action_enroledit = function(options) {
         main.enroldataform = actionpanel.find('form.enroldata');
         main.learnobjform = actionpanel.find('form.learnobjs');
 
-        actionpanel.find('i.icon-checkmark').bind('click', main.precomplete_action);
-        actionpanel.find('i.icon-cancel').click(main.hide_action);
+        actionpanel.find('i.elisicon-confirm').bind('click', main.precomplete_action);
+        actionpanel.find('i.elisicon-cancel').click(main.hide_action);
 
         return actionpanel;
     }
@@ -547,12 +547,12 @@ $.fn.deepsight_action_enroledit = function(options) {
             var changeshtml = '<div style="display:inline-block;width: 100%;">'+main.render_changes(enroldatacleaned)+'</div>';
             main.actiontr.find('.body').append(changeshtml);
             main.actiontr.find('.body').append('<span style="display:block">'+opts.lang_bulk_confirm+'</span>');
-            main.actiontr.find('i.icon-checkmark')
+            main.actiontr.find('i.elisicon-confirm')
                 .unbind('click', main.precomplete_action)
                 .bind('click', function(e) {
                     main.complete_action(e, enroldatajson);
                 });
-            main.actiontr.find('i.icon-cancel')
+            main.actiontr.find('i.elisicon-cancel')
                 .unbind('click', main.hide_action)
                 .bind('click', function(e) {
 

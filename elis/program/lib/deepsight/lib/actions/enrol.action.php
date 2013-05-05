@@ -30,7 +30,7 @@
 class deepsight_action_enrol extends deepsight_action_standard {
     const TYPE = 'enroledit';
     public $label = 'Enrol User';
-    public $icon = 'icon-enter';
+    public $icon = 'elisicon-assoc';
     public $endpoint = '';
 
     /**
