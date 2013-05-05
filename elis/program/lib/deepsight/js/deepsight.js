@@ -464,7 +464,7 @@ $.fn.deepsight_bulkactionpanel = function(options) {
      * @return A jQuery object containing the item's label, the ID in the item's data-id property, and a functional remove button.
      */
     this.render_item = function(id, label) {
-        var item = $('<li data-id="'+id+'"><i class="remove icon-cancel"></i>'+label+'</li>');
+        var item = $('<li data-id="'+id+'"><i class="remove elisicon-cancel"></i>'+label+'</li>');
         item.find('i.remove').click(main.remove_item);
         return item;
     }
@@ -1416,8 +1416,8 @@ $.fn.deepsight_datatable = function(options) {
                 }
             }
         } else {
-            var sorticon = (dir == 'asc') ? 'icon-arrow-up' : 'icon-arrow-down';
-            main.find('tr:first').find('th.sorting').removeClass('sorting').find('i').removeClass().addClass('icon-menu');
+            var sorticon = (dir == 'asc') ? 'elisicon-sortasc' : 'elisicon-sortdesc';
+            main.find('tr:first').find('th.sorting').removeClass('sorting').find('i').removeClass().addClass('elisicon-sortable');
 
             var header = main.find('tr:first').find('th.field_'+colname);
             header.addClass('sorting');
@@ -1432,7 +1432,7 @@ $.fn.deepsight_datatable = function(options) {
      * Removes sorting indication from all columns
      */
     this.remove_sort = function() {
-        main.find('tr:first').find('th.sorting').removeClass('sorting').find('i').removeClass().addClass('icon-menu');
+        main.find('tr:first').find('th.sorting').removeClass('sorting').find('i').removeClass().addClass('elisicon-sortable');
     }
 
     /**
@@ -1556,7 +1556,7 @@ $.fn.deepsight_datatable = function(options) {
         }
 
         for (var field in fielddata) {
-            var headerhtml = '<th class="header sortable field_'+field+'" data-colname="'+field+'"><i class="icon-menu"></i>';
+            var headerhtml = '<th class="header sortable field_'+field+'" data-colname="'+field+'"><i class="elisicon-sortable"></i>';
             headerhtml += fielddata[field]+'</th>';
             header.append(headerhtml);
             main.num_columns++;
