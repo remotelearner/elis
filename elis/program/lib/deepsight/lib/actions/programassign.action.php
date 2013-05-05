@@ -32,7 +32,7 @@ require_once(elispm::lib('data/clusterassignment.class.php'));
  */
 class deepsight_action_programassign extends deepsight_action_confirm {
     public $label = 'Assign User';
-    public $icon = 'icon-enter';
+    public $icon = 'elisicon-assoc';
 
     /**
      * Constructor.

@@ -29,7 +29,7 @@
  */
 class deepsight_action_unenrol extends deepsight_action_confirm {
     public $label = 'Unenrol User';
-    public $icon = 'icon-exit';
+    public $icon = 'elisicon-unassoc';
 
     /**
      * Constructor

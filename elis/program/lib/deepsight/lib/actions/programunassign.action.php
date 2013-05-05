@@ -30,7 +30,7 @@
  */
 class deepsight_action_programunassign extends deepsight_action_confirm {
     public $label = 'Unassign User';
-    public $icon = 'icon-exit';
+    public $icon = 'elisicon-unassoc';
 
     /**
      * Constructor.

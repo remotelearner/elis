@@ -30,7 +30,7 @@
  */
 class deepsight_action_trackassign extends deepsight_action_confirm {
     public $label = 'Assign User';
-    public $icon = 'icon-enter';
+    public $icon = 'elisicon-assoc';
 
     /**
      * Constructor.
