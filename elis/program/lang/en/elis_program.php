@@ -325,6 +325,7 @@ $string['curriculumcourseform:frequency'] = 'Frequency';
 $string['curriculumcourseform:frequency_help'] = '<p>The frequency the course description must be repeated, if necessary.  For example,
 4 (with Timeperiod set to Years) = every four years. If the course description does not need to be repeated periodically, this field should be left blank.</p>
 <p>This field is for information only, and does not affect the behaviour of the system.</p>';
+$string['curriculumcourseform:notrequired'] = 'Not Required';
 $string['curriculumcourseform:position'] = 'Position';
 $string['curriculumcourseform:position_help'] = '<p>Determines the order in which course descriptions are listed within this program. Course descriptions with lower position numbers are displayed first.</p>';
 $string['curriculumcourseform:required'] = 'Required';
