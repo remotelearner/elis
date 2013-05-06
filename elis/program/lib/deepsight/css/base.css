@@ -457,25 +457,8 @@
     padding: 5px;
     vertical-align: middle;
 }
-.deepsight_actionpanel .enrol_attr {
-    margin: 5px;
-    vertical-align: top;
-}
-.deepsight_actionpanel .enrol_attr > label {
-    display: inline-block;
-    vertical-align: top;
-    width: 150px;
-    text-align: right;
-    margin-right: 10px;
-}
-.deepsight_actionpanel .enrol_attr > span {
-    display: inline-block;
-    width: 240px;
-    text-align: left;
-    margin-left: 10px;
-}
 .deepsight_actionpanel input[type="checkbox"].buttonset {
-
+    display: none;
 }
 .deepsight_actionpanel label.buttonset {
     cursor: pointer;
@@ -491,18 +474,15 @@
     background-color: #fc5;
     border-color: #c92;
 }
-.deepsight_actionpanel.deepsight_action_enrol ul.changes {
+.deepsight_actionpanel ul.changes {
     float: right;
     margin: 5px 0 15px 0;
     padding: 0;
     text-align: left;
 }
-.deepsight_actionpanel.deepsight_action_enrol input.lockedbutton {
-    display: none;
-}
 
 /* IE 8 does not allow label-clicking if the target element is hidden */
-body.ie8 .deepsight_actionpanel.deepsight_action_enrol input.lockedbutton {
+body.ie8 .deepsight_actionpanel input[type="checkbox"].buttonset {
     display: inline;
 }
 body.ie8 .deepsight_actionpanel label.buttonset {
@@ -615,7 +595,7 @@ body.ie8 .deepsight_actionpanel label.buttonset.on {
     margin-left: 10px;
 }
 .deepsight_panel .actions [class*="elisicon-"] {
-    vertical-align: top;
+    vertical-align: middle;
     margin-right: 7px;
     cursor: pointer;
 }
@@ -679,6 +659,12 @@ body.ie8 .deepsight_actionpanel label.buttonset.on {
 }
 .elisicon-unassoc {
     color: #a00;
+}
+.elisicon-prereq {
+    color: #ea0;
+}
+.elisicon-coreq {
+    color: #0a0;
 }
 [class*='elisicon-'].loading:before {
     content: '';
