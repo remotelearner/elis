@@ -429,11 +429,13 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
 
         $this->run_pmentity_import((array)$record);
 
-        //validation
-        $data = array('idnumber' => 'testtrackidnumber',
-                      'name' => 'testtrackname',
-                      'startdate' => mktime(0, 0, 0, 1, 1, 2012),
-                      'enddate' => mktime(0, 0, 0, 1, 1, 2012));
+        // validation
+        $data = array(
+            'idnumber' => 'testtrackidnumber',
+            'name' => 'testtrackname',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'enddate' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        );
         $this->assertTrue($DB->record_exists(track::TABLE, $data));
 
         $record = $DB->get_record(track::TABLE, array('idnumber' => 'testtrackidnumber'));
@@ -482,11 +484,13 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
 
         $this->run_pmentity_import((array)$record);
 
-        //validation
-        $data = array('idnumber' => 'testtrackidnumber',
-                      'name' => 'updatedtesttrackname',
-                      'startdate' => mktime(0, 0, 0, 1, 2, 2012),
-                      'enddate' => mktime(0, 0, 0, 1, 2, 2012));
+        // validation
+        $data = array(
+            'idnumber' => 'testtrackidnumber',
+            'name' => 'updatedtesttrackname',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 2, 2012),
+            'enddate' => rlip_timestamp(0, 0, 0, 1, 2, 2012)
+        );
         $this->assertTrue($DB->record_exists(track::TABLE, $data));
 
         $record = $DB->get_record(track::TABLE, array('idnumber' => 'testtrackidnumber'));
@@ -805,17 +809,19 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
 
         $this->run_pmentity_import((array)$record);
 
-        //validation
-        $data = array('courseid' => $pmcourse->id,
-                      'idnumber' => 'testclassidnumber',
-                      'startdate' => mktime(0, 0, 0, 1, 1, 2012),
-                      'enddate' => mktime(0, 0, 0, 1, 1, 2012),
-                      'starttimehour' => 1,
-                      'starttimeminute' => 5,
-                      'endtimehour' => 1,
-                      'endtimeminute' => 5,
-                      'maxstudents' => 1,
-                      'enrol_from_waitlist' => 1);
+        // validation
+        $data = array(
+            'courseid' => $pmcourse->id,
+            'idnumber' => 'testclassidnumber',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'enddate' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'starttimehour' => 1,
+            'starttimeminute' => 5,
+            'endtimehour' => 1,
+            'endtimeminute' => 5,
+            'maxstudents' => 1,
+            'enrol_from_waitlist' => 1
+        );
         $this->assertTrue($DB->record_exists(pmclass::TABLE, $data));
 
         $record = $DB->get_record(pmclass::TABLE, array('idnumber' => 'testclassidnumber'));
@@ -904,17 +910,19 @@ class elis_pmentity_field_mappings_test extends elis_database_test {
 
         $this->run_pmentity_import((array)$record);
 
-        //validation
-        $data = array('courseid' => $pmcourse->id,
-                      'idnumber' => 'testclassidnumber',
-                      'startdate' => mktime(0, 0, 0, 1, 2, 2012),
-                      'enddate' => mktime(0, 0, 0, 1, 2, 2012),
-                      'starttimehour' => 2,
-                      'starttimeminute' => 10,
-                      'endtimehour' => 2,
-                      'endtimeminute' => 10,
-                      'maxstudents' => 2,
-                      'enrol_from_waitlist' => 1);
+        // validation
+        $data = array(
+            'courseid' => $pmcourse->id,
+            'idnumber' => 'testclassidnumber',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 2, 2012),
+            'enddate' => rlip_timestamp(0, 0, 0, 1, 2, 2012),
+            'starttimehour' => 2,
+            'starttimeminute' => 10,
+            'endtimehour' => 2,
+            'endtimeminute' => 10,
+            'maxstudents' => 2,
+            'enrol_from_waitlist' => 1
+        );
         $this->assertTrue($DB->record_exists(pmclass::TABLE, $data));
 
         $this->assertTrue($DB->record_exists(trackassignment::TABLE, array('classid' => $pmclass->id,

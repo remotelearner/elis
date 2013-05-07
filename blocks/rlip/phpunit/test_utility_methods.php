@@ -344,10 +344,10 @@ class utilityMethodTest extends rlip_test {
      * Test that the next runtime is aligned to the correct boundary
      */
     function testNextRuntimeBoundry() {
-        $targetstarttime = mktime(12, 0, 0, 1, 1, 2012);    //12:00
-        $lowerboundtime = mktime(12, 2, 0, 1, 1, 2012);     //12:02
-        $middleboundtime = mktime(12, 4, 30, 1, 1, 2012);   //12:04:30
-        $upperboundtime = mktime(12, 7, 0, 1, 1, 2012);     //12:07
+        $targetstarttime = rlip_timestamp(12, 0, 0, 1, 1, 2012);  // 12:00
+        $lowerboundtime = rlip_timestamp(12, 2, 0, 1, 1, 2012);   // 12:02
+        $middleboundtime = rlip_timestamp(12, 4, 30, 1, 1, 2012); // 12:04:30
+        $upperboundtime = rlip_timestamp(12, 7, 0, 1, 1, 2012);   // 12:07
 
         $nextruntime =  rlip_calc_next_runtime($targetstarttime, '5m', $lowerboundtime);
         $this->assertEquals($nextruntime, $targetstarttime + (60 * 5)); //12:05
@@ -538,7 +538,7 @@ class utilityMethodTest extends rlip_test {
 
         //run the job
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
-        $starttime = time();
+        $starttime = $timenow;
         run_ipjob($taskname);
 
         //obtain both records
@@ -858,7 +858,7 @@ class utilityMethodTest extends rlip_test {
         $this->create_test_user();
 
         //calculate the start time of the current day
-        $starttime = mktime(0, 0, 0);
+        $starttime = rlip_timestamp(0, 0, 0);
 
         //create log records
         $this->create_db_log(array('starttime' => 0));

@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
@@ -263,9 +264,11 @@ class elis_createorupdate2_test extends elis_database_test {
         $importplugin->process_record('course', $record, 'bogus');
 
         // validation
-        $this->assertTrue($DB->record_exists(track::TABLE, array('name' => 'testtrackname',
-                                                                 'idnumber' => 'testtrackidnumber',
-                                                                 'startdate' => mktime(0, 0, 0, 1, 1, 2012))));
+        $this->assertTrue($DB->record_exists(track::TABLE, array(
+            'name' => 'testtrackname',
+            'idnumber' => 'testtrackidnumber',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        )));
     }
 
     /**
@@ -285,10 +288,12 @@ class elis_createorupdate2_test extends elis_database_test {
         $program->save();
 
         // create the test track
-        $track = new track(array('curid' => $program->id,
-                                 'name' => 'testtrackname',
-                                 'idnumber' => 'testtrackidnumber',
-                                 'startdate' => mktime(0, 0, 0, 1, 1, 2012)));
+        $track = new track(array(
+            'curid' => $program->id,
+            'name' => 'testtrackname',
+            'idnumber' => 'testtrackidnumber',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        ));
         $track->save();
 
         // run the track create action
@@ -303,9 +308,11 @@ class elis_createorupdate2_test extends elis_database_test {
         $importplugin->process_record('course', $record, 'bogus');
 
         // validation
-        $this->assertTrue($DB->record_exists(track::TABLE, array('name' => 'testtrackname',
-                                                                 'idnumber' => 'testtrackidnumber',
-                                                                 'startdate' => mktime(0, 0, 0, 1, 2, 2012))));
+        $this->assertTrue($DB->record_exists(track::TABLE, array(
+            'name' => 'testtrackname',
+            'idnumber' => 'testtrackidnumber',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 2, 2012)
+        )));
     }
 
     /**
@@ -548,9 +555,11 @@ class elis_createorupdate2_test extends elis_database_test {
         $importplugin->process_record('enrolment', $record, 'bogus');
 
         // validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('classid' => $class->id,
-                                                                   'userid' => $user->id,
-                                                                   'completetime' => mktime(0, 0, 0, 1, 1, 2012))));
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'classid' => $class->id,
+            'userid' => $user->id,
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        )));
     }
 
     /**
@@ -588,9 +597,11 @@ class elis_createorupdate2_test extends elis_database_test {
         $user->save();
 
         // create the test student enrolment
-        $student = new student(array('classid' => $class->id,
-                                     'userid' => $user->id,
-                                     'completetime' => mktime(0, 0, 0, 1, 1, 2012)));
+        $student = new student(array(
+            'classid' => $class->id,
+            'userid' => $user->id,
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        ));
         $student->save();
 
         // run the student enrolment create action
@@ -605,9 +616,11 @@ class elis_createorupdate2_test extends elis_database_test {
         $importplugin->process_record('enrolment', $record, 'bogus');
 
         // validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('classid' => $class->id,
-                                                                   'userid' => $user->id,
-                                                                   'completetime' => mktime(0, 0, 0, 1, 2, 2012))));
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'classid' => $class->id,
+            'userid' => $user->id,
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 2, 2012)
+        )));
     }
 
     /**
@@ -656,9 +669,11 @@ class elis_createorupdate2_test extends elis_database_test {
         $importplugin->process_record('enrolment', $record, 'bogus');
 
         // validation
-        $this->assertTrue($DB->record_exists(instructor::TABLE, array('classid' => $class->id,
-                                                                      'userid' => $user->id,
-                                                                      'completetime' => mktime(0, 0, 0, 1, 1, 2012))));
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array(
+            'classid' => $class->id,
+            'userid' => $user->id,
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        )));
     }
 
     /**
@@ -696,9 +711,11 @@ class elis_createorupdate2_test extends elis_database_test {
         $user->save();
 
         // create the instructor enrolment user
-        $instructor = new instructor(array('classid' => $class->id,
-                                           'userid' => $user->id,
-                                           'completetime' => mktime(0, 0, 0, 1, 1, 2012)));
+        $instructor = new instructor(array(
+            'classid' => $class->id,
+            'userid' => $user->id,
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        ));
         $instructor->save();
 
         // run the instructor enrolment create action
@@ -714,9 +731,11 @@ class elis_createorupdate2_test extends elis_database_test {
         $importplugin->process_record('enrolment', $record, 'bogus');
 
         // validation
-        $this->assertTrue($DB->record_exists(instructor::TABLE, array('classid' => $class->id,
-                                                                      'userid' => $user->id,
-                                                                      'completetime' => mktime(0, 0, 0, 1, 2, 2012))));
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array(
+            'classid' => $class->id,
+            'userid' => $user->id,
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 2, 2012)
+        )));
     }
 
     /**
@@ -782,7 +801,7 @@ class elis_createorupdate2_test extends elis_database_test {
         $params = array(
             'classid'      => $class->id,
             'userid'       => $user->id,
-            'completetime' => mktime(0, 0, 0, 1, 1, 2012)
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
         );
 
         $this->assertTrue($DB->record_exists(student::TABLE, $params));
@@ -790,20 +809,20 @@ class elis_createorupdate2_test extends elis_database_test {
         // (2) Run the second student enrolment
         $record->completetime = 'Jan/02/2012';
         $importplugin->process_record('enrolment', clone($record), 'bogus');
-        $params['completetime'] = mktime(0, 0, 0, 1, 2, 2012);
+        $params['completetime'] = rlip_timestamp(0, 0, 0, 1, 2, 2012);
         $this->assertTrue($DB->record_exists(student::TABLE, $params));
 
         // (3) Run the first teacher enrolment
         $record->role         = 'instructor';
         $record->completetime = 'Jan/01/2012';
         $importplugin->process_record('enrolment', clone($record), 'bogus');
-        $params['completetime'] = mktime(0, 0, 0, 1, 1, 2012);
+        $params['completetime'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
         $this->assertTrue($DB->record_exists(instructor::TABLE, $params));
 
         // (4) Run the second teacher enrolment
         $record->completetime = 'Jan/02/2012';
         $importplugin->process_record('enrolment', clone($record), 'bogus');
-        $params['completetime'] = mktime(0, 0, 0, 1, 2, 2012);
+        $params['completetime'] = rlip_timestamp(0, 0, 0, 1, 2, 2012);
         $this->assertTrue($DB->record_exists(instructor::TABLE, $params));
     }
 
