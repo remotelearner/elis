@@ -490,9 +490,17 @@ $.fn.deepsight_action_enroledit = function(options) {
                     actions: actions,
                     enroldata: enroldata
                 },
-                dataType: 'json',
+                dataType: 'text',
                 success: function(data) {
                     modal.removeClass('loading');
+
+                    try {
+                        data = ds_parse_safe_json(data);
+                    } catch(err) {
+                        modal.render_error(errormsg);
+                        return false;
+                    }
+
                     if (typeof(data) == 'object' && data != null && typeof(data.result) != 'undefined') {
                         if (data.result == 'success') {
                             modal.remove_modal();

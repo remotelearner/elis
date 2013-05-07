@@ -174,10 +174,6 @@ class studentpage extends deepsightpage {
         $class = new pmclass($classid);
 
         echo '<div style="display:inline-block;width:100%;margin-bottom:10px">';
-        if ($this->can_do('add')) {
-            echo '<a href="index.php?s=stu&amp;section=curr&amp;action=add&amp;id='.$classid.'" style="font-size:125%">';
-            echo '<strong>'.get_string('enrolstudents', static::LANG_FILE).'</strong></a>';
-        }
         $this->print_num_items($classid, $class->maxstudents);
         echo '</div>';
         parent::display_default();
@@ -198,15 +194,15 @@ class studentpage extends deepsightpage {
         $langmaxstudents = get_string('num_max_students', static::LANG_FILE);
 
         if (!empty($students[STUSTATUS_FAILED])) {
-            echo '<div style="float:right;">'.$langfailed.': '.$students[STUSTATUS_FAILED].'</div><br />';
+            // echo '<div style="float:right;">'.$langfailed.': '.$students[STUSTATUS_FAILED].'</div><br />';
         }
 
         if (!empty($students[STUSTATUS_PASSED])) {
-            echo '<div style="float:right;">'.$langpassed.': '.$students[STUSTATUS_PASSED].'</div><br />';
+            // echo '<div style="float:right;">'.$langpassed.': '.$students[STUSTATUS_PASSED].'</div><br />';
         }
 
         if (!empty($students[STUSTATUS_NOTCOMPLETE])) {
-            echo '<div style="float:right;">'.$langnotcomplete.': '.$students[STUSTATUS_NOTCOMPLETE].'</div><br />';
+            // echo '<div style="float:right;">'.$langnotcomplete.': '.$students[STUSTATUS_NOTCOMPLETE].'</div><br />';
         }
 
         if (!empty($max)) {

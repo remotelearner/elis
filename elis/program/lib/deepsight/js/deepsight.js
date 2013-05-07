@@ -398,12 +398,10 @@ $.fn.deepsight_bulkactionpanel = function(options) {
 
         opts.datatable.find('tr.ds_multiselect.selected').each(function() {
             var row = $(this);
-            opts.datatable.bulklist_add(row.data('id'));
+            opts.datatable.removefromtable('bulklist_add', row.data('id'));
             updatedisplaydata.page_results_ids.push(row.data('id'));
             updatedisplaydata.page_results_values.push(row.data('label'));
             updatedisplaydata.total_results++;
-            row.remove();
-            opts.datatable.add_loading_row();
         });
         main.update_display(e, updatedisplaydata);
         //main.update_addselected_display({}, {total:0});
@@ -600,7 +598,7 @@ $.fn.deepsight_bulkactionpanel = function(options) {
         var elecontentslist = elecontents.find('ul');
         $(elementstoadd.get().reverse()).each(function() {
             elecontentslist.prepend(main.render_item($(this).data('id'), $(this).data('label')));
-            opts.datatable.bulklist_add($(this).data('id'));
+            opts.datatable.removefromtable('bulklist_add', $(this).data('id'));
         });
     }
 
@@ -966,7 +964,6 @@ $.fn.deepsight_datatable = function(options) {
     this.bulklist_add_queue = {elements: [], timeout: null, ajax:null};
     this.bulklist_remove_queue = {elements: [], timeout: null, ajax:null};
     this.bulklist_get_queue = {page: 1, timeout: null};
-    this.bulklist_add_compensate_queue = {ajax: null};
     this.updatetable_queue = {timeout: null, ajax: null};
 
     /**
@@ -1152,50 +1149,97 @@ $.fn.deepsight_datatable = function(options) {
     }
 
     /**
-     * Adds elements to the bulklist, and fetches the next [x] rows to compensate for the addition.
-     *
-     * This is fired whenever an element is dragged off of the datatable (i.e. to the bulk action panel), and fills in the missing
-     * space.
+     * Remove an element from the table, and perform all necessary UI effect.
+     * @param string actiontype The action that removed the element.
+     * @param int id The ID of the element to remove.
      */
-    this.bulklist_add_compensate = function() {
-        main.bulklist_add_queue.timeout = null;
+    this.removefromtable = function(actiontype, id) {
+        console.log('removing '+id+' from table');
+        var queuename = actiontype+'_queue';
+        if (typeof(main[queuename]) == 'undefined') {
+            main[queuename] = {
+                timeout: null,
+                elements: [],
+                ajax: null
+            }
+        }
 
-        if (main.bulklist_add_queue.elements.length <= 0) {
+        var row = $('tr[data-id='+id+']');
+        row.remove();
+        main.add_loading_row();
+
+        if (main[queuename].timeout != null) {
+            clearTimeout(main[queuename].timeout);
+            main[queuename].timeout = null;
+        }
+        main[queuename].elements.push(id);
+        main[queuename].timeout = setTimeout(function() { main.addtotable(actiontype); }, 500);
+    }
+
+    /**
+     * Adds individual elements to the end of the current page. This is used when compensating for moving elements to the bulk
+     * list, or for actions that remove items from the list, i.e. assign actions.
+     * @param string actiontype The action that removed the element.
+     * @return bool Success/Failure
+     */
+    this.addtotable = function(actiontype) {
+        var queuename = actiontype+'_queue';
+        main[queuename].timeout = null;
+
+        if (main[queuename].elements.length <= 0) {
             return false;
         }
 
         var ajaxdata = {
             m: 'datatable_results',
-            limit_from: ((main.page*opts.resultsperpage)-main.bulklist_add_queue.elements.length),
-            limit_num: main.bulklist_add_queue.elements.length,
+            limit_from: ((main.page*opts.resultsperpage)-main[queuename].elements.length),
+            limit_num: main[queuename].elements.length,
             sesskey: opts.sesskey,
             uniqid: opts.uniqid,
             sort: main.fieldsort,
             filters: JSON.stringify(main.filters),
             bulklist_add: []
         }
-        for (var i in main.bulklist_add_queue.elements) {
-            ajaxdata.bulklist_add.push(main.bulklist_add_queue.elements[i]);
+        ajaxdata[actiontype] = [];
+
+        for (var i in main[queuename].elements) {
+            ajaxdata[actiontype].push(main[queuename].elements[i]);
         }
 
-        if (main.bulklist_add_compensate_queue.ajax && main.bulklist_add_compensate_queue.ajax.readyState != 4) {
-            main.bulklist_add_compensate_queue.ajax.abort();
+        // Initalize queue if necessary
+        if (typeof(main.addtotablequeue) == 'undefined') {
+            this.addtotablequeue = [];
+        }
+        if (typeof(main.addtotablequeue[queuename]) == 'undefined') {
+            main.addtotablequeue[queuename] = {
+                ajax: null
+            }
         }
 
-        main.bulklist_add_compensate_queue.ajax = $.ajax({
+        // If an existing request has yet to finish, abort.
+        if (main.addtotablequeue[queuename].ajax && main.addtotablequeue[queuename].ajax.readyState != 4) {
+            main.addtotablequeue[queuename].ajax.abort();
+        }
+
+        main.addtotablequeue[queuename].ajax = $.ajax({
             type: 'POST',
             url: main.results_endpoint,
             data: ajaxdata,
             dataType: 'text',
             success: function(data) {
 
-                    for (var i in ajaxdata.bulklist_add) {
-                        var valpos = $.inArray(ajaxdata.bulklist_add[i], main.bulklist_add_queue.elements);
-                        if (valpos >= -1) {
-                            main.bulklist_add_queue.elements.splice(valpos, 1);
+                    // We specifically remove the elements we sent rather than clearing the whole queue in case new elements
+                    // have been added since.
+                    if (ajaxdata[actiontype].length > 0) {
+                        for (var i in ajaxdata[actiontype]) {
+                            var valpos = $.inArray(ajaxdata[actiontype][i], main[queuename].elements);
+                            if (valpos >= -1) {
+                                main[queuename].elements.splice(valpos, 1);
+                            }
                         }
                     }
 
+                    // Try to parse the returned JSON, or show error.
                     try {
                         data = ds_parse_safe_json(data);
                     } catch(err) {
@@ -1205,13 +1249,15 @@ $.fn.deepsight_datatable = function(options) {
 
                     ds_debug('[datatable.doupdatetable] Updated. Data received: ', data);
 
+                    // If the bulklit was modified, fire event.
                     if (typeof(data.bulklist_modify) != 'undefined' && typeof(data.bulklist_modify.result) != 'undefined'
                             && data.bulklist_modify.result == 'success') {
-                        if (main.bulklist_add_compensate_queue.ajax && main.bulklist_add_compensate_queue.ajax.readyState == 4) {
+                        if (main.addtotablequeue[queuename].ajax && main.addtotablequeue[queuename].ajax.readyState == 4) {
                             main.trigger('bulklist_modified', data.bulklist_modify);
                         }
                     }
 
+                    // If we have a successful response, add the results to the table.
                     if (typeof(data.datatable_results) != 'undefined' && typeof(data.datatable_results.result) != 'undefined'
                             && data.datatable_results.result == 'success') {
                         main.numresults = data.datatable_results.total_results;
@@ -1222,7 +1268,7 @@ $.fn.deepsight_datatable = function(options) {
                             }
                             main.render_sort_display();
                         } else {
-                            main.find('tr.loading').slice(0, ajaxdata.bulklist_add.length).remove();
+                            main.find('tr.loading').slice(0, ajaxdata[actiontype].length).remove();
                             if (main.find('tr').length == 1) {
                                 // no results
                                 main.find('tr.loading').remove();
@@ -1234,31 +1280,17 @@ $.fn.deepsight_datatable = function(options) {
                         }
                         main.siblings('.ds_pagelinks').remove();
                         main.after(main.render_pagelinks());
+                        return true;
                     } else {
                         main.render_error(data.msg);
+                        return false;
                     }
 
             },
             error: function(jqXHR, textStatus, errorThrown) {
             }
         });
-    }
-
-    /**
-     * Adds an ID to the bulk list.
-     *
-     * This will be passed to the dataurl when updating the table to indicate we do not want this returned in the results list.
-     *
-     * @param int id An ID to add to the bulk list.
-     */
-    this.bulklist_add = function(id) {
-        main.abortupdatetable();
-        if (main.bulklist_add_queue.timeout != null) {
-            clearTimeout(main.bulklist_add_queue.timeout);
-            main.bulklist_add_queue.timeout = null;
-        }
-        main.bulklist_add_queue.elements.push(id);
-        main.bulklist_add_queue.timeout = setTimeout(main.bulklist_add_compensate, 500);
+        return true;
     }
 
     /**
@@ -1693,13 +1725,6 @@ $.fn.deepsight_datatable = function(options) {
                     if ($(this).hasClass('dropped') != true) {
                         main.find('tr.selected').removeClass('dragactive');
                         $(this).removeClass('dragactive');
-                    } else {
-                        var dragactives = main.find('tr.dragactive');
-                        dragactives.each(function() {
-                            $(this).removeClass('active').next('.deepsight_actionpanel_tr').remove();
-                            main.add_loading_row();
-                        });
-                        main.find('tr.dragactive').remove();
                     }
                     $('body').css('cursor', 'auto');
                     main.trigger('dragstop');
@@ -1730,7 +1755,7 @@ $.fn.deepsight_datatable = function(options) {
     }
 
     /**
-     * Add a placeholder row when we are loading single rows of the table (i.e. for bulklist_add_compensate)
+     * Add a placeholder row when we are loading single rows of the table
      */
     this.add_loading_row = function() {
         var row = $('<tr class="loading"><td colspan="'+(main.num_columns)+'">&nbsp;</td></tr>');
@@ -2125,6 +2150,7 @@ $.fn.fancy_tooltip = function(options) {
         var eleleft = eleoffset.left;
         var eletop = eleoffset.top;
 
+        $('div.fancy_tooltip').remove();
         main.tooltip = $('<div class="fancy_tooltip '+opts.position+'" style="position:absolute;">'+eletitle+'</div>');
         $('body').append(main.tooltip);
 
