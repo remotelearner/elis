@@ -99,6 +99,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
             'cache_flags' => 'moodle',
             'context' => 'moodle',
             'config_plugins' => 'moodle',
+            'message' => 'moodle',
             'role' => 'moodle',
             'role_assignments' => 'moodle',
             'role_capabilities' => 'moodle',
@@ -141,6 +142,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
 
         return array(
+            'user_enrolments' => 'moodle',
             coursetemplate::TABLE => 'elis_program',
             student_grade::TABLE => 'elis_program'
         );
@@ -436,15 +438,17 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('classid' => $pmclass->id,
-                                                                   'userid' => $userid,
-                                                                   'enrolmenttime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                   'completetime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                   'completestatusid' => student::STUSTATUS_PASSED,
-                                                                   'grade' => 50,
-                                                                   'credits' => 1,
-                                                                   'locked' => 1)));
+        // validation
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'classid' => $pmclass->id,
+            'userid' => $userid,
+            'enrolmenttime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completestatusid' => student::STUSTATUS_PASSED,
+            'grade' => 50,
+            'credits' => 1,
+            'locked' => 1
+        )));
     }
 
     /**
@@ -500,8 +504,8 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $expectdata = array(
             'classid'          => $pmclass->id,
             'userid'           => $userid,
-            'enrolmenttime'    => mktime(0, 0, 0, 1, 2, 2012),
-            'completetime'     => mktime(0, 0, 0, 1, 2, 2012),
+            'enrolmenttime'    => rlip_timestamp(0, 0, 0, 1, 2, 2012),
+            'completetime'     => rlip_timestamp(0, 0, 0, 1, 2, 2012),
             'completestatusid' => student::STUSTATUS_FAILED,
             'grade'            => 100,
             'credits'          => 2,
@@ -587,11 +591,13 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(instructor::TABLE, array('classid' => $pmclass->id,
-                                                                      'userid' => $userid,
-                                                                      'assigntime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                      'completetime' => mktime(0, 0, 0, 1, 1, 2012))));
+        // validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array(
+            'classid' => $pmclass->id,
+            'userid' => $userid,
+            'assigntime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        )));
     }
 
     /**
@@ -634,11 +640,13 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(instructor::TABLE, array('classid' => $pmclass->id,
-                                                                      'userid' => $userid,
-                                                                      'assigntime' => mktime(0, 0, 0, 1, 2, 2012),
-                                                                      'completetime' => mktime(0, 0, 0, 1, 2, 2012))));
+        // validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array(
+            'classid' => $pmclass->id,
+            'userid' => $userid,
+            'assigntime' => rlip_timestamp(0, 0, 0, 1, 2, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 2, 2012))
+        ));
     }
 
     /**

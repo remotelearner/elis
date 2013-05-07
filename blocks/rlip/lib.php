@@ -1357,3 +1357,58 @@ function rlip_data_root_path_translation($path) {
     return false;
 }
 
+/**
+ * Function to convert time in user's timezone to GMT
+ * Note: Moodle function usertime() doesn't include DST offset
+ * from: /elis/program/lib/lib.php::pm_gmt_from_usertime()
+ * @param int $usertime timestamp in user's timezone
+ * @param float|int|string $timezone optional timezone to use, defaults to user's
+ * @return int  timestamp in GMT
+ */
+function rlip_gmt_from_usertime($usertime, $timezone = 99) {
+    $tz = get_user_timezone_offset($timezone);
+    if (abs($tz) > 13) {
+        return $usertime;
+    }
+    $usertime -= (int)($tz * HOURSECS);
+    if ($timezone == 99 || !is_numeric($timezone)) {
+        $usertime -= dst_offset_on($usertime, $timezone);
+    }
+    return $usertime;
+}
+
+/**
+ * Given date/time components return the equivalent GMT timestamp for specified
+ * date/time in user's timezone.
+ *
+ * @param int $hour            the hour in specified or user's timezone (0-23)
+ * @param int $minute          the minute in specified or user's timezone (0-59)
+ * @param int $second          the second in specified or user's timezone (0-59)
+ * @param int $month           the month in specified or user's timezone (1-12)
+ * @param int $day             the day in specified or user's timezone (0-31)
+ * @param int $year            the year in specified or user's timezone
+ * @param int|string $timezone the timezone the specified time is relative to.
+ * @return int the GMT timestamp in specified or user's timezone
+ */
+function rlip_timestamp($hour = null, $minute = null, $second = null, $month = null, $day = null, $year = null, $timezone = 99) {
+    if ($hour === null) {
+        $hour = gmdate('H');
+    }
+    if ($minute === null) {
+        $minute = gmdate('i');
+    }
+    if ($second === null) {
+        $second = gmdate('s');
+    }
+    if ($month === null) {
+        $month = gmdate('n');
+    }
+    if ($day === null) {
+        $day = gmdate('j');
+    }
+    if ($year === null) {
+        $year = gmdate('Y');
+    }
+    return make_timestamp($year, $month, $day, $hour, $minute, $second, $timezone);
+}
+

@@ -1167,7 +1167,7 @@ class elis_entity_import_test extends elis_database_test {
                 list($year, $month, $day) = $parts;
             }
 
-            $timestamp = mktime(0, 0, 0, $month, $day, $year);
+            $timestamp = rlip_timestamp(0, 0, 0, $month, $day, $year);
             $input[$fieldkey] = $timestamp;
         }
     }

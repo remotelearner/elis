@@ -162,8 +162,8 @@ class elis_track_import_test extends elis_database_test {
         $data['enddate'] = 'Jan/01/2012';
         $this->run_core_track_import($data, false);
 
-        $data['startdate'] = mktime(0, 0, 0, 1, 1, 2012);
-        $data['enddate'] = mktime(0, 0, 0, 1, 1, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
+        $data['enddate'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
 
         unset($data['action'],$data['context'],$data['assignment'],$data['description']);
         $this->assertTrue($DB->record_exists('crlm_track', $data));
@@ -204,8 +204,8 @@ class elis_track_import_test extends elis_database_test {
         $this->run_core_track_import($data, false);
 
         unset($data['action'], $data['context'], $data['description']);
-        $data['startdate'] = mktime(0, 0, 0, 1, 1, 2012);
-        $data['enddate'] = mktime(0, 0, 0, 1, 1, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
+        $data['enddate'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
 
         $this->assertTrue($DB->record_exists('crlm_track', $data));
     }
