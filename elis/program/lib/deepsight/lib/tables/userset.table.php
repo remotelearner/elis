@@ -42,9 +42,12 @@ class deepsight_datatable_userset extends deepsight_datatable_standard {
     protected function get_filters() {
         $langname = get_string('userset_name', 'elis_program');
 
-        return array(
+        $filters = array(
             new deepsight_filter_textsearch($this->DB, 'name', $langname, array('element.name' => $langname)),
         );
+
+        $customfieldfilters = $this->get_custom_field_info(CONTEXT_ELIS_USERSET);
+        return array_merge($filters, $customfieldfilters);
     }
 
     /**

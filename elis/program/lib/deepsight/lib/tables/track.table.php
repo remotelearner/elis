@@ -49,7 +49,7 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
         $langstartdate = get_string('track_startdate', 'elis_program');
         $langenddate = get_string('track_enddate', 'elis_program');
 
-        return array(
+        $filters = array(
             new deepsight_filter_textsearch($this->DB, 'name', $langname, array('element.name' => $langname)),
             new deepsight_filter_textsearch($this->DB, 'idnumber', $langidnumber, array('element.idnumber' => $langidnumber)),
             new deepsight_filter_searchselect($this->DB, 'program_name', $langpgmname, array('pgm.name' => $langpgmname),
@@ -57,6 +57,9 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
             new deepsight_filter_date($this->DB, 'startdate', $langstartdate, array('element.startdate' => $langstartdate)),
             new deepsight_filter_date($this->DB, 'enddate', $langenddate, array('element.enddate' => $langenddate)),
         );
+
+        $customfieldfilters = $this->get_custom_field_info(CONTEXT_ELIS_TRACK);
+        return array_merge($filters, $customfieldfilters);
     }
 
     /**

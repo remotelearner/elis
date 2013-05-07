@@ -47,12 +47,15 @@ class deepsight_datatable_program extends deepsight_datatable_standard {
         $langdesc = get_string('curriculum_description', 'elis_program');
         $langrqcredits = get_string('curriculum_reqcredits', 'elis_program');
 
-        return array(
+        $filters = array(
             new deepsight_filter_textsearch($this->DB, 'name', $langname, array('element.name' => $langname)),
             new deepsight_filter_textsearch($this->DB, 'idnumber', $langidnumber, array('element.idnumber' => $langidnumber)),
             new deepsight_filter_textsearch($this->DB, 'description', $langdesc, array('element.description' => $langdesc)),
             new deepsight_filter_textsearch($this->DB, 'reqcredits', $langrqcredits, array('element.reqcredits' => $langrqcredits)),
         );
+
+        $customfieldfilters = $this->get_custom_field_info(CONTEXT_ELIS_PROGRAM);
+        return array_merge($filters, $customfieldfilters);
     }
 
     /**
