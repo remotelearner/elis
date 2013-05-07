@@ -162,7 +162,7 @@ class version1CourseImportTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        global $DB;
+        global $CFG, $DB;
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
@@ -248,6 +248,10 @@ class version1CourseImportTest extends rlip_test {
 
         if ($DB->get_manager()->table_exists('course_sections_availability')) {
             $tables['course_sections_availability'] = 'moodle';
+        }
+
+        if ($DB->get_manager()->table_exists('elis_files_course_store') && file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
+            $tables['elis_files_course_store'] = 'repository_elis_files';
         }
 
         return $tables;
@@ -673,7 +677,7 @@ class version1CourseImportTest extends rlip_test {
 
         $this->run_core_course_import($data);
 
-        $data['startdate'] = mktime(0, 0, 0, 1, 1, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
         unset($data['guest']);
         unset($data['password']);
 
@@ -729,7 +733,7 @@ class version1CourseImportTest extends rlip_test {
         unset($data['action']);
         unset($data['guest']);
         unset($data['password']);
-        $data['startdate'] = mktime(0, 0, 0, 1, 12, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 12, 2012);
         $data['category'] = $new_category->id;
 
         $courseid = $this->assert_core_course_exists($data);
@@ -765,7 +769,7 @@ class version1CourseImportTest extends rlip_test {
         unset($data['action']);
         unset($data['category']);
         unset($data['guest']);
-        $data['startdate'] = mktime(0, 0, 0, 1, 2, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 2, 2012);
 
         $courseid = $this->assert_core_course_exists($data);
 
@@ -797,9 +801,11 @@ class version1CourseImportTest extends rlip_test {
                       'category' => 'childcategory');
         $this->run_core_course_import($data, false);
 
-        //data validation
-        $data = array('shortname' => 'legacystartdateupdate',
-                      'startdate' => mktime(0, 0, 0, 1, 2, 2012));
+        // data validation
+        $data = array(
+            'shortname' => 'legacystartdateupdate',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 2, 2012)
+        );
 
         $this->assert_record_exists('course', $data);
     }
@@ -850,7 +856,7 @@ class version1CourseImportTest extends rlip_test {
         unset($data['action']);
         unset($data['guest']);
         unset($data['password']);
-        $data['startdate'] = mktime(0, 0, 0, 1, 12, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 12, 2012);
         $data['category'] = $new_category->id;
 
         $courseid = $this->assert_core_course_exists($data);
@@ -942,9 +948,11 @@ class version1CourseImportTest extends rlip_test {
 
         $this->run_core_course_import($data, false);
 
-        //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'invalidcoursestartdateupdate',
-                                                    'startdate' => mktime(0, 0, 0, 1, 1, 2012)));
+        // make sure the data hasn't changed
+        $this->assert_record_exists('course', array(
+            'shortname' => 'invalidcoursestartdateupdate',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        ));
     }
 
     /**
@@ -3071,7 +3079,7 @@ class version1CourseImportTest extends rlip_test {
             $DB->insert_record(RLIPIMPORT_VERSION1_MAPPING_TABLE, $record);
         }
 
-        //run the import
+        // run the import
         $data = array(
             'entity'       => 'course',
             'action1'      => 'create',
@@ -3101,7 +3109,7 @@ class version1CourseImportTest extends rlip_test {
             'summary'     => 'fieldmappingsummary',
             'format'      => 'social',
             'numsections' => 15,
-            'startdate'   => mktime(0, 0, 0, 1, 1, 2012),
+            'startdate'   => rlip_timestamp(0, 0, 0, 1, 1, 2012),
             'newsitems'   => 8,
             'showgrades'  => 0,
             'showreports' => 1,

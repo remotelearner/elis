@@ -266,137 +266,118 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * to a unix timestamp
      * @todo: consider further generalizing / moving to base class
      *
-     * @param string $date Date in MMM/DD/YYYY format
+     * @param string $date Date in MMM/DD/YYYY format, or MMM/DD/YYYY:HH:MM format if $include_time is true
      * @param boolean $old_formats Only support old (legacy) formats if set to true
      * @param boolean $include_time For including time
+     * @param int     $min_year     For validating year >= minimum allowed
+     * @param int     $max_year     For validating year <= maximum allowed
+     * @param bool    &$year_oor    return param, if true, indicates year out-of-range
      * @return mixed The unix timestamp, or false if date is
      *               not in the right format
      */
-    function parse_date($date, $old_formats = true, $include_time = false) {
-        //determine which case we are in
-        if (strpos($date, '/') !== false) {
-            $delimiter = '/';
-        } else if (strpos($date, '-') !== false) {
-            $delimiter = '-';
-        } else if (strpos($date, '.') !== false) {
-            $delimiter = '.';
-        } else {
-            return false;
-        }
-        //make sure there are three parts
-        $parts = explode($delimiter, $date);
-        if (count($parts) != 3) {
+    function parse_date($date, $old_formats = true, $include_time = false, $min_year = 0, $max_year = 0, &$year_oor = null) {
+        if (!is_string($date)) {
             return false;
         }
 
-        $time = explode(':', $date);
+        $valid = preg_match('|^([a-zA-Z0-9]+)([/\-.])([0-9]+)[/\-.]([0-9]+)[ :]([0-9]+):([0-9]+)|', $date, $matches);
+        // TBD: if ($valid && !$include_time) { return false; }
+        // we'll just ignore the time info later if it's not allowed
+        if (!$valid) {
+            $valid = preg_match('|^([a-zA-Z0-9]+)([/\-.])([0-9]+)[/\-.]([0-9]+)|', $date, $matches);
+        }
 
-        //validate that we have just a date, or a date + time (if time is allowed)
-        $parts_valid = count($time) == 1 || $include_time && count($time) == 3;
-        if (!$parts_valid) {
+        $matchcount = count($matches);
+        if (!$valid || ($matchcount != 5 && $matchcount != 7)) {
+            // invalid format
             return false;
         }
 
-        $include_time = $include_time && count($time) > 1;
+        if ($year_oor !== null) {
+            $year_oor = false;
+        }
 
+        $delimiter = $matches[2];
         if ($delimiter == '/') {
-            //MMM/DD/YYYY or MM/DD/YYYY format
-            //make sure the month is valid
-
-            //time specified
-            if ($include_time) {
-                list($month, $day) = $parts;
-                $year = substr($parts[2], 0, strpos($parts[2], ':'));
-            } else {
-                list($month, $day, $year) = $parts;
-            }
-
+            // MMM/DD/YYYY or MM/DD/YYYY format
+            // make sure the month is valid
             $months = array('jan', 'feb', 'mar', 'apr',
                             'may', 'jun', 'jul', 'aug',
                             'sep', 'oct', 'nov', 'dec');
-            $pos = array_search(strtolower($month), $months);
+            $pos = array_search(strtolower($matches[1]), $months);
             if ($pos === false) {
-                //legacy format (zero values handled below by checkdate)
-                $month = (int)$month;
-
+                // legacy format (zero values handled below by checkdate)
+                $month = $matches[1];
             } else {
-                //new "text" format
+                // new "text" format
                 $month = $pos + 1;
             }
+            $day = $matches[3];
+            $year = $matches[4];
         } else if ($delimiter == '-') {
-            //DD-MM-YYYY format
+            // DD-MM-YYYY format
             if (!$old_formats) {
-                //not supporting this
+                // not supporting this
                 return false;
             }
 
-            //time specified
-            if ($include_time) {
-                list($day, $month) = $parts;
-                $year = substr($parts[2], 0, strpos($parts[2], ':'));
-            } else {
-                list($day, $month, $year) = $parts;
-            }
-            //TODO: consider doing more validation on month being an integer
+            $day = $matches[1];
+            $month = $matches[3];
+            $year = $matches[4];
         } else {
-            //YYYY.MM.DD format
+            // YYYY.MM.DD format
             if (!$old_formats) {
-                //not supporting this
+                // not supporting this
                 return false;
             }
 
-            //time specified
-            if ($include_time) {
-                $month = $parts[1];
-                $day = $parts[2];
-                $year = substr($parts[0], 0, strpos($parts[0], ':'));
-            } else {
-                list($year, $month, $day) = $parts;
-            }
-            //TODO: consider doing more validation on month being an integer
+            $year = $matches[1];
+            $month = $matches[3];
+            $day = $matches[4];
         }
 
         //make sure the combination of date components is valid
         if (!preg_match('/^\d{1,2}$/', $day)) {
-            //invalid day
+            // invalid day
             return false;
         }
 
         if (!preg_match('/^\d\d\d\d$/', $year)) {
-            //invalid year
+            // invalid year
             return false;
         }
 
-        $day = (int)$day;
-        $year = (int)$year;
+        $day = intval($day);
+        $month = intval($month);
+        $year = intval($year);
 
         if (!checkdate($month, $day, $year)) {
-            //invalid combination of month, day and year
+            // invalid combination of month, day and year
+            return false;
+        }
+
+        if (($min_year && $year < $min_year) || ($max_year && $year > $max_year)) {
+            // year not in allowed range
+            if ($year_oor !== null) {
+                $year_oor = true;
+            }
             return false;
         }
 
         $hour = 0;
         $minute = 0;
 
-        //time specified
-        if ($include_time) {
-            $hour_numeric = preg_match('/^\d{1,2}$/', $time[1]);
-            $minute_numeric = preg_match('/^\d{1,2}$/', $time[2]);
-
-            if ($hour_numeric && $minute_numeric) {
-                //determine if time is valid
-                $hour = (int) $time[1];
-                $minute = (int) $time[2];
-                if (!($hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59)) {
-                    return false;
-                }
-            } else {
+        // time specified
+        if ($include_time && $matchcount == 7) {
+            $hour = intval($matches[5]);
+            $minute = intval($matches[6]);
+            if (!($hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59)) {
                 return false;
             }
         }
 
-        //return unix timestamp
-        return mktime($hour, $minute, 0, $month, $day, $year);
+        // return unix timestamp
+        return rlip_timestamp($hour, $minute, 0, $month, $day, $year);
     }
 
     /**
@@ -3833,8 +3814,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
-        //determine enrolment and completion times
-        $today = mktime(0, 0, 0);
+        // determine enrolment and completion times
+        $today = rlip_timestamp(0, 0, 0);
         if (isset($record->enrolmenttime)) {
             $enrolmenttime = $this->parse_date($record->enrolmenttime);
         } else {
@@ -3925,7 +3906,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
         // determine assignment and completion times
-        $today = mktime(0, 0, 0);
+        $today = rlip_timestamp(0, 0, 0);
         if (isset($record->assigntime)) {
             $assigntime = $this->parse_date($record->assigntime);
         } else {

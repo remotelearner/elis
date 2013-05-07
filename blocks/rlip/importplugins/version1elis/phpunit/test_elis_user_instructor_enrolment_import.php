@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
@@ -138,8 +139,8 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
-        //validation
-        $midnight_today = mktime(0, 0, 0);
+        // validation
+        $midnight_today = rlip_timestamp(0, 0, 0);
         $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
                                                                       'classid' => $class->id,
                                                                       'assigntime' => $midnight_today,
@@ -152,21 +153,23 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
      * @return array Parameter data, as needed by the test method
      */
     function date_provider() {
-        //legacy formats are MM/DD/YYYY, DD-MM-YYYY and YYYY.MM.DD
-        //also need to support cases with no leading zeros
+        // legacy formats are MM/DD/YYYY, DD-MM-YYYY and YYYY.MM.DD
+        // also need to support cases with no leading zeros
 
-        return array(//new MMM/DD/YYYY format
-                     array('Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('Feb/4/2012', mktime(0, 0, 0, 2, 4, 2012)),
-                     //legacy MM/DD/YYYY format
-                     array('01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('2/4/2012', mktime(0, 0, 0, 2, 4, 2012)),
-                     //legacy DD-MM-YYYY format
-                     array('03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('4-2-2012', mktime(0, 0, 0, 2, 4, 2012)),
-                     //legacy YYYY.MM.DD format
-                     array('2012.01.03', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('2012.2.4', mktime(0, 0, 0, 2, 4, 2012)));
+        return array(
+                // new MMM/DD/YYYY format
+                array('Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('Feb/4/2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
+                // legacy MM/DD/YYYY format
+                array('01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('2/4/2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
+                // legacy DD-MM-YYYY format
+                array('03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('4-2-2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
+                // legacy YYYY.MM.DD format
+                array('2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('2012.2.4', rlip_timestamp(0, 0, 0, 2, 4, 2012))
+        );
     }
 
     /**
@@ -274,8 +277,8 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
-        //validation
-        $midnight_today = mktime(0, 0, 0);
+        // validation
+        $midnight_today = rlip_timestamp(0, 0, 0);
         $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
                                                                       'classid' => $class->id,
                                                                       'assigntime' => $midnight_today,
@@ -288,16 +291,18 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
      * @return array Data needed for the appropriate unit test
      */
     function minimal_update_field_provider() {
-        //we are being sneaky and testing specific date and completion status format
-        //cases here as well
-        return array(array('assigntime', 'Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('assigntime', '01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('assigntime', '03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('assigntime', '2012.01.03', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completetime', 'Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completetime', '01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completetime', '03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completetime', '2012.01.03', mktime(0, 0, 0, 1, 3, 2012)));
+        // we are being sneaky and testing specific date and completion status format
+        // cases here as well
+        return array(
+                array('assigntime', 'Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('assigntime', '01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('assigntime', '03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('assigntime', '2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completetime', 'Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012))
+        );
     }
 
     /**
@@ -419,11 +424,13 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
-        //validation
-        $this->assertTrue($DB->record_exists(instructor::TABLE, array('userid' => $user->id,
-                                                                      'classid' => $class->id,
-                                                                      'assigntime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                      'completetime' => mktime(0, 0, 0, 2, 1, 2012))));
+        // validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id,
+            'assigntime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 2, 1, 2012)
+        )));
     }
 
     /**

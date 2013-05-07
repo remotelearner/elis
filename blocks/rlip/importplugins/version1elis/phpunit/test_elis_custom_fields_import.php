@@ -412,12 +412,14 @@ class elis_user_custom_fields_test extends elis_database_test {
      * @return array The data, as expected by the testing method
      */
     function ui_type_provider() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         return array(array('checkbox', '0', '0', '1', '1', 'testcheckbox', 'bool', NULL, NULL, NULL),
                      array('checkbox', '1', '1', '0', '0', 'testcheckbox', 'bool', NULL, NULL, NULL),
                      array('checkbox', 'yes', '1', 'no', '0', 'testcheckbox', 'bool', NULL, NULL, NULL),
                      array('checkbox', 'no',  '0', 'yes', '1', 'testcheckbox', 'bool', NULL, NULL, NULL),
-                     array('datetime', 'Jan/02/2012',  mktime(0, 0, 0, 1, 2, 2012), 'Feb/02/2012', mktime(0, 0, 0, 2, 2, 2012), 'textdatetime', 'datetime', NULL, '0', NULL),
-                     array('datetime', 'Jan/02/2012:01:30',  mktime(1, 30, 0, 1, 2, 2012), 'Feb/02/2012:01:30', mktime(1, 30, 0, 2, 2, 2012), 'textdatetime', 'datetime', NULL, '1', NULL),
+                     array('datetime', 'Jan/02/2012',  rlip_timestamp(0, 0, 0, 1, 2, 2012), 'Feb/02/2012', rlip_timestamp(0, 0, 0, 2, 2, 2012), 'textdatetime', 'datetime', NULL, '0', NULL),
+                     array('datetime', 'Jan/02/2012:01:30',  rlip_timestamp(1, 30, 0, 1, 2, 2012), 'Feb/02/2012:01:30', rlip_timestamp(1, 30, 0, 2, 2, 2012), 'textdatetime', 'datetime', NULL, '1', NULL),
                      array('password', 'passworddata', 'passworddata', 'passworddataupdated', 'passworddataupdated', 'testpassword', 'char', 100, NULL, NULL),
                      array('textarea', 'textareadata', 'textareadata', 'textareaupdated', 'textareaupdated', 'testtextarea', 'text', NULL, NULL, NULL),
                      array('text', '2.2', '2.2', '3.3', '3.3', 'testtext', 'num', 100, NULL, NULL),
