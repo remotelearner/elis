@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
 require_once($file);
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
 /**
  * Class for testing utility methods in the version 1 import plugin
@@ -43,7 +44,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
     public function testVersion1ImportParsesValidDate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('Jan/02/2010');
-        $this->assertEquals($timestamp, mktime(0, 0, 0, 1, 2, 2010));
+        $this->assertEquals($timestamp, rlip_timestamp(0, 0, 0, 1, 2, 2010));
     }
 
     /**
@@ -52,7 +53,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
     public function testVersion1ImportParsesValidLegacyDate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('01/02/2010');
-        $this->assertEquals($timestamp, mktime(0, 0, 0, 1, 2, 2010));
+        $this->assertEquals($timestamp, rlip_timestamp(0, 0, 0, 1, 2, 2010));
     }
 
     /**

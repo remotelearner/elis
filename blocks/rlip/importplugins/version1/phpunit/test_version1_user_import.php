@@ -1093,9 +1093,16 @@ class version1UserImportTest extends elis_database_test {
                                  'multivalued' => 0));
         $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
 
-        //make sure the field is set up for synchronization
+        // make sure the field owner is setup
+        field_owner::ensure_field_owner_exists($field, 'manual');
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+        $owner = new field_owner($ownerid);
+        $owner->param_control = 'text';
+        $owner->save();
+
+        // make sure the field is set up for synchronization
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id));
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
         $owner = new field_owner($ownerid);
         $owner->exclude = pm_moodle_profile::sync_from_moodle;
         $owner->save();
@@ -1164,9 +1171,16 @@ class version1UserImportTest extends elis_database_test {
                                  'multivalued' => 0));
         $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
 
-        //make sure the field is set up for synchronization
+        // make sure the field owner is setup
+        field_owner::ensure_field_owner_exists($field, 'manual');
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+        $owner = new field_owner($ownerid);
+        $owner->param_control = 'text';
+        $owner->save();
+
+        // make sure the field is set up for synchronization
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id));
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
         $owner = new field_owner($ownerid);
         $owner->exclude = pm_moodle_profile::sync_from_moodle;
         $owner->save();
@@ -1233,9 +1247,16 @@ class version1UserImportTest extends elis_database_test {
                                  'multivalued' => 0));
         $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
 
-        //make sure the field is set up for synchronization
+        // make sure the field owner is setup
+        field_owner::ensure_field_owner_exists($field, 'manual');
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+        $owner = new field_owner($ownerid);
+        $owner->param_control = 'text';
+        $owner->save();
+
+        // make sure the field is set up for synchronization
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id));
+        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
         $owner = new field_owner($ownerid);
         $owner->exclude = pm_moodle_profile::sync_from_moodle;
         $owner->save();
@@ -1539,9 +1560,9 @@ class version1UserImportTest extends elis_database_test {
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), true);
         $this->assertEquals($user->profile_field_rlipcheckbox, 1);
         $this->assertEquals(isset($user->profile_field_rlipdatetime), true);
-        $this->assertEquals($user->profile_field_rlipdatetime, mktime(0, 0, 0, 1, 12, 2011));
+        $this->assertEquals($user->profile_field_rlipdatetime, rlip_timestamp(0, 0, 0, 1, 12, 2011));
         $this->assertEquals(isset($user->profile_field_rliplegacydatetime), true);
-        $this->assertEquals($user->profile_field_rliplegacydatetime, mktime(0, 0, 0, 1, 12, 2011));
+        $this->assertEquals($user->profile_field_rliplegacydatetime, rlip_timestamp(0, 0, 0, 1, 12, 2011));
         $this->assertEquals(isset($user->profile_field_rlipmenu), true);
         $this->assertEquals($user->profile_field_rlipmenu, 'rlipoption1');
         $this->assertEquals(isset($user->profile_field_rliptextarea['text']), true);
@@ -1594,9 +1615,9 @@ class version1UserImportTest extends elis_database_test {
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), true);
         $this->assertEquals($user->profile_field_rlipcheckbox, 1);
         $this->assertEquals(isset($user->profile_field_rlipdatetime), true);
-        $this->assertEquals($user->profile_field_rlipdatetime, mktime(0, 0, 0, 1, 12, 2011));
+        $this->assertEquals($user->profile_field_rlipdatetime, rlip_timestamp(0, 0, 0, 1, 12, 2011));
         $this->assertEquals(isset($user->profile_field_rliplegacydatetime), true);
-        $this->assertEquals($user->profile_field_rliplegacydatetime, mktime(0, 0, 0, 1, 12, 2011));
+        $this->assertEquals($user->profile_field_rliplegacydatetime, rlip_timestamp(0, 0, 0, 1, 12, 2011));
         $this->assertEquals(isset($user->profile_field_rlipmenu), true);
         $this->assertEquals($user->profile_field_rlipmenu, 'rlipoption1');
         $this->assertEquals(isset($user->profile_field_rliptextarea['text']), true);
