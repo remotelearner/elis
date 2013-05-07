@@ -32,6 +32,7 @@ require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/co
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
 
 /**
@@ -156,8 +157,8 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
-        //validation
-        $midnight_today = mktime(0, 0, 0);
+        // validation
+        $midnight_today = rlip_timestamp(0, 0, 0);
         $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
                                                                    'classid' => $class->id,
                                                                    'enrolmenttime' => $midnight_today,
@@ -227,15 +228,17 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
-        //validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id,
-                                                                   'enrolmenttime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                   'completetime' => mktime(0, 0, 0, 2, 1, 2012),
-                                                                   'completestatusid' => student::STUSTATUS_PASSED,
-                                                                   'grade' => 80,
-                                                                   'credits' => 3,
-                                                                   'locked' => 1)));
+        // validation
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id,
+            'enrolmenttime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 2, 1, 2012),
+            'completestatusid' => student::STUSTATUS_PASSED,
+            'grade' => 80,
+            'credits' => 3,
+            'locked' => 1
+        )));
     }
 
     /**
@@ -244,21 +247,23 @@ class elis_user_student_enrolment_test extends elis_database_test {
      * @return array Parameter data, as needed by the test method
      */
     function date_provider() {
-        //legacy formats are MM/DD/YYYY, DD-MM-YYYY and YYYY.MM.DD
-        //also need to support cases with no leading zeros
+        // legacy formats are MM/DD/YYYY, DD-MM-YYYY and YYYY.MM.DD
+        // also need to support cases with no leading zeros
 
-        return array(//new MMM/DD/YYYY format
-                     array('Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('Feb/4/2012', mktime(0, 0, 0, 2, 4, 2012)),
-                     //legacy MM/DD/YYYY format
-                     array('01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('2/4/2012', mktime(0, 0, 0, 2, 4, 2012)),
-                     //legacy DD-MM-YYYY format
-                     array('03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('4-2-2012', mktime(0, 0, 0, 2, 4, 2012)),
-                     //legacy YYYY.MM.DD format
-                     array('2012.01.03', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('2012.2.4', mktime(0, 0, 0, 2, 4, 2012)));
+        return array(
+                // new MMM/DD/YYYY format
+                array('Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('Feb/4/2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
+                // legacy MM/DD/YYYY format
+                array('01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('2/4/2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
+                // legacy DD-MM-YYYY format
+                array('03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('4-2-2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
+                // legacy YYYY.MM.DD format
+                array('2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('2012.2.4', rlip_timestamp(0, 0, 0, 2, 4, 2012))
+        );
     }
 
     /**
@@ -385,14 +390,16 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
         //validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id,
-                                                                   'enrolmenttime' => mktime(0, 0, 0),
-                                                                   'completetime' => mktime(0, 0, 0),
-                                                                   'completestatusid' => $value,
-                                                                   'grade' => 0.00000,
-                                                                   'credits' => 0.00,
-                                                                   'locked' => 0)));
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id,
+            'enrolmenttime' => rlip_timestamp(0, 0, 0),
+            'completetime' => rlip_timestamp(0, 0, 0),
+            'completestatusid' => $value,
+            'grade' => 0.00000,
+            'credits' => 0.00,
+            'locked' => 0
+        )));
     }
 
     /**
@@ -407,25 +414,27 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         set_config('noemailever', true);
 
-        //we are being sneaky and testing specific date and completion status format
-        //cases here as well
-        return array(array('enrolmenttime', 'Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('enrolmenttime', '01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('enrolmenttime', '03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('enrolmenttime', '2012.01.03', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completetime', 'Jan/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completetime', '01/03/2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completetime', '03-01-2012', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completetime', '2012.01.03', mktime(0, 0, 0, 1, 3, 2012)),
-                     array('completestatusid', student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
-                     array('completestatusid', "Not Completed", student::STUSTATUS_NOTCOMPLETE),
-                     array('completestatusid', student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
-                     array('completestatusid', "Failed", student::STUSTATUS_FAILED),
-                     array('completestatusid', student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
-                     array('completestatusid', "Passed", student::STUSTATUS_PASSED),
-                     array('grade', 50, 50),
-                     array('credits', 1, 1),
-                     array('locked', 1, 1));
+        // we are being sneaky and testing specific date and completion status format
+        // cases here as well
+        return array(
+                array('enrolmenttime', 'Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('enrolmenttime', '01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('enrolmenttime', '03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('enrolmenttime', '2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completetime', 'Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('completestatusid', student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
+                array('completestatusid', "Not Completed", student::STUSTATUS_NOTCOMPLETE),
+                array('completestatusid', student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
+                array('completestatusid', "Failed", student::STUSTATUS_FAILED),
+                array('completestatusid', student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
+                array('completestatusid', "Passed", student::STUSTATUS_PASSED),
+                array('grade', 50, 50),
+                array('credits', 1, 1),
+                array('locked', 1, 1)
+        );
     }
 
     /**
@@ -555,15 +564,17 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
-        //validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id,
-                                                                   'enrolmenttime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                   'completetime' => mktime(0, 0, 0, 2, 1, 2012),
-                                                                   'completestatusid' => student::STUSTATUS_PASSED,
-                                                                   'grade' => 80,
-                                                                   'credits' => 3,
-                                                                   'locked' => 1)));
+        // validation
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id,
+            'enrolmenttime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 2, 1, 2012),
+            'completestatusid' => student::STUSTATUS_PASSED,
+            'grade' => 80,
+            'credits' => 3,
+            'locked' => 1
+        )));
     }
 
     /**

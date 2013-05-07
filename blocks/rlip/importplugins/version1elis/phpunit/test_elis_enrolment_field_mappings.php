@@ -95,28 +95,32 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         require_once(elispm::lib('data/usermoodle.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
 
-        return array('context' => 'moodle',
-                     'role' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'user' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-                     clusterassignment::TABLE => 'elis_program',
-                     course::TABLE => 'elis_program',
-                     curriculum::TABLE => 'elis_program',
-                     curriculumstudent::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     instructor::TABLE => 'elis_program',
-                     pmclass::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program',
-                     track::TABLE => 'elis_program',
-                     trackassignment::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program',
-                     waitlist::TABLE => 'elis_program');
+        return array(
+            'context' => 'moodle',
+            'message' => 'moodle',
+            'role' => 'moodle',
+            'role_assignments' => 'moodle',
+            'role_capabilities' => 'moodle',
+            'user' => 'moodle',
+            'user_info_field' => 'moodle',
+            RLIP_LOG_TABLE => 'block_rlip',
+            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
+            clusterassignment::TABLE => 'elis_program',
+            course::TABLE => 'elis_program',
+            curriculum::TABLE => 'elis_program',
+            curriculumstudent::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            instructor::TABLE => 'elis_program',
+            pmclass::TABLE => 'elis_program',
+            student::TABLE => 'elis_program',
+            track::TABLE => 'elis_program',
+            trackassignment::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            userset::TABLE => 'elis_program',
+            usertrack::TABLE => 'elis_program',
+            waitlist::TABLE => 'elis_program'
+        );
     }
 
     /**
@@ -128,9 +132,12 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
-        return array('cache_flags' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program',
-                     student_grade::TABLE => 'elis_program');
+        return array(
+            'cache_flags' => 'moodle',
+            'user_enrolments' => 'moodle',
+            coursetemplate::TABLE => 'elis_program',
+            student_grade::TABLE => 'elis_program'
+        );
     }
 
     /**
@@ -423,15 +430,17 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('classid' => $pmclass->id,
-                                                                   'userid' => $userid,
-                                                                   'enrolmenttime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                   'completetime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                   'completestatusid' => student::STUSTATUS_PASSED,
-                                                                   'grade' => 50,
-                                                                   'credits' => 1,
-                                                                   'locked' => 1)));
+        // validation
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'classid' => $pmclass->id,
+            'userid' => $userid,
+            'enrolmenttime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completestatusid' => student::STUSTATUS_PASSED,
+            'grade' => 50,
+            'credits' => 1,
+            'locked' => 1
+        )));
     }
 
     /**
@@ -477,15 +486,17 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('classid' => $pmclass->id,
-                                                                   'userid' => $userid,
-                                                                   'enrolmenttime' => mktime(0, 0, 0, 1, 2, 2012),
-                                                                   'completetime' => mktime(0, 0, 0, 1, 2, 2012),
-                                                                   'completestatusid' => student::STUSTATUS_FAILED,
-                                                                   'grade' => 100,
-                                                                   'credits' => 2,
-                                                                   'locked' => 1)));
+        // validation
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'classid' => $pmclass->id,
+            'userid' => $userid,
+            'enrolmenttime' => rlip_timestamp(0, 0, 0, 1, 2, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 2, 2012),
+            'completestatusid' => student::STUSTATUS_FAILED,
+            'grade' => 100,
+            'credits' => 2,
+            'locked' => 1
+        )));
     }
 
     /**
@@ -564,11 +575,13 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(instructor::TABLE, array('classid' => $pmclass->id,
-                                                                      'userid' => $userid,
-                                                                      'assigntime' => mktime(0, 0, 0, 1, 1, 2012),
-                                                                      'completetime' => mktime(0, 0, 0, 1, 1, 2012))));
+        // validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array(
+            'classid' => $pmclass->id,
+            'userid' => $userid,
+            'assigntime' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        )));
     }
 
     /**
@@ -610,11 +623,13 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(instructor::TABLE, array('classid' => $pmclass->id,
-                                                                      'userid' => $userid,
-                                                                      'assigntime' => mktime(0, 0, 0, 1, 2, 2012),
-                                                                      'completetime' => mktime(0, 0, 0, 1, 2, 2012))));
+        // validation
+        $this->assertTrue($DB->record_exists(instructor::TABLE, array(
+            'classid' => $pmclass->id,
+            'userid' => $userid,
+            'assigntime' => rlip_timestamp(0, 0, 0, 1, 2, 2012),
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 2, 2012))
+        ));
     }
 
     /**

@@ -494,14 +494,16 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
      * @return array The data, as expected by the testing method
      */
     function ui_type_provider() {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
         return array(array('checkbox', '0', array('0'), NULL, 0),
                      array('checkbox', 'no', array('0'), NULL, 0),
                      array('checkbox', '1', array('1'), NULL, 0),
                      array('checkbox', 'yes', array('1'), NULL, 0),
                      array('text', 'sometext/moretext', array('sometext/moretext'), 100, 0),
                      array('textarea', 'sometext/moretext', array('sometext/moretext'), NULL, 0),
-                     array('datetime', 'Jan/02/2012', array(mktime(0, 0, 0, 1, 2, 2012)), NULL, 0),
-                     array('datetime', 'Jan/02/2012:05:30', array(mktime(5, 30, 0, 1, 2, 2012)), NULL, 1),
+                     array('datetime', 'Jan/02/2012', array(rlip_timestamp(0, 0, 0, 1, 2, 2012)), NULL, 0),
+                     array('datetime', 'Jan/02/2012:05:30', array(rlip_timestamp(5, 30, 0, 1, 2, 2012)), NULL, 1),
                      array('password', 'sometext/moretext', array('sometext/moretext'), 100, 0));
     }
 
@@ -631,7 +633,7 @@ class elis_elis_multivalue_custom_fields_import_test extends elis_database_test 
                         'email' => 'test@useremail.com',
                         'city' => 'testusercity',
                         'country' => 'CA',
-                        'testfieldshortname' => 'Jan/01/2012/Feb/02/2012');
+                        'testfieldshortname' => 'Jan/01/Feb/02/2012');
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(NULL);
         $importplugin->process_record('user', (object)$record, 'bogus');

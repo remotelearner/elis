@@ -377,7 +377,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         }
 
         // return unix timestamp
-        return mktime($hour, $minute, 0, $month, $day, $year);
+        return rlip_timestamp($hour, $minute, 0, $month, $day, $year);
     }
 
     /**
@@ -3815,8 +3815,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         //obtain the class id
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
-        //determine enrolment and completion times
-        $today = mktime(0, 0, 0);
+        // determine enrolment and completion times
+        $today = rlip_timestamp(0, 0, 0);
         if (isset($record->enrolmenttime)) {
             $enrolmenttime = $this->parse_date($record->enrolmenttime);
         } else {
@@ -3907,7 +3907,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $idnumber));
 
         // determine assignment and completion times
-        $today = mktime(0, 0, 0);
+        $today = rlip_timestamp(0, 0, 0);
         if (isset($record->assigntime)) {
             $assigntime = $this->parse_date($record->assigntime);
         } else {
