@@ -390,7 +390,7 @@
       <INDEXES>
         <INDEX NAME="userid_ix" UNIQUE="false" FIELDS="userid" NEXT="trackid_ix"/>
         <INDEX NAME="trackid_ix" UNIQUE="false" FIELDS="trackid" PREVIOUS="userid_ix" NEXT="userid_trackid_ix"/>
-        <INDEX NAME="userid_trackid_ix" UNIQUE="false" FIELDS="userid, trackid" PREVIOUS="trackid_ix"/>
+        <INDEX NAME="userid_trackid_ix" UNIQUE="true" FIELDS="userid, trackid" PREVIOUS="trackid_ix"/>
       </INDEXES>
     </TABLE>
     <TABLE NAME="crlm_notification_log" COMMENT="Contains logs of notifications for events." PREVIOUS="crlm_user_track" NEXT="crlm_track">
