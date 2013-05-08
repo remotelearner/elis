@@ -180,7 +180,7 @@ if (isset($pages[$section])) {
     include elispm::file('dashboardpage.class.php');
     $PAGE = new dashboardpage();
 }
-
+$PAGE->requires->css('/elis/program/icons.css');
 // ELIS-3042
 if (empty($PAGE->nologin) && !isloggedin()) {
     redirect($CFG->wwwroot);
