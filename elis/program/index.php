@@ -58,6 +58,10 @@ $pages = array(
     // Manage Clusters
     'clst' => array('class' => 'usersetpage',
                     'file' => 'usersetpage.class.php'),
+    'clstsub' => array(
+        'class' => 'usersetsubusersetpage',
+        'file' => 'usersetpage.class.php'
+    ),
     'clstcur' => array('class' => 'clustercurriculumpage',
                        'file' => 'clustercurriculumpage.class.php'),
     'clsttrk' => array('class' => 'clustertrackpage',
