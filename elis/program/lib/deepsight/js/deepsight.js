@@ -1698,7 +1698,9 @@ $.fn.deepsight_datatable = function(options) {
                 opts.actions[i].opts = {};
             }
             var actionopts = $.extend({}, defaultopts, opts.actions[i].opts);
-            actioninitiator[func](actionopts);
+            var actionobj = actioninitiator[func](actionopts);
+
+            main.bind('action_complete', actionobj.hide_action);
 
             if (typeof(opts.actions[i].completefunc) != 'undefined') {
                 actioninitiator.bind('action_complete', opts.actions[i].completefunc);
