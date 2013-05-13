@@ -1674,6 +1674,7 @@ $.fn.deepsight_datatable = function(options) {
         }
 
         // initialize actions
+        var actionobjs = {};
         for (var i in opts.actions) {
             var actioninitiator = row.find('.deepsight_action_'+opts.actions[i].name);
             var numtds = row.children('td').length;
@@ -1698,12 +1699,27 @@ $.fn.deepsight_datatable = function(options) {
                 opts.actions[i].opts = {};
             }
             var actionopts = $.extend({}, defaultopts, opts.actions[i].opts);
-            actioninitiator[func](actionopts);
+            actionobjs[opts.actions[i].name] = actioninitiator[func](actionopts);
 
             if (typeof(opts.actions[i].completefunc) != 'undefined') {
                 actioninitiator.bind('action_complete', opts.actions[i].completefunc);
             }
         }
+
+        main.bind('action_complete', function(e, data) {
+            for (var i in actionobjs) {
+                var incomingid = data.opts.parent.data('id');
+                var activeid = actionobjs[i].parent.data('id');
+                if (incomingid == activeid) {
+                    // Try to hide action, if available.
+                    try {
+                        actionobjs[i].hide_action();
+                    } catch (err) {
+
+                    }
+                }
+            }
+        });
 
         // initialize drap+drop
         if (opts.dragdrop == true) {
