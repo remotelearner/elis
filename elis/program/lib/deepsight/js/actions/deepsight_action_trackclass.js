@@ -89,6 +89,7 @@ $.fn.deepsight_action_trackclass_assignedit = function(options) {
     this.actiontr = null;
     this.name = opts.name;
     this.form = null;
+    this.parent = opts.parent;
 
     /**
      * Renders the HTML for the action panel.

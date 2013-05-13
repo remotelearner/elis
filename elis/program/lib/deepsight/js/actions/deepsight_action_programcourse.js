@@ -63,6 +63,7 @@ $.fn.deepsight_action_programcourse_assignedit = function(options) {
     this.actiontr = null;
     this.name = opts.name;
     this.form = null;
+    this.parent = opts.parent;
 
     this.fields = ['required', 'frequency', 'timeperiod', 'position'];
     this.fieldcolumnmap = {
