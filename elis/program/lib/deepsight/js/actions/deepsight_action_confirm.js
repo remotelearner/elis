@@ -72,6 +72,7 @@ $.fn.deepsight_action_confirm = function(options) {
     var main = this;
     this.name = opts.name;
     this.actiontr = null;
+    this.parent = opts.parent;
 
     /**
      * Renders the HTML for the action panel.
