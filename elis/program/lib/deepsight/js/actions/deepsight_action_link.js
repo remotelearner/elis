@@ -63,6 +63,7 @@ $.fn.deepsight_action_link = function(options) {
     var main = this;
     this.name = opts.name;
     this.actiontr = null;
+    this.parent = opts.parent;
 
     /**
      * Construct the full URL.
