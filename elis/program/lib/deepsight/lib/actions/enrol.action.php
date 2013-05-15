@@ -75,7 +75,9 @@ class deepsight_action_enrol extends deepsight_action_standard {
             }
 
             if (anim == \'remove\') {
-                data.opts.parent.addClass(\'confirmed\').delay(1000).fadeOut(500);
+                data.opts.parent.addClass(\'confirmed\').delay(1000).fadeOut(250, function() {
+                    data.opts.datatable.removefromtable(\'assigned\', data.opts.parent.data(\'id\'));
+                });
             } else if (anim == \'disable\') {
                 data.opts.parent.addClass(\'confirmed\');
                 setTimeout(function() {

@@ -156,7 +156,7 @@ $.fn.deepsight_action_confirm = function(options) {
                 if (typeof(data.result) != 'undefined' && data.result == 'success') {
                     ds_debug('[deepsight_action_confirm.complete_action] Completed action, recevied data:', data);
                     if (opts.parentid != 'bulklist') {
-                        opts.parent.addClass('confirmed').delay(1000).fadeOut(500, function() {
+                        opts.parent.addClass('confirmed').delay(1000).fadeOut(250, function() {
                             opts.datatable.removefromtable(main.name, opts.parent.data('id'));
                         });
                     }
