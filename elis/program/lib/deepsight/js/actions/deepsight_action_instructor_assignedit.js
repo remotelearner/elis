@@ -342,7 +342,7 @@ $.fn.deepsight_action_instructor_assignedit = function(options) {
                 if (typeof(data) == 'object' && typeof(data.result) != 'undefined' && data.result == 'success') {
                     if (opts.parentid != 'bulklist') {
                         if (opts.mode == 'assign') {
-                            opts.parent.addClass('confirmed').delay(1000).fadeOut(500, function() {
+                            opts.parent.addClass('confirmed').delay(1000).fadeOut(250, function() {
                                 opts.datatable.removefromtable('assigned', opts.parent.data('id'));
                             });
                         } else {
