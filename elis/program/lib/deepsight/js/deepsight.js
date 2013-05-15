@@ -1189,11 +1189,11 @@ $.fn.deepsight_datatable = function(options) {
         if (main[queuename].elements.length <= 0) {
             return false;
         }
-
+        var amountrequested = main[queuename].elements.length;
         var ajaxdata = {
             m: 'datatable_results',
             limit_from: ((main.page*opts.resultsperpage)-main[queuename].elements.length),
-            limit_num: main[queuename].elements.length,
+            limit_num: amountrequested,
             sesskey: opts.sesskey,
             uniqid: opts.uniqid,
             sort: main.fieldsort,
@@ -1262,10 +1262,19 @@ $.fn.deepsight_datatable = function(options) {
                             && data.datatable_results.result == 'success') {
                         main.numresults = data.datatable_results.total_results;
                         if (data.datatable_results.results.length > 0) {
+                            var loadingremoved = 0;
                             for (var i in data.datatable_results.results) {
                                 main.find('tr.loading').slice(0, 1).before(main.render_row(data.datatable_results.results[i]));
                                 main.remove_loading_row();
+                                loadingremoved++;
                             }
+                            if (amountrequested > loadingremoved) {
+                                var loadingremains = amountrequested - loadingremoved;
+                                for (var i = 0; i < loadingremains; i++) {
+                                    main.remove_loading_row();
+                                }
+                            }
+
                             main.render_sort_display();
                         } else {
                             main.find('tr.loading').slice(0, ajaxdata[actiontype].length).remove();

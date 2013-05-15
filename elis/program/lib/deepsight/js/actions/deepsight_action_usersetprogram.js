@@ -210,7 +210,9 @@ $.fn.deepsight_action_usersetprogram_assignedit = function(options) {
                     ds_debug('[deepsight_action_confirm.complete_action] Completed action, recevied data:', data);
                     if (opts.parentid != 'bulklist') {
                         if (opts.mode == 'assign') {
-                            opts.parent.addClass('confirmed').delay(1000).fadeOut(500);
+                            opts.parent.addClass('confirmed').delay(1000).fadeOut(250, function() {
+                                opts.datatable.removefromtable('assigned', opts.parent.data('id'));
+                            });
                         } else if (opts.mode == 'edit') {
                             opts.rowdata.autoenrol = autoenrol;
                             var autoenroltext = (autoenrol == 1) ? opts.langyes : opts.langno;
