@@ -571,8 +571,8 @@ class customfieldtable extends display_table {
         $editlink = $tmppage->out();
         $deletetxt = get_string('delete');
         $edittxt = get_string('edit');
-        return "<a href=\"{$editlink}\" class=\"elisicon elisicon-edit\" alt=\"{$edittxt}\" title=\"{$edittxt}\" /></a> " .
-               "<a href=\"{$deletelink}\" class=\"elisicon elisicon-remove\" alt=\"{$deletetxt}\" title=\"{$deletetxt}\" /></a>";
+        return "<a href=\"{$editlink}\" class=\"elisicon elisicon-edit\" alt=\"{$edittxt}\" title=\"{$edittxt}\" /></a> ".
+                "<a href=\"{$deletelink}\" class=\"elisicon elisicon-remove\" alt=\"{$deletetxt}\" title=\"{$deletetxt}\" /></a>";
     }
 }
 
