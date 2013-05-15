@@ -2007,22 +2007,30 @@ $.fn.deepsight_multiselect = function(options) {
      */
     this.select = function(clicked_ele, multimode) {
         if (multimode == 'ctrl') {
-            clicked_ele.toggleClass(opts.css_selected_class);
+            if (clicked_ele.hasClass('disabled') != true) {
+                clicked_ele.toggleClass(opts.css_selected_class);
+            }
         } else if (multimode == 'shift') {
             var thisselected = clicked_ele;
             var selecting = false;
             $('.'+opts.css_class).each(function(e) {
-                if ($(this)[0] == main.last_selected[0] || $(this)[0] == thisselected[0]) {
-                    selecting = (selecting == false) ? true : false;
-                }
-                if (selecting == true) {
-                    $(this).addClass(opts.css_selected_class);
+                if ($(this).hasClass('disabled') != true) {
+                    if ($(this)[0] == main.last_selected[0] || $(this)[0] == thisselected[0]) {
+                        selecting = (selecting == false) ? true : false;
+                    }
+                    if (selecting == true) {
+                        $(this).addClass(opts.css_selected_class);
+                    }
                 }
             });
-            clicked_ele.addClass(opts.css_selected_class);
+            if (clicked_ele.hasClass('disabled') != true) {
+                clicked_ele.addClass(opts.css_selected_class);
+            }
         } else {
             $('.'+opts.css_class).removeClass(opts.css_selected_class);
-            clicked_ele.toggleClass(opts.css_selected_class);
+            if (clicked_ele.hasClass('disabled') != true) {
+                clicked_ele.toggleClass(opts.css_selected_class);
+            }
         }
         main.last_selected = clicked_ele;
         main.setfocus(true);

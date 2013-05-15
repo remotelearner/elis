@@ -202,4 +202,18 @@ class deepsight_datatable_enrolments extends deepsight_datatable_user {
         $joinsql[] = 'LEFT JOIN {crlm_class_enrolment} enrol ON enrol.classid='.$this->classid.' AND enrol.userid = element.id';
         return $joinsql;
     }
+
+    /**
+     * Adds all elements returned from a search with a given set of filters to the bulklist.
+     *
+     * This is usually used when using the "add all search results" button when performing bulk actions.
+     *
+     * @param array $filters The filter array received from js. It is an array consisting of filtername=>data, and can be passed
+     *                       directly to $this->get_filter_sql() to generate the required WHERE sql.
+     * @return bool true/Success.
+     */
+    protected function bulklist_add_by_filters(array $filters) {
+        $filters['enrolled'] = array('notenrolled');
+        return parent::bulklist_add_by_filters($filters);
+    }
 }
