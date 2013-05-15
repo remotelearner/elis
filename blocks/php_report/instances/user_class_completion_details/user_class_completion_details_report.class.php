@@ -124,9 +124,9 @@ class user_class_completion_details_report extends user_class_completion_report 
         $result[] = $completion_column;
 
         // Completion date
-        $completiondate_heading = get_string('column_completiondate', $this->languagefile);
-        $completiondate_column = new table_report_column('completetime', $completiondate_heading, 'completiondate');
-        $result[] = $completiondate_column;
+        $completiondateheading = get_string('column_completiondate', $this->languagefile);
+        $completiondatecolumn = new table_report_column('stu.completetime', $completiondateheading, 'completiondate');
+        $result[] = $completiondatecolumn;
 
         // Credits
         $credits_heading = get_string('column_credits', $this->languagefile);
@@ -397,10 +397,11 @@ class user_class_completion_details_report extends user_class_completion_report 
                     ON u.id = inst.userid
                   JOIN {'. pmclass::TABLE .'} cls
                     ON inst.classid = cls.id
-                  JOIN {'. course::TABLE ."} crs
+                  JOIN {'.course::TABLE.'} crs
                     ON cls.courseid = crs.id
              LEFT JOIN {crlm_environment} env
                     ON crs.environmentid = env.id
+             LEFT JOIN {'.student::TABLE."} stu ON stu.userid = u.id
                  {$curriculum_join}
                  WHERE ". table_report::PARAMETER_TOKEN ."
                    AND {$permissions_filter2}
