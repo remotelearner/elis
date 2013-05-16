@@ -187,15 +187,14 @@ class deepsight_datatable_enrolled extends deepsight_datatable_user {
 
         // Format enrolment time.
         if (isset($row['enrol_enrolmenttime'])) {
-            $row['enrol_enrolmenttime'] = date(get_string('pm_date_format', 'elis_program'), $row['enrol_enrolmenttime']);
+            $row['enrol_enrolmenttime'] = ds_process_displaytime($row['enrol_enrolmenttime']);
         }
 
         // Format completion time.
         if (isset($row['enrol_completetime'])) {
-            $row['enrol_completetime'] = (isset($row['enrol_completestatusid'])
-                                          && $row['enrol_completestatusid'] != STUSTATUS_NOTCOMPLETE)
-                ? date(get_string('pm_date_format', 'elis_program'), $row['enrol_completetime'])
-                : '-';
+            $statusiscomplete = (isset($row['enrol_completestatusid']) && $row['enrol_completestatusid'] != STUSTATUS_NOTCOMPLETE)
+                    ? true : false;
+            $row['enrol_completetime'] = ($statusiscomplete === true) ? ds_process_displaytime($row['enrol_completetime']) : '';
         }
 
         // Completion status ints to labels.

@@ -109,7 +109,16 @@ function ds_process_js_date_data(array $alldata, $prefix = '') {
     $year = (!empty($alldata[$yearparam]) && is_numeric($alldata[$yearparam]) && strlen($alldata[$yearparam]) === 4)
         ? (int)$alldata[$yearparam] : date('Y');
 
-    return mktime(0, 0, 0, $month, $day, $year);
+    return pm_timestamp(0, 0, 0, $month, $day, $year);
+}
+
+/**
+ * Format a timestamp as a date for display.
+ * @param int $time A UNIX timestamp.
+ * @return string The formatted date or a "-" to indicate an empty date.
+ */
+function ds_process_displaytime($time) {
+    return (!empty($time)) ? userdate($time, get_string('pm_date_format', 'elis_program')) : '-';
 }
 
 /**

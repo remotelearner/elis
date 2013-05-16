@@ -119,8 +119,7 @@ abstract class deepsight_action_instructor_assignedit_base extends deepsight_act
      */
     protected function format_assocdata_for_display($assocdata) {
         foreach (array('assigntime', 'completetime') as $timeparam) {
-            $assocdata[$timeparam] = (!empty($assocdata[$timeparam]))
-                    ? date(get_string('pm_date_format', 'elis_program'), $assocdata[$timeparam]) : '-';
+            $assocdata[$timeparam] = ds_process_displaytime($assocdata[$timeparam]);
         }
         return $assocdata;
     }

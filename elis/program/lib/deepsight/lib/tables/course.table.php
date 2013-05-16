@@ -121,9 +121,7 @@ class deepsight_datatable_course extends deepsight_datatable_standard {
      */
     protected function results_row_transform(array $row) {
         if (isset($row['element_timecreated'])) {
-            $row['element_timecreated'] = ($row['element_timecreated'] > 0)
-                    ? date(get_string('pm_date_format', 'elis_program'), $row['element_timecreated'])
-                    : '-';
+            $row['element_timecreated'] = ds_process_displaytime($row['element_timecreated']);
         }
         return $row;
     }

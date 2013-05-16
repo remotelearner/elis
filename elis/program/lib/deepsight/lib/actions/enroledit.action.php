@@ -103,7 +103,6 @@ class deepsight_action_enroledit extends deepsight_action_standard {
      * @return array The formatted enrolment data.
      */
     protected function format_enroldata_for_display($enroldata) {
-        $dateformat = get_string('pm_date_format', 'elis_program');
 
         // Locked 0,1 => no, yes.
         if (isset($enroldata['locked'])) {
@@ -112,13 +111,14 @@ class deepsight_action_enroledit extends deepsight_action_standard {
 
         // Format enrolment time.
         if (isset($enroldata['enrolmenttime'])) {
-            $enroldata['enrolmenttime'] = date($dateformat, $enroldata['enrolmenttime']);
+            $enroldata['enrolmenttime'] = ds_process_displaytime($enroldata['enrolmenttime']);
         }
 
         // Format completion time.
         if (isset($enroldata['completetime'])) {
-            $enroldata['completetime'] = (isset($enroldata['completestatusid']) && $enroldata['completestatusid'] != STUSTATUS_NOTCOMPLETE)
-                    ? date($dateformat, $enroldata['completetime']) : '-';
+            $statusiscomplete = (isset($enroldata['completestatusid']) && $enroldata['completestatusid'] != STUSTATUS_NOTCOMPLETE)
+                    ? true : false;
+            $enroldata['completetime'] = ($statusiscomplete === true) ? ds_process_displaytime($enroldata['completetime']) : '-';
         }
 
         // Completion status ints to labels.

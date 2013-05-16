@@ -144,7 +144,7 @@ class deepsight_datatable_user extends deepsight_datatable_standard {
      */
     protected function results_row_transform(array $row) {
         if (isset($row['element_timecreated'])) {
-            $row['element_timecreated'] = date(get_string('pm_date_format', 'elis_program'), $row['element_timecreated']);
+            $row['element_timecreated'] = ds_process_displaytime($row['element_timecreated']);
         }
 
         // Add link to view profile for idnumber column.
