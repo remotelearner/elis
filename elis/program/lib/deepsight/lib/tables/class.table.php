@@ -120,10 +120,10 @@ class deepsight_datatable_class extends deepsight_datatable_standard {
      */
     protected function results_row_transform(array $row) {
         if (isset($row['element_startdate'])) {
-            $row['element_startdate'] = date(get_string('pm_date_format', 'elis_program'), $row['element_startdate']);
+            $row['element_startdate'] = ds_process_displaytime($row['element_startdate']);
         }
         if (isset($row['element_enddate'])) {
-            $row['element_enddate'] = date(get_string('pm_date_format', 'elis_program'), $row['element_enddate']);
+            $row['element_enddate'] = ds_process_displaytime($row['element_enddate']);
         }
         return $row;
     }

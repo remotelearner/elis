@@ -130,9 +130,7 @@ class deepsight_datatable_instructor_assigned extends deepsight_datatable_instru
                     'month' => date('n', $row['ins_'.$timeparam])-1,
                     'year'=> date('Y', $row['ins_'.$timeparam])
                 ));
-                $row['ins_'.$timeparam] = (!empty($row['ins_'.$timeparam]))
-                        ? date(get_string('pm_date_format', 'elis_program'), $row['ins_'.$timeparam])
-                        : '-';
+                $row['ins_'.$timeparam] = ds_process_displaytime($row['ins_'.$timeparam]);
             }
         }
         return $row;

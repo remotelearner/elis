@@ -123,9 +123,7 @@ class deepsight_datatable_userprogram_assigned extends deepsight_datatable_userp
     protected function results_row_transform(array $row) {
         $row = parent::results_row_transform($row);
         if (isset($row['currass_timecompleted'])) {
-            $row['currass_timecompleted'] = (!empty($row['currass_completed']))
-                    ? date(get_string('pm_date_format', 'elis_program'), $row['currass_timecompleted'])
-                    : '-';
+            $row['currass_timecompleted'] = ds_process_displaytime($row['currass_timecompleted']);
         }
         return $row;
     }

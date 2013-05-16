@@ -95,8 +95,8 @@ class deepsight_filter_date extends deepsight_filter_standard {
             }
 
             // Make timestamps.
-            $starttimestamp = mktime(0, 0, 0, $month, $date, $year);
-            $endtimestamp = mktime(23, 59, 59, $month, $date, $year);
+            $starttimestamp = pm_timestamp(0, 0, 0, $month, $date, $year);
+            $endtimestamp = pm_timestamp(23, 59, 59, $month, $date, $year);
 
             // Assemble sql.
             reset($this->fields);
