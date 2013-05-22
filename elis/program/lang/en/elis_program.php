@@ -674,6 +674,7 @@ $string['n_users_waitlisted'] = '{$a} user(s) waitlisted.';
 $string['no_associate_caps_class'] = 'You cannot associate any classes because do not have the elis/program:associate capability on any classes.';
 $string['no_associate_caps_track'] = 'You cannot associate any tracks because do not have the elis/program:associate capability on any tracks.';
 $string['no_associate_caps_curriculum'] = 'You cannot associate any programs because do not have the elis/program:associate capability on any programs.';
+$string['no_blank_menuoption'] = 'Blank/empty menu options are not allowed';
 $string['no_classes_available'] = 'No classes currently available.  Please check again later.';
 $string['no_completion_elements'] = 'There are no learning objectives defined.';
 $string['no_courses'] = 'There are no Moodle courses in this category';
