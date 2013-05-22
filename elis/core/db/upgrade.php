@@ -526,6 +526,18 @@ function xmldb_elis_core_upgrade($oldversion=0) {
         upgrade_plugin_savepoint(true, 2013022700, 'elis', 'core');
     }
 
+    if ($result && $oldversion < 2013051400) {
+        // Add new table column: (int)blocked
+        $table = new xmldb_table('elis_scheduled_tasks');
+        if ($dbman->table_exists($table)) {
+            $field = new xmldb_field('blocked', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'customized');
+            if (!$dbman->field_exists($table, $field)) {
+                $dbman->add_field($table, $field);
+            }
+        }
+        upgrade_plugin_savepoint(true, 2013051400, 'elis', 'core');
+    }
+
     return $result;
 }
 
