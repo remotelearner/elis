@@ -669,6 +669,8 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
 
         $this->dblogger->set_log_path($this->provider->get_log_path());
         $this->dblogger->set_entity_type($entity);
+        // ELIS-8255: set endtime as now, to avoid endtime = epoch + timezone
+        $this->dblogger->set_endtime(time());
 
         if ($filelines == 1) {
             // header but no records or lines end with CR only
