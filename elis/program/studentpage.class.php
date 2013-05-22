@@ -266,7 +266,7 @@ class studentpage extends associationpage {
             if (!empty($user['enrol'])) {
                 $newstu = $this->build_student($uid, $classid, $user);
                 $pmclass = new pmclass($classid);
-                //error_log("studentpage::attempt_enrol({$classid}, users): max_students = {$pmclass->maxstudents}  tot_enrolled = ". $newstu->count_enroled());
+
                 $newstu->validation_overrides[] = 'prerequisites';
                 if ($newstu->completestatusid != STUSTATUS_NOTCOMPLETE) {
                     // user is set to completed, so don't worry about enrolment limit
