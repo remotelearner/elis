@@ -599,5 +599,39 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2012062901, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2012062903) {
+        // Add indexes to {crlm_user_track} table
+        $table = new xmldb_table('crlm_user_track');
+        if ($dbman->table_exists($table)) {
+            // array of indexes to drop
+            $dropindexes = array(
+                new xmldb_index('any_userid_ix', XMLDB_INDEX_UNIQUE, array('userid')),
+                new xmldb_index('any_trackid_ix', XMLDB_INDEX_UNIQUE, array('trackid')),
+                new xmldb_index('any_userid_trackid_ix', XMLDB_INDEX_NOTUNIQUE, array('userid', 'trackid'))
+            );
+            foreach ($dropindexes as $index) {
+                // Drop unwanted indexes if they exist
+                if ($dbman->index_exists($table, $index)) {
+                    $dbman->drop_index($table, $index);
+                }
+            }
+
+            // array of indexes to create
+            $createindexes = array(
+                new xmldb_index('userid_ix', XMLDB_INDEX_NOTUNIQUE, array('userid')),
+                new xmldb_index('trackid_ix', XMLDB_INDEX_NOTUNIQUE, array('trackid')),
+                new xmldb_index('userid_trackid_ix', XMLDB_INDEX_UNIQUE, array('userid', 'trackid'))
+            );
+
+            foreach ($createindexes as $index) {
+                // Create desired indexes as required
+                if (!$dbman->index_exists($table, $index)) {
+                    $dbman->add_index($table, $index);
+                }
+            }
+        }
+        upgrade_plugin_savepoint($result, 2012062903, 'elis', 'program');
+    }
+
     return $result;
 }
