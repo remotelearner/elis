@@ -161,6 +161,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
             $message = "Export file {$exportbase} cannot be processed because the folder: {$exportpath} is not accessible. ".
             "Please fix the export path.";
             $this->fslogger->log_failure($message, 0, $outfile);
+            $this->dblogger->set_endtime(time());
             $this->dblogger->set_exportpath_error($message);
             $this->dblogger->flush($this->fileplugin->get_filename());
             return null;
