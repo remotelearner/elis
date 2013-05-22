@@ -651,8 +651,8 @@ class student extends elis_data_object {
                     $credits = $selection->credits;
                     $grade = $selection->grade;
                     $status = $selection->status;
-                    $enrolmenttime = mktime(0, 0, 0, $selection->enrolment_date->month, $selection->enrolment_date->day, $selection->enrolment_date->year);
-                    $completetime = mktime(0, 0, 0, $selection->completion_date->month, $selection->completion_date->day, $selection->completion_date->year);
+                    $enrolmenttime = pm_timestamp(0, 0, 0, $selection->enrolment_date->month, $selection->enrolment_date->day, $selection->enrolment_date->year);
+                    $completetime = pm_timestamp(0, 0, 0, $selection->completion_date->month, $selection->completion_date->day, $selection->completion_date->year);
                 }
                 $tabobj = new stdClass;
                 foreach ($columns as $column => $cdesc) {
@@ -1054,10 +1054,10 @@ class student extends elis_data_object {
                         $status = $selection->status;
                     }
                     if (isset($selection->enrolment_date)) {
-                        $enrolmenttime = mktime(0, 0, 0, $selection->enrolment_date->month, $selection->enrolment_date->day, $selection->enrolment_date->year);
+                        $enrolmenttime = pm_timestamp(0, 0, 0, $selection->enrolment_date->month, $selection->enrolment_date->day, $selection->enrolment_date->year);
                     }
                     if (isset($selection->completion_date)) {
-                        $completetime = mktime(0, 0, 0, $selection->completion_date->month, $selection->completion_date->day, $selection->completion_date->year);
+                        $completetime = pm_timestamp(0, 0, 0, $selection->completion_date->month, $selection->completion_date->day, $selection->completion_date->year);
                     }
                     $changed = true;
                 }

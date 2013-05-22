@@ -243,12 +243,12 @@ class studentpage extends associationpage {
         $startyear  = $user['startyear'];
         $startmonth = $user['startmonth'];
         $startday   = $user['startday'];
-        $sturecord['enrolmenttime'] = mktime(0, 0, 0, $startmonth, $startday, $startyear);
+        $sturecord['enrolmenttime'] = pm_timestamp(0, 0, 0, $startmonth, $startday, $startyear);
 
         $endyear  = $user['endyear'];
         $endmonth = $user['endmonth'];
         $endday   = $user['endday'];
-        $sturecord['completetime'] = mktime(0, 0, 0, $endmonth, $endday, $endyear);
+        $sturecord['completetime'] = pm_timestamp(0, 0, 0, $endmonth, $endday, $endyear);
 
         $sturecord['completestatusid'] = $user['completestatusid'];
         $sturecord['grade']            = $user['grade'];
@@ -317,12 +317,12 @@ class studentpage extends associationpage {
         $startyear  = $user['startyear'];
         $startmonth = $user['startmonth'];
         $startday   = $user['startday'];
-        $sturecord['enrolmenttime'] = mktime(0, 0, 0, $startmonth, $startday, $startyear);
+        $sturecord['enrolmenttime'] = pm_timestamp(0, 0, 0, $startmonth, $startday, $startyear);
 
         $endyear  = $user['endyear'];
         $endmonth = $user['endmonth'];
         $endday   = $user['endday'];
-        $sturecord['completetime'] = mktime(0, 0, 0, $endmonth, $endday, $endyear);
+        $sturecord['completetime'] = pm_timestamp(0, 0, 0, $endmonth, $endday, $endyear);
 
         $sturecord['completestatusid'] = $user['completestatusid'];
         $sturecord['grade']            = $user['grade'];
@@ -355,8 +355,7 @@ class studentpage extends associationpage {
             $graderec['userid'] = $uid;
             $graderec['classid'] = $clsid;
             $graderec['completionid'] = $element;
-            $graderec['timegraded'] = mktime(0, 0, 0, $timegraded[$gradeid]['startmonth'],
-                                             $timegraded[$gradeid]['startday'], $timegraded[$gradeid]['startyear']);
+            $graderec['timegraded'] = pm_timestamp(0, 0, 0, $timegraded[$gradeid]['startmonth'], $timegraded[$gradeid]['startday'], $timegraded[$gradeid]['startyear']);
             $graderec['grade'] = $grade[$gradeid];
             $graderec['locked'] = isset($locked[$gradeid]) ? $locked[$gradeid] : '0';
 
@@ -369,8 +368,7 @@ class studentpage extends associationpage {
             $graderec['userid'] = $uid;
             $graderec['classid'] = $clsid;
             $graderec['completionid'] = $element;
-            $graderec['timegraded'] = mktime(0, 0, 0, $newtimegraded[$elementid]['startmonth'],
-                                             $newtimegraded[$elementid]['startday'], $newtimegraded[$elementid]['startyear']);
+            $graderec['timegraded'] = pm_timestamp(0, 0, 0, $newtimegraded[$elementid]['startmonth'], $newtimegraded[$elementid]['startday'], $newtimegraded[$elementid]['startyear']);
             $graderec['grade'] = $newgrade[$elementid];
             $graderec['locked'] = isset($newlocked[$elementid]) ? $newlocked[$elementid] : '0';
 
@@ -432,9 +430,9 @@ class studentpage extends associationpage {
         $pageid = optional_param('id', 1, PARAM_INT);
         $page = optional_param('s', '', PARAM_ALPHA);
 
-        $date_format = 'd F Y';
+        $date_format = '%d %B %Y';
 
-        //language strings - potential for big loops in this page - this saves the overhead of a function call for minimum mem usage
+        // language strings - potential for big loops in this page - this saves the overhead of a function call for minimum mem usage
         $lang_enroldate = get_string('enrolment_time', 'elis_program');
         $lang_completedate = get_string('completion_time', 'elis_program');
         $lang_status = get_string('student_status', 'elis_program');
@@ -500,13 +498,13 @@ class studentpage extends associationpage {
                                     $newday = $sess_user->enrolment_date->day;
                                     $newyear = $sess_user->enrolment_date->year;
 
-                                    $oldmonth = date('n',$user->enrolmenttime);
-                                    $oldday = date('d',$user->enrolmenttime);
-                                    $oldyear = date('Y',$user->enrolmenttime);
+                                    $oldmonth = userdate($user->enrolmenttime, '%m');
+                                    $oldday = userdate($user->enrolmenttime, '%d');
+                                    $oldyear = userdate($user->enrolmenttime, '%Y');
 
                                     if (($newmonth != $oldmonth) || ($newday != $oldday) || ($newyear != $oldyear)) {
-                                        $oldenroldate = date($date_format,$user->enrolmenttime);
-                                        $newenroldate = date($date_format,mktime(0,0,0,$newmonth,$newday,$newyear));
+                                        $oldenroldate = userdate($user->enrolmenttime, $date_format);
+                                        $newenroldate = userdate(pm_timestamp(0, 0, 0, $newmonth, $newday, $newyear), $date_format);
 
                                         $changes[] = array($lang_enroldate, $oldenroldate, $newenroldate);
                                         $changes_by_change[$lang_enroldate][$newenroldate][] = $userid;
@@ -527,15 +525,19 @@ class studentpage extends associationpage {
                                         $newday = $sess_user->completion_date->day;
                                         $newyear = $sess_user->completion_date->year;
 
-                                        $oldmonth = date('n',$user->completetime);
-                                        $oldday = date('d',$user->completetime);
-                                        $oldyear = date('Y',$user->completetime);
+                                        $oldmonth = userdate($user->completetime, '%m');
+                                        $oldday = userdate($user->completetime, '%d');
+                                        $oldyear = userdate($user->completetime, '%Y');
 
                                         if (($newmonth != $oldmonth) || ($newday != $oldday) || ($newyear != $oldyear)) {
-                                            $oldcompletetime = (!empty($user->completetime)
-                                                    ? date($date_format,$user->completetime)
-                                                    : get_string('confirm_bulk_enrol_none','elis_program'));
-                                            $newcompletetime = date($date_format,mktime(0,0,0,$newmonth,$newday,$newyear));
+
+                                            if (!empty($user->completetime)) {
+                                                $oldcompletetime = userdate($user->completetime, $date_format);
+                                            } else {
+                                                $oldcompletetime = get_string('confirm_bulk_enrol_none', 'elis_program');
+                                            }
+
+                                            $newcompletetime = userdate(pm_timestamp(0, 0, 0, $newmonth, $newday, $newyear), $date_format);
 
                                             $changes[] = array($lang_completedate, $oldcompletetime, $newcompletetime);
                                             $changes_by_change[$lang_completedate][$newcompletetime][] = $userid;
@@ -706,14 +708,14 @@ class studentpage extends associationpage {
                 $startyear  = $user['startyear'];
                 $startmonth = $user['startmonth'];
                 $startday   = $user['startday'];
-                $sturecord['enrolmenttime'] = mktime(0, 0, 0, $startmonth, $startday, $startyear);
+                $sturecord['enrolmenttime'] = pm_timestamp(0, 0, 0, $startmonth, $startday, $startyear);
             }
 
             if (!empty($user['endyear']) && !empty($user['endmonth']) && !empty($user['endday'])) {
                 $endyear  = $user['endyear'];
                 $endmonth = $user['endmonth'];
                 $endday   = $user['endday'];
-                $sturecord['completetime'] = mktime(0, 0, 0, $endmonth, $endday, $endyear);
+                $sturecord['completetime'] = pm_timestamp(0, 0, 0, $endmonth, $endday, $endyear);
             }
 
             if (isset($user['completestatusid'])) {
