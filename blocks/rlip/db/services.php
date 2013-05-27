@@ -23,13 +23,19 @@
 
 // Webservice functions.
 $functions = array(
-
+    'block_rldh_elis_user_create' => array(
+        'classname' => 'block_rldh_elis_user_create',
+        'methodname' => 'user_create',
+        'classpath' => 'blocks/rlip/ws/elis/user_create.class.php',
+        'description' => 'Create an ELIS user',
+        'type' => 'read',
+    )
 );
 
 // Pre-built service.
 $services = array(
     'RLDH Webservices' => array(
-        'functions' => array(),
+        'functions' => array('block_rldh_elis_user_create'),
         'restrictedusers' => 0,
         'enabled' => 1,
     )
