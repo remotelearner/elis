@@ -3113,10 +3113,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         if (isset($record->user_idnumber)) {
             $params['idnumber'] = $record->user_idnumber;
         }
-        if ($returnparams != null) {
+        if ($returnparams !== null) {
             $returnparams = $params;
         }
-        return !empty($params) ? $DB->get_field(user::TABLE, 'id', $params) : false;
+        if (empty($params)) {
+            return false;
+        }
+        if ($DB->count_records(user::TABLE, $params) != 1) {
+            return false;
+        }
+        return $DB->get_field(user::TABLE, 'id', $params);
     }
 
     /**
