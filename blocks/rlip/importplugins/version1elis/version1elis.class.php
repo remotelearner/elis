@@ -3095,9 +3095,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      *
      * @param object $record One record of import data
      * @param string $filename The import file name, used for logging
+     * @param object $returnparams Optional variable to return back parameters used
      * @return mixed The user id, or false if not found
      */
-    function get_userid_from_record($record, $filename) {
+    function get_userid_from_record($record, $filename, &$returnparams = null) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');;
         require_once(elispm::lib('data/user.class.php'));
@@ -3112,8 +3113,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         if (isset($record->user_idnumber)) {
             $params['idnumber'] = $record->user_idnumber;
         }
-
-        return $DB->get_field(user::TABLE, 'id', $params);
+        if ($returnparams != null) {
+            $returnparams = $params;
+        }
+        return !empty($params) ? $DB->get_field(user::TABLE, 'id', $params) : false;
     }
 
     /**
