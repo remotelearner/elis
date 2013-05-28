@@ -54,6 +54,7 @@ class elis_user_userset_enrolment_test extends elis_database_test {
             user::TABLE => 'elis_program',
             usermoodle::TABLE => 'elis_program',
             userset::TABLE => 'elis_program',
+            usertrack::TABLE => 'elis_program',
             'user_info_data' => 'moodle'
         );
     }
