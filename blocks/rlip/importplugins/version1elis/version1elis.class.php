@@ -3113,7 +3113,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         if (isset($record->user_idnumber)) {
             $params['idnumber'] = $record->user_idnumber;
         }
-        if ($returnparams != null) {
+        if ($returnparams !== null) {
             $returnparams = $params;
         }
         if (empty($params)) {
