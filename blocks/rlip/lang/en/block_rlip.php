@@ -103,3 +103,11 @@ $string['runmanually'] = 'Run manually';
 $string['scheduled'] = 'scheduled';
 $string['schedulepagetitle'] = 'Schedule DH';
 $string['schedulingtime'] = "*Scheduled jobs may not run exactly at the specified time.";
+
+$string['ws_unknown_error_code'] = 'unknown_error';
+$string['ws_unknown_error_msg'] = 'An unknown error occurred';
+$string['ws_program_enrolment_delete_success_code'] = 'program_enrolment_deleted';
+$string['ws_program_enrolment_delete_success_msg'] = 'User successfully unenroled from Program';
+$string['ws_program_enrolment_delete_fail'] = 'Could not unenrol user from program';
+$string['ws_program_enrolment_delete_fail_invalid_program'] = 'Program identified by program_idnumber \'{$a->program_idnumber}\' is not a valid program.';
+$string['ws_program_enrolment_delete_fail_invalid_user'] = 'No unique user identified by {$a->userparams} was found.';
