@@ -24,12 +24,21 @@
 // Webservice functions.
 $functions = array(
 
+     'block_rldh_elis_userset_enrolment_create' => array(
+        'classname' => 'block_rldh_elis_userset_enrolment_create',
+        'methodname' => 'userset_enrolment_create',
+        'classpath' => 'blocks/rlip/ws/elis/userset_enrolment_create.class.php',
+        'description' => 'Enrol a user into a userset',
+        'type' => 'read'
+    )
 );
 
 // Pre-built service.
 $services = array(
     'RLDH Webservices' => array(
-        'functions' => array(),
+        'functions' => array(
+                'block_rldh_elis_userset_enrolment_create'
+        ),
         'restrictedusers' => 0,
         'enabled' => 1,
     )
