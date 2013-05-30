@@ -26,7 +26,7 @@ require_once(elispm::lib('data/usertrack.class.php'));
 require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
 
 /**
- * Create user webservices method.
+ * Create track enrolment webservices method.
  */
 class block_rldh_elis_track_enrolment_create extends external_api {
 
@@ -84,7 +84,7 @@ class block_rldh_elis_track_enrolment_create extends external_api {
         $data = (object)$data;
 
         // Parse track.
-        if (empty($data->track_idnumber) || !($trackid = $DB->get_field('crlm_track', 'id', array('idnumber' => $data->track_idnumber)))) {
+        if (empty($data->track_idnumber) || !($trackid = $DB->get_field(track::TABLE, 'id', array('idnumber' => $data->track_idnumber)))) {
             throw new data_object_exception('ws_track_enrolment_create_fail_invalid_track', 'block_rlip', '', $data);
         }
 

@@ -37,7 +37,7 @@ require_once($CFG->libdir.'/externallib.php');
 require_once($dirname.'/../ws/elis/track_enrolment_create.class.php');
 
 /**
- * Tests webservice method block_rldh_elis_program_enrolment_create
+ * Tests webservice method block_rldh_elis_track_enrolment_create
  */
 class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
     /**
@@ -168,7 +168,7 @@ class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
     }
 
     /**
-     * Test successful program enrolment creation.
+     * Test successful track enrolment creation.
      */
     public function test_success() {
         global $DB, $USER;
@@ -289,7 +289,10 @@ class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
         global $DB;
 
         $programidnumber = 'TestProgramForTrack';
-        $this->create_program($programidnumber);
+        $programid = $this->create_program($programidnumber);
+
+        $trackidnumber = 'TestTrackForProgram';
+        $trackid = $this->create_track($trackidnumber, $programid);
 
         $this->give_permissions(array('elis/program:track_enrol'));
         $response = block_rldh_elis_track_enrolment_create::track_enrolment_create($data);
