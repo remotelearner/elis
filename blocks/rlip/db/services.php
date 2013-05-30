@@ -23,13 +23,19 @@
 
 // Webservice functions.
 $functions = array(
-
+    'block_rldh_elis_user_delete' => array(
+        'classname' => 'block_rldh_elis_user_delete',
+        'methodname' => 'user_delete',
+        'classpath' => 'blocks/rlip/ws/elis/user_delete.class.php',
+        'description' => 'Delete an ELIS user',
+        'type' => 'read',
+    )
 );
 
 // Pre-built service.
 $services = array(
     'RLDH Webservices' => array(
-        'functions' => array(),
+        'functions' => array('block_rldh_elis_user_delete'),
         'restrictedusers' => 0,
         'enabled' => 1,
     )
