@@ -103,3 +103,12 @@ $string['runmanually'] = 'Run manually';
 $string['scheduled'] = 'scheduled';
 $string['schedulepagetitle'] = 'Schedule DH';
 $string['schedulingtime'] = "*Scheduled jobs may not run exactly at the specified time.";
+
+$string['ws_unknown_error_code'] = 'unknown_error';
+$string['ws_unknown_error_msg'] = 'An unknown error occurred';
+$string['ws_class_enrolment_create_success_code'] = 'class_enrolment_created';
+$string['ws_class_enrolment_create_success_msg'] = 'User successfully enroled into Class';
+$string['ws_class_enrolment_create_fail'] = 'Could not enrol user into class';
+$string['ws_class_enrolment_create_fail_invalid_class'] = 'Class identified by class_idnumber \'{$a->class_idnumber}\' is not a valid class.';
+$string['ws_class_enrolment_create_fail_invalid_completestatus'] = 'Class completion status: \'{$a->completionstatus}\' is not a valid class completion status - must be: notcompleted, passed or failed.';
+$string['ws_class_enrolment_create_fail_invalid_user'] = 'No unique user identified by {$a->userparams} was found.';
