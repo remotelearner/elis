@@ -23,13 +23,21 @@
 
 // Webservice functions.
 $functions = array(
-
+    'block_rldh_elis_class_enrolment_update' => array(
+        'classname' => 'block_rldh_elis_class_enrolment_update',
+        'methodname' => 'class_enrolment_update',
+        'classpath' => 'blocks/rlip/ws/elis/class_enrolment_update.class.php',
+        'description' => 'Update a user class enrolment',
+        'type' => 'read'
+    )
 );
 
 // Pre-built service.
 $services = array(
     'RLDH Webservices' => array(
-        'functions' => array(),
+        'functions' => array(
+                'block_rldh_elis_class_enrolment_update',
+        ),
         'restrictedusers' => 0,
         'enabled' => 1,
     )
