@@ -154,10 +154,24 @@ class block_rldh_elis_class_enrolment_create extends external_api {
             $record->locked = $data->locked ? 1 : 0;
         }
         if (isset($data->enrolmenttime)) {
-            $record->enrolmenttime = $importplugin->parse_date($data->enrolmenttime);
+            $enrolmenttime = $importplugin->parse_date($data->enrolmenttime);
+            if (empty($enrolmenttime)) {
+                throw new data_object_exception('ws_class_enrolment_create_fail_invalid_enrolmenttime', 'block_rlip', '', $data);
+            } else {
+                $record->enrolmenttime = $enrolmenttime;
+            }
+        } else {
+            $record->enrolmenttime = gmmktime(); // this should be updated with ELIS-8408
         }
         if (isset($data->completetime)) {
-            $record->completetime = $importplugin->parse_date($data->completetime);
+            $completetime = $importplugin->parse_date($data->completetime);
+            if (empty($completetime)) {
+                throw new data_object_exception('ws_class_enrolment_create_fail_invalid_completetime', 'block_rlip', '', $data);
+            } else {
+                $record->completetime = $completetime;
+            }
+        } else if (!empty($record->completestatusid)) {
+            $record->completetime = gmmktime(); // this should be updated with ELIS-8408
         }
         $stu = new student($record);
         $stu->save();
