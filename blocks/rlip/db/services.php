@@ -36,6 +36,13 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/user_update.class.php',
         'description' => 'Update an ELIS user',
         'type' => 'read',
+    ),
+    'block_rldh_elis_user_delete' => array(
+        'classname' => 'block_rldh_elis_user_delete',
+        'methodname' => 'user_delete',
+        'classpath' => 'blocks/rlip/ws/elis/user_delete.class.php',
+        'description' => 'Delete an ELIS user',
+        'type' => 'read',
     )
 );
 
@@ -44,7 +51,8 @@ $services = array(
     'RLDH Webservices' => array(
         'functions' => array(
                 'block_rldh_elis_user_create',
-                'block_rldh_elis_user_update'
+                'block_rldh_elis_user_update',
+                'block_rldh_elis_user_delete',
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
