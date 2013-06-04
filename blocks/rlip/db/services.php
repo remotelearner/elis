@@ -71,6 +71,13 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/track_enrolment_delete.class.php',
         'description' => 'Remove a user from a track',
         'type' => 'read'
+    ),
+    'block_rldh_elis_class_enrolment_create' => array(
+        'classname' => 'block_rldh_elis_class_enrolment_create',
+        'methodname' => 'class_enrolment_create',
+        'classpath' => 'blocks/rlip/ws/elis/class_enrolment_create.class.php',
+        'description' => 'Enrol a user into a class',
+        'type' => 'read'
     )
 );
 
@@ -85,6 +92,7 @@ $services = array(
                 'block_rldh_elis_program_enrolment_delete',
                 'block_rldh_elis_track_enrolment_create',
                 'block_rldh_elis_track_enrolment_delete',
+                'block_rldh_elis_class_enrolment_create'
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
