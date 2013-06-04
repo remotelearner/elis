@@ -153,7 +153,6 @@ $string['ws_class_enrolment_update_fail'] = 'Could not update user class enrolme
 $string['ws_class_enrolment_update_fail_invalid_class'] = 'Class identified by class_idnumber \'{$a->class_idnumber}\' is not a valid class.';
 $string['ws_class_enrolment_update_fail_invalid_enrolmenttime'] = 'Class enrolment time: \'{$a->enrolmenttime}\' is not a valid date - must be in format MMM/DD/YYYY';
 $string['ws_class_enrolment_update_fail_invalid_completetime'] = 'Class completion time: \'{$a->completetime}\' is not a valid date - must be in format MMM/DD/YYYY';
-$string['ws_class_enrolment_update_fail_missing_completetime'] = 'Class completion time must be set if completion status is set to completed.';
 $string['ws_class_enrolment_update_fail_invalid_completestatus'] = 'Class completion status: \'{$a->completionstatus}\' is not a valid class completion status - must be: notcompleted, passed or failed.';
 $string['ws_class_enrolment_update_fail_invalid_user'] = 'No unique user identified by {$a->userparams} was found.';
 $string['ws_class_enrolment_update_fail_missing_enrolment'] = 'No class enrolment record found for class identified by class_idnumber \'{$a->class_idnumber}\'.';
