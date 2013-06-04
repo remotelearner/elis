@@ -104,8 +104,15 @@ $string['scheduled'] = 'scheduled';
 $string['schedulepagetitle'] = 'Schedule DH';
 $string['schedulingtime'] = "*Scheduled jobs may not run exactly at the specified time.";
 $string['ws_bad_param'] = 'Invalid parameter received: {$a}';
+
 $string['ws_unknown_error_code'] = 'unknown_error';
 $string['ws_unknown_error_msg'] = 'An unknown error occurred';
 $string['ws_user_create_success_code'] = 'user_created';
 $string['ws_user_create_success_msg'] = 'User created successfully';
 $string['ws_user_create_fail'] = 'Could not create user';
+$string['ws_user_update_success_code'] = 'user_updated';
+$string['ws_user_update_success_msg'] = 'User updated successfully';
+$string['ws_user_update_fail_conflictingidfields'] = 'Conflicting identifying fields received';
+$string['ws_user_update_fail_noidfields'] = 'No valid identifying fields received';
+$string['ws_user_update_fail_idfieldsnotallowed'] = 'Identifying fields cannot be updated using this method. Please use block_rldh_elis_user_update_identifiers() instead.';
+$string['ws_user_update_fail'] = 'Could not update user';
