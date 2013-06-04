@@ -137,6 +137,8 @@ class block_rldh_elis_class_enrolment_update extends external_api {
             throw new data_object_exception('ws_class_enrolment_update_fail_missing_enrolment', 'block_rlip', '', $data);
         }
 
+        $stu = new student($stuid);
+        $stu->load();
         $record = new stdClass;
         $record->userid = $userid;
         $record->classid = $classid;
@@ -145,8 +147,8 @@ class block_rldh_elis_class_enrolment_update extends external_api {
             if (isset($completestatuses[$completestatus])) {
                 $record->completestatusid = $completestatuses[$completestatus];
                 if ($record->completestatusid != STUSTATUS_NOTCOMPLETE) {
-                    if (!isset($data->completetime)) {
-                        throw new data_object_exception('ws_class_enrolment_update_fail_missing_completetime', 'block_rlip', '', $data);
+                    if (empty($stu->completetime) && !isset($data->completetime)) {
+                        $record->completetime = gmmktime(); // this should be updated with ELIS-8408
                     }
                 }
             } else {
@@ -177,8 +179,6 @@ class block_rldh_elis_class_enrolment_update extends external_api {
             }
         }
 
-        $stu = new student($stuid);
-        $stu->load();
         $stu->set_from_data($record);
         $stu->save();
 
