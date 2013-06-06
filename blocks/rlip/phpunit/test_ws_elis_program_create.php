@@ -175,7 +175,7 @@ class block_rlip_ws_elis_program_create_test extends rlip_test {
 
         // Get Program
         $createdprg = new curriculum($response['record']['id']);
-        $createdprg ->load();
+        $createdprg->load();
         $createdprg = $createdprg->to_array();
         foreach ($program as $param => $val) {
             $this->assertArrayHasKey($param, $createdprg);
@@ -241,7 +241,7 @@ class block_rlip_ws_elis_program_create_test extends rlip_test {
                             'priority' => 22
                         )
                 ),
-                // Test duplicate program 
+                // Test duplicate program
                 array(
                         array(
                             'idnumber' => 'DupProgramIdnumber',
