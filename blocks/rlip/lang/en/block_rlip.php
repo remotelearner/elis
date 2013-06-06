@@ -163,3 +163,7 @@ $string['ws_userset_enrolment_delete_success_msg'] = 'User successfully unenrole
 $string['ws_userset_enrolment_delete_fail'] = 'Could not unenrol user from userset';
 $string['ws_userset_enrolment_delete_fail_invalid_userset'] = 'Userset identified by userset_name \'{$a->userset_name}\' is not a valid userset.';
 $string['ws_userset_enrolment_delete_fail_invalid_user'] = 'No unique user identified by {$a->userparams} was found.';
+$string['ws_course_delete_success_code'] = 'course_deleted';
+$string['ws_course_delete_success_msg'] = 'ELIS course deleted successfully';
+$string['ws_course_delete_fail'] = 'Could not delete ELIS course';
+$string['ws_course_delete_fail_invalid_idnumber'] = 'Course idnumber: \'{$a->idnumber}\' is not a valid ELIS course.';
