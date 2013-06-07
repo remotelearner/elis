@@ -162,3 +162,7 @@ $string['ws_userset_enrolment_delete_success_msg'] = 'User successfully unenrole
 $string['ws_userset_enrolment_delete_fail'] = 'Could not unenrol user from userset';
 $string['ws_userset_enrolment_delete_fail_invalid_userset'] = 'Userset identified by userset_name \'{$a->userset_name}\' is not a valid userset.';
 $string['ws_userset_enrolment_delete_fail_invalid_user'] = 'No unique user identified by {$a->userparams} was found.';
+$string['ws_track_delete_success_code'] = 'track_deleted';
+$string['ws_track_delete_success_msg'] = 'Track deleted successfully';
+$string['ws_track_delete_fail'] = 'Could not delete track';
+$string['ws_track_delete_fail_invalid_idnumber'] = 'Track idnumber: \'{$a->idnumber}\' is not a valid track.';
