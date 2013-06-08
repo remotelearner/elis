@@ -162,3 +162,7 @@ $string['ws_userset_enrolment_delete_success_msg'] = 'User successfully unenrole
 $string['ws_userset_enrolment_delete_fail'] = 'Could not unenrol user from userset';
 $string['ws_userset_enrolment_delete_fail_invalid_userset'] = 'Userset identified by userset_name \'{$a->userset_name}\' is not a valid userset.';
 $string['ws_userset_enrolment_delete_fail_invalid_user'] = 'No unique user identified by {$a->userparams} was found.';
+$string['ws_userset_create_success_code'] = 'userset_created';
+$string['ws_userset_create_success_msg'] = 'Userset created successfully';
+$string['ws_userset_create_fail'] = 'Could not create userset';
+$string['ws_userset_create_fail_invalid_parent'] = 'Userset parent: \'{$a->parent}\' is not a valid userset.';
