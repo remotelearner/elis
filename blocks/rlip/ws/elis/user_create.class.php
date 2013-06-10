@@ -31,10 +31,24 @@ require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.c
 class block_rldh_elis_user_create extends external_api {
 
     /**
-     * Gets a description of the user object for use in the parameter and return functions.
-     * @return array An array of external_value objects describing a user record in webservice terms.
+     * Gets user custom fields
+     * @return array An array of custom user fields
      */
-    public static function get_user_object_description() {
+    public static function get_user_custom_fields() {
+        global $DB;
+        // get custom fields.
+        $sql = 'SELECT shortname, name, datatype, multivalued
+                  FROM {'.field::TABLE.'} f
+                  JOIN {'.field_contextlevel::TABLE.'} fctx ON f.id = fctx.fieldid AND fctx.contextlevel = ?';
+        $sqlparams = array(CONTEXT_ELIS_USER);
+        return $DB->get_records_sql($sql, $sqlparams);
+    }
+
+    /**
+     * Gets a description of the user input object for use in the parameter and return functions.
+     * @return array An array of external_value objects describing a user input record in webservice terms.
+     */
+    public static function get_user_input_object_description() {
         global $DB;
         $params = array(
             'username' => new external_value(PARAM_TEXT, 'User username', VALUE_REQUIRED),
@@ -63,26 +77,87 @@ class block_rldh_elis_user_create extends external_api {
             'inactive' => new external_value(PARAM_BOOL, 'User inactive status', VALUE_OPTIONAL),
         );
 
-        // Add custom fields.
-        $sql = 'SELECT shortname, name, datatype
-                  FROM {'.field::TABLE.'} f
-                  JOIN {'.field_contextlevel::TABLE.'} fctx ON f.id = fctx.fieldid AND fctx.contextlevel = ?';
-        $sqlparams = array(CONTEXT_ELIS_USER);
-        $fields = $DB->get_records_sql($sql, $sqlparams);
+        $fields = self::get_user_custom_fields();
         foreach ($fields as $field) {
             // Generate name using custom field prefix.
             $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
 
-            // Convert datatype to param type.
-            switch($field->datatype) {
-                case 'bool':
-                    $paramtype = PARAM_BOOL;
-                    break;
-                case 'int':
-                    $paramtype = PARAM_INT;
-                    break;
-                default:
-                    $paramtype = PARAM_TEXT;
+            if ($field->multivalued) {
+                $paramtype = PARAM_TEXT;
+            } else {
+                // Convert datatype to param type.
+                switch($field->datatype) {
+                    case 'bool':
+                        $paramtype = PARAM_BOOL;
+                        break;
+                    case 'int':
+                        $paramtype = PARAM_INT;
+                        break;
+                    default:
+                        $paramtype = PARAM_TEXT;
+                }
+            }
+
+            // Assemble the parameter entry and add to array.
+            $params[$fullfieldname] = new external_value($paramtype, $field->name, VALUE_OPTIONAL);
+        }
+
+        return $params;
+    }
+
+    /**
+     * Gets a description of the user output object for use in the parameter and return functions.
+     * @return array An array of external_value objects describing a user output record in webservice terms.
+     */
+    public static function get_user_output_object_description() {
+        global $DB;
+        $params = array(
+            'id' => new external_value(PARAM_INT, 'User DB id', VALUE_REQUIRED),
+            'username' => new external_value(PARAM_TEXT, 'User username', VALUE_REQUIRED),
+            'password' => new external_value(PARAM_TEXT, 'User password', VALUE_OPTIONAL),
+            'idnumber' => new external_value(PARAM_TEXT, 'User idnumber', VALUE_REQUIRED),
+            'firstname' => new external_value(PARAM_TEXT, 'User first name', VALUE_REQUIRED),
+            'lastname' => new external_value(PARAM_TEXT, 'User last name', VALUE_REQUIRED),
+            'mi' => new external_value(PARAM_TEXT, 'User middle initial', VALUE_OPTIONAL),
+            'email' => new external_value(PARAM_TEXT, 'User primary email', VALUE_REQUIRED),
+            'email2' => new external_value(PARAM_TEXT, 'User secondary email', VALUE_OPTIONAL),
+            'address' => new external_value(PARAM_TEXT, 'User primary address', VALUE_OPTIONAL),
+            'address2' => new external_value(PARAM_TEXT, 'User secondary address', VALUE_OPTIONAL),
+            'city' => new external_value(PARAM_TEXT, 'User city', VALUE_OPTIONAL),
+            'state' => new external_value(PARAM_TEXT, 'User state/province', VALUE_OPTIONAL),
+            'postalcode' => new external_value(PARAM_TEXT, 'User postal code', VALUE_OPTIONAL),
+            'country' => new external_value(PARAM_TEXT, 'User country', VALUE_REQUIRED),
+            'phone' => new external_value(PARAM_TEXT, 'User primary phone number', VALUE_OPTIONAL),
+            'phone2' => new external_value(PARAM_TEXT, 'User secondary phone number', VALUE_OPTIONAL),
+            'fax' => new external_value(PARAM_TEXT, 'User fax number', VALUE_OPTIONAL),
+            'birthdate' => new external_value(PARAM_TEXT, 'User birthdate', VALUE_OPTIONAL),
+            'gender' => new external_value(PARAM_TEXT, 'User gender', VALUE_OPTIONAL),
+            'language' => new external_value(PARAM_TEXT, 'User language', VALUE_OPTIONAL),
+            'transfercredits' => new external_value(PARAM_FLOAT, 'Credits user has earned elsewhere', VALUE_OPTIONAL),
+            'comments' => new external_value(PARAM_TEXT, 'Comments', VALUE_OPTIONAL),
+            'notes' => new external_value(PARAM_TEXT, 'Notes', VALUE_OPTIONAL),
+            'inactive' => new external_value(PARAM_BOOL, 'User inactive status', VALUE_OPTIONAL),
+        );
+
+        $fields = self::get_user_custom_fields();
+        foreach ($fields as $field) {
+            // Generate name using custom field prefix.
+            $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
+
+            if ($field->multivalued) {
+                $paramtype = PARAM_TEXT;
+            } else {
+                // Convert datatype to param type.
+                switch($field->datatype) {
+                    case 'bool':
+                        $paramtype = PARAM_BOOL;
+                        break;
+                    case 'int':
+                        $paramtype = PARAM_INT;
+                        break;
+                    default:
+                        $paramtype = PARAM_TEXT;
+                }
             }
 
             // Assemble the parameter entry and add to array.
@@ -97,7 +172,7 @@ class block_rldh_elis_user_create extends external_api {
      * @return external_function_parameters The parameters object for this webservice method.
      */
     public static function user_create_parameters() {
-        $params = array('data' => new external_single_structure(static::get_user_object_description()));
+        $params = array('data' => new external_single_structure(static::get_user_input_object_description()));
         return new external_function_parameters($params);
     }
 
@@ -156,6 +231,16 @@ class block_rldh_elis_user_create extends external_api {
         if (!empty($user->id)) {
             $userrec = (array)$DB->get_record(user::TABLE, array('id' => $user->id));
             $userobj = $user->to_array();
+            // convert multi-valued custom field arrays to comma-separated listing
+            $fields = self::get_user_custom_fields();
+            foreach ($fields as $field) {
+                // Generate name using custom field prefix.
+                $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
+
+                if ($field->multivalued && isset($userobj[$fullfieldname]) && is_array($userobj[$fullfieldname])) {
+                    $userobj[$fullfieldname] = implode(',', $userobj[$fullfieldname]);
+                }
+            }
             return array(
                 'messagecode' => get_string('ws_user_create_success_code', 'block_rlip'),
                 'message' => get_string('ws_user_create_success_msg', 'block_rlip'),
@@ -175,7 +260,7 @@ class block_rldh_elis_user_create extends external_api {
                 array(
                     'messagecode' => new external_value(PARAM_TEXT, 'Response Code'),
                     'message' => new external_value(PARAM_TEXT, 'Response'),
-                    'record' => new external_single_structure(static::get_user_object_description())
+                    'record' => new external_single_structure(static::get_user_output_object_description())
                 )
         );
     }
