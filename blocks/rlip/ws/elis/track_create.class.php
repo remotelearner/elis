@@ -212,7 +212,7 @@ class block_rldh_elis_track_create extends external_api {
                 // Generate name using custom field prefix.
                 $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
 
-                if ($field->multivalued && is_array($trackobj[$fullfieldname])) {
+                if ($field->multivalued && isset($trackobj[$fullfieldname]) && is_array($trackobj[$fullfieldname])) {
                     $trackobj[$fullfieldname] = implode(',', $trackobj[$fullfieldname]);
                 }
             }
