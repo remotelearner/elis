@@ -234,3 +234,7 @@ $string['ws_track_update_fail'] = 'Could not update track';
 $string['ws_track_update_fail_invalid_idnumber'] = 'Track idnumber: \'{$a->idnumber}\' is not a valid track.';
 $string['ws_track_update_fail_invalid_startdate'] = 'Track startdate: \'{$a->startdate}\' is not a valid date in MMM/DD/YYYY format.';
 $string['ws_track_update_fail_invalid_enddate'] = 'Track enddate: \'{$a->enddate}\' is not a valid date in MMM/DD/YYYY format.';
+$string['ws_track_delete_success_code'] = 'track_deleted';
+$string['ws_track_delete_success_msg'] = 'Track deleted successfully';
+$string['ws_track_delete_fail'] = 'Could not delete track';
+$string['ws_track_delete_fail_invalid_idnumber'] = 'Track idnumber: \'{$a->idnumber}\' is not a valid track.';
