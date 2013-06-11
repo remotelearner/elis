@@ -113,7 +113,14 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/course_create.class.php',
         'description' => 'Create an ELIS course description',
         'type' => 'read',
-    )
+    ),
+    'block_rldh_elis_course_update' => array(
+        'classname' => 'block_rldh_elis_course_update', 
+        'methodname' => 'course_update',
+        'classpath' => 'blocks/rlip/ws/elis/course_update.class.php',
+        'description' => 'Update an ELIS course description',
+        'type' => 'read',
+    ),
 );
 
 // Pre-built service.
@@ -132,7 +139,8 @@ $services = array(
                 'block_rldh_elis_class_enrolment_delete',
                 'block_rldh_elis_userset_enrolment_create',
                 'block_rldh_elis_userset_enrolment_delete',
-                'block_rldh_elis_course_create'
+                'block_rldh_elis_course_create',
+                'block_rldh_elis_course_update',
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
