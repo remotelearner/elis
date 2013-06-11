@@ -23,13 +23,6 @@
 
 // Webservice functions.
 $functions = array(
-    'block_rldh_elis_class_create' => array(
-        'classname' => 'block_rldh_elis_class_create',
-        'methodname' => 'class_create',
-        'classpath' => 'blocks/rlip/ws/elis/class_create.class.php',
-        'description' => 'Create an ELIS class',
-        'type' => 'read',
-    ),
     'block_rldh_elis_user_create' => array(
         'classname' => 'block_rldh_elis_user_create',
         'methodname' => 'user_create',
@@ -134,14 +127,27 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/course_delete.class.php',
         'description' => 'Delete an ELIS course description',
         'type' => 'read'
-    )
+    ),
+    'block_rldh_elis_class_create' => array(
+        'classname' => 'block_rldh_elis_class_create',
+        'methodname' => 'class_create',
+        'classpath' => 'blocks/rlip/ws/elis/class_create.class.php',
+        'description' => 'Create an ELIS class',
+        'type' => 'read',
+    ),
+    'block_rldh_elis_class_update' => array(
+        'classname' => 'block_rldh_elis_class_update',
+        'methodname' => 'class_update',
+        'classpath' => 'blocks/rlip/ws/elis/class_update.class.php',
+        'description' => 'Update an ELIS class',
+        'type' => 'read',
+    ),
 );
 
 // Pre-built service.
 $services = array(
     'RLDH Webservices' => array(
         'functions' => array(
-                'block_rldh_elis_class_create',
                 'block_rldh_elis_user_create',
                 'block_rldh_elis_user_update',
                 'block_rldh_elis_user_delete',
@@ -156,7 +162,9 @@ $services = array(
                 'block_rldh_elis_userset_enrolment_delete',
                 'block_rldh_elis_course_create',
                 'block_rldh_elis_course_update',
-                'block_rldh_elis_course_delete'
+                'block_rldh_elis_course_delete',
+                'block_rldh_elis_class_create',
+                'block_rldh_elis_class_update',
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
