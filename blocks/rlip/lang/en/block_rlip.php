@@ -171,7 +171,6 @@ $string['ws_userset_enrolment_delete_success_msg'] = 'User successfully unenrole
 $string['ws_userset_enrolment_delete_fail'] = 'Could not unenrol user from userset';
 $string['ws_userset_enrolment_delete_fail_invalid_userset'] = 'Userset identified by userset_name \'{$a->userset_name}\' is not a valid userset.';
 $string['ws_userset_enrolment_delete_fail_invalid_user'] = 'No unique user identified by {$a->userparams} was found.';
-<<<<<<< HEAD
 $string['ws_course_create_success_code'] = 'course_created';
 $string['ws_course_create_success_msg'] = 'ELIS course description created successfully';
 $string['ws_course_create_fail'] = 'Could not create ELIS course description';
@@ -179,7 +178,6 @@ $string['ws_course_create_fail_invalid_credits'] = 'Credits \'{$a->credits}\' is
 $string['ws_course_create_fail_invalid_completion_grade'] = 'Completion grade \'{$a->completion_grade}\' is not valid - must be between 0 and 100.';
 $string['ws_course_create_fail_invalid_assignment'] = 'Program identified by idnumber \'{$a->assignment}\' is not a valid program.';
 $string['ws_course_create_fail_invalid_link'] = 'Moodle course identified by shortname \'{$a->link}\' is not a valid Moodle course.';
-=======
 $string['ws_course_update_success_code'] = 'course_updated';
 $string['ws_course_update_success_msg'] = 'ELIS course description updated successfully';
 $string['ws_course_update_fail'] = 'Could not update ELIS course description';
@@ -187,4 +185,7 @@ $string['ws_course_update_fail_invalid_credits'] = 'Credits \'{$a->credits}\' is
 $string['ws_course_update_fail_invalid_completion_grade'] = 'Completion grade \'{$a->completion_grade}\' is not valid - must be between 0 and 100.';
 $string['ws_course_update_fail_invalid_assignment'] = 'Program identified by idnumber \'{$a->assignment}\' is not a valid program.';
 $string['ws_course_update_fail_invalid_link'] = 'Moodle course identified by shortname \'{$a->link}\' is not a valid Moodle course.';
->>>>>>> origin/wip-RECODEV-29-m23
+$string['ws_course_delete_success_code'] = 'course_deleted';
+$string['ws_course_delete_success_msg'] = 'ELIS course deleted successfully';
+$string['ws_course_delete_fail'] = 'Could not delete ELIS course';
+$string['ws_course_delete_fail_invalid_idnumber'] = 'Course idnumber: \'{$a->idnumber}\' is not a valid ELIS course.';
