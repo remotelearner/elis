@@ -173,7 +173,7 @@ class block_rldh_elis_program_update extends external_api {
                 // Generate name using custom field prefix.
                 $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
 
-                if ($field->multivalued && is_array($prgobj[$fullfieldname])) {
+                if ($field->multivalued && isset($prgobj[$fullfieldname]) && is_array($prgobj[$fullfieldname])) {
                     $prgobj[$fullfieldname] = implode(',', $prgobj[$fullfieldname]);
                 }
             }

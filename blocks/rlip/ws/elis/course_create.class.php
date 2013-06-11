@@ -177,7 +177,7 @@ class block_rldh_elis_course_create extends external_api {
                 // Generate name using custom field prefix.
                 $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
 
-                if ($field->multivalued && is_array($courseobj[$fullfieldname])) {
+                if ($field->multivalued && isset($courseobj[$fullfieldname]) && is_array($courseobj[$fullfieldname])) {
                     $courseobj[$fullfieldname] = implode(',', $courseobj[$fullfieldname]);
                 }
             }
