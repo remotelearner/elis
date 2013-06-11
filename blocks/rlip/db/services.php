@@ -162,21 +162,28 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/program_update.class.php',
         'description' => 'Update a program',
         'type' => 'read'
-     ),
+    ),
     'block_rldh_elis_program_delete' => array(
         'classname' => 'block_rldh_elis_program_delete',
         'methodname' => 'program_delete',
         'classpath' => 'blocks/rlip/ws/elis/program_delete.class.php',
         'description' => 'Delete a program',
         'type' => 'read'
-     ),
+    ),
     'block_rldh_elis_track_create' => array(
         'classname' => 'block_rldh_elis_track_create',
         'methodname' => 'track_create',
         'classpath' => 'blocks/rlip/ws/elis/track_create.class.php',
         'description' => 'Create a track',
         'type' => 'read'
-     )
+    ),
+    'block_rldh_elis_track_update' => array(
+        'classname' => 'block_rldh_elis_track_update',
+        'methodname' => 'track_update',
+        'classpath' => 'blocks/rlip/ws/elis/track_update.class.php',
+        'description' => 'Update a track',
+        'type' => 'read'
+    )
 );
 
 // Pre-built service.
@@ -204,7 +211,8 @@ $services = array(
                 'block_rldh_elis_program_create',
                 'block_rldh_elis_program_update',
                 'block_rldh_elis_program_delete',
-                'block_rldh_elis_track_create'
+                'block_rldh_elis_track_create',
+                'block_rldh_elis_track_update'
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
