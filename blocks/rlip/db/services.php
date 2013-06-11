@@ -44,6 +44,13 @@ $functions = array(
         'description' => 'Update an ELIS user',
         'type' => 'read',
     ),
+    'block_rldh_elis_user_update_identifiers' => array(
+        'classname' => 'block_rldh_elis_user_update_identifiers',
+        'methodname' => 'user_update_identifiers',
+        'classpath' => 'blocks/rlip/ws/elis/user_update_identifiers.class.php',
+        'description' => 'Update an ELIS user\'s identifying fields',
+        'type' => 'read',
+    ),
     'block_rldh_elis_user_delete' => array(
         'classname' => 'block_rldh_elis_user_delete',
         'methodname' => 'user_delete',
@@ -221,6 +228,7 @@ $services = array(
                 'block_rldh_elis_class_delete',
                 'block_rldh_elis_user_create',
                 'block_rldh_elis_user_update',
+                'block_rldh_elis_user_update_identifiers',
                 'block_rldh_elis_user_delete',
                 'block_rldh_elis_program_enrolment_create',
                 'block_rldh_elis_program_enrolment_delete',
