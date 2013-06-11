@@ -23,13 +23,6 @@
 
 // Webservice functions.
 $functions = array(
-    'block_rldh_elis_class_delete' => array(
-        'classname' => 'block_rldh_elis_class_delete',
-        'methodname' => 'class_delete',
-        'classpath' => 'blocks/rlip/ws/elis/class_delete.class.php',
-        'description' => 'Delete an ELIS class',
-        'type' => 'read',
-    ),
     'block_rldh_elis_user_create' => array(
         'classname' => 'block_rldh_elis_user_create',
         'methodname' => 'user_create',
@@ -149,13 +142,26 @@ $functions = array(
         'description' => 'Update an ELIS class',
         'type' => 'read',
     ),
+    'block_rldh_elis_class_delete' => array(
+        'classname' => 'block_rldh_elis_class_delete',
+        'methodname' => 'class_delete',
+        'classpath' => 'blocks/rlip/ws/elis/class_delete.class.php',
+        'description' => 'Delete an ELIS class',
+        'type' => 'read',
+    ),
+    'block_rldh_elis_program_create' => array(
+        'classname' => 'block_rldh_elis_program_create',
+        'methodname' => 'program_create',
+        'classpath' => 'blocks/rlip/ws/elis/program_create.class.php',
+        'description' => 'Create a program',
+        'type' => 'read'
+    )
 );
 
 // Pre-built service.
 $services = array(
     'RLDH Webservices' => array(
         'functions' => array(
-                'block_rldh_elis_class_delete',
                 'block_rldh_elis_user_create',
                 'block_rldh_elis_user_update',
                 'block_rldh_elis_user_delete',
@@ -173,6 +179,8 @@ $services = array(
                 'block_rldh_elis_course_delete',
                 'block_rldh_elis_class_create',
                 'block_rldh_elis_class_update',
+                'block_rldh_elis_class_delete',
+                'block_rldh_elis_program_create'
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
