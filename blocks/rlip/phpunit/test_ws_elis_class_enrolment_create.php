@@ -286,6 +286,22 @@ class block_rlip_ws_elis_class_enrolment_create_test extends rlip_test {
                             'completestatus' => 'bogusStatus',
                         )
                 ),
+                // Test invalid enrolmenttime
+                array(
+                        array(
+                            'class_idnumber' => 'TestClassEnrolmentCreate',
+                            'user_idnumber' => 'assigninguserid',
+                            'enrolmenttime' => 'XYZ/01/1971',
+                        )
+                ),
+                // Test invalid completetime
+                array(
+                        array(
+                            'class_idnumber' => 'TestClassEnrolmentCreate',
+                            'user_idnumber' => 'assigninguserid',
+                            'completetime' => 'FEB/31/1971',
+                        )
+                ),
                 // Test conflicting input.
                 array(
                         array(
