@@ -217,3 +217,7 @@ $string['ws_program_update_fail_invalid_reqcredits'] = 'Program reqcredits: \'{$
 $string['ws_program_update_fail_invalid_timetocomplete'] = 'Program timetocomplete: \'{$a->timetocomplete}\' is not a valid time delta in *h, *d, *w, *m, *y format.';
 $string['ws_program_update_fail_invalid_frequency'] = 'Program frequency: \'{$a->frequency}\' is not a valid time delta in *h, *d, *w, *m, *y format.';
 $string['ws_program_update_fail_invalid_priority'] = 'Program priority: \'{$a->priority}\' is not valid, must be a number between 0 and 10.';
+$string['ws_program_delete_success_code'] = 'program_deleted';
+$string['ws_program_delete_success_msg'] = 'Program deleted successfully';
+$string['ws_program_delete_fail'] = 'Could not delete program';
+$string['ws_program_delete_fail_invalid_idnumber'] = 'Program idnumber: \'{$a->idnumber}\' is not a valid program.';
