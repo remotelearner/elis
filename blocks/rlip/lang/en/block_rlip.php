@@ -238,3 +238,7 @@ $string['ws_track_delete_success_code'] = 'track_deleted';
 $string['ws_track_delete_success_msg'] = 'Track deleted successfully';
 $string['ws_track_delete_fail'] = 'Could not delete track';
 $string['ws_track_delete_fail_invalid_idnumber'] = 'Track idnumber: \'{$a->idnumber}\' is not a valid track.';
+$string['ws_userset_create_success_code'] = 'userset_created';
+$string['ws_userset_create_success_msg'] = 'Userset created successfully';
+$string['ws_userset_create_fail'] = 'Could not create userset';
+$string['ws_userset_create_fail_invalid_parent'] = 'Userset parent: \'{$a->parent}\' is not a valid userset.';

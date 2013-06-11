@@ -190,7 +190,14 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/track_delete.class.php',
         'description' => 'Delete a track',
         'type' => 'read'
-     )
+    ),
+    'block_rldh_elis_userset_create' => array(
+        'classname' => 'block_rldh_elis_userset_create',
+        'methodname' => 'userset_create',
+        'classpath' => 'blocks/rlip/ws/elis/userset_create.class.php',
+        'description' => 'Create a userset',
+        'type' => 'read'
+    )
 );
 
 // Pre-built service.
@@ -220,7 +227,8 @@ $services = array(
                 'block_rldh_elis_program_delete',
                 'block_rldh_elis_track_create',
                 'block_rldh_elis_track_update',
-                'block_rldh_elis_track_delete'
+                'block_rldh_elis_track_delete',
+                'block_rldh_elis_userset_create'
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
