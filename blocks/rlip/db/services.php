@@ -204,7 +204,7 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/userset_create.class.php',
         'description' => 'Create a userset',
         'type' => 'read'
-    )
+    ),
     'block_rldh_elis_userset_update' => array(
         'classname' => 'block_rldh_elis_userset_update',
         'methodname' => 'userset_update',
