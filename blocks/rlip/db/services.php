@@ -198,6 +198,13 @@ $functions = array(
         'description' => 'Create a userset',
         'type' => 'read'
     )
+    'block_rldh_elis_userset_update' => array(
+        'classname' => 'block_rldh_elis_userset_update',
+        'methodname' => 'userset_update',
+        'classpath' => 'blocks/rlip/ws/elis/userset_update.class.php',
+        'description' => 'Update a userset',
+        'type' => 'read'
+    )
 );
 
 // Pre-built service.
@@ -228,7 +235,8 @@ $services = array(
                 'block_rldh_elis_track_create',
                 'block_rldh_elis_track_update',
                 'block_rldh_elis_track_delete',
-                'block_rldh_elis_userset_create'
+                'block_rldh_elis_userset_create',
+                'block_rldh_elis_userset_update'
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
