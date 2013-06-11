@@ -85,7 +85,7 @@ class block_rldh_elis_class_enrolment_create extends external_api {
      */
     public static function class_enrolment_create(array $data) {
         global $USER, $DB;
-        static $completestatues = array(
+        static $completestatuses = array(
             'not completed' => STUSTATUS_NOTCOMPLETE,
             'not_completed' => STUSTATUS_NOTCOMPLETE,
             'notcompleted' => STUSTATUS_NOTCOMPLETE,
@@ -136,28 +136,38 @@ class block_rldh_elis_class_enrolment_create extends external_api {
         $record = new stdClass;
         $record->userid = $userid;
         $record->classid = $classid;
+        $record->completestatusid = STUSTATUS_NOTCOMPLETE;
         if (isset($data->completestatus)) {
             $completestatus = strtolower($data->completestatus);
-            if (isset($completestatues[$completestatus])) {
-                $record->completestatusid = $completestatues[$completestatus];
+            if (isset($completestatuses[$completestatus])) {
+                $record->completestatusid = $completestatuses[$completestatus];
             } else {
                 throw new data_object_exception('ws_class_enrolment_create_fail_invalid_completestatus', 'block_rlip', '', $data);
             }
         }
-        if (isset($data->grade) && is_numeric($data->grade)) {
-            $record->grade = $data->grade;
-        }
-        if (isset($data->credits) && is_numeric($data->credits)) {
-            $record->credits = $data->credits;
-        }
-        if (isset($data->locked)) {
-            $record->locked = $data->locked ? 1 : 0;
-        }
+        $record->grade = (isset($data->grade) && is_numeric($data->grade)) ? $data->grade : 0;
+        $record->credits = (isset($data->credits) && is_numeric($data->credits)) ? $data->credits : 0;
+        $record->locked = !empty($data->locked) ? 1 : 0;
         if (isset($data->enrolmenttime)) {
-            $record->enrolmenttime = $importplugin->parse_date($data->enrolmenttime);
+            $enrolmenttime = $importplugin->parse_date($data->enrolmenttime);
+            if (empty($enrolmenttime)) {
+                throw new data_object_exception('ws_class_enrolment_create_fail_invalid_enrolmenttime', 'block_rlip', '', $data);
+            } else {
+                $record->enrolmenttime = $enrolmenttime;
+            }
+        } else {
+            $record->enrolmenttime = gmmktime(); // this should be updated with ELIS-8408
         }
+        $record->completetime = 0;
         if (isset($data->completetime)) {
-            $record->completetime = $importplugin->parse_date($data->completetime);
+            $completetime = $importplugin->parse_date($data->completetime);
+            if (empty($completetime)) {
+                throw new data_object_exception('ws_class_enrolment_create_fail_invalid_completetime', 'block_rlip', '', $data);
+            } else {
+                $record->completetime = $completetime;
+            }
+        } else if (!empty($record->completestatusid)) {
+            $record->completetime = gmmktime(); // this should be updated with ELIS-8408
         }
         $stu = new student($record);
         $stu->save();
