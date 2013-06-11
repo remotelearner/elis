@@ -169,6 +169,13 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/program_delete.class.php',
         'description' => 'Delete a program',
         'type' => 'read'
+    ),
+    'block_rldh_elis_track_create' => array(
+        'classname' => 'block_rldh_elis_track_create',
+        'methodname' => 'track_create',
+        'classpath' => 'blocks/rlip/ws/elis/track_create.class.php',
+        'description' => 'Create a track',
+        'type' => 'read'
     )
 );
 
@@ -196,7 +203,8 @@ $services = array(
                 'block_rldh_elis_class_delete',
                 'block_rldh_elis_program_create',
                 'block_rldh_elis_program_update',
-                'block_rldh_elis_program_delete'
+                'block_rldh_elis_program_delete',
+                'block_rldh_elis_track_create'
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
