@@ -162,7 +162,14 @@ $functions = array(
         'classpath' => 'blocks/rlip/ws/elis/program_update.class.php',
         'description' => 'Update a program',
         'type' => 'read'
-     )
+    ),
+    'block_rldh_elis_program_delete' => array(
+        'classname' => 'block_rldh_elis_program_delete',
+        'methodname' => 'program_delete',
+        'classpath' => 'blocks/rlip/ws/elis/program_delete.class.php',
+        'description' => 'Delete a program',
+        'type' => 'read'
+    )
 );
 
 // Pre-built service.
@@ -188,7 +195,8 @@ $services = array(
                 'block_rldh_elis_class_update',
                 'block_rldh_elis_class_delete',
                 'block_rldh_elis_program_create',
-                'block_rldh_elis_program_update'
+                'block_rldh_elis_program_update',
+                'block_rldh_elis_program_delete'
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
