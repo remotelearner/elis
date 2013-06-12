@@ -197,25 +197,51 @@ class block_rldh_elis_user_update extends external_api {
 
         // Get the user we're updating via identifying fields.
         $idfields = array('idnumber', 'username', 'email');
-        $userid = null;
+        $params = array();
+        $matches = array();
         foreach ($idfields as $field) {
             if (isset($data[$field])) {
-                $user = $DB->get_record(user::TABLE, array($field => $data[$field]));
-                if (!empty($user)) {
-                    if (!empty($userid) && $userid !== $user->id) {
-                        // If we already have a userid from a previous field and this user doesn't match that user, throw exception.
-                        throw new moodle_exception('ws_user_update_fail_conflictingidfields', 'block_rlip');
-                    } else {
-                        $userid = $user->id;
+                $params[$field] = $data[$field];
+                $recs = $DB->get_recordset(user::TABLE, array($field => $data[$field]), '', 'id');
+                if ($recs->valid()) {
+                    foreach ($recs as $rec) {
+                        $matches[$rec->id] = $field;
                     }
-                } else {
-                    throw new moodle_exception('ws_user_update_fail_idfieldsnotallowed', 'block_rlip');
                 }
             }
         }
-
+        if (empty($params)) {
+            // No identifying fields found
+            throw new moodle_exception('ws_user_update_fail_noidfields', 'block_rlip');
+        }
+        $reccount = $DB->count_records(user::TABLE, $params);
+        if ($reccount != 1) {
+            // Format error string parameters
+            $errstring = '';
+            foreach ($params as $userfield => $uservalue) {
+                if (!empty($errstring)) {
+                    $errstring .= ', ';
+                }
+                $errstring .= "{$userfield}: '{$uservalue}'";
+            }
+        }
+        if ($reccount < 1) {
+            if (count($params) > 1) {
+                // Conflict or cannot update identifying fields
+                throw new moodle_exception((count($matches) > 1) ? 'ws_user_update_fail_conflictingidfields' : 'ws_user_update_fail_idfieldsnotallowed',
+                        'block_rlip', '', $errstring);
+            } else {
+                // Invalid identifying field
+                throw new moodle_exception('ws_user_update_fail_idfieldinvalid', 'block_rlip', '', $errstring);
+            }
+        }
+        if ($reccount > 1) {
+            // Conflicting idfields
+            throw new moodle_exception('ws_user_update_fail_conflictingidfields', 'block_rlip', '', $errstring);
+        }
+        $userid = $DB->get_field(user::TABLE, 'id', $params);
         if (empty($userid)) {
-            // No valid identifying fields found.
+            // No identifying fields found, but this shouldn't happen
             throw new moodle_exception('ws_user_update_fail_noidfields', 'block_rlip');
         }
 
