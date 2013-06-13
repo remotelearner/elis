@@ -671,7 +671,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                         'courseid' => $class->moodlecourseid,
                         'idnumber' => $element->idnumber
                     );
-                    $idnumber = $DB->get_field('course_modules', 'id', array('idnumber' => $element->idnumber));
+                    $idnumber = $DB->get_field('course_modules', 'id', array('course' => $class->moodlecourseid, 'idnumber' => $element->idnumber));
                     $params2 =  array(
                         'courseid' => $class->moodlecourseid,
                         'idnumber' => $idnumber
