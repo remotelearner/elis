@@ -53,12 +53,20 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
-        return array(course::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     instructor::TABLE => 'elis_program',
-                     pmclass::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program');
+        return array(
+            course::TABLE => 'elis_program',
+            field::TABLE => 'elis_core',
+            instructor::TABLE => 'elis_program',
+            pmclass::TABLE => 'elis_program',
+            user::TABLE => 'elis_program',
+            usermoodle::TABLE => 'elis_program',
+            'cache_flags' => 'moodle',
+            'config' => 'moodle',
+            'config_plugins' => 'moodle',
+            'message' => 'moodle',
+            'user' => 'moodle',
+            'role_assignments' => 'moodle',
+        );
     }
 
     /**
@@ -503,6 +511,8 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
+        set_config('coursecontact', 'teacher,editingteacher');
+
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
                                'firstname' => 'testuserfirstname',
@@ -565,6 +575,9 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
+        set_config('coursecontact', 'teacher,editingteacher');
+        set_config('default_instructor_role', 'teacher', 'elis_program');
+
         $user = new user(array('idnumber' => 'testuseridnumber',
                                'username' => 'testuserusername',
                                'firstname' => 'testuserfirstname',
@@ -593,7 +606,7 @@ class elis_user_instructor_enrolment_test extends elis_database_test {
         //run the instructor assignment delete action
         $record = new stdClass;
         $record->context = 'class_testclassidnumber';
-        $record->username = 'testuserusername';
+        $record->user_username = 'testuserusername';
         $record->role = $role;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');

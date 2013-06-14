@@ -25,6 +25,7 @@ require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elispm::lib('data/track.class.php'));
 require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
+require_once(dirname(__FILE__).'/../../lib.php');
 
 /**
  * Create track webservices method.
@@ -197,7 +198,7 @@ class block_rldh_elis_track_create extends external_api {
         $record->name = !empty($data->name) ? $data->name : '';
         $record->description = !empty($data->description) ? $data->description : '';
         $record->autocreate = !empty($data->autocreate);
-        $record->timecreated = gmmktime(); // update with ELIS-8408
+        $record->timecreated = rlip_timestamp();
         $track = new track();
         $track->set_from_data($record);
         $track->save();

@@ -24,6 +24,7 @@
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once(elispm::lib('data/student.class.php'));
 require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
+require_once(dirname(__FILE__).'/../../lib.php');
 
 /**
  * Update Class enrolment webservices method.
@@ -148,7 +149,7 @@ class block_rldh_elis_class_enrolment_update extends external_api {
                 $record->completestatusid = $completestatuses[$completestatus];
                 if ($record->completestatusid != STUSTATUS_NOTCOMPLETE) {
                     if (empty($stu->completetime) && !isset($data->completetime)) {
-                        $record->completetime = gmmktime(); // this should be updated with ELIS-8408
+                        $record->completetime = rlip_timestamp();
                     }
                 }
             } else {
