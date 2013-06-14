@@ -197,52 +197,41 @@ class block_rldh_elis_user_update extends external_api {
 
         // Get the user we're updating via identifying fields.
         $idfields = array('idnumber', 'username', 'email');
-        $params = array();
-        $matches = array();
+        $valididfields = array();
+        $invalididfields = array();
+        $userid = null;
         foreach ($idfields as $field) {
             if (isset($data[$field])) {
-                $params[$field] = $data[$field];
-                $recs = $DB->get_recordset(user::TABLE, array($field => $data[$field]), '', 'id');
-                if ($recs->valid()) {
-                    foreach ($recs as $rec) {
-                        $matches[$rec->id] = $field;
+                $user = $DB->get_record(user::TABLE, array($field => $data[$field]));
+                if (!empty($user)) {
+                    if (!empty($userid) && $userid !== $user->id) {
+                        // If we already have a userid from a previous field and this user doesn't match that user, throw exception.
+                        $a = implode(', ', $valididfields).', '.$field;
+                        throw new moodle_exception('ws_user_update_fail_conflictingidfields', 'block_rlip', '', $a);
+                    } else {
+                        $userid = $user->id;
+                        $valididfields[] = $field;
                     }
+                } else {
+                    if (!empty($userid)) {
+                        // The user has supplied a valid identifying field already, but this one is an invalid field.
+                        // This is likely an attempt to update an identifying field, which has to be done elsewhere.
+                        throw new moodle_exception('ws_user_update_fail_idfieldsnotallowed', 'block_rlip');
+                    }
+                    $invalididfields[] = $field;
                 }
             }
         }
-        if (empty($params)) {
-            // No identifying fields found
-            throw new moodle_exception('ws_user_update_fail_noidfields', 'block_rlip');
-        }
-        $reccount = $DB->count_records(user::TABLE, $params);
-        if ($reccount != 1) {
-            // Format error string parameters
-            $errstring = '';
-            foreach ($params as $userfield => $uservalue) {
-                if (!empty($errstring)) {
-                    $errstring .= ', ';
-                }
-                $errstring .= "{$userfield}: '{$uservalue}'";
-            }
-        }
-        if ($reccount < 1) {
-            if (count($params) > 1) {
-                // Conflict or cannot update identifying fields
-                throw new moodle_exception((count($matches) > 1) ? 'ws_user_update_fail_conflictingidfields' : 'ws_user_update_fail_idfieldsnotallowed',
-                        'block_rlip', '', $errstring);
-            } else {
-                // Invalid identifying field
-                throw new moodle_exception('ws_user_update_fail_idfieldinvalid', 'block_rlip', '', $errstring);
-            }
-        }
-        if ($reccount > 1) {
-            // Conflicting idfields
-            throw new moodle_exception('ws_user_update_fail_conflictingidfields', 'block_rlip', '', $errstring);
-        }
-        $userid = $DB->get_field(user::TABLE, 'id', $params);
+
         if (empty($userid)) {
-            // No identifying fields found, but this shouldn't happen
+            // No valid identifying fields found.
             throw new moodle_exception('ws_user_update_fail_noidfields', 'block_rlip');
+        } else {
+            if (!empty($invalididfields)) {
+                // The user has supplied a valid identifying field already, but has also supplied at least one invalid id field.
+                // This is likely an attempt to update an identifying field, which has to be done elsewhere.
+                throw new moodle_exception('ws_user_update_fail_idfieldsnotallowed', 'block_rlip');
+            }
         }
 
         // Capability checking.
@@ -282,7 +271,7 @@ class block_rldh_elis_user_update extends external_api {
         if (!empty($user->id)) {
             $userrec = (array)$DB->get_record(user::TABLE, array('id' => $user->id));
             $userobj = $user->to_array();
-            // convert multi-valued custom field arrays to comma-separated listing
+            // Convert multi-valued custom field arrays to comma-separated listing.
             $fields = self::get_user_custom_fields();
             foreach ($fields as $field) {
                 // Generate name using custom field prefix.
