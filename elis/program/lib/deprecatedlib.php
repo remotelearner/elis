@@ -103,10 +103,12 @@ function cm_get_param($param, $default = false) {
  * @return string The formatted message.
  */
 function cm_error($message) {
-    //global $OUTPUT;
-    /// Using Moodle...
-    return notify($message, 'notifyproblem', 'center', true);
-    //return $OUTPUT->box($message, 'errorbox');
+    global $OUTPUT;
+    if (empty($USER) || !isloggedin() || isguestuser()) {
+        // ELIS-8458: cannot call notify() without valid user object set
+        return $OUTPUT->box($message, 'errorbox');
+    }
+    return $OUTPUT->notification($message, 'notifyproblem');
 }
 
 /**
