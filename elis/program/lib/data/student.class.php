@@ -393,11 +393,8 @@ class student extends elis_data_object {
      * @uses events_trigger()
      */
     function update() {
-        $oldstatus = $this->_db->get_field(student::TABLE, 'completestatusid', array('classid' => $this->classid, 'userid' => $this->userid)); // TBD: locked?
         parent::save(); // no return val
-        // TBD: should we resend class_completed IF status changes from PASSED to FAILED (or vice-versa) ???
-        // ... currently this code doesn't
-        if (($oldstatus === false || $oldstatus == STUSTATUS_NOTCOMPLETE) && $this->completestatusid != STUSTATUS_NOTCOMPLETE) {
+        if ($this->completestatusid != STUSTATUS_NOTCOMPLETE) {
             require_once elispm::lib('notifications.php');
             events_trigger('crlm_class_completed', $this);
 
