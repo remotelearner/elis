@@ -119,6 +119,7 @@ $string['ws_user_update_success_msg'] = 'User updated successfully';
 $string['ws_user_update_fail_conflictingidfields'] = 'Conflicting identifying fields received: supplied {$a} do not refer to the same user.';
 $string['ws_user_update_fail_noidfields'] = 'No valid identifying fields received';
 $string['ws_user_update_fail_idfieldsnotallowed'] = 'Identifying fields cannot be updated using this method. Please use block_rldh_elis_user_update_identifiers() instead.';
+$string['ws_user_update_fail_multipleusersforidentifier'] = 'Multiple users found for field {$a}. Try another identifying field?';
 $string['ws_user_update_fail'] = 'Could not update user';
 $string['ws_user_update_identifiers_success_code'] = 'user_identfiers_updated';
 $string['ws_user_update_identifiers_success_msg'] = 'User identifiers updated successfully';
