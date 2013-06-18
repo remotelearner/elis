@@ -202,12 +202,12 @@ class block_rldh_elis_user_update extends external_api {
         $userid = null;
         foreach ($idfields as $field) {
             if (isset($data[$field])) {
-                $users = $DB->get_records(user::TABLE, array($field => $data[$field]), '', 'id');
+                $users = $DB->get_records(user::TABLE, array($field => $data[$field]), '', 'id', 0, 2);
                 $numusers = count($users);
                 if ($numusers > 1) {
                     throw new moodle_exception('ws_user_update_fail_multipleusersforidentifier', 'block_rlip', '', $field);
                 } else if ($numusers === 1) {
-                    $user = array_shift($users);
+                    $user = reset($users);
                     if (!empty($userid) && $userid !== $user->id) {
                         // If we already have a userid from a previous field and this user doesn't match that user, throw exception.
                         $a = implode(', ', $valididfields).', '.$field;
