@@ -90,10 +90,8 @@ function php_report_filtering_update_form($report_name, &$parameter_form) {
             if (strpos($key, $prefix) === 0) {
                 //preference contains the form field name and UI value
                 $field_name = substr($key, strlen($prefix));
-                if (is_array($value)) {
-                    $value = serialize($value);
-                }
-                $parameter_form->set_data(array($field_name => $value), true);
+                // error_log("php_report_filtering_update_form('{$report_name}', &parameter_form): setting data '{$field_name}' => {$value}");
+                $parameter_form->set_data(array($field_name => $value));
             }
 
         }
