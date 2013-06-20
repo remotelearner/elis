@@ -255,5 +255,6 @@ $services = array(
         ),
         'restrictedusers' => 0,
         'enabled' => 1,
+        'shortname' => 'rldh_webservices',
     )
 );
