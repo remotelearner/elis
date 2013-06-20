@@ -188,6 +188,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      *               not in the right format
      */
     function parse_date($date) {
+        global $CFG;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+
         //make sure there are three parts
         $parts = explode('/', $date);
         if (count($parts) != 3) {
@@ -218,8 +221,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //return unix timestamp
-        return mktime(0, 0, 0, $month, $day, $year);
+        // return unix timestamp
+        return rlip_timestamp(0, 0, 0, $month, $day, $year);
     }
 
     /**

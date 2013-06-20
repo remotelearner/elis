@@ -162,7 +162,7 @@ class version1CourseImportTest extends rlip_test {
      * Return the list of tables that should be overlayed.
      */
     protected static function get_overlay_tables() {
-        global $DB;
+        global $CFG, $DB;
         $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
         require_once($file);
 
@@ -207,6 +207,7 @@ class version1CourseImportTest extends rlip_test {
             'grade_outcomes_courses' => 'moodle',
             'grade_outcomes_history' => 'moodle',
             'grade_settings' => 'moodle',
+            'grading_areas' => 'moodle',
             'groupings' => 'moodle',
             'groupings_groups' => 'moodle',
             'groups' => 'moodle',
@@ -244,6 +245,10 @@ class version1CourseImportTest extends rlip_test {
 
         if ($DB->get_manager()->table_exists('course_sections_availability')) {
             $tables['course_sections_availability'] = 'moodle';
+        }
+
+        if ($DB->get_manager()->table_exists('elis_files_course_store') && file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
+            $tables['elis_files_course_store'] = 'repository_elis_files';
         }
 
         return $tables;
@@ -636,18 +641,20 @@ class version1CourseImportTest extends rlip_test {
                    maxbytes = :maxbytes AND ".
                    "visible = :visible AND
                    lang = :lang";
-        $params = array('shortname' => 'nonrequiredfields',
-                        'idnumber' => 'nonrequiredfieldsidnumber',
-                        'summary' => 'nonrequiredfieldssummary',
-                        'format' => 'social',
-                        'numsections' => '15',
-                        'startdate' => mktime(0, 0, 0, 1, 1, 2012),
-                        'newsitems' => 8,
-                        'showgrades' => 0,
-                        'showreports' => 1,
-                        'maxbytes' => 10240,
-                        'visible' => 0,
-                        'lang' => 'en');
+        $params = array(
+            'shortname' => 'nonrequiredfields',
+            'idnumber' => 'nonrequiredfieldsidnumber',
+            'summary' => 'nonrequiredfieldssummary',
+            'format' => 'social',
+            'numsections' => '15',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'newsitems' => 8,
+            'showgrades' => 0,
+            'showreports' => 1,
+            'maxbytes' => 10240,
+            'visible' => 0,
+            'lang' => 'en'
+        );
 
         $exists = $DB->record_exists_select('course', $select, $params);
 
@@ -699,7 +706,7 @@ class version1CourseImportTest extends rlip_test {
         unset($data['action']);
         unset($data['guest']);
         unset($data['password']);
-        $data['startdate'] = mktime(0, 0, 0, 1, 12, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 12, 2012);
         $data['category'] = $new_category->id;
 
         $select = "shortname = :shortname AND
@@ -739,10 +746,10 @@ class version1CourseImportTest extends rlip_test {
                       'startdate' => '01/02/2012');
         $this->run_core_course_import($data, false);
 
-        //data validation
+        // data validation
         unset($data['action']);
         unset($data['category']);
-        $data['startdate'] = mktime(0, 0, 0, 1, 2, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 2, 2012);
 
         $this->assert_record_exists('course', $data);
     }
@@ -766,9 +773,11 @@ class version1CourseImportTest extends rlip_test {
                       'category' => 'childcategory');
         $this->run_core_course_import($data, false);
 
-        //data validation
-        $data = array('shortname' => 'legacystartdateupdate',
-                      'startdate' => mktime(0, 0, 0, 1, 2, 2012));
+        // data validation
+        $data = array(
+            'shortname' => 'legacystartdateupdate',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 2, 2012)
+        );
 
         $this->assert_record_exists('course', $data);
     }
@@ -817,7 +826,7 @@ class version1CourseImportTest extends rlip_test {
         unset($data['action']);
         unset($data['guest']);
         unset($data['password']);
-        $data['startdate'] = mktime(0, 0, 0, 1, 12, 2012);
+        $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 12, 2012);
         $data['category'] = $new_category->id;
 
         $select = "shortname = :shortname AND
@@ -922,9 +931,11 @@ class version1CourseImportTest extends rlip_test {
 
         $this->run_core_course_import($data, false);
 
-        //make sure the data hasn't changed
-        $this->assert_record_exists('course', array('shortname' => 'invalidcoursestartdateupdate',
-                                                    'startdate' => mktime(0, 0, 0, 1, 1, 2012)));
+        // make sure the data hasn't changed
+        $this->assert_record_exists('course', array(
+            'shortname' => 'invalidcoursestartdateupdate',
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 1, 2012)
+        ));
     }
 
     /**
@@ -3085,20 +3096,22 @@ class version1CourseImportTest extends rlip_test {
                    visible = :visible AND
                    lang = :lang AND
                    category = :category";
-        $params = array('shortname' => 'fieldmapping',
-                        'fullname' => 'fieldmappingfullname',
-                        'idnumber' => 'fieldmappingidnumber',
-                        'summary' => 'fieldmappingsummary',
-                        'format' => 'social',
-                        'numsections' => 15,
-                        'startdate' => mktime(0, 0, 0, 1, 1, 2012),
-                        'newsitems' => 8,
-                        'showgrades' => 0,
-                        'showreports' => 1,
-                        'maxbytes' => 0,
-                        'visible' => 0,
-                        'lang' => 'en',
-                        'category' => $categoryid);
+        $params = array(
+            'shortname' => 'fieldmapping',
+            'fullname' => 'fieldmappingfullname',
+            'idnumber' => 'fieldmappingidnumber',
+            'summary' => 'fieldmappingsummary',
+            'format' => 'social',
+            'numsections' => 15,
+            'startdate' => rlip_timestamp(0, 0, 0, 1, 1, 2012),
+            'newsitems' => 8,
+            'showgrades' => 0,
+            'showreports' => 1,
+            'maxbytes' => 0,
+            'visible' => 0,
+            'lang' => 'en',
+            'category' => $categoryid
+        );
         $exists = $DB->record_exists_select('course', $select, $params);
         $DB->delete_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
         $this->assertEquals($exists, true);
