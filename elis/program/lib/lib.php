@@ -971,9 +971,11 @@ function pm_update_student_enrolment($pmuserid = 0) {
             notification::notify($message, $user, $from);
 
             //set status to failed
-            $s->completetime = 0;
+            $s->completetime = time();
             $s->completestatusid = STUSTATUS_FAILED;
-            $DB->update_record(student::TABLE, $s);
+            $stu = new student($s->id);
+            $stu->set_from_data($s);
+            $stu->update();
         }
     }
 
