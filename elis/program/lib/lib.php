@@ -2592,3 +2592,17 @@ function elis_float_comp($num1, $num2, $op, $nobcmath = false) {
     }
 }
 
+/**
+ * Return an error message formatted the way the application wants it.
+ *
+ * @param string $message The text to display.
+ * @return string The formatted message.
+ */
+function cm_error($message) {
+    global $OUTPUT, $USER;
+    if (empty($USER) || !isloggedin() || isguestuser()) {
+        // ELIS-8458: cannot call notify() without valid user object set
+        return $OUTPUT->box($message, 'errorbox');
+    }
+    return $OUTPUT->notification($message, 'notifyproblem');
+}
