@@ -25,4 +25,4 @@
  */
 
 $plugin->version = 2013022800;
-$plugin->release = 'RECO 2.4.2.2 (Build: 20130619)';
+$plugin->release = '2.4.2.3 (Build: 20130620)';
