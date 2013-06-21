@@ -293,9 +293,29 @@ class student extends elis_data_object {
 
                 $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
                 if (!is_enrolled($context, $muserid)) {
-                    $plugin->enrol_user($enrol, $muserid, $enrol->roleid,
-                                        $this->enrolmenttime,
-                                        $this->endtime ? $this->endtime : 0);
+                    $flag = false;
+                    if (empty($USER) || !isset($USER->id)) {
+                        $flag = true;
+                        if (!is_object($USER)) {
+                            $saveuser = $USER;
+                            $USER = new stdClass;
+                        } else {
+                            $saveuser = clone($USER);
+                        }
+                        $USER->id = get_admin()->id;
+                    }
+                    $caughtex = null;
+                    try {
+                        $plugin->enrol_user($enrol, $muserid, $enrol->roleid, $this->enrolmenttime, $this->endtime ? $this->endtime : 0);
+                    } catch (Exception $e) {
+                        $caughtex = $e;
+                    }
+                    if ($flag) {
+                        $USER = $saveuser;
+                    }
+                    if ($caughtex) {
+                        throw $caughtex;
+                    }
                 }
             }
         } else {
