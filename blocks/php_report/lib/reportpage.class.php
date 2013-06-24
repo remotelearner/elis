@@ -95,13 +95,15 @@ class report_page extends elis_page {
         $perpage = $this->optional_param('perpage', 25, PARAM_INT);
 
         // needed for AJAX calls
-        $PAGE->requires->js('/elis/core/js/associate.class.js');
-        $PAGE->requires->js('/blocks/php_report/js/throbber.php');
-
-        //set up JS work to contain dynamic output in the report div
-        $init_code = "my_handler = new associate_link_handler('{$CFG->wwwroot}/blocks/php_report/dynamicreport.php',
-                                                              'php_report_body_{$this->report_shortname}')";
-        $PAGE->requires->js_init_code($init_code);
+        $PAGE->requires->yui_module('moodle-elis_core-associateclass', 'M.elis_core.init_associateclass',
+                array(
+                        array(
+                            'basepage' => "{$CFG->wwwroot}/blocks/php_report/dynamicreport.php",
+                            'divid' => "php_report_body_{$this->report_shortname}",
+                            'throbber' => "{$CFG->wwwroot}/blocks/php_report/pix/throbber_loading.gif"
+                        )
+                )
+        );
 
         // output the report contents
         $this->report_instance->main('', '', 0, $perpage, '', $this->report_shortname);
