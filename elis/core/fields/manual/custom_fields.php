@@ -65,47 +65,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
         }
     }
 
-    if (!isset($attrs['manual_field_control']['onchange'])) {
-        $attrs['manual_field_control']['onchange'] = '';
-    }
-    $attrs['manual_field_control']['onchange'] .= 'switchFieldOptions();';
     $attrs['manual_field_inctime']['group'] = 1;
-
-    $form->addElement('html', '<script type="text/javascript">
-        function switchFieldOptions() {
-            var fcontrol = document.getElementById("id_manual_field_control");
-            if (fcontrol) {
-                var fotext = document.getElementById("field_options_text");
-                var fomenu = document.getElementById("field_options_menu");
-                var fodatetime = document.getElementById("field_options_datetime");
-                var cftype = fcontrol.options[fcontrol.selectedIndex].value;
-                //alert("switchFieldOptions(): cftype = " + cftype);
-                if (fotext && fomenu && fodatetime) {
-                    if (cftype == "checkbox") {
-                        fotext.className = "accesshide custom_field_options_fieldset";
-                        fomenu.className = "clearfix custom_field_options_fieldset";
-                        fodatetime.className = "accesshide custom_field_options_fieldset";
-                    } else if (cftype == "menu") {
-                        fotext.className = "accesshide custom_field_options_fieldset";
-                        fomenu.className = "clearfix custom_field_options_fieldset";
-                        fodatetime.className = "accesshide custom_field_options_fieldset";
-                    } else if (cftype == "datetime") {
-                        fotext.className = "accesshide custom_field_options_fieldset";
-                        fomenu.className = "accesshide custom_field_options_fieldset";
-                        fodatetime.className = "clearfix custom_field_options_fieldset";
-                    } else {
-                        fotext.className = "clearfix custom_field_options_fieldset";
-                        fomenu.className = "accesshide custom_field_options_fieldset";
-                        fodatetime.className = "accesshide custom_field_options_fieldset";
-                    }
-                }
-            }
-        }
-        function initCustomFieldOptions() {
-            YAHOO.util.Event.addListener(window, "load", switchFieldOptions());
-        }
-        YAHOO.util.Event.onDOMReady(initCustomFieldOptions);
-    </script>');
 
     $form->addElement('header', '', get_string('field_manual_header', 'elisfields_manual'));
 
