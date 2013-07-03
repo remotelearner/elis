@@ -24,11 +24,11 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
+
 require_once(elispm::lib('data/course.class.php'));
 
 /**
@@ -77,20 +77,10 @@ class deepsight_datatable_course_mock extends deepsight_datatable_course {
 
 /**
  * Tests the base course datatable class.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_course_test extends deepsight_datatable_standard_implementation_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return overlay tables.
-     *
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'crlm_course' => 'elis_program'
-        );
-    }
+class deepsight_datatable_course_testcase extends deepsight_datatable_standard_implementation_test {
 
     /**
      * Construct the datatable we're testing.
@@ -106,9 +96,8 @@ class deepsight_datatable_course_test extends deepsight_datatable_standard_imple
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(course::TABLE, elispm::lib('deepsight/phpunit/csv_course.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(course::TABLE => elispm::file('tests/fixtures/deepsight_course.csv')));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -129,7 +118,7 @@ class deepsight_datatable_course_test extends deepsight_datatable_standard_imple
      */
     public function dataprovider_get_search_results() {
         // Parse the csv to get information and create element arrays, indexed by element id.
-        $csvdata = file_get_contents(dirname(__FILE__).'/csv_course.csv');
+        $csvdata = file_get_contents(dirname(__FILE__).'/fixtures/deepsight_course.csv');
         $csvdata = explode("\n", $csvdata);
         $keys = explode(',', $csvdata[0]);
         $lines = count($csvdata);
@@ -155,42 +144,42 @@ class deepsight_datatable_course_test extends deepsight_datatable_standard_imple
         }
 
         return array(
-            // Test Default.
-            array(
-                array(),
-                array('element.name' => 'ASC'),
-                0,
-                20,
-                array($results[100], $results[101], $results[102]),
-                3
-            ),
-            // Test Sorting.
-            array(
-                array(),
-                array('element.name' => 'DESC'),
-                0,
-                20,
-                array($results[102], $results[101], $results[100]),
-                3
-            ),
-            // Test Basic Searching.
-            array(
-                array('name' => array('Test 100')),
-                array('element.name' => 'DESC'),
-                0,
-                20,
-                array($results[100]),
-                1
-            ),
-            // Test limited page results.
-            array(
-                array(),
-                array('element.name' => 'ASC'),
-                0,
-                2,
-                array($results[100], $results[101]),
-                3
-            ),
+                // Test Default.
+                array(
+                        array(),
+                        array('element.name' => 'ASC'),
+                        0,
+                        20,
+                        array($results[100], $results[101], $results[102]),
+                        3
+                ),
+                // Test Sorting.
+                array(
+                        array(),
+                        array('element.name' => 'DESC'),
+                        0,
+                        20,
+                        array($results[102], $results[101], $results[100]),
+                        3
+                ),
+                // Test Basic Searching.
+                array(
+                        array('name' => array('Test 100')),
+                        array('element.name' => 'DESC'),
+                        0,
+                        20,
+                        array($results[100]),
+                        1
+                ),
+                // Test limited page results.
+                array(
+                        array(),
+                        array('element.name' => 'ASC'),
+                        0,
+                        2,
+                        array($results[100], $results[101]),
+                        3
+                ),
         );
     }
 }

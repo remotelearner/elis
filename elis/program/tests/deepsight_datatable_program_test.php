@@ -24,11 +24,11 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
+
 require_once(elispm::lib('data/curriculum.class.php'));
 
 /**
@@ -77,20 +77,10 @@ class deepsight_datatable_program_mock extends deepsight_datatable_program {
 
 /**
  * Tests the base program datatable class.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_program_test extends deepsight_datatable_standard_implementation_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return overlay tables.
-     *
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'crlm_curriculum' => 'elis_program'
-        );
-    }
+class deepsight_datatable_program_testcase extends deepsight_datatable_standard_implementation_test {
 
     /**
      * Construct the datatable we're testing.
@@ -106,9 +96,10 @@ class deepsight_datatable_program_test extends deepsight_datatable_standard_impl
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(curriculum::TABLE, elispm::lib('deepsight/phpunit/csv_program.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv')
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -129,7 +120,7 @@ class deepsight_datatable_program_test extends deepsight_datatable_standard_impl
      */
     public function dataprovider_get_search_results() {
         // Parse the csv to get information and create element arrays, indexed by element id.
-        $csvdata = file_get_contents(dirname(__FILE__).'/csv_program.csv');
+        $csvdata = file_get_contents(dirname(__FILE__).'/fixtures/deepsight_program.csv');
         $csvdata = explode("\n", $csvdata);
         $keys = explode(',', $csvdata[0]);
         $lines = count($csvdata);

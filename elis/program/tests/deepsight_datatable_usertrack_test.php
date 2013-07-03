@@ -24,11 +24,10 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('deepsightpage.class.php'));
 require_once(elispm::lib('selectionpage.class.php'));
@@ -132,35 +131,25 @@ class deepsight_datatable_usertrack_available_mock extends deepsight_datatable_u
 
 /**
  * Tests usertrack datatable functions.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresults_test {
-
+class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchresults_test {
     /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
+     * @var string The CSV to use for results.
      */
-    protected static function get_overlay_tables() {
-        $overlay = array(
-            clusterassignment::TABLE => 'elis_program',
-            clustertrack::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-            usertrack::TABLE => 'elis_program',
-        );
-        return array_merge(parent::get_overlay_tables(), $overlay);
-    }
+    protected $resultscsv = 'deepsight_track.csv';
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(curriculum::TABLE, elispm::lib('deepsight/phpunit/csv_program.csv'));
-        $dataset->addTable(track::TABLE, elispm::lib('deepsight/phpunit/csv_track.csv'));
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv'),
+            track::TABLE => elispm::file('tests/fixtures/deepsight_track.csv'),
+            user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv'),
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -210,7 +199,7 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100)
+                                $this->get_search_result_row($this->resultscsv, 100)
                         ),
                         1
                 ),
@@ -222,8 +211,8 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100),
-                                $this->get_search_result_row('csv_track.csv', 101)
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101)
                         ),
                         2
                 )
@@ -274,10 +263,10 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
 
         // Verify result.
         $expectedresults = array(
-                $this->get_search_result_row('csv_track.csv', 100),
-                $this->get_search_result_row('csv_track.csv', 101),
-                $this->get_search_result_row('csv_track.csv', 102),
-                $this->get_search_result_row('csv_track.csv', 103),
+                $this->get_search_result_row($this->resultscsv, 100),
+                $this->get_search_result_row($this->resultscsv, 101),
+                $this->get_search_result_row($this->resultscsv, 102),
+                $this->get_search_result_row($this->resultscsv, 103),
         );
         $expectedtotal = 4;
         $this->assert_search_results($expectedresults, $expectedtotal, $actualresults);
@@ -297,10 +286,10 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         array(),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100),
-                                $this->get_search_result_row('csv_track.csv', 101),
-                                $this->get_search_result_row('csv_track.csv', 102),
-                                $this->get_search_result_row('csv_track.csv', 103),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
+                                $this->get_search_result_row($this->resultscsv, 103),
                         ),
                         4
                 ),
@@ -311,9 +300,9 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100),
-                                $this->get_search_result_row('csv_track.csv', 101),
-                                $this->get_search_result_row('csv_track.csv', 103),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 103),
                         ),
                         3
                 ),
@@ -325,8 +314,8 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100),
-                                $this->get_search_result_row('csv_track.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2
                 ),
@@ -339,8 +328,8 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100),
-                                $this->get_search_result_row('csv_track.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2
                 ),
@@ -400,7 +389,7 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         array(100),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100)
+                                $this->get_search_result_row($this->resultscsv, 100)
                         ),
                         1
                 ),
@@ -409,9 +398,9 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         array(100, 101, 102),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100),
-                                $this->get_search_result_row('csv_track.csv', 101),
-                                $this->get_search_result_row('csv_track.csv', 102)
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102)
                         ),
                         3
                 ),
@@ -539,7 +528,7 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 102),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
                         1
                 ),
@@ -555,8 +544,8 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 101),
-                                $this->get_search_result_row('csv_track.csv', 102),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
                         2
                 ),
@@ -574,7 +563,7 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         1
                 ),
@@ -591,8 +580,8 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 101),
-                                $this->get_search_result_row('csv_track.csv', 102),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
                         2
                 ),
@@ -608,8 +597,8 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 101),
-                                $this->get_search_result_row('csv_track.csv', 102),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
                         2
                 ),
@@ -630,10 +619,10 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100),
-                                $this->get_search_result_row('csv_track.csv', 101),
-                                $this->get_search_result_row('csv_track.csv', 102),
-                                $this->get_search_result_row('csv_track.csv', 103),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
+                                $this->get_search_result_row($this->resultscsv, 103),
                         ),
                         4
                 ),
@@ -653,8 +642,8 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_track.csv', 100),
-                                $this->get_search_result_row('csv_track.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2
                 ),
@@ -680,9 +669,8 @@ class deepsight_datatable_usertrack_test extends deepsight_datatable_searchresul
         $userbackup = $USER;
 
         // Import usersets.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_userset.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(userset::TABLE => elispm::file('tests/fixtures/deepsight_userset.csv')));
+        $this->loadDataSet($dataset);
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();

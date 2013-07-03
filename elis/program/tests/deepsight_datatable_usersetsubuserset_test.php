@@ -24,11 +24,10 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('data/userset.class.php'));
 
@@ -120,25 +119,18 @@ class deepsight_datatable_usersetsubuserset_available_mock extends deepsight_dat
 
 /**
  * Tests usersetsubuserset datatable functions.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_usersetsubuserset_test extends deepsight_datatable_searchresults_test {
-    public $resultscsv = 'csv_usersetwithsubsets.csv';
-
+class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable_searchresults_test {
     /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
+     * @var string The CSV to use for asserting results.
      */
-    protected static function get_overlay_tables() {
-        $overlay = array(
-            field::TABLE => 'elis_core',
-            userset::TABLE => 'elis_program',
-        );
-        return array_merge(parent::get_overlay_tables(), $overlay);
-    }
+    public $resultscsv = 'deepsight_usersetwithsubsets.csv';
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
-     * Structure for csv_usersetwithsubsets.csv
+     * Structure for deepsight_usersetwithsubsets.csv
      *   1      3
      * +-+-+
      * 2   5
@@ -146,9 +138,10 @@ class deepsight_datatable_usersetsubuserset_test extends deepsight_datatable_sea
      * 4   6
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_usersetwithsubsets.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            userset::TABLE => elispm::file('tests/fixtures/deepsight_usersetwithsubsets.csv')
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
