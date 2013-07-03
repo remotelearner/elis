@@ -24,11 +24,11 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
+
 require_once(elispm::lib('data/userset.class.php'));
 
 /**
@@ -77,20 +77,10 @@ class deepsight_datatable_userset_mock extends deepsight_datatable_userset {
 
 /**
  * Tests the base userset datatable class.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_userset_test extends deepsight_datatable_standard_implementation_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return overlay tables.
-     *
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'crlm_cluster' => 'elis_program'
-        );
-    }
+class deepsight_datatable_userset_testcase extends deepsight_datatable_standard_implementation_test {
 
     /**
      * Construct the datatable we're testing.
@@ -106,9 +96,8 @@ class deepsight_datatable_userset_test extends deepsight_datatable_standard_impl
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_userset.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(userset::TABLE => elispm::file('tests/fixtures/deepsight_userset.csv')));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -118,7 +107,7 @@ class deepsight_datatable_userset_test extends deepsight_datatable_standard_impl
      */
     public function dataprovider_bulklist_get_display() {
         return array(
-            array(array(1, 2), array(2 => 'Test Userset 2', 1 => 'Test Userset 1'), 2)
+                array(array(1, 2), array(2 => 'Test Userset 2', 1 => 'Test Userset 1'), 2)
         );
     }
 
@@ -149,42 +138,42 @@ class deepsight_datatable_userset_test extends deepsight_datatable_standard_impl
         }
 
         return array(
-            // Test Default.
-            array(
-                array(),
-                array('element.name' => 'ASC'),
-                0,
-                20,
-                array($usersetresults[1], $usersetresults[2], $usersetresults[3], $usersetresults[4], $usersetresults[5]),
-                5
-            ),
-            // Test Sorting.
-            array(
-                array(),
-                array('element.name' => 'DESC'),
-                0,
-                20,
-                array($usersetresults[5], $usersetresults[4], $usersetresults[3], $usersetresults[2], $usersetresults[1]),
-                5
-            ),
-            // Test Basic Searching.
-            array(
-                array('name' => array('Test Userset 1')),
-                array('element.name' => 'DESC'),
-                0,
-                20,
-                array($usersetresults[1]),
-                1
-            ),
-            // Test limited page results.
-            array(
-                array(),
-                array('element.name' => 'ASC'),
-                0,
-                2,
-                array($usersetresults[1], $usersetresults[2]),
-                5
-            ),
+                // Test Default.
+                array(
+                        array(),
+                        array('element.name' => 'ASC'),
+                        0,
+                        20,
+                        array($usersetresults[1], $usersetresults[2], $usersetresults[3], $usersetresults[4], $usersetresults[5]),
+                        5
+                ),
+                // Test Sorting.
+                array(
+                        array(),
+                        array('element.name' => 'DESC'),
+                        0,
+                        20,
+                        array($usersetresults[5], $usersetresults[4], $usersetresults[3], $usersetresults[2], $usersetresults[1]),
+                        5
+                ),
+                // Test Basic Searching.
+                array(
+                        array('name' => array('Test Userset 1')),
+                        array('element.name' => 'DESC'),
+                        0,
+                        20,
+                        array($usersetresults[1]),
+                        1
+                ),
+                // Test limited page results.
+                array(
+                        array(),
+                        array('element.name' => 'ASC'),
+                        0,
+                        2,
+                        array($usersetresults[1], $usersetresults[2]),
+                        5
+                ),
         );
     }
 }

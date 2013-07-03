@@ -24,11 +24,11 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
+
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elispm::lib('data/track.class.php'));
 
@@ -78,21 +78,10 @@ class deepsight_datatable_track_mock extends deepsight_datatable_track {
 
 /**
  * Tests the base track datatable class.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_track_test extends deepsight_datatable_standard_implementation_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return overlay tables.
-     *
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            curriculum::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-        );
-    }
+class deepsight_datatable_track_testcase extends deepsight_datatable_standard_implementation_test {
 
     /**
      * Construct the datatable we're testing.
@@ -108,10 +97,11 @@ class deepsight_datatable_track_test extends deepsight_datatable_standard_implem
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(curriculum::TABLE, elispm::lib('deepsight/phpunit/csv_program.csv'));
-        $dataset->addTable(track::TABLE, elispm::lib('deepsight/phpunit/csv_track.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv'),
+            track::TABLE => elispm::file('tests/fixtures/deepsight_track.csv'),
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -132,7 +122,7 @@ class deepsight_datatable_track_test extends deepsight_datatable_standard_implem
      */
     public function dataprovider_get_search_results() {
         // Parse the csv to get information and create element arrays, indexed by element id.
-        $csvdata = file_get_contents(dirname(__FILE__).'/csv_track.csv');
+        $csvdata = file_get_contents(dirname(__FILE__).'/fixtures/deepsight_track.csv');
         $csvdata = explode("\n", $csvdata);
         $keys = explode(',', $csvdata[0]);
         $lines = count($csvdata);

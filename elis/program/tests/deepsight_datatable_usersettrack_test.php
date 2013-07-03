@@ -24,11 +24,10 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('deepsightpage.class.php'));
 require_once(elispm::lib('selectionpage.class.php'));
@@ -130,34 +129,26 @@ class deepsight_datatable_usersettrack_available_mock extends deepsight_datatabl
 
 /**
  * Tests usersettrack datatable functions.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_usersettrack_test extends deepsight_datatable_searchresults_test {
-    public $resultscsv = 'csv_track.csv';
-
+class deepsight_datatable_usersettrack_testcase extends deepsight_datatable_searchresults_test {
     /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
+     * @var string The CSV to use for results.
      */
-    protected static function get_overlay_tables() {
-        $overlay = array(
-            clustertrack::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-        );
-        return array_merge(parent::get_overlay_tables(), $overlay);
-    }
+    public $resultscsv = 'deepsight_track.csv';
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(curriculum::TABLE, elispm::lib('deepsight/phpunit/csv_program.csv'));
-        $dataset->addTable(track::TABLE, elispm::lib('deepsight/phpunit/csv_track.csv'));
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_userset.csv'));
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv'),
+            track::TABLE => elispm::file('tests/fixtures/deepsight_track.csv'),
+            userset::TABLE => elispm::file('tests/fixtures/deepsight_userset.csv'),
+            user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv'),
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**

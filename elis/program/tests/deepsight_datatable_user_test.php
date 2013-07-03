@@ -24,11 +24,11 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
+
 require_once(elispm::lib('data/user.class.php'));
 
 /**
@@ -77,20 +77,10 @@ class deepsight_datatable_user_mock extends deepsight_datatable_user {
 
 /**
  * Tests the base user datatable class.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_user_test extends deepsight_datatable_standard_implementation_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return overlay tables.
-     *
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'crlm_user' => 'elis_program'
-        );
-    }
+class deepsight_datatable_user_testcase extends deepsight_datatable_standard_implementation_test {
 
     /**
      * Construct the datatable we're testing.
@@ -106,9 +96,8 @@ class deepsight_datatable_user_test extends deepsight_datatable_standard_impleme
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv')));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -130,7 +119,7 @@ class deepsight_datatable_user_test extends deepsight_datatable_standard_impleme
     public function dataprovider_get_search_results() {
 
         // Parse the csv to get user information and create user arrays, indexed by user id.
-        $userdata = file_get_contents(dirname(__FILE__).'/csv_user.csv');
+        $userdata = file_get_contents(dirname(__FILE__).'/fixtures/deepsight_user.csv');
         $userdata = explode("\n", $userdata);
         $keys = explode(',', $userdata[0]);
         $lines = count($userdata);
