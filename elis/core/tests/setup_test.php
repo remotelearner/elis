@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,43 +16,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    elis_core
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__) . '/../test_config.php');
+require_once(dirname(__FILE__).'/../test_config.php');
 global $CFG;
-require_once($CFG->dirroot . '/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('data/data_object.class.php'));
-require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 
-class setupTest extends elis_database_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    protected static function get_overlay_tables() {
-        return array(
-            'config_plugins' => 'moodle',
-        );
-    }
-
+/**
+ * Class to test config setup.
+ * @group elis_core
+ */
+class setup_testcase extends elis_database_test {
+    /**
+     * Validate ELIS config settings.
+     */
     public function test_elis_config() {
+        $dataset = $this->createCsvDataSet(array(
+            'config_plugins' => elis::component_file('core', 'tests/fixtures/config_plugins.csv')
+        ));
+        $this->loadDataSet($dataset);
 
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config_plugins', elis::component_file('core', 'phpunit/config_plugins.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $elisconfig = new elis_config;
+        $pluginconfig = $elisconfig->testplugin;
 
-        $elis_config = new elis_config;
-
-        $plugin_config = $elis_config->testplugin;
-
-        $this->assertNotEmpty($plugin_config);
-        $this->assertInternalType('object',$plugin_config);
-        $this->assertObjectHasAttribute('testconfigkey',$plugin_config);
-        $this->assertEquals('testconfigvalue',$plugin_config->testconfigkey);
+        $this->assertNotEmpty($pluginconfig);
+        $this->assertInternalType('object', $pluginconfig);
+        $this->assertObjectHasAttribute('testconfigkey', $pluginconfig);
+        $this->assertEquals('testconfigvalue', $pluginconfig->testconfigkey);
     }
 }
