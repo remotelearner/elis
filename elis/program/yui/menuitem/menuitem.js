@@ -75,7 +75,7 @@ YUI.add('moodle-elis_program-menuitem', function(Y) {
                             for (var i = 0; i < responseobj.children.length; i++) {
                                 var childobj = responseobj.children[i];
                                 // this actually creates the node in the menu
-                                var newNode = new Y.YUI2.widget.TextNode(childobj.label, node);
+                                var newNode = new window.yui2obj.widget.TextNode(childobj.label, node);
                                 // information about parent elements is held in this value
                                 newNode.contentElId = childobj.contentElId;
 
@@ -119,11 +119,13 @@ YUI.add('moodle-elis_program-menuitem', function(Y) {
          * @param object treeobj The object representing tree contents
          */
         render_curr_admin_tree : function(treeobj) {
+            window.yui2obj = window.yui2obj || Y.YUI2; // clustertree
+
             /**
              * Override YUI functionality to not escape HTML tags
              * todo: convert menuitem code to user href attribute rather than HTML content
              */
-            Y.YUI2.widget.TextNode.prototype.getContentHtml = function() {
+            window.yui2obj.widget.TextNode.prototype.getContentHtml = function() {
                 var sb = [];
 
                 sb[sb.length] = this.href ? '<a' : '<span';
@@ -142,8 +144,7 @@ YUI.add('moodle-elis_program-menuitem', function(Y) {
                 return sb.join("");
             };
 
-            window.yui2obj = Y.YUI2; // TBD: required by clustertree
-            var curradmintree = new Y.YUI2.widget.TreeView("block_curr_admin_tree", treeobj.children);
+            var curradmintree = new window.yui2obj.widget.TreeView("block_curr_admin_tree", treeobj.children);
 
             // set up dynamic loading
             curradmintree.setDynamicLoad(this.load_node_data);
