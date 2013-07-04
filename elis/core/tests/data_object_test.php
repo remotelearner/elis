@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,40 +16,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    elis_core
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__) . '/../test_config.php');
+require_once(dirname(__FILE__).'/../test_config.php');
 global $CFG;
-require_once($CFG->dirroot . '/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 require_once(elis::lib('data/data_object.class.php'));
-require_once(elis::lib('testlib.php'));
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 
-// Object classes for Moodle database records.  We only model the minimum
-// needed for the tests in this file
+/**
+ * Config object class for Moodle database records.  We only model the minimum
+ * needed for the tests in this file.
+ */
 class config_object extends elis_data_object {
     const TABLE = 'config';
 
-    /**
-     * Some name
-     * @var string
-     * @length 255
-     */
     protected $_dbfield_name;
     protected $_dbfield_value;
 
     public static $validation_rules = array(
-        array('validation_helper', 'not_empty_name'),
-        array('validation_helper', 'is_unique_name'),
+            array('validation_helper', 'not_empty_name'),
+            array('validation_helper', 'is_unique_name'),
     );
 }
 
+/**
+ * User object class for Moodle database records.  We only model the minimum
+ * needed for the tests in this file.
+ */
 class user_object extends elis_data_object {
     const TABLE = 'user';
 
@@ -61,6 +60,10 @@ class user_object extends elis_data_object {
     );
 }
 
+/**
+ * Role assignment object class for Moodle database records.  We only model the minimum
+ * needed for the tests in this file.
+ */
 class role_assignment_object extends elis_data_object {
     const TABLE = 'role_assignments';
 
@@ -76,65 +79,66 @@ class role_assignment_object extends elis_data_object {
     protected $_dbfield_contextid;
 }
 
-class data_objectTest extends elis_database_test {
-    protected $backupGlobalsBlacklist = array('DB');
+/**
+ * Class for testing data objects.
+ * @group elis_core
+ */
+class data_object_testcase extends elis_database_test {
+    /**
+     * Data provider for base constructor.
+     * @return array Data objects
+     */
+    public function base_constructor_provider() {
+        $obj = new stdClass;
+        $obj->id = 10001;
 
-    protected static function get_overlay_tables() {
         return array(
-            'config' => 'moodle',
-            'role_assignments' => 'moodle'
+                array($obj, 10001), // Initialize from an object.
+                array(array('id' => 10002), 10002), // Initialize from an array.
         );
     }
 
-    public function baseConstructorProvider() {
-        $obj = new stdClass;
-        $obj->id = 1;
-
-        return array(array($obj, 1), // initialize from an object
-                     array(array('id' => 2),
-                           2), // initialize from an array
-            );
-    }
-
     /**
-     * Test the constructor by initializing it and checking that the id field
-     * is set correctly.
+     * Test the constructor by initializing it and checking that the id field is set correctly.
      *
-     * @dataProvider baseConstructorProvider
+     * @dataProvider base_constructor_provider
      */
-    public function testCanInitializeBaseClassFromArrayAndObject($init, $expected) {
+    public function test_can_initialize_base_class_from_array_and_object($init, $expected) {
         $dataobj = new elis_data_object($init);
         $this->assertEquals($dataobj->id, $expected);
     }
 
-    public function derivedConstructorProvider() {
+    /**
+     * Data provider for derived constructor.
+     * @return array Data objects
+     */
+    public function derived_constructor_provider() {
         $obj = new stdClass;
-        $obj->id = 1;
+        $obj->id = 10001;
         $obj->name = 'foo';
 
-        return array(array($obj, 1, 'foo'), // initialize from an object
-                     array(array('id' => 2,
-                                 'name' => 'bar'),
-                           2, 'bar'), // initialize from an array
-            );
+        return array(
+                array($obj, 10001, 'foo'), // Initialize from an object.
+                array(array('id' => 10002, 'name' => 'bar'), 10002, 'bar'), // Initialize from an array.
+        );
     }
 
     /**
-     * Test the derived class constructor
+     * Test the derived class constructor.
      *
-     * @dataProvider derivedConstructorProvider
+     * @dataProvider derived_constructor_provider
      */
-    public function testCanInitializeDerivedClassFromArrayAndObject($init, $expectedid, $expectedname) {
+    public function test_can_initialize_derived_class_from_array_and_object($init, $expectedid, $expectedname) {
         $dataobj = new config_object($init);
         $this->assertEquals($dataobj->id, $expectedid);
         $this->assertEquals($dataobj->name, $expectedname);
     }
 
     /**
-     * Test the isset and unset magic methods
+     * Test the isset and unset magic methods.
      */
-    public function testCanTestAndUnsetFields() {
-        $dataobj = new elis_data_object(array('id' => 2));
+    public function test_can_test_and_unset_fields() {
+        $dataobj = new elis_data_object(array('id' => 10002));
         $this->assertFalse(isset($dataobj->notafield));
         $this->assertTrue(isset($dataobj->id));
         unset($dataobj->id);
@@ -142,208 +146,222 @@ class data_objectTest extends elis_database_test {
     }
 
     /**
-     * Test the get and set magic methods
+     * Test the get and set magic methods.
      */
-    public function testCanGetAndSetFields() {
+    public function test_can_get_and_set_fields() {
         $dataobj = new elis_data_object();
         $this->assertEquals($dataobj->id, null);
-        $dataobj->id = 3;
-        $this->assertEquals($dataobj->id, 3);
+        $dataobj->id = 10003;
+        $this->assertEquals($dataobj->id, 10003);
     }
 
     /**
-     * Test the find method
+     * Test the find method.
+     * @uses $DB
      */
-    public function testCanFindRecords() {
+    public function test_can_find_records() {
         global $DB;
         require_once(elis::lib('data/data_filter.class.php'));
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = self::$overlaydb;
+        $baseconfigs = config_object::find(null, array('name' => 'ASC'), 0, 0, $DB);
+        $basecount = count($baseconfigs->to_array());
 
-        load_phpunit_data_set($dataset, true, $overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_test.csv')
+        ));
 
-        $configs = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
-        // should only find one record, with value foooo
+        $this->loadDataSet($dataset);
+
+        $configs = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $DB);
+        // Should only find one record, with value foooo.
         $this->assertEquals($configs->current()->value, 'foooo');
         $configs->next();
         $this->assertFalse($configs->valid());
 
-        $configs = config_object::find(null, array('name' => 'ASC'), 0, 0, $overlaydb);
-        // should find all three records, ordered by name
+        $configs = config_object::find(null, array('id' => 'DESC'), 0, 0, $DB);
+        // Should find all three records at the beginning of reverse sorted results.
         $configs = $configs->to_array();
-        $this->assertEquals(count($configs), 3);
+        $this->assertEquals(count($configs), $basecount + 3);
         $config = current($configs);
-        $this->assertEquals($config->name, 'bar');
-        $config = next($configs);
         $this->assertEquals($config->name, 'baz');
         $config = next($configs);
-        $this->assertEquals($config->name, 'foo');
+        $this->assertEquals($config->name, 'bar');
         $config = next($configs);
-        $this->assertEquals($config, false);
+        $this->assertEquals($config->name, 'foo');
     }
 
     /**
-     * Test the count method
+     * Test the count method.
+     * @uses $DB
      */
-    public function testCanCountRecords() {
+    public function test_can_count_records() {
         global $DB;
         require_once(elis::lib('data/data_filter.class.php'));
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
 
-        $overlaydb = self::$overlaydb;
+        $baseconfigs = config_object::find(null, array('name' => 'ASC'), 0, 0, $DB);
+        $basecount = count($baseconfigs->to_array());
 
-        load_phpunit_data_set($dataset, true, $overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_test.csv')
+        ));
 
-        $configs = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
+        $this->loadDataSet($dataset);
 
-        // should only find one record
-        $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $overlaydb), 1);
-        // should find all three records
-        $this->assertEquals(config_object::count(null, $overlaydb), 3);
+        $configs = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $DB);
+
+        // Should only find one record.
+        $this->assertEquals(config_object::count(new field_filter('name', 'foo'), $DB), 1);
+        // Should find all records plus the three new records.
+        $this->assertEquals(config_object::count(null, $DB), $basecount + 3);
     }
 
     /**
-     * Test the delete method
+     * Test the delete method.
+     * @uses $DB
      */
-    public function testCanDeleteRecords() {
+    public function test_can_delete_records() {
         global $DB;
         require_once(elis::lib('data/data_filter.class.php'));
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_test.csv')
+        ));
 
-        $overlaydb = self::$overlaydb;
+        $this->loadDataSet($dataset);
 
-        load_phpunit_data_set($dataset, true, $overlaydb);
+        config_object::delete_records(new field_filter('name', 'foo'), $DB);
 
-        config_object::delete_records(new field_filter('name', 'foo'), $overlaydb);
-
-        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(null, array(), 0, 0, $overlaydb));
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_delete_test_result.csv'));
+        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(new field_filter('id', 10000, field_filter::GE), array(), 0, 0, $DB));
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_delete_test_result.csv')
+        ));
         $this->assertTablesEqual($dataset->getTable('config'), $result);
     }
 
     /**
-     * Test the exists method
+     * Test the exists method.
+     * @uses $DB
      */
-    public function testCanCheckRecordsExist() {
+    public function test_can_check_records_exist() {
         global $DB;
         require_once(elis::lib('data/data_filter.class.php'));
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_test.csv')
+        ));
 
-        $overlaydb = self::$overlaydb;
+        $this->loadDataSet($dataset);
 
-        load_phpunit_data_set($dataset, true, $overlaydb);
-
-        $this->assertTrue(config_object::exists(new field_filter('name', 'foo'), $overlaydb));
-        $this->assertFalse(config_object::exists(new field_filter('name', 'fooo'), $overlaydb));
+        $this->assertTrue(config_object::exists(new field_filter('name', 'foo'), $DB));
+        $this->assertFalse(config_object::exists(new field_filter('name', 'fooo'), $DB));
     }
 
     /**
-     * Test loading from the database by record ID
+     * Test loading from the database by record ID.
+     * @uses $DB
      */
-    public function testCanLoadRecordsById() {
+    public function test_can_load_records_by_id() {
         global $DB;
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_test.csv')
+        ));
 
-        $overlaydb = self::$overlaydb;
+        $this->loadDataSet($dataset);
 
-        load_phpunit_data_set($dataset, true, $overlaydb);
-
-        $config = new config_object(1, null, array(), false, array(), $overlaydb);
+        $config = new config_object(10001, null, array(), false, array(), $DB);
         $this->assertEquals($config->name, 'foo');
         $this->assertEquals($config->value, 'foooo');
     }
 
     /**
-     * Test the save method
+     * Test the save method.
+     * @uses $DB
      */
-    public function testCanSaveRecords() {
+    public function test_can_save_records() {
         global $DB;
 
-        $overlaydb = self::$overlaydb;
-
-        // create a new record
-        $config = new config_object(false, null, array(), false, array(), $overlaydb);
+        $config = new config_object(false, null, array(), false, array(), $DB);
         $config->name = 'foo';
         $config->value = 'foovalue';
         $config->save();
 
-        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(null, array(), 0, 0, $overlaydb));
-        $expected = array(array('name' => 'foo',
-                                'value' => 'foovalue',
-                                'id' => 1));
+        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(new field_filter('id', $config->id), array(), 0, 0, $DB));
+        $expected = array(
+                array(
+                    'name' => 'foo',
+                    'value' => 'foovalue',
+                    'id' => $config->id
+                )
+        );
         $expected = new moodle_recordset_phpunit_datatable('config', $expected);
         $this->assertTablesEqual($expected, $result);
 
-        // modify an existing record
+        // Modify an existing record.
         $config->value = 'newfoovalue';
         $config->save();
 
-        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(null, array(), 0, 0, $overlaydb));
-        $expected = array(array('name' => 'foo',
-                                'value' => 'newfoovalue',
-                                'id' => 1));
+        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(new field_filter('id', $config->id), array(), 0, 0, $DB));
+        $expected = array(
+                array(
+                    'name' => 'foo',
+                    'value' => 'newfoovalue',
+                    'id' => $config->id
+                )
+        );
         $expected = new moodle_recordset_phpunit_datatable('config', $expected);
         $this->assertTablesEqual($expected, $result);
     }
 
     /**
-     * Test the single record delete method
+     * Test the single record delete method.
+     * @uses $DB
      */
-    public function testCanDeleteASingleRecord() {
+    public function test_can_delete_a_single_record() {
         global $DB;
         require_once(elis::lib('data/data_filter.class.php'));
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_test.csv')
+        ));
 
-        $overlaydb = self::$overlaydb;
+        $this->loadDataSet($dataset);
 
-        load_phpunit_data_set($dataset, true, $overlaydb);
-
-        $config = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $overlaydb);
+        $config = config_object::find(new field_filter('name', 'foo'), array(), 0, 0, $DB);
         $config = $config->current();
         $config->delete();
 
-        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(null, array(), 0, 0, $overlaydb));
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_delete_test_result.csv'));
+        $result = new moodle_recordset_phpunit_datatable('config', config_object::find(new field_filter('id', 10000, field_filter::GE), array(), 0, 0, $DB));
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_delete_test_result.csv')
+        ));
         $this->assertTablesEqual($dataset->getTable('config'), $result);
     }
 
     /**
-     * Test the magic methods for getting associated records
+     * Test the magic methods for getting associated records.
+     * @uses $DB
+     * @uses $USER
      */
-    public function testGetAssociatedRecords() {
+    public function test_get_associated_records() {
         global $DB, $USER;
 
-        $overlaydb = self::$overlaydb;
-
-        // get some random user
+        // Get some random user.
         $user = $DB->get_record('user', array(), '*', IGNORE_MULTIPLE);
-        // get some random role
+        // Get some random role.
         $role = $DB->get_record('role', array(), '*', IGNORE_MULTIPLE);
-        // add a role assignment
+        // Add a role assignment.
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
-        // create a new role assignment
+        // Create a new role assignment.
         $ra = new stdClass;
         $ra->userid = $user->id;
         $ra->roleid = $role->id;
         $ra->contextid = $syscontext->id;
         $ra->timemodified = time();
         $ra->modifierid = $USER->id;
-        $ra->id = $overlaydb->insert_record('role_assignments', $ra);
+        $ra->id = $DB->insert_record('role_assignments', $ra);
 
-        // count the role assignments for the user
-        $user = new user_object($user, null, array(), true, array(), $overlaydb);
+        // Count the role assignments for the user.
+        $user = new user_object($user, null, array(), true, array(), $DB);
         $this->assertEquals($user->count_role_assignments(), 1);
 
-        // verify that we can get the role assignment via the magic get method
+        // Verify that we can get the role assignment via the magic get method.
         $roleassignments = $user->role_assignments->to_array();
         $this->assertEquals(count($roleassignments), 1);
         $ra = current($roleassignments);
@@ -351,7 +369,7 @@ class data_objectTest extends elis_database_test {
         $this->assertEquals($ra->roleid, $role->id);
         $this->assertEquals($ra->contextid, $syscontext->id);
 
-        // verify that we can get the role assignment via the magic call method
+        // Verify that we can get the role assignment via the magic call method.
         $roleassignments = $user->get_role_assignments()->to_array();
         $this->assertEquals(count($roleassignments), 1);
         $ra = current($roleassignments);
@@ -359,7 +377,7 @@ class data_objectTest extends elis_database_test {
         $this->assertEquals($ra->roleid, $role->id);
         $this->assertEquals($ra->contextid, $syscontext->id);
 
-        // test the filtered get and count methods
+        // Test the filtered get and count methods.
         $roleassignments = $user->get_role_assignments(new field_filter('userid', $user->id, field_filter::NEQ))->to_array();
         $this->assertEquals(count($roleassignments), 0);
 
@@ -369,47 +387,36 @@ class data_objectTest extends elis_database_test {
     }
 
     /**
-     * Test validation of duplicates
+     * Test validation of duplicates.
      *
      * @expectedException data_object_validation_exception
+     * @uses $DB
      */
-    public function testValidationPreventsDuplicates() {
+    public function test_validation_prevents_duplicates() {
         global $DB;
 
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('config', elis::component_file('core', 'phpunit/phpunit_data_object_test.csv'));
+        $dataset = $this->createCsvDataSet(array(
+            'config' => elis::component_file('core', 'tests/fixtures/phpunit_data_object_test.csv')
+        ));
 
-        $overlaydb = self::$overlaydb;
+        $this->loadDataSet($dataset);
 
-        load_phpunit_data_set($dataset, true, $overlaydb);
-
-        $config = new config_object(false, null, array(), false, array(), $overlaydb);
+        $config = new config_object(false, null, array(), false, array(), $DB);
         $config->name = 'foo';
         $config->value = 'foovalue';
         $config->save();
     }
 
     /**
-     * Test validation of required fields
+     * Test validation of required fields.
      *
      * @expectedException data_object_validation_exception
+     * @uses $DB
      */
-    public function testValidationPreventsEmptyValues() {
+    public function test_validation_prevents_empty_values() {
         global $DB;
 
-        $overlaydb = self::$overlaydb;
-
-        $config = new config_object(false, null, array(), false, array(), $overlaydb);
+        $config = new config_object(false, null, array(), false, array(), $DB);
         $config->save();
     }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    /*
-    public function testCannotGetANonField() {
-        $dataobj = new elis_data_object();
-        $dataobj->notafield;
-    }
-    */
 }
