@@ -71,16 +71,6 @@ YUI.add('moodle-elis_core-custom_field_multiselect', function(Y) {
     }
 
     /**
-     * Reset custom fields.
-     */
-    function cf_reset() {
-        // ELIS-4622: clear custom fields on filter form reset
-        window.customfieldpickerinstance.values = [];
-        window.customfieldpickerinstance.update_values();
-        window.customfieldpickerinstance.refresh_picker();
-    }
-
-    /**
      * Create and manage the custom field multiselector.
      */
     M.elis_core.init_custom_field_multiselect = function(options) {
@@ -400,3 +390,14 @@ YUI.add('moodle-elis_core-custom_field_multiselect', function(Y) {
         'panel'
 ] }
 );
+
+/**
+ * Reset custom fields.
+ * Note: only used from outside of YUI
+ */
+function cf_reset() {
+    // ELIS-4622: clear custom fields on filter form reset
+    window.customfieldpickerinstance.values = [];
+    window.customfieldpickerinstance.update_values();
+    window.customfieldpickerinstance.refresh_picker();
+}
