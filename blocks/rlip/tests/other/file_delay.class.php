@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,32 +28,39 @@
  * Import provider that constructs a file plugin which delays on reading
  */
 class rlip_importprovider_file_delay extends rlip_importprovider {
-    var $filename;
-    var $entity;
+    /**
+     * @var string The filename to usefor import
+     */
+    public $filename;
+
+    /**
+     * @var string The type of entity
+     */
+    public $entity;
 
     /**
      * Constructor
      *
      * @param string $filename The filename to usefor import
+     * @param string $entity The type of entity
      */
-    function __construct($filename, $entity) {
+    public function __construct($filename, $entity) {
         $this->filename = $filename;
         $this->entity = $entity;
     }
 
     /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
+     * Hook for providing a file plugin for a particular import entity type.
      *
      * @param string $entity The type of entity
      * @return object The file plugin instance, or false if not applicable
      */
-    function get_import_file($entity) {
+    public function get_import_file($entity) {
         if ($entity != $this->entity) {
             return false;
         }
 
-        //use a file plugin that delays on read
+        // Use a file plugin that delays on read.
         return new rlip_fileplugin_csv_delay($this->filename);
     }
 }

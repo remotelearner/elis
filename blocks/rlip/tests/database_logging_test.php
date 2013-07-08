@@ -1,8 +1,7 @@
 <?php
-
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/delay_after_three.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/delay_after_three.class.php');
 
 /**
  * DB logging class used to test the bare minimum functionality of the DB
@@ -47,8 +42,8 @@ class rlip_dblogger_test extends rlip_dblogger {
      * @param string $filename The filename for which processing is finished
      * @return object The customized version of the record
      */
-    function customize_record($record, $filename) {
-        //no transformation
+    public function customize_record($record, $filename) {
+        // No transformation.
         return $record;
     }
 
@@ -58,60 +53,25 @@ class rlip_dblogger_test extends rlip_dblogger {
      * @param object $record The log record, with all standard fields included
      * @param string $filename The filename for which processing is finished
      */
-    function display_log($record, $filename) {
-        //do nothing
+    public function display_log($record, $filename) {
+        // Do nothing.
     }
 }
 
 /**
- * Class for validating generic database logging functionality
+ * Class for validating generic database logging functionality.
+ * @group block_rlip
  */
-class databaseLoggingTest extends rlip_test {
-   /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG, $DB;
-
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
-        require_once($file);
-
-        $tables =  array(
-            RLIP_LOG_TABLE => 'block_rlip',
-            'config_plugins' => 'moodle',
-            'files' => 'moodle',
-            'user_info_field' => 'moodle',
-            //prevent unexpected errors due to field re-mappings
-            RLIPIMPORT_VERSION1_MAPPING_TABLE => 'rlipimport_version1'
-        );
-
-        $dbman = $DB->get_manager();
-
-        if ($dbman->table_exists(new xmldb_table('crlm_user'))) {
-            $tables['crlm_user'] = 'elis_program';
-            $tables['crlm_user_moodle'] = 'elis_program';
-        }
-
-        return $tables;
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        return array('user' => 'moodle',
-                     'context' => 'moodle');
-    }
+class databaselogging_testcase extends rlip_test {
 
     /**
      * Validate that the DB logger uses "0" as the default target start time
      */
-    public function testDBLoggeringTargetStartTimeDefaultsToZero() {
-        //obtain dblogger
+    public function test_dbloggeringtargetstarttimedefaultstozero() {
+        // Obtain dblogger.
         $dblogger = new rlip_dblogger_test();
 
-        //data validation
+        // Data validation.
         $targetstarttime = $dblogger->get_targetstarttime();
         $this->assertEquals($targetstarttime, 0);
     }
@@ -120,14 +80,14 @@ class databaseLoggingTest extends rlip_test {
      * Validate that the DB logger uses the specified value as the target start
      * time
      */
-    public function testDBLoggingSupportsTargetStartTimes() {
-        //obtain dblogger
+    public function test_dbloggingsupportstargetstarttimes() {
+        // Obtain dblogger.
         $dblogger = new rlip_dblogger_test();
 
-        //set target start time
+        // Set target start time.
         $dblogger->set_targetstarttime(1000000000);
 
-        //data validation
+        // Data validation.
         $targetstarttime = $dblogger->get_targetstarttime();
         $this->assertEquals($targetstarttime, 1000000000);
     }
@@ -136,32 +96,32 @@ class databaseLoggingTest extends rlip_test {
      * Validation for support of missing database columns in the import
      * database logging mechanism
      */
-    public function testDBLoggingSupportsMissingColumns() {
+    public function test_dbloggingsupportsmissingcolumns() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //obtain dblogger
+        // Obtain dblogger.
         $dblogger = new rlip_dblogger_import();
 
-        //validate initial state
+        // Validate initial state.
         $this->assertFalse($dblogger->missingcolumns);
         $this->assertEquals($dblogger->missingcolumnsmessage, '');
 
-        //signal a missing column message and flush
+        // Signal a missing column message and flush.
         $dblogger->signal_missing_columns('testmessage');
 
-        //validate state
+        // Validate state.
         $this->assertTrue($dblogger->missingcolumns);
         $this->assertEquals($dblogger->missingcolumnsmessage, 'testmessage');
 
-        //validate persisted values
+        // Validate persisted values.
         $dblogger->flush('test');
         $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
         $params = array('statusmessage' => 'testmessage');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
 
-        //validate state
+        // Validate state.
         $this->assertFalse($dblogger->missingcolumns);
         $this->assertEquals($dblogger->missingcolumnsmessage, '');
     }
@@ -169,121 +129,122 @@ class databaseLoggingTest extends rlip_test {
     /**
      * Validate that DB logging produces output as the result of a manual import
      */
-    public function testDBLoggingProducesOutputForManualImport() {
+    public function test_dbloggingproducesoutputformanualimport() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
-        //store it at the system context
+        // Store it at the system context.
         $context = get_context_instance(CONTEXT_SYSTEM);
 
-        //file path and name
-        $file_path = $CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/';
-        $file_name = 'userfile.csv';
+        // File path and name.
+        $filepath = $CFG->dirroot.'/blocks/rlip/importplugins/version1/tests/fixtures/';
+        $filename = 'userfile.csv';
 
-        //file information
-        $fileinfo = array('contextid' => $context->id,
-                          'component' => 'system',
-                          'filearea'  => 'draft',
-                          'itemid'    => 9999,
-                          'filepath'  => $file_path,
-                          'filename'  => $file_name
-                    );
+        // File information.
+        $fileinfo = array(
+            'contextid' => $context->id,
+            'component' => 'system',
+            'filearea' => 'draft',
+            'itemid' => 9999,
+            'filepath' => $filepath,
+            'filename' => $filename
+        );
 
-        //create a file in the Moodle file system with the right content
+        // Create a file in the Moodle file system with the right content.
         $fs = get_file_storage();
-        $fs->create_file_from_pathname($fileinfo, "{$file_path}{$file_name}");
+        $fs->create_file_from_pathname($fileinfo, "{$filepath}{$filename}");
         $fileid = $DB->get_field_select('files', 'id', "filename != '.'");
 
-        //set up the import
-        $entity_types = array('user', 'bogus', 'bogus');
+        // Set up the import.
+        $entitytypes = array('user', 'bogus', 'bogus');
         $fileids = array($fileid, false, false);
-        $importprovider = new rlip_importprovider_moodlefile($entity_types, $fileids);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $importprovider, NULL, true);
+        $importprovider = new rlip_importprovider_moodlefile($entitytypes, $fileids);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $importprovider, null, true);
 
-        //run the import, collecting output
+        // Run the import, collecting output.
         ob_start();
         $instance->run();
         $output = ob_get_contents();
         ob_end_clean();
 
-        //validation
+        // Validation.
         $this->assertNotEquals($output, '');
     }
 
     /**
      * Validate that DB logging does not produce output as the result of a scheduled import
      */
-    public function testDBLoggingDoesNotProduceOutputForScheduledImport() {
+    public function test_dbloggingdoesnotproduceoutputforscheduledimport() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
-        //set up the import
-        // MUST copy file to temp area 'cause it'll be deleted after import
-        $entity_types = array('user');
+        // Set up the import.
+        // MUST copy file to temp area 'cause it'll be deleted after import.
+        $entitytypes = array('user');
         $userfile = 'userfile.csv';
-        $testfile = dirname(__FILE__) .'/'. $userfile;
-        $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
+        $testfile = dirname(__FILE__).'/'.$userfile;
+        $tempdir = $CFG->dataroot.'/block_rlip_phpunit/';
         @mkdir($tempdir, 0777, true);
-        @copy($testfile, $tempdir . $userfile);
-        $files = array('user' => $tempdir . $userfile);
-        $importprovider = new rlip_importprovider_csv($entity_types, $files);
+        @copy($testfile, $tempdir.$userfile);
+        $files = array('user' => $tempdir.$userfile);
+        $importprovider = new rlip_importprovider_csv($entitytypes, $files);
         $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $importprovider);
 
-        //run the import, collecting output
+        // Run the import, collecting output.
         ob_start();
         $instance->run();
         $output = ob_get_contents();
         ob_end_clean();
 
-        //validation
+        // Validation.
         $this->assertEquals($output, '');
 
-        // Clean-up temp directory & testfile
-        @unlink($tempdir . $userfile);
+        // Clean-up temp directory & testfile.
+        @unlink($tempdir.$userfile);
         @rmdir($tempdir);
     }
 
     /**
      * Validate that DB logging does not produce output as the result of a manual export
      */
-    public function testDBLoggingDoesNotProduceOutputForManualExport() {
+    public function test_dbloggingdoesnotproduceoutputformanualexport() {
         global $CFG;
-        require_once(get_plugin_directory('rlipexport', 'version1').'/phpunit/rlip_fileplugin_nowrite.class.php');
+        require_once(get_plugin_directory('rlipexport', 'version1').'/tests/other/rlip_fileplugin_nowrite.class.php');
 
-        //set up the export
+        // Set up the export.
         $fileplugin = new rlip_fileplugin_nowrite();
-        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin, true);
+        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin, true);
 
-        //run the export, collecting output
+        // Run the export, collecting output.
         ob_start();
         $instance->run();
         $output = ob_get_contents();
         ob_end_clean();
 
-        //validation
+        // Validation.
         $this->assertEquals($output, '');
     }
 
     /**
      * Validate that DB logging does not produce output as the result of a scheduled export
      */
-    public function testDBLoggingDoesNotProduceOutputForScheduledExport() {
+    public function test_dbloggingdoesnotproduceoutputforscheduledexport() {
         global $CFG;
-        require_once(get_plugin_directory('rlipexport', 'version1').'/phpunit/rlip_fileplugin_nowrite.class.php');
+        require_once(get_plugin_directory('rlipexport', 'version1').'/tests/other/rlip_fileplugin_nowrite.class.php');
 
-        //set up the export
+        // Set up the export.
         $fileplugin = new rlip_fileplugin_nowrite();
-        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin);
+        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin);
 
-        //run the export, collecting output
+        // Run the export, collecting output.
         ob_start();
         $instance->run();
         $output = ob_get_contents();
         ob_end_clean();
 
-        //validation
+        // Validation.
         $this->assertEquals($output, '');
     }
 
@@ -291,17 +252,17 @@ class databaseLoggingTest extends rlip_test {
      * Validate that the DB logger produces output when flushing data related to
      * a manual import
      */
-    public function testDBLoggerObjectProducesOutputForManualImport() {
-        //obtain logging object
+    public function test_dbloggerobjectproducesoutputformanualimport() {
+        // Obtain logging object.
         $dblogger = new rlip_dblogger_import(true);
 
-        //flush, collecting output
+        // Flush, collecting output.
         ob_start();
         $dblogger->flush('bogus');
         $output = ob_get_contents();
         ob_end_clean();
 
-        //validation
+        // Validation.
         $this->assertNotEquals($output, '');
     }
 
@@ -309,17 +270,17 @@ class databaseLoggingTest extends rlip_test {
      * Validate that the DB logger does not produce output when flushing data
      * related to a scheduled import
      */
-    public function testDBLoggerObjectDoesNotProduceOutputForScheduledImport() {
-        //obtain logging object
+    public function test_dbloggerobjectdoesnotproduceoutputforscheduledimport() {
+        // Obtain logging object.
         $dblogger = new rlip_dblogger_import(false);
 
-        //flush, collecting output
+        // Flush, collecting output.
         ob_start();
         $dblogger->flush('bogus');
         $output = ob_get_contents();
         ob_end_clean();
 
-        //validation
+        // Validation.
         $this->assertEquals($output, '');
     }
 
@@ -327,17 +288,17 @@ class databaseLoggingTest extends rlip_test {
      * Validate that the DB logger does not produce output when flushing data
      * related to a manual export
      */
-    public function testDBLoggerObjectDoesNotProduceOutputForManualExport() {
-        //obtain logging object
+    public function test_dbloggerobjectdoesnotproduceoutputformanualexport() {
+        // Obtain logging object.
         $dblogger = new rlip_dblogger_export(true);
 
-        //flush, collecting output
+        // Flush, collecting output.
         ob_start();
         $dblogger->flush('bogus');
         $output = ob_get_contents();
         ob_end_clean();
 
-        //validation
+        // Validation.
         $this->assertEquals($output, '');
     }
 
@@ -345,17 +306,17 @@ class databaseLoggingTest extends rlip_test {
      * Validate that the DB logger does not produce output when flushing data
      * related to a scheduled export
      */
-    public function testDBLoggerObjectDoesNotProduceOutputForScheduledExport() {
-        //obtain logging object
+    public function test_dbloggerobjectdoesnotproduceoutputforscheduledexport() {
+        // Obtain logging object.
         $dblogger = new rlip_dblogger_export(false);
 
-        //flush, collecting output
+        // Flush, collecting output.
         ob_start();
         $dblogger->flush('bogus');
         $output = ob_get_contents();
         ob_end_clean();
 
-        //validation
+        // Validation.
         $this->assertEquals($output, '');
     }
 
@@ -363,16 +324,16 @@ class databaseLoggingTest extends rlip_test {
      * Validate that database loggers store db log record ids
      * for later retrieval
      */
-    public function testDBLoggerObjectAccumulatesLogIds() {
-        //obtain the logging object
+    public function test_dbloggerobjectaccumulateslogids() {
+        // Obtain the logging object.
         $dblogger = new rlip_dblogger_import();
 
         for ($i = 0; $i < 3; $i++) {
-            //create some database logs
+            // Create some database logs.
             $dblogger->flush('test');
         }
 
-        //validate that all ids were stored and can be retrieved
+        // Validate that all ids were stored and can be retrieved.
         $logids = $dblogger->get_log_ids();
         $this->assertEquals($logids, array(1, 2, 3));
     }
@@ -381,21 +342,21 @@ class databaseLoggingTest extends rlip_test {
      * Validate that, in the special case where runtime is exceeded, the
      * database logger stores the log file path, even if it does not yet exist
      */
-    public function testDBLoggerObjectStoresPathWhenRuntimeExceeded() {
+    public function test_dbloggerobjectstorespathwhenruntimeexceeded() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //obtain the logging object
+        // Obtain the logging object.
         $dblogger = new rlip_dblogger_import();
 
-        //set the right logging state
+        // Set the right logging state.
         $dblogger->set_log_path('/parentdir/childdir');
         $dblogger->signal_maxruntime_exceeded();
 
-        //write out the database record
+        // Write out the database record.
         $dblogger->flush('filename');
 
-        //validation
+        // Validation.
         $select = $DB->sql_compare_text('logpath').' = :logpath';
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, array('logpath' => '/parentdir/childdir'));
         $this->assertTrue($exists);
@@ -405,34 +366,35 @@ class databaseLoggingTest extends rlip_test {
      * Validate that the version 1 import plugin logs the exact message required to the
      * database when the import runs for too long on a manual run
      */
-    public function testVersion1ManualImportLogsRuntimeDatabaseError() {
+    public function test_version1manualimportlogsruntimedatabaseerror() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //our import data
-        $data = array(array('action', 'username', 'password', 'firstname', 'lastname', 'email', 'city', 'country'),
-                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'),
-                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'),
-                      array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'));
+        // Our import data.
+        $data = array(
+                array('action', 'username', 'password', 'firstname', 'lastname', 'email', 'city', 'country'),
+                array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'),
+                array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA'),
+                array('create', 'testuser', 'Password!0', 'firstname', 'lastname', 'a@b.c', 'test', 'CA')
+        );
 
-        //import provider that creates an instance of a file plugin that delays two seconds
-        //between reading the third and fourth entry
+        // Import provider that creates an instance of a file plugin that delays two seconds between reading the third and
+        // fourth entry.
         $provider = new rlip_importprovider_delay_after_three_users($data);
         $manual = true;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, NULL, $manual);
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, $manual);
 
-        //we should run out of time after processing the second real entry
+        // We should run out of time after processing the second real entry.
         ob_start();
-        //using three seconds to allow for one slow read when counting lines
+        // Using three seconds to allow for one slow read when counting lines.
         $importplugin->run(0, 0, 3);
         ob_end_clean();
 
-        $expected_message = "Failed importing all lines from import file bogus due to time limit exceeded. ".
-                            "Processed 2 of 3 records.";
+        $expectedmsg = "Failed importing all lines from import file bogus due to time limit exceeded. Processed 2 of 3 records.";
 
-        //validation
+        // Validation.
         $select = "{$DB->sql_compare_text('statusmessage')} = :message";
-        $params = array('message' => $expected_message);
+        $params = array('message' => $expectedmsg);
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }

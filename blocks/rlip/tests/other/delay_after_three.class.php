@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,19 +28,25 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 
 /**
- * File plugin that delays for two seconds between the third or fourth entry
- * read
+ * File plugin that delays for two seconds between the third or fourth entry read.
  */
 class rlip_fileplugin_delay_after_three extends rlip_fileplugin_base {
-    var $rows;
-    var $line;
+    /**
+     * @var array Fixed data to use for testing purposes
+     */
+    public $rows;
+
+    /**
+     * @var int Current line.
+     */
+    public $line;
 
     /**
      * Constructor
      *
      * @param array $rows Fixed data to use for testing purposes
      */
-    function __construct($rows) {
+    public function __construct($rows) {
         $this->rows = $rows;
     }
 
@@ -50,7 +56,7 @@ class rlip_fileplugin_delay_after_three extends rlip_fileplugin_base {
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
      */
-    function open($mode) {
+    public function open($mode) {
         $this->line = 0;
     }
 
@@ -59,17 +65,17 @@ class rlip_fileplugin_delay_after_three extends rlip_fileplugin_base {
      *
      * @return array The entry read
      */
-    function read() {
+    public function read() {
         if ($this->line < count($this->rows)) {
-            //still have data to read
+            // Still have data to read.
 
-            //get the next row
+            // Get the next row.
             $result = $this->rows[$this->line];
-            //increment position
+            // Increment position.
             $this->line++;
 
             if ($this->line == 4) {
-                //delay for 2 seconds between third and fourth read
+                // Delay for 2 seconds between third and fourth read.
                 sleep(2);
             }
 
@@ -84,15 +90,15 @@ class rlip_fileplugin_delay_after_three extends rlip_fileplugin_base {
      *
      * @return array The entry read
      */
-    function write($entry) {
-        //do nothing
+    public function write($entry) {
+        // Do nothing.
     }
 
     /**
      * Hook for closing the file
      */
-    function close() {
-        //do nothing
+    public function close() {
+        // Do nothing.
     }
 
     /**
@@ -102,7 +108,7 @@ class rlip_fileplugin_delay_after_three extends rlip_fileplugin_base {
      *                           default is NOT to include full path.
      * @return string The file name.
      */
-    function get_filename($withpath = false) {
+    public function get_filename($withpath = false) {
         return 'bogus';
     }
 }
@@ -116,7 +122,7 @@ class rlip_importprovider_delay_after_three_users extends rlip_importprovider {
      *
      * @param array $rows Fixed data to use for testing purposes
      */
-    function __construct($data) {
+    public function __construct($data) {
         $this->data = $data;
     }
 
@@ -126,9 +132,9 @@ class rlip_importprovider_delay_after_three_users extends rlip_importprovider {
      * @param string $entity The type of entity
      * @return object The file plugin instance, or false if not applicable
      */
-    function get_import_file($entity) {
+    public function get_import_file($entity) {
         if ($entity != 'user') {
-            //this class only cares about users for now
+            // This class only cares about users for now.
             return false;
         }
 

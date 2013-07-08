@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,38 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
 
 /**
  * Mock file plugin for testing closing of input files
  */
 class rlip_fileplugin_inputclosed extends rlip_fileplugin_readmemory {
-    //track whether the file was closed
-    var $closed = false;
+    // Track whether the file was closed.
+    public $closed = false;
 
     /**
      * Close the file
      */
-    function close() {
+    public function close() {
         $this->closed = true;
     }
 
@@ -56,7 +51,7 @@ class rlip_fileplugin_inputclosed extends rlip_fileplugin_readmemory {
      *
      * @return boolean true if the file was closed, otherwise false
      */
-    function closed() {
+    public function closed() {
         return $this->closed;
     }
 }
@@ -70,7 +65,7 @@ class rlip_fileplugin_nodata extends rlip_fileplugin_readmemory {
      *
      * @return array The entry read
      */
-    function read() {
+    public function read() {
         return false;
     }
 }
@@ -86,9 +81,11 @@ class rlip_importprovider_mock extends rlip_importprovider {
      * @param string $entity The type of entity
      * @return object The file plugin instance, or false if not applicable
      */
-    function get_import_file($entity) {
-        $data = array(array('entity', 'action'),
-                      array('sampleentity', 'sampleaction'));
+    public function get_import_file($entity) {
+        $data = array(
+                array('entity', 'action'),
+                array('sampleentity', 'sampleaction')
+        );
 
         return new rlip_fileplugin_readmemory($data);
     }
@@ -105,18 +102,17 @@ class rlip_importprovider_false extends rlip_importprovider {
      * @param string $entity The type of entity
      * @return object The file plugin instance, or false if not applicable
      */
-    function get_import_file($entity) {
+    public function get_import_file($entity) {
         return false;
     }
 }
 
 /**
- * File plugin provider that supplies the import with our "test closed" file
- * plugin
+ * File plugin provider that supplies the import with our "test closed" file plugin.
  */
 class rlip_importprovider_inputclosed extends rlip_importprovider_mock {
-    //file plugin instance
-    var $file;
+    // File plugin instance.
+    public $file;
 
     /**
      * Hook for providing a file plugin for a particular
@@ -125,9 +121,11 @@ class rlip_importprovider_inputclosed extends rlip_importprovider_mock {
      * @param string $entity The type of entity
      * @return object The file plugin instance, or false if not applicable
      */
-    function get_import_file($entity) {
-        $data = array(array('entity', 'action'),
-                      array('sampleentity', 'sampleaction'));
+    public function get_import_file($entity) {
+        $data = array(
+                array('entity', 'action'),
+                array('sampleentity', 'sampleaction')
+        );
 
         $this->file = new rlip_fileplugin_inputclosed($data);
 
@@ -140,8 +138,8 @@ class rlip_importprovider_inputclosed extends rlip_importprovider_mock {
      *
      * @return boolean true if the file was closed, otherwise false
      */
-    function closed() {
-        //delegate to the file plugin
+    public function closed() {
+        // Delegate to the file plugin.
         return $this->file->closed();
     }
 }
@@ -157,18 +155,22 @@ class rlip_importprovider_multiple extends rlip_importprovider {
      * @param string $entity The type of entity
      * @return object The file plugin instance, or false if not applicable
      */
-    function get_import_file($entity) {
+    public function get_import_file($entity) {
         $data = array();
 
-        //set up a different "file" depending on the entity type
+        // Set up a different "file" depending on the entity type.
         switch ($entity) {
             case 'firstentity':
-                $data = array(array('entity', 'action'),
-                              array('firstentity', 'defaultaction'));
+                $data = array(
+                        array('entity', 'action'),
+                        array('firstentity', 'defaultaction')
+                );
                 break;
             default:
-                $data = array(array('entity', 'action'),
-                              array('secondentity', 'defaultaction'));
+                $data = array(
+                        array('entity', 'action'),
+                        array('secondentity', 'defaultaction')
+                );
         }
 
         return new rlip_fileplugin_readmemory($data);
@@ -186,9 +188,11 @@ class rlip_importprovider_nodata extends rlip_importprovider {
      * @param string $entity The type of entity
      * @return object The file plugin instance, or false if not applicable
      */
-    function get_import_file($entity) {
-        $data = array(array('entity', 'action'),
-                      array('sampleentity', 'sampleaction'));
+    public function get_import_file($entity) {
+        $data = array(
+                array('entity', 'action'),
+                array('sampleentity', 'sampleaction')
+        );
 
         return new rlip_fileplugin_nodata($data);
     }
@@ -196,31 +200,14 @@ class rlip_importprovider_nodata extends rlip_importprovider {
 
 /**
  * Class for testing the base import plugin class
+ * @group block_rlip
  */
-class importPluginTest extends rlip_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    protected static function get_overlay_tables() {
-        return array('config_plugins' => 'moodle');
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
-        return array(RLIP_LOG_TABLE => 'block_rlip');
-    }
+class importplugin_testcase extends rlip_test {
 
     /**
      * Validate that plugin_supports works for entities
      */
-    public function testImportPluginSupportsValidatesValidEntity() {
+    public function test_importpluginsupportsvalidatesvalidentity() {
         $supports = plugin_supports('rlipimport', 'sample', 'sampleentity');
 
         $this->assertEquals($supports, array('sampleaction'));
@@ -229,16 +216,16 @@ class importPluginTest extends rlip_test {
     /**
      * Validate that plugin_supports flags invalid entities
      */
-    public function testImportPluginSupportsInvalidatesInvalidEntity() {
+    public function test_importpluginsupportsinvalidatesinvalidentity() {
         $supports = plugin_supports('rlipimport', 'sample', 'bogusentity');
 
-        $this->assertEquals($supports, NULL);
+        $this->assertEquals($supports, null);
     }
 
     /**
      * Validate that plugin_supports works for valid entity-action combinations
      */
-    public function testImportPluginSupportsValidatesValidEntityAndAction() {
+    public function test_importpluginsupportsvalidatesvalidentityandaction() {
         $supports = plugin_supports('rlipimport', 'sample', 'sampleentity_sampleaction');
 
         $this->assertEquals($supports, array('samplefield'));
@@ -247,25 +234,25 @@ class importPluginTest extends rlip_test {
     /**
      * Validate that plugin_supports flags invalid actions for valid entities
      */
-    public function testImportPluginSupportsInvalidatesValidEntityInvalidAction() {
+    public function test_importpluginsupportsinvalidatesvalidentityinvalidaction() {
         $supports = plugin_supports('rlimport', 'sample', 'sampleentity_bogusaction');
 
-        $this->assertEquals($supports, NULL);
+        $this->assertEquals($supports, null);
     }
 
     /**
      * Validate that plugin_supports flags invalid actions for invalid entities
      */
-    public function testImportPluginSupportsInvalidatesInvalidEntityInvalidAction() {
+    public function test_importpluginsupportsinvalidatesinvalidentityinvalidaction() {
         $supports = plugin_supports('rlimport', 'sample', 'bogusentity_bogusaction');
 
-        $this->assertEquals($supports, NULL);
+        $this->assertEquals($supports, null);
     }
 
     /**
      * Validate that the import process correctly delegates to the right action
      */
-    public function testValidInputTriggersAction() {
+    public function test_validinputtriggersaction() {
         global $CFG;
         $file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
         require_once($file);
@@ -283,7 +270,7 @@ class importPluginTest extends rlip_test {
      * Validate that the import process delegates file closing to the file
      * plugin
      */
-    public function testImportClosesFile() {
+    public function test_importclosesfile() {
         global $CFG;
         $file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
         require_once($file);
@@ -300,7 +287,7 @@ class importPluginTest extends rlip_test {
     /**
      * Validate that the import process supports plugins with multiple files
      */
-    public function testImportPluginsSupportMultipleFiles() {
+    public function test_importpluginssupportmultiplefiles() {
         global $CFG;
         $file = get_plugin_directory('rlipimport', 'multiple').'/multiple.class.php';
         require_once($file);
@@ -310,14 +297,14 @@ class importPluginTest extends rlip_test {
         $importplugin = new rlip_importplugin_multiple($provider);
         $importplugin->run();
 
-        $both_called = $importplugin->both_called();
-        $this->assertEquals($both_called, true);
+        $bothcalled = $importplugin->both_called();
+        $this->assertEquals($bothcalled, true);
     }
 
     /**
      * Validates that the import process calls the "header read" hook
      */
-    public function testImportTriggersHeaderReadHook() {
+    public function test_importtriggersheaderreadhook() {
         global $CFG;
         $file = get_plugin_directory('rlipimport', 'header').'/header.class.php';
         require_once($file);
@@ -334,75 +321,75 @@ class importPluginTest extends rlip_test {
      * Validates that the file-system logging object provided for direct CSV
      * file input is in "scheduled" mode
      */
-    public function testCSVImportProviderProvidesLoggerInScheduledMode() {
+    public function test_csvimportproviderprovidesloggerinscheduledmode() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
 
-        //construct our provider
+        // Construct our provider.
         $provider = new rlip_importprovider_csv(array(), array());
 
-        //obtain its logging object
+        // Obtain its logging object.
         set_config('logfilelocation', 'bogus', 'rlipimport_version1');
         $entity = '';
         $manual = false;
         $fslogger = $provider->get_fslogger('rlipimport_version1', $entity, $manual);
 
-        //validation
+        // Validation.
         $this->assertFalse($fslogger->get_manual());
-        @rmdir($CFG->dataroot . DIRECTORY_SEPARATOR . 'bogus');
+        @rmdir($CFG->dataroot.DIRECTORY_SEPARATOR.'bogus');
     }
 
     /**
      * Validates that the file-system logging object provided for Moodle file
      * input is in "manual" mode
      */
-    public function testMoodlefileImportProviderProvidesLoggerInManualMode() {
+    public function test_moodlefileimportproviderprovidesloggerinmanualmode() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
 
-        //construct our provider
+        // Construct our provider.
         $provider = new rlip_importprovider_moodlefile(array(), array());
 
-        //obtain its logging object
+        // Obtain its logging object.
         set_config('logfilelocation', 'bogus', 'rlipimport_version1');
         $entity = '';
         $manual = true;
         $fslogger = $provider->get_fslogger('rlipimport_version1', $entity, $manual);
 
-        //validation
+        // Validation.
         $this->assertTrue($fslogger->get_manual());
-        @rmdir($CFG->dataroot . DIRECTORY_SEPARATOR . 'bogus');
+        @rmdir($CFG->dataroot.DIRECTORY_SEPARATOR.'bogus');
     }
 
     /**
      * Validate that the process_import_file method returns false when an invalid
      * entity is specified
      */
-    public function testProcessImportFileReturnsFalseForInvalidEntity() {
+    public function test_processimportfilereturnsfalseforinvalidentity() {
         $provider = new rlip_importprovider_false();
 
         $importplugin = new rlip_importplugin_sample($provider);
         $importplugin->run();
 
-        $result = $importplugin->process_import_file('bogusentity', 0, NULL);
+        $result = $importplugin->process_import_file('bogusentity', 0, null);
 
-        //method should return false instead of NULL, types are important
+        // Method should return false instead of null, types are important.
         $this->assertSame(false, $result);
     }
 
     /**
      * Validate that the process_import_file method returns false when and
-     * import file is missing 
+     * import file is missing
      */
-    public function testProcessImportFileReturnsFalseForMissingFile() {
+    public function test_processimportfilereturnsfalseformissingfile() {
         $provider = new rlip_importprovider_nodata();
 
         $importplugin = new rlip_importplugin_sample($provider);
         $importplugin->run();
 
-        $result = $importplugin->process_import_file('bogusentity', 0, NULL);
+        $result = $importplugin->process_import_file('bogusentity', 0, null);
 
-        //method should return false instead of NULL, types are important
+        // Method should return false instead of null, types are important.
         $this->assertSame(false, $result);
     }
 }

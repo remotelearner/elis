@@ -17,19 +17,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    block_rlip
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
 $dirname = dirname(__FILE__);
-require_once($dirname.'/../../../config.php');
+require_once($dirname.'/../../../elis/core/test_config.php');
 global $CFG;
+require_once($dirname.'/other/rlip_test.class.php');
+
+// Libs.
 require_once($dirname.'/../lib.php');
-require_once($dirname.'/rlip_test.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elispm::lib('data/track.class.php'));
@@ -37,123 +37,14 @@ require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once($CFG->libdir.'/externallib.php');
 require_once($dirname.'/../ws/elis/track_delete.class.php');
+require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
- * Tests webservice method block_rldh_elis_track_delete
+ * Tests webservice method block_rldh_elis_track_delete.
+ * @group block_rlip
+ * @group block_rlip_ws
  */
-class block_rlip_ws_elis_track_delete_test extends rlip_test {
-    /**
-     * @var object Holds a backup of the user object so we can do sane permissions handling.
-     */
-    static public $userbackup;
-
-    /**
-     * @var array Array of globals to not do backup.
-     */
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Get overlay tables.
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            field::TABLE => 'elis_core',
-            field_category::TABLE => 'elis_core',
-            field_contextlevel::TABLE => 'elis_core',
-            field_data_char::TABLE => 'elis_core',
-            field_data_int::TABLE => 'elis_core',
-            field_data_num::TABLE => 'elis_core',
-            field_data_text::TABLE => 'elis_core',
-            clustertrack::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-            trackassignment::TABLE => 'elis_program',
-            user::TABLE => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-            usertrack::TABLE => 'elis_program',
-            'cache_flags' => 'moodle',
-            'config' => 'moodle',
-            'context' => 'moodle',
-            'role' => 'moodle',
-            'role_assignments' => 'moodle',
-            'role_capabilities' => 'moodle',
-            'role_names' => 'moodle',
-            'user' => 'moodle',
-            'user_preferences' => 'moodle',
-        );
-    }
-
-    /**
-     * Get ignored tables.
-     * @return array An array of ignore tables.
-     */
-    protected static function get_ignored_tables() {
-        return array(
-            'block_instances' => 'moodle',
-            'block_positions' => 'moodle',
-            'comments' => 'moodle',
-            'files' => 'moodle',
-            'filter_active' => 'moodle',
-            'filter_config' => 'moodle',
-            'grading_areas' => 'moodle',
-            'rating' => 'moodle',
-        );
-    }
-
-    /**
-     * Perform teardown after test - restore the user global.
-     */
-    protected function tearDown() {
-        global $USER;
-        $USER = static::$userbackup;
-        parent::tearDown();
-    }
-
-    /**
-     * Perform setup before test - backup the user global.
-     */
-    protected function setUp() {
-        global $USER;
-        static::$userbackup = $USER;
-        parent::setUp();
-    }
-
-    /**
-     * Give permissions to the current user.
-     * @param array $perms Array of permissions to grant.
-     */
-    public function give_permissions(array $perms) {
-        global $USER, $DB;
-
-        accesslib_clear_all_caches(true);
-
-        set_config('siteguest', '');
-        set_config('siteadmins', '');
-
-        // Import, get system context.
-        $sql = 'INSERT INTO {context} SELECT * FROM '.self::$origdb->get_prefix().'context WHERE contextlevel = ?';
-        $DB->execute($sql, array(CONTEXT_SYSTEM));
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
-
-        $assigninguser = new user(array(
-            'idnumber' => 'assigninguserid',
-            'username' => 'assigninguser',
-            'firstname' => 'assigninguser',
-            'lastname' => 'assigninguser',
-            'email' => 'assigninguser@testuserdomain.com',
-            'country' => 'CA'
-        ));
-        $assigninguser->save();
-        $USER = $DB->get_record('user', array('id' => $assigninguser->id));
-
-        $roleid = create_role('testrole', 'testrole', 'testrole');
-        foreach ($perms as $perm) {
-            assign_capability($perm, CAP_ALLOW, $roleid, $syscontext->id);
-        }
-
-        role_assign($roleid, $USER->id, $syscontext->id);
-    }
+class block_rlip_ws_elis_track_delete_testcase extends rlip_test_ws {
 
     /**
      * Test successful track deletion
@@ -163,17 +54,16 @@ class block_rlip_ws_elis_track_delete_test extends rlip_test {
 
         $this->give_permissions(array('elis/program:track_delete'));
 
-        // setup program
-        $prgidnumber = 'test_program_idnumber';
-        $cur = new curriculum(array('idnumber' => $prgidnumber, 'name' => 'ProgramName'));
-        $cur->save();
+        // Setup program.
+        $datagen = new elis_program_datagenerator($DB);
+        $program = $datagen->create_program(array('idnumber' => 'test_program_idnumber', 'name' => 'ProgramName'));
 
         $track = array(
             'idnumber' => 'testtrack',
         );
 
-        // setup track to delete
-        $trk = new track(array('idnumber' => 'testtrack', 'name' => 'testtrackname', 'curid' => $cur->id));
+        // Setup track to delete.
+        $trk = new track(array('idnumber' => 'testtrack', 'name' => 'testtrackname', 'curid' => $program->id));
         $trk->save();
 
         $response = block_rldh_elis_track_delete::track_delete($track);
@@ -198,7 +88,7 @@ class block_rlip_ws_elis_track_delete_test extends rlip_test {
                 array(
                         array()
                 ),
-                // Test invalid idnumber
+                // Test invalid idnumber.
                 array(
                         array(
                             'idnumber' => 'BogusTrack',
@@ -218,13 +108,12 @@ class block_rlip_ws_elis_track_delete_test extends rlip_test {
 
         $this->give_permissions(array('elis/program:track_delete'));
 
-        // setup program
-        $prgidnumber = 'test_program_idnumber';
-        $cur = new curriculum(array('idnumber' => $prgidnumber, 'name' => 'ProgramName'));
-        $cur->save();
+        // Setup program.
+        $datagen = new elis_program_datagenerator($DB);
+        $program = $datagen->create_program(array('idnumber' => 'test_program_idnumber', 'name' => 'ProgramName'));
 
-        // setup track to delete
-        $trk = new track(array('idnumber' => 'testtrack', 'name' => 'testtrackname', 'curid' => $cur->id));
+        // Setup track to delete.
+        $trk = new track(array('idnumber' => 'testtrack', 'name' => 'testtrackname', 'curid' => $program->id));
         $trk->save();
 
         $response = block_rldh_elis_track_delete::track_delete($track);

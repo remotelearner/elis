@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,53 +16,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
+require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 
 /**
  * Class for testing various functionality related to plugin factories
+ * @group block_rlip
  */
-class pluginFactoriesTest extends PHPUnit_Framework_TestCase {
+class pluginfactories_testcase extends basic_testcase {
 
     /**
      * Validate that the data plugin factory sets the right file plugin when
      * obtaining an export plugin instance
      */
-    public function testDatapluginFactorySetsCorrectFilepluginForExport() {
+    public function test_datapluginfactorysetscorrectfilepluginforexport() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
-        //setup
+        // Setup.
         $fileplugin = rlip_fileplugin_factory::factory('bogus');
-        $exportplugin = rlip_dataplugin_factory::factory('rlipexport_version1', NULL, $fileplugin);
-        //validation
+        $exportplugin = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin);
+        // Validation.
         $this->assertEquals($fileplugin, $exportplugin->get_file_plugin());
     }
 
     /**
      * Validate that the file plugin factory sets the browser flag on the
      * appropriate file plugin
-     */ 
-    public function testFilepluginFactorySetsBrowserFlag() {
+     */
+    public function test_filepluginfactorysetsbrowserflag() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
-        //setup
-        $fileplugin = rlip_fileplugin_factory::factory('', NULL, false, true);
-        //validation
+        // Setup.
+        $fileplugin = rlip_fileplugin_factory::factory('', null, false, true);
+        // Validation.
         $this->assertEquals($fileplugin->sendtobrowser, true);
     }
 
@@ -70,20 +67,20 @@ class pluginFactoriesTest extends PHPUnit_Framework_TestCase {
      * Validate that the file-system logger factory constructs an object of the
      * correct type
      */
-    public function testFsloggerFactoryInstantiatesCorrectClass() {
+    public function test_fsloggerfactoryinstantiatescorrectclass() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
         $file = get_plugin_directory('rlipimport', 'version1').'/rlip_import_version1_fslogger.class.php';
         require_once($file);
 
-        //setup
-        $fslogger = rlip_fslogger_factory::factory('rlipexport_version1', NULL);
-        //validation
+        // Setup.
+        $fslogger = rlip_fslogger_factory::factory('rlipexport_version1', null);
+        // Validation.
         $this->assertInstanceOf('rlip_fslogger_linebased', $fslogger);
 
-        //setup
-        $fslogger = rlip_fslogger_factory::factory('rlipimport_version1', NULL);
-        //validation
+        // Setup.
+        $fslogger = rlip_fslogger_factory::factory('rlipimport_version1', null);
+        // Validation.
         $this->assertInstanceOf('rlip_import_version1_fslogger', $fslogger);
     }
 }

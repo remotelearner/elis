@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,17 +27,22 @@
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
 class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
-    //current file position
-    var $index;
-    //file data
-    var $data;
+    /**
+     * @var int Current file position.
+     */
+    public $index;
+
+    /**
+     * @var array File data.
+     */
+    public $data;
 
     /**
      * Mock file plugin constructor
      *
      * @param array $data The data represented by this file
      */
-    function __construct($data, $filename = '', $fileid = NULL, $sendtobrowser = false) {
+    public function __construct($data, $filename = '', $fileid = null, $sendtobrowser = false) {
         parent::__construct($filename, $fileid, $sendtobrowser);
 
         $this->index = 0;
@@ -50,7 +55,7 @@ class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
      */
-    function open($mode) {
+    public function open($mode) {
         $this->index = 0;
     }
 
@@ -59,16 +64,16 @@ class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
      *
      * @return array The entry read
      */
-    function read() {
+    public function read() {
         if ($this->index < count($this->data)) {
-            //more lines to read, fetch next one
+            // More lines to read, fetch next one.
             $result = $this->data[$this->index];
-            //move "line pointer"
+            // Move "line pointer".
             $this->index++;
             return $result;
         }
 
-        //out of lines
+        // Out of lines.
         return false;
     }
 
@@ -77,15 +82,15 @@ class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
      *
      * @param array $entry The entry to write to the file
      */
-    function write($entry) {
-        //nothing to do
+    public function write($entry) {
+        // Nothing to do.
     }
 
     /**
      * Close the file
      */
-    function close() {
-        //nothing to do
+    public function close() {
+        // Nothing to do.
     }
 
     /**
@@ -95,8 +100,8 @@ class rlip_fileplugin_readmemorywithname extends rlip_fileplugin_base {
      *                           default is NOT to include full path.
      * @return string The file name.
      */
-    function get_filename($withpath = false) {
-        //physical file, so obtain filename from full path
+    public function get_filename($withpath = false) {
+        // Physical file, so obtain filename from full path.
         if ($withpath) {
             return $this->filename;
         }
