@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,8 @@ require_once($file);
  * Class that delays reading import file and delays writing out an export file
  */
 class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
-    private $readdelay = 3; // 3 sec delay before reads
-    private $writedelay = 3; // 3 sec delay before writes
+    private $readdelay = 3; // 3 sec delay before reads.
+    private $writedelay = 3; // 3 sec delay before writes.
 
     /**
      * Open the file
@@ -39,7 +39,7 @@ class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
      */
-    function open($mode) {
+    public function open($mode) {
         if ($mode == RLIP_FILE_WRITE) {
             return;
         }
@@ -52,7 +52,7 @@ class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
      *
      * @return array The entry read
      */
-    function read() {
+    public function read() {
         if (!empty($this->readdelay)) {
             sleep($this->readdelay);
         }
@@ -64,17 +64,17 @@ class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
      *
      * @param array $entry The entry to write to the file
      */
-    function write($entry) {
+    public function write($entry) {
         if (!empty($this->writedelay)) {
             sleep($this->writedelay);
         }
-        //don't actually write anything
+        // Don't actually write anything.
     }
 
     /**
      * Close the file
      */
-    function close() {
+    public function close() {
         if (!empty($this->filepointer)) {
             fclose($this->filepointer);
         }
@@ -87,8 +87,8 @@ class rlip_fileplugin_csv_delay extends rlip_fileplugin_csv {
      *                           default is NOT to include full path.
      * @return string The file name
      */
-    function get_filename($withpath = false) {
-        //todo: implement?
+    public function get_filename($withpath = false) {
+        // Todo: implement?
         return 'filename';
     }
 }

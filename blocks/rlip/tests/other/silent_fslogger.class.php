@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,15 +34,12 @@ class silent_fslogger extends rlip_fslogger {
      * Log a success message to the log file
      *
      * @param string $message The message to long
-     * @param int $timestamp The timestamp to associate the message with, or 0
-     *                       for the current time
-     * @param string $filename The name of the import / export file we are
-     *                         reporting on
-     * @param int $entitydescriptor A descriptor of which entity from an import file
-     *                              we are handling, if applicable
+     * @param int $timestamp The timestamp to associate the message with, or 0 for the current time
+     * @param string $filename The name of the import / export file we are reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file we are handling, if applicable
      */
-    function log_success($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL) {
-        //do nothing
+    public function log_success($message, $timestamp = 0, $filename = null, $entitydescriptor = null) {
+        // Do nothing.
         return true;
     }
 
@@ -50,15 +47,12 @@ class silent_fslogger extends rlip_fslogger {
      * Log a failure message to the log file, and potentially the screen
      *
      * @param string $message The message to long
-     * @param int $timestamp The timestamp to associate the message with, or 0
-     *                       for the current time
-     * @param string $filename The name of the import / export file we are
-     *                         reporting on
-     * @param int $entitydescriptor A descriptor of which entity from an import file
-     *                              we are handling, if applicable
+     * @param int $timestamp The timestamp to associate the message with, or 0 for the current time
+     * @param string $filename The name of the import / export file we are reporting on
+     * @param int $entitydescriptor A descriptor of which entity from an import file we are handling, if applicable
      */
-    function log_failure($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL) {
-        //do nothing
+    public function log_failure($message, $timestamp = 0, $filename = null, $entitydescriptor = null) {
+        // Do nothing.
         return true;
     }
 }

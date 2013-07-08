@@ -17,155 +17,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    block_rlip
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
 $dirname = dirname(__FILE__);
-require_once($dirname.'/../../../config.php');
+require_once($dirname.'/../../../elis/core/test_config.php');
 global $CFG;
+require_once($dirname.'/other/rlip_test.class.php');
+
+// Libs.
 require_once($dirname.'/../lib.php');
-require_once($dirname.'/rlip_test.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once(elispm::lib('data/usertrack.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once($CFG->libdir.'/externallib.php');
 require_once($dirname.'/../ws/elis/track_enrolment_create.class.php');
+require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
- * Tests webservice method block_rldh_elis_track_enrolment_create
+ * Tests webservice method block_rldh_elis_track_enrolment_create.
+ * @group block_rlip
+ * @group block_rlip_ws
  */
-class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
-    /**
-     * @var object Holds a backup of the user object so we can do sane permissions handling.
-     */
-    static public $userbackup;
-
-    /**
-     * @var array Array of globals to not do backup.
-     */
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Get overlay tables.
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            field::TABLE => 'elis_core',
-            curriculum::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-            trackassignment::TABLE => 'elis_program',
-            usertrack::TABLE => 'elis_program',
-            user::TABLE => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-            'cache_flags' => 'moodle',
-            'config' => 'moodle',
-            'config_plugins' => 'moodle',
-            'context' => 'moodle',
-            'role' => 'moodle',
-            'role_assignments' => 'moodle',
-            'user' => 'moodle',
-        );
-    }
-
-    /**
-     * Perform teardown after test - restore the user global.
-     */
-    protected function tearDown() {
-        global $USER;
-        $USER = static::$userbackup;
-        parent::tearDown();
-    }
-
-    /**
-     * Perform setup before test - backup the user global.
-     */
-    protected function setUp() {
-        global $USER;
-        static::$userbackup = $USER;
-        parent::setUp();
-    }
-
-    /**
-     * Give permissions to the current user.
-     * @param array $perms Array of permissions to grant.
-     */
-    public function give_permissions(array $perms) {
-        global $USER, $DB;
-
-        accesslib_clear_all_caches(true);
-
-        set_config('siteguest', '');
-        set_config('siteadmins', '');
-
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
-
-        $assigninguser = new user(array(
-            'idnumber' => 'assigninguserid',
-            'username' => 'assigninguser',
-            'firstname' => 'assigninguser',
-            'lastname' => 'assigninguser',
-            'email' => 'assigninguser@testuserdomain.com',
-            'country' => 'CA'
-        ));
-        $assigninguser->save();
-        $USER = $DB->get_record('user', array('id' => $assigninguser->id));
-
-        $dupemailuser = new user(array(
-            'idnumber' => 'dupemailuserid',
-            'username' => 'dupemailuser',
-            'firstname' => 'dupemailuserfirstname',
-            'lastname' => 'dupemailuserlastname',
-            'email' => 'assigninguser@testuserdomain.com', // dup email!
-            'country' => 'CA'
-        ));
-        $dupemailuser->save();
-
-        $roleid = create_role('testrole', 'testrole', 'testrole');
-        foreach ($perms as $perm) {
-            assign_capability($perm, CAP_ALLOW, $roleid, $syscontext->id);
-        }
-
-        role_assign($roleid, $USER->id, $syscontext->id);
-    }
-
-    /**
-     * method to create test program.
-     * @param string $idnumber the idnumber to use to create program
-     * @return int|bool the program DB id or false on error
-     */
-    public function create_program($idnumber) {
-        $params = array(
-            'idnumber' => $idnumber,
-            'name' => 'Test Program',
-        );
-        $program = new curriculum($params);
-        $program->save();
-        return !empty($program->id) ? $program->id : false;
-    }
-
-    /**
-     * method to create test track.
-     * @param string $trackidnumber the idnumber to use to create track
-     * @param string $programidnumber the idnumber of the program to associate the track to
-     * @return int|bool the track DB id or false on error
-     */
-    public function create_track($trackidnumber, $programid) {
-        $params = array(
-            'curid' => $programid,
-            'idnumber' => $trackidnumber,
-            'name' => 'Test Track',
-        );
-        $track = new track($params);
-        $track->save();
-        return !empty($track->id) ? $track->id : false;
-    }
+class block_rlip_ws_elis_track_enrolment_create_testcase extends rlip_test_ws {
 
     /**
      * Test successful track enrolment creation.
@@ -173,29 +50,29 @@ class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
     public function test_success() {
         global $DB, $USER;
 
+        $this->give_permissions(array('elis/program:track_enrol'));
+
         // Initialize version1elis importplugin for utility functions.
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
 
-        $programidnumber = 'TestProgramForTrack';
-        $programid = $this->create_program($programidnumber);
+        // Create test program and track.
+        $datagen = new elis_program_datagenerator($DB);
+        $program = $datagen->create_program(array('idnumber' => 'TestProgramForTrack'));
+        $track = $datagen->create_track(array('idnumber' => 'TestTrackForProgram', 'curid' => $program->id));
 
-        $trackidnumber = 'TestTrackForProgram';
-        $trackid = $this->create_track($trackidnumber, $programid);
-
-        $userid = 1;
+        $userid = $DB->get_field(user::TABLE, 'id', array('username' => 'assigninguser'));
 
         $data = array(
-            'track_idnumber' => $trackidnumber,
+            'track_idnumber' => $track->idnumber,
             'user_username' => 'assigninguser',
-            'user_email' => 'assigninguser@testuserdomain.com',
+            'user_email' => 'assigninguser@example.com',
         );
 
         $expectdata = array(
             'userid' => $userid,
-            'trackid' => $trackid,
+            'trackid' => $track->id,
         );
 
-        $this->give_permissions(array('elis/program:track_enrol'));
         $response = block_rldh_elis_track_enrolment_create::track_enrolment_create($data);
 
         $this->assertNotEmpty($response);
@@ -209,7 +86,7 @@ class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
         $this->assertInternalType('array', $response['record']);
         $this->assertArrayHasKey('id', $response['record']);
 
-        // Get record
+        // Get record.
         $usertrack = $DB->get_record(usertrack::TABLE, array('id' => $response['record']['id']));
         $this->assertNotEmpty($usertrack);
         $usertrack = (array)$usertrack;
@@ -247,7 +124,7 @@ class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
                         array(
                             'user_username' => 'assigninguser',
                             'user_idnumber' => 'assigninguserid',
-                            'user_email' => 'assigninguser@testuserdomain.com',
+                            'user_email' => 'assigninguser@example.com',
                         )
                 ),
                 // Test not all required input.
@@ -273,7 +150,7 @@ class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
                 array(
                         array(
                             'track_idnumber' => 'TestTrackForProgram',
-                            'user_email' => 'assigninguser@testuserdomain.com',
+                            'user_email' => 'assigninguser@example.com',
                         )
                 ),
         );
@@ -288,14 +165,12 @@ class block_rlip_ws_elis_track_enrolment_create_test extends rlip_test {
     public function test_failure(array $data) {
         global $DB;
 
-        $programidnumber = 'TestProgramForTrack';
-        $programid = $this->create_program($programidnumber);
-
-        $trackidnumber = 'TestTrackForProgram';
-        $trackid = $this->create_track($trackidnumber, $programid);
+        // Create test program and track.
+        $datagen = new elis_program_datagenerator($DB);
+        $program = $datagen->create_program(array('idnumber' => 'TestProgramForTrack'));
+        $track = $datagen->create_track(array('idnumber' => 'TestTrackForProgram', 'curid' => $program->id));
 
         $this->give_permissions(array('elis/program:track_enrol'));
         $response = block_rldh_elis_track_enrolment_create::track_enrolment_create($data);
     }
 }
-
