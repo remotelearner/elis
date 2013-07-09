@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipexport_version1
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
 /**
@@ -35,8 +35,8 @@ class rlip_fileplugin_nowrite extends rlip_fileplugin_base {
      * @param int $mode One of RLIP_FILE_READ or RLIP_FILE_WRITE, specifying
      *                  the mode in which the file should be opened
      */
-    function open($mode) {
-        //do nothing
+    public function open($mode) {
+        // Do nothing.
     }
 
     /**
@@ -44,8 +44,8 @@ class rlip_fileplugin_nowrite extends rlip_fileplugin_base {
      *
      * @return array The entry read
      */
-    function read() {
-        //do nothing
+    public function read() {
+        // Do nothing.
         return array();
     }
 
@@ -54,15 +54,15 @@ class rlip_fileplugin_nowrite extends rlip_fileplugin_base {
      *
      * @param array $line The entry to write to the file
      */
-    function write($entry) {
-        //do nothing
+    public function write($entry) {
+        // Do nothing.
     }
 
     /**
      * Hook for closing the file
      */
-    function close() {
-        //do nothing
+    public function close() {
+        // Do nothing.
     }
 
     /**
@@ -72,8 +72,8 @@ class rlip_fileplugin_nowrite extends rlip_fileplugin_base {
      *                           default is NOT to include full path.
      * @return string The file name
      */
-    function get_filename($withpath = false) {
-        //bogus filename
+    public function get_filename($withpath = false) {
+        // Bogus filename.
         return 'bogus';
     }
 }

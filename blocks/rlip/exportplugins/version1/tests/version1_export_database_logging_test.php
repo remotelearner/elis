@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,29 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipexport_version1
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
 
 /**
  * File plugin that just stores read records in memory
  */
 class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
-    //stored data
+    // Stored data.
     private $data;
     private $writedelay;
 
@@ -49,7 +45,7 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
      *                           default: 0 (no delay)
      * Call parent constructor using all defaults
      */
-    function __construct($writedelay = 0) {
+    public function __construct($writedelay = 0) {
         $this->writedelay = $writedelay;
         parent::__construct();
     }
@@ -70,7 +66,7 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
      * @return array The entry read
      */
     public function read() {
-        //nothing to do
+        // Nothing to do.
     }
 
     /**
@@ -89,7 +85,7 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
      * Close the file
      */
     public function close() {
-        //nothing to do
+        // Nothing to do.
     }
 
     /**
@@ -108,7 +104,7 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
      *                           default is NOT to include full path.
      * @return string The file name.
      */
-    function get_filename($withpath = false) {
+    public function get_filename($withpath = false) {
         return 'memoryexport';
     }
 }
@@ -116,76 +112,37 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
 /**
  * Class for testing export database logging for the "version 1" plugin
  * @author brendan
+ * @group rlipexport_version1
+ * @group block_rlip
  */
-class version1ExportDatabaseLoggingTest extends rlip_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
-        return array('grade_items' => 'moodle',
-                     'grade_grades' => 'moodle',
-                     'user' => 'moodle',
-                     'course' => 'moodle',
-                     'course_categories' => 'moodle',
-                     'context' => 'moodle',
-                     RLIP_LOG_TABLE => 'block_rlip',
-                     'config_plugins' => 'moodle',
-                     RLIP_SCHEDULE_TABLE => 'block_rlip',
-                     'elis_scheduled_tasks' => 'elis_core');
-    }
-
-    /**
-     * Sets up the fixture, for example, open a network connection.
-     * This method is called before a test is executed.
-     *
-     */
-    protected function setUp() {
-        parent::setUp();
-        //set up contexts and site course record
-        $this->setUpContextsTable();
-    }
-
-    /**
-     * Set up the contexts table with the minimum that we need.
-     */
-    private function setUpContextsTable() {
-        $syscontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_SYSTEM));
-        self::$overlaydb->import_record('context', $syscontext);
-
-        $site = self::$origdb->get_record('course', array('id' => SITEID));
-        self::$overlaydb->import_record('course', $site);
-        $sitecontext = self::$origdb->get_record('context', array('contextlevel' => CONTEXT_COURSE,
-                                                                  'instanceid' => SITEID));
-        self::$overlaydb->import_record('context', $sitecontext);
-    }
+class version1exportdatabaselogging_testcase extends rlip_test {
 
     /**
      * Load in our test data from CSV files
      */
     protected function load_csv_data() {
-	    $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-	    $dataset->addTable('grade_items', dirname(__FILE__).'/phpunit_gradeitems.csv');
-	    $dataset->addTable('grade_grades', dirname(__FILE__).'/phpunit_gradegrades.csv');
-	    $dataset->addTable('user', dirname(__FILE__).'/phpunit_user.csv');
-	    $dataset->addTable('course', dirname(__FILE__).'/phpunit_course.csv');
-	    $dataset->addTable('course_categories', dirname(__FILE__).'/phpunit_course_categories.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $csvloc = dirname(__FILE__).'/fixtures';
+        $dataset = $this->createCsvDataSet(array(
+            'grade_items' => $csvloc.'/phpunit_gradeitems.csv',
+            'grade_grades' => $csvloc.'/phpunit_gradegrades.csv',
+            'user' => $csvloc.'/phpunit_user.csv',
+            'course' => $csvloc.'/phpunit_course.csv',
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
      * Load in our test data from CSV files
      */
     protected function load_csv_data2() {
-	    $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-	    $dataset->addTable('grade_items', dirname(__FILE__).'/phpunit_gradeitems.csv');
-	    $dataset->addTable('grade_grades', dirname(__FILE__).'/phpunit_gradegrades2.csv');
-	    $dataset->addTable('user', dirname(__FILE__).'/phpunit_user2.csv');
-	    $dataset->addTable('course', dirname(__FILE__).'/phpunit_course.csv');
-	    $dataset->addTable('course_categories', dirname(__FILE__).'/phpunit_course_categories.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $csvloc = dirname(__FILE__).'/fixtures';
+        $dataset = $this->createCsvDataSet(array(
+            'grade_items' => $csvloc.'/phpunit_gradeitems.csv',
+            'grade_grades' => $csvloc.'/phpunit_gradegrades2.csv',
+            'user' => $csvloc.'/phpunit_user2.csv',
+            'course' => $csvloc.'/phpunit_course.csv',
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -204,22 +161,22 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
      * @return object              state object on error (time limit exceeded)
      *                             null on success!
      */
-    function run_export($targetstarttime = 0, $writedelay = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
+    public function run_export($targetstarttime = 0, $writedelay = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         global $CFG;
         $file = get_plugin_directory('rlipexport', 'version1').'/version1.class.php';
         require_once($file);
 
-        //set the log file location to the dataroot
+        // Set the log file location to the dataroot.
         $filepath = $CFG->dataroot;
 
-        //plugin for file IO
+        // Plugin for file IO.
         $fileplugin = new rlip_fileplugin_memoryexport($writedelay);
         $fileplugin->open(RLIP_FILE_WRITE);
 
-        //cleanup log files first
+        // Cleanup log files first.
         self::cleanup_log_files();
 
-    	//our specific export
+        // Our specific export.
         $exportplugin = new rlip_exportplugin_version1($fileplugin);
         return $exportplugin->run($targetstarttime, $lastruntime, $maxruntime, $state);
     }
@@ -227,20 +184,20 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
     /**
      * Validate that empty exports still logs to the database
      */
-    public function testVersion1DBLoggingLogsEmptyExport() {
+    public function test_version1dblogginglogsemptyexport() {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //lower bound on starttime
+        // Lower bound on starttime.
         $starttime = time();
-        //run the export
+        // Run the export.
         $result = $this->run_export();
-        //upper bound on endtime
+        // Upper bound on endtime.
         $endtime = time();
 
         $this->assertNull($result);
 
-        //data validation
+        // Data validation.
         $select = "export = :export AND
                    plugin = :plugin AND
                    userid = :userid AND
@@ -254,18 +211,20 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
                    {$DB->sql_compare_text('statusmessage')} = :statusmessage AND
                    dbops = :dbops AND
                    unmetdependency = :unmetdependency";
-        $params = array('export' => 1,
-                        'plugin' => 'rlipexport_version1',
-                        'userid' => $USER->id,
-                        'starttime' => $starttime,
-                        'endtime' => $endtime,
-                        'filesuccesses' => 0,
-                        'filefailures' => 0,
-                        'storedsuccesses' => 0,
-                        'storedfailures' => 0,
-                        'statusmessage' => 'Export file memoryexport successfully created.',
-                        'dbops' => -1,
-                        'unmetdependency' => 0);
+        $params = array(
+            'export' => 1,
+            'plugin' => 'rlipexport_version1',
+            'userid' => $USER->id,
+            'starttime' => $starttime,
+            'endtime' => $endtime,
+            'filesuccesses' => 0,
+            'filefailures' => 0,
+            'storedsuccesses' => 0,
+            'storedfailures' => 0,
+            'statusmessage' => 'Export file memoryexport successfully created.',
+            'dbops' => -1,
+            'unmetdependency' => 0
+        );
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
@@ -273,25 +232,25 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
     /**
      * Validate that non-empty exports log number of records to the database
      */
-    public function testVersion1DBLoggingLogsNonemptyExport() {
+    public function test_version1dblogginglogsnonemptyexport() {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //make sure the export is insensitive to time values
+        // Make sure the export is insensitive to time values.
         set_config('nonincremental', 1, 'rlipexport_version1');
-        //set up data for one course and one enroled user
+        // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
-        //lower bound on starttime
+        // Lower bound on starttime.
         $starttime = time();
-        //run the export
+        // Run the export.
         $result = $this->run_export();
-        //upper bound on endtime
+        // Upper bound on endtime.
         $endtime = time();
 
         $this->assertNull($result);
 
-        //data validation
+        // Data validation.
         $select = "export = :export AND
                    plugin = :plugin AND
                    userid = :userid AND
@@ -305,18 +264,20 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
                    {$DB->sql_compare_text('statusmessage')} = :statusmessage AND
                    dbops = :dbops AND
                    unmetdependency = :unmetdependency";
-        $params = array('export' => 1,
-                        'plugin' => 'rlipexport_version1',
-                        'userid' => $USER->id,
-                        'starttime' => $starttime,
-                        'endtime' => $endtime,
-                        'filesuccesses' => 1,
-                        'filefailures' => 0,
-                        'storedsuccesses' => 0,
-                        'storedfailures' => 0,
-                        'statusmessage' => 'Export file memoryexport successfully created.',
-                        'dbops' => -1,
-                        'unmetdependency' => 0);
+        $params = array(
+            'export' => 1,
+            'plugin' => 'rlipexport_version1',
+            'userid' => $USER->id,
+            'starttime' => $starttime,
+            'endtime' => $endtime,
+            'filesuccesses' => 1,
+            'filefailures' => 0,
+            'storedsuccesses' => 0,
+            'storedfailures' => 0,
+            'statusmessage' => 'Export file memoryexport successfully created.',
+            'dbops' => -1,
+            'unmetdependency' => 0
+        );
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
@@ -325,20 +286,20 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
      * Validate that database logging logs "0" as the target start time when
      * not specified during execution of the version 1 import plugin
      */
-    public function testVersion1DBLoggingTargetStartTimeDefaultsToZero() {
+    public function test_version1dbloggingtargetstarttimedefaultstozero() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //make sure the export is insensitive to time values
+        // Make sure the export is insensitive to time values.
         set_config('nonincremental', 1, 'rlipexport_version1');
-        //set up data for one course and one enroled user
+        // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
-        //run the export
+        // Run the export.
         $result = $this->run_export();
         $this->assertNull($result);
 
-        //data validation
+        // Data validation.
         $exists = $DB->record_exists(RLIP_LOG_TABLE, array('targetstarttime' => 0));
         $this->assertTrue($exists);
     }
@@ -347,20 +308,20 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
      * Validate that database logging logs the specified value as the target
      * start time when specified during execution of the version 1 import plugin
      */
-    public function testVersion1DBLoggingSupportsTargetStartTimes() {
+    public function test_version1dbloggingsupportstargetstarttimes() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //make sure the export is insensitive to time values
+        // Make sure the export is insensitive to time values.
         set_config('nonincremental', 1, 'rlipexport_version1');
-        //set up data for one course and one enroled user
+        // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
-        //run the export
+        // Run the export.
         $result = $this->run_export(1000000000);
         $this->assertNull($result);
 
-        //data validation
+        // Data validation.
         $exists = $DB->record_exists(RLIP_LOG_TABLE, array('targetstarttime' => 1000000000));
         $this->assertTrue($exists);
     }
@@ -368,42 +329,44 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
     /**
      * Validate that export restricts run time to value specified
      */
-    public function testVersion1ExportObeysRunTime() {
+    public function test_version1exportobeysruntime() {
         global $DB;
 
-        //make sure the export is insensitive to time values
+        // Make sure the export is insensitive to time values.
         set_config('nonincremental', 1, 'rlipexport_version1');
-        //set up data for one course and one enroled user
+        // Set up data for one course and one enroled user.
         $this->load_csv_data2();
 
-        //run the export
+        // Run the export.
         $result = $this->run_export(1000000000, 3, 0, 1);
-        $this->assertNotNull($result); // state object should be returned
+        $this->assertNotNull($result); // State object should be returned.
     }
 
     /**
      * Validate that database logging works as specified for scheduled export
      * tasks
      */
-    public function testVersion1DBLoggingSetsAllFieldsDuringScheduledRun() {
+    public function test_version1dbloggingsetsallfieldsduringscheduledrun() {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //set up the export file path
+        // Set up the export file path.
         $filename = $CFG->dataroot.'/rliptestexport.csv';
         set_config('export_file', $filename, 'rlipexport_version1');
 
-        //set up data for one course and one enroled user
+        // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
-        //create a scheduled job
-        $data = array('plugin' => 'rlipexport_version1',
-                      'period' => '5m',
-                      'label' => 'bogus',
-                      'type' => 'rlipexport');
+        // Create a scheduled job.
+        $data = array(
+            'plugin' => 'rlipexport_version1',
+            'period' => '5m',
+            'label' => 'bogus',
+            'type' => 'rlipexport'
+        );
         $taskid = rlip_schedule_add_job($data);
 
-        //change the next runtime to a known value in the past
+        // Change the next runtime to a known value in the past.
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = 99;
@@ -414,15 +377,15 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
         $job->nextruntime = 99;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
-        //lower bound on starttime
+        // Lower bound on starttime.
         $starttime = time();
-        //run the export
+        // Run the export.
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
-        //upper bound on endtime
+        // Upper bound on endtime.
         $endtime = time();
 
-        //data validation
+        // Data validation.
         $select = "export = :export AND
                    plugin = :plugin AND
                    userid = :userid AND
@@ -437,19 +400,23 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
                    {$DB->sql_compare_text('statusmessage')} = :statusmessage AND
                    dbops = :dbops AND
                    unmetdependency = :unmetdependency";
-        $params = array('export' => 1,
-                        'plugin' => 'rlipexport_version1',
-                        'userid' => $USER->id,
-                        'targetstarttime' => 99,
-                        'starttime' => $starttime,
-                        'endtime' => $endtime,
-                        'filesuccesses' => 0,
-                        'filefailures' => 0,
-                        'storedsuccesses' => 0,
-                        'storedfailures' => 0,
-                        'statusmessage' => 'Export file rliptestexport.csv successfully created.',
-                        'dbops' => -1,
-                        'unmetdependency' => 0);
+        $datestr = date('M_j_Y_His', $starttime);
+        $params = array(
+            'export' => 1,
+            'plugin' => 'rlipexport_version1',
+            'userid' => $USER->id,
+            'targetstarttime' => 99,
+            'starttime' => $starttime,
+            'endtime' => $endtime,
+            'filesuccesses' => 0,
+            'filefailures' => 0,
+            'storedsuccesses' => 0,
+            'storedfailures' => 0,
+            'statusmessage' => 'Export file rliptestexport_'.$datestr.'.csv successfully created.',
+            'dbops' => -1,
+            'unmetdependency' => 0
+        );
+
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
@@ -458,25 +425,25 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
      * Validate that when a log file is created, its path is stored in the
      * database summary log record
      */
-    public function testVersion1ExportDBLoggingStoresLogpathForExistingLogFile() {
+    public function test_version1exportdbloggingstoreslogpathforexistinglogfile() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //set up the export file path
+        // Set up the export file path.
         set_config('export_file', '', 'rlipexport_version1');
-        //set up the log file location
+        // Set up the log file location.
         set_config('logfilelocation', '', 'rlipexport_version1');
-        //make sure the export is insensitive to time values
+        // Make sure the export is insensitive to time values.
         set_config('nonincremental', 1, 'rlipexport_version1');
-        //set up data for one course and one enroled user
+        // Set up data for one course and one enroled user.
         $this->load_csv_data2();
 
-        //run the export
+        // Run the export.
         $result = $this->run_export(1000000000, 3, 0, 1);
 
-        //validation
+        // Validation.
         $select = $DB->sql_like('logpath', ':logpath');
-        $params = array('logpath' => $CFG->dataroot . RLIP_DEFAULT_LOG_PATH . '/export_version1_%');
+        $params = array('logpath' => $CFG->dataroot.RLIP_DEFAULT_LOG_PATH.'/export_version1_%');
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
     }
@@ -485,23 +452,23 @@ class version1ExportDatabaseLoggingTest extends rlip_test {
      * Validate that when a log file is not created, a value of null is stored
      * in the database summary log record
      */
-    public function testVersion1ExportDBLoggingDoesNotStoreLogpathForNonexistentLogFile() {
+    public function test_version1exportdbloggingdoesnotstorelogpathfornonexistentlogfile() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        //set up the export file path
+        // Set up the export file path.
         set_config('export_file', '', 'rlipexport_version1');
-        //set up the log file location
+        // Set up the log file location.
         set_config('logfilelocation', '', 'rlipexport_version1');
-        //make sure the export is insensitive to time values
+        // Make sure the export is insensitive to time values.
         set_config('nonincremental', 1, 'rlipexport_version1');
-        //set up data for one course and one enroled user
+        // Set up data for one course and one enroled user.
         $this->load_csv_data2();
 
-        //run the export
+        // Run the export.
         $result = $this->run_export(1000000000, 0, 0, 0);
 
-        //validation
+        // Validation.
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, "logpath IS NULL");
         $this->assertTrue($exists);
     }
