@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,50 +16,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipfile_csv
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(__FILE__))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 
 /**
  * Class for testing the CSV file plugin
+ * @group block_rlip
+ * @group rlipfile_csv
  */
-class filepluginCSVTest extends PHPUnit_Framework_TestCase {
+class fileplugincsv_testcase extends rlip_test {
     /**
      * Validate that the CSV file plugin handles empty lines correctly
      */
-    function testFilepluginCSVHandlesEmptyLines() {
+    public function test_fileplugincsvhandlesemptylines() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
         $file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
         require_once($file);
 
-        //fileplugin instance
-        $inputfile = $CFG->dirroot.'/blocks/rlip/fileplugins/phpunit/blankline.csv';
+        // Fileplugin instance.
+        $inputfile = dirname(__FILE__).'/fixtures/blankline.csv';
         $fileplugin = new rlip_fileplugin_csv($inputfile);
         $fileplugin->open(RLIP_FILE_READ);
 
-        //simple data validation
+        // Simple data validation.
         $headerline = $fileplugin->read();
         $this->assertEquals($headerline, array('header1', 'header2'));
         $dataline = $fileplugin->read();
         $this->assertEquals($dataline, array('nextline', 'isblank'));
 
-        //line with just a newline character
+        // Line with just a newline character.
         $emptyline = $fileplugin->read();
         $this->assertEquals($emptyline, false);
 
-        //line with no content
+        // Line with no content.
         $finalline = $fileplugin->read();
         $this->assertEquals($finalline, false);
     }
