@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,32 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipimport_version1
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
 require_once($file);
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
 /**
- * Class for testing utility methods in the version 1 import plugin
+ * Class for testing utility methods in the version 1 import plugin.
+ * @group block_rlip
+ * @group rlipimport_version1
  */
-class version1UtilityTest extends PHPUnit_Framework_TestCase {
+class version1UtilityTest extends basic_testcase {
     /**
      * Validate that the new date format works as expected
      */
-    public function testVersion1ImportParsesValidDate() {
+    public function test_version1importparsesvaliddate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('Jan/02/2010');
         $this->assertEquals($timestamp, rlip_timestamp(0, 0, 0, 1, 2, 2010));
@@ -50,7 +50,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
     /**
      * Validate that the old date format works as expected
      */
-    public function testVersion1ImportParsesValidLegacyDate() {
+    public function test_version1importparsesvalidlegacydate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('01/02/2010');
         $this->assertEquals($timestamp, rlip_timestamp(0, 0, 0, 1, 2, 2010));
@@ -59,7 +59,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
     /**
      * Validate that dates require three parts, separated by slashes
      */
-    public function testVersion1ImportValidatesIncorrectNumberOfPartsInDate() {
+    public function test_version1importvalidatesincorrectnumberofpartsindate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('Jan/02');
         $this->assertFalse($timestamp);
@@ -68,7 +68,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
     /**
      * Validate that invalid month names are handled
      */
-    public function testVersion1ImportValidatesIncorrectTextualMonthInDate() {
+    public function test_version1importvalidatesincorrecttextualmonthindate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('Janx/02/2010');
         $this->assertFalse($timestamp);
@@ -77,7 +77,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
     /**
      * Validate that invalid numberical months are handled
      */
-    public function testVersion1ImportValidatesIncorrectNumericalMonthInDate() {
+    public function test_version1importvalidatesincorrectnumericalmonthindate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('13/02/2010');
         $this->assertFalse($timestamp);
@@ -86,7 +86,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
     /**
      * Validate that invalid days are handled
      */
-    public function testVersion1ImportValidatesIncorrectDayInDate() {
+    public function test_version1importvalidatesincorrectdayindate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('Jan/bogusday/2010');
         $this->assertFalse($timestamp);
@@ -95,7 +95,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
     /**
      * Validate that invalid years are handled
      */
-    public function testVersion1ImportValidatesIncorrectYearInDate() {
+    public function test_version1importvalidatesincorrectyearindate() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('Jan/02/bogusyear');
         $this->assertFalse($timestamp);
@@ -105,7 +105,7 @@ class version1UtilityTest extends PHPUnit_Framework_TestCase {
      * Validate that invalid date combinations are validated (i.e. dates
      * where all parts are valid but the date is not possible)
      */
-    public function testVersion1ImportValidatesIncorrectDateCombination() {
+    public function test_version1importvalidatesincorrectdatecombination() {
         $plugin = new rlip_importplugin_version1();
         $timestamp = $plugin->parse_date('Feb/31/2010');
         $this->assertFalse($timestamp);
