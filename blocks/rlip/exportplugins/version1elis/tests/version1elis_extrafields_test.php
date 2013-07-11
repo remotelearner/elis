@@ -16,25 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Class for testing extra field functions.
- *
  * @package    rlipexport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(__FILE__).'/../../../../../config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
-require_once(dirname(__FILE__).'/rlip_fileplugin_export.class.php');
+require_once(dirname(__FILE__).'/other/rlip_fileplugin_export.class.php');
 require_once(dirname(__FILE__).'/../lib.php');
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/classmoodlecourse.class.php'));
@@ -43,9 +39,14 @@ require_once(elispm::lib('data/pmclass.class.php'));
 require_once(elispm::lib('data/student.class.php'));
 require_once($CFG->dirroot.'/elis/program/accesslib.php');
 require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-require_once(dirname(__FILE__).'/mock_obj.php');
+require_once(dirname(__FILE__).'/other/mock_obj.php');
 
-class version1elisExtraFieldsTest extends rlip_test {
+/**
+ * Test the version1elis export extrafield feature.
+ * @group block_rlip
+ * @group rlipexport_version1elis
+ */
+class version1elisextrafields_testcase extends rlip_test {
 
     /**
      * Perform test setup and reset context caches.
@@ -56,122 +57,31 @@ class version1elisExtraFieldsTest extends rlip_test {
     }
 
     /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        return array(
-            'config_plugins' => 'moodle',
-            'context' => 'moodle',
-            RLIPEXPORT_VERSION1ELIS_FIELD_TABLE => 'rlipexport_version1elis',
-            course::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program',
-            curriculumcourse::TABLE => 'elis_program',
-            field::TABLE => 'elis_core',
-            field_category::TABLE => 'elis_core',
-            field_category_contextlevel::TABLE => 'elis_core',
-            field_contextlevel::TABLE => 'elis_core',
-            field_data_char::TABLE => 'elis_core',
-            field_data_int::TABLE => 'elis_core',
-            field_data_num::TABLE => 'elis_core',
-            field_data_text::TABLE => 'elis_core',
-            field_owner::TABLE => 'elis_core',
-            instructor::TABLE => 'elis_program',
-            pmclass::TABLE => 'elis_program',
-            student::TABLE => 'elis_program',
-            user::TABLE => 'elis_program'
-        );
-    }
-
-    /**
      * Load in our test data from CSV files
      */
-    protected function load_csv_data($multiple_users = false) {
-        global $CFG;
-
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, dirname(__FILE__).'/pmusers.csv');
-        $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourses.csv');
-        $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclasses.csv');
-        $dataset->addTable(student::TABLE, dirname(__FILE__).'/students.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+    protected function load_csv_data($multipleusers = false) {
+        $csvloc = dirname(__FILE__).'/fixtures';
+        $dataset = $this->createCsvDataSet(array(
+            user::TABLE => $csvloc.'/pmusers.csv',
+            course::TABLE => $csvloc.'/pmcourses.csv',
+            pmclass::TABLE => $csvloc.'/pmclasses.csv',
+            student::TABLE => $csvloc.'/students.csv',
+        ));
+        $this->loadDataSet($dataset);
     }
-
-    /*
-
-    The following tests the upgrade step, but is incompatible with the current version of our overlay database.
-    Since we're planning on replacing the overlay database this is here for future reference.
-
-    protected function get_old_table_schema() {
-        $filename = dirname(__FILE__).'/extrafields_table_oldschema.xml';
-        $xmldb_file = new xmldb_file($filename);
-        $xmldb_file->loadXMLStructure();
-        $structure = $xmldb_file->getStructure();
-        $table = $structure->getTable('rlipexport_testtable');
-        return $table;
-    }
-
-    protected function get_new_table_schema() {
-        $filename = dirname(__FILE__).'/extrafields_table_newschema.xml';
-        $xmldb_file = new xmldb_file($filename);
-        $xmldb_file->loadXMLStructure();
-        $structure = $xmldb_file->getStructure();
-        $table = $structure->getTable('rlipexport_testtable');
-        return $table;
-    }
-
-    public function test_upgrade() {
-        global $DB;
-
-        $manager = $DB->get_manager();
-
-        // replace new table with old table
-        $manager->create_table($this->get_old_table_schema());
-
-        // insert test rows
-        for ($i=0; $i<4; $i++) {
-            $record = new stdClass;
-            $record->fieldid = $i+10;
-            $record->header = 'Field '.$i;
-            $record->fieldorder = $i;
-            $DB->insert_record('rlipexport_testtable', $record);
-        }
-
-        rlipexport_version1elis_extrafields::upgrade_table();
-
-        $post_upgrade_records = $DB->get_records('rlipexport_testtable');
-        $this->assertInternalType('array', $post_upgrade_records);
-        $this->assertEquals(4, count($post_upgrade_records));
-
-        foreach ($post_upgrade_records as $i => $record) {
-            $this->assertInternalType('object', $record);
-            $this->assertObjectHasAttribute('set', $record);
-            $this->assertObjectHasAttribute('field', $record);
-            $this->assertObjectHasAttribute('header', $record);
-            $this->assertObjectHasAttribute('fieldorder', $record);
-            $this->assertEquals('user', $record->set);
-            $this->assertEquals('field_'.$i+10, $record->field);
-            $this->assertEquals('Field '.$i+10, $record->header);
-            $this->assertEquals($i, $record->fieldorder);
-        }
-
-        // reset to new version
-        $manager->drop_table($this->get_old_table_schema());
-    }
-    */
 
     /**
      * Create a test ELIS user custom field.
      *
-     * @param string $name        The name of the custom field.
-     * @param int    $multivalued The multivalued value to set in the field definition
-     * @param bool   $set_options Set to true to set the available menu of choices options
-     * @param int    $ctx         The context level to use for the field
-     * @param string $control     The type of control to use for the field.
+     * @param string $name The name of the custom field.
+     * @param int $multivalued The multivalued value to set in the field definition
+     * @param bool $setoptions Set to true to set the available menu of choices options
+     * @param int $ctx The context level to use for the field
+     * @param string $control The type of control to use for the field.
      *
      * @return int The id of the created field
      */
-    protected function create_custom_field($name = 'name', $multivalued = 1, $set_options = true, $ctx = CONTEXT_ELIS_USER,
+    protected function create_custom_field($name = 'name', $multivalued = 1, $setoptions = true, $ctx = CONTEXT_ELIS_USER,
                                            $control = 'menu') {
         global $CFG;
 
@@ -186,11 +96,11 @@ class version1elisExtraFieldsTest extends rlip_test {
         $field = field::ensure_field_exists_for_context_level($field, $ctx, $category);
 
         // Owner.
-        $owner_options = array('control' => $control);
-        if ($set_options) {
-            $owner_options['options'] = "option1\r\noption2\r\noption3";
+        $owneroptions = array('control' => $control);
+        if ($setoptions) {
+            $owneroptions['options'] = "option1\r\noption2\r\noption3";
         }
-        field_owner::ensure_field_owner_exists($field, 'manual', $owner_options);
+        field_owner::ensure_field_owner_exists($field, 'manual', $owneroptions);
 
         // Default.
         $fielddataparams = array(
@@ -320,8 +230,8 @@ class version1elisExtraFieldsTest extends rlip_test {
     public function test_rlipexport_version1elis_extrafields_get_config() {
         global $DB;
 
-        $expected_config_byfield = array();
-        $expected_config_byorder = array();
+        $expectedconfigbyfield = array();
+        $expectedconfigbyorder = array();
 
         for ($i = 0; $i < 10; $i++) {
             $record = new stdClass;
@@ -331,18 +241,18 @@ class version1elisExtraFieldsTest extends rlip_test {
             $record->header = 'Field Header '.$i;
             $record->id = $DB->insert_record(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, $record);
 
-            $expected_config_byfield[$record->fieldset.'/'.$record->field] = $record;
-            $expected_config_byorder[$record->fieldorder] = $record;
+            $expectedconfigbyfield[$record->fieldset.'/'.$record->field] = $record;
+            $expectedconfigbyorder[$record->fieldorder] = $record;
         }
 
-        $config_byfield = rlipexport_version1elis_extrafields::get_config('field');
-        $config_byorder = rlipexport_version1elis_extrafields::get_config('order');
+        $configbyfield = rlipexport_version1elis_extrafields::get_config('field');
+        $configbyorder = rlipexport_version1elis_extrafields::get_config('order');
 
-        $this->assertInternalType('array', $config_byfield);
-        $this->assertEquals($expected_config_byfield, $config_byfield);
+        $this->assertInternalType('array', $configbyfield);
+        $this->assertEquals($expectedconfigbyfield, $configbyfield);
 
-        $this->assertInternalType('array', $config_byorder);
-        $this->assertEquals($expected_config_byorder, $config_byorder);
+        $this->assertInternalType('array', $configbyorder);
+        $this->assertEquals($expectedconfigbyorder, $configbyorder);
     }
 
     /**
@@ -356,37 +266,37 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('fieldset2', 'field5', 'Field 5', 4);
         $this->create_field_mapping('fieldset3', 'field6', 'Field 6', 5);
 
-        $expected_out = array();
+        $expectedout = array();
 
-        $enabled_fields = rlipexport_version1elis_extrafields::get_enabled_fields();
+        $enabledfields = rlipexport_version1elis_extrafields::get_enabled_fields();
 
-        $this->assertInternalType('array', $enabled_fields);
-        $this->assertEquals(3, count($enabled_fields));
+        $this->assertInternalType('array', $enabledfields);
+        $this->assertEquals(3, count($enabledfields));
         for ($i = 1; $i <= 3; $i++) {
-            $this->assertArrayHasKey('fieldset'.$i, $enabled_fields);
-            $this->assertInternalType('array', $enabled_fields['fieldset'.$i]);
+            $this->assertArrayHasKey('fieldset'.$i, $enabledfields);
+            $this->assertInternalType('array', $enabledfields['fieldset'.$i]);
         }
 
-        $this->assertEquals(3, count($enabled_fields['fieldset1']));
-        $this->assertEquals(2, count($enabled_fields['fieldset2']));
-        $this->assertEquals(1, count($enabled_fields['fieldset3']));
+        $this->assertEquals(3, count($enabledfields['fieldset1']));
+        $this->assertEquals(2, count($enabledfields['fieldset2']));
+        $this->assertEquals(1, count($enabledfields['fieldset3']));
 
         for ($i = 1; $i <= 6; $i++) {
             $fieldset = ($i <= 3) ? 'fieldset1' : 'fieldset2';
             $fieldset = ($i == 6) ? 'fieldset3' : $fieldset;
             $field = 'field'.$i;
 
-            $this->assertArrayHasKey($field, $enabled_fields[$fieldset]);
-            $this->assertInternalType('object', $enabled_fields[$fieldset][$field]);
-            $this->assertObjectHasAttribute('fieldset', $enabled_fields[$fieldset][$field]);
-            $this->assertObjectHasAttribute('field', $enabled_fields[$fieldset][$field]);
-            $this->assertObjectHasAttribute('header', $enabled_fields[$fieldset][$field]);
-            $this->assertObjectHasAttribute('fieldorder', $enabled_fields[$fieldset][$field]);
+            $this->assertArrayHasKey($field, $enabledfields[$fieldset]);
+            $this->assertInternalType('object', $enabledfields[$fieldset][$field]);
+            $this->assertObjectHasAttribute('fieldset', $enabledfields[$fieldset][$field]);
+            $this->assertObjectHasAttribute('field', $enabledfields[$fieldset][$field]);
+            $this->assertObjectHasAttribute('header', $enabledfields[$fieldset][$field]);
+            $this->assertObjectHasAttribute('fieldorder', $enabledfields[$fieldset][$field]);
 
-            $this->assertEquals($fieldset, $enabled_fields[$fieldset][$field]->fieldset);
-            $this->assertEquals($field, $enabled_fields[$fieldset][$field]->field);
-            $this->assertEquals('Field '.$i, $enabled_fields[$fieldset][$field]->header);
-            $this->assertEquals(($i-1), $enabled_fields[$fieldset][$field]->fieldorder);
+            $this->assertEquals($fieldset, $enabledfields[$fieldset][$field]->fieldset);
+            $this->assertEquals($field, $enabledfields[$fieldset][$field]->field);
+            $this->assertEquals('Field '.$i, $enabledfields[$fieldset][$field]->header);
+            $this->assertEquals(($i-1), $enabledfields[$fieldset][$field]->fieldorder);
         }
 
     }
@@ -395,7 +305,7 @@ class version1elisExtraFieldsTest extends rlip_test {
      * Test processing incoming form data.
      */
     public function test_rlipexport_version1elis_extrafields_process_config_formdata() {
-        $incoming_formdata = array(
+        $incomingformdata = array(
             'fields' => array(
                     'test/testfield',
                     'test/testfield1', // Non-existant field.
@@ -411,7 +321,7 @@ class version1elisExtraFieldsTest extends rlip_test {
                     'Test Field Three'
             )
         );
-        $expected_processed_formdata = array(
+        $expectedprocessedformdata = array(
             'test/testfield' => array(
                 'header' => '',
                 'fieldset' => 'test',
@@ -438,8 +348,8 @@ class version1elisExtraFieldsTest extends rlip_test {
             ),
         );
 
-        $processed_formdata = rlipexport_version1elis_extrafields::process_config_formdata($incoming_formdata);
-        $this->assertEquals($expected_processed_formdata, $processed_formdata);
+        $processedformdata = rlipexport_version1elis_extrafields::process_config_formdata($incomingformdata);
+        $this->assertEquals($expectedprocessedformdata, $processedformdata);
     }
 
     /**
@@ -459,7 +369,7 @@ class version1elisExtraFieldsTest extends rlip_test {
         }
 
         // Update config.
-        $updated_data = array(
+        $updateddata = array(
             // Updated record.
             'fieldset0/field0' => array(
                 'header' => 'Updated Field 0',
@@ -510,7 +420,7 @@ class version1elisExtraFieldsTest extends rlip_test {
                 'fieldorder' => 7,
             ),
         );
-        rlipexport_version1elis_extrafields::update_config($updated_data);
+        rlipexport_version1elis_extrafields::update_config($updateddata);
 
         // Verify update.
         $records = $DB->get_records(RLIPEXPORT_VERSION1ELIS_FIELD_TABLE, array(), 'fieldorder ASC');
@@ -518,7 +428,7 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->assertEquals(7, count($records));
 
         $records = array_values($records);
-        $expected = array_values($updated_data);
+        $expected = array_values($updateddata);
         for ($i = 0; $i < 6; $i++) {
             $this->assertEquals($expected[$i]['header'], $records[$i]->header);
             $this->assertEquals($expected[$i]['fieldset'], $records[$i]->fieldset);
@@ -536,10 +446,10 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('test2', 'fieldtest2');
         $this->create_field_mapping('test2', 'fieldtest4');
 
-        $extra_select = rlipexport_version1elis_extrafields::get_extra_select();
+        $extraselect = rlipexport_version1elis_extrafields::get_extra_select();
 
-        $expected_select = array('testfield', 'testfield3', 'fieldtest2', 'fieldtest4');
-        $this->assertEquals($expected_select, $extra_select);
+        $expectedselect = array('testfield', 'testfield3', 'fieldtest2', 'fieldtest4');
+        $this->assertEquals($expectedselect, $extraselect);
     }
 
     /**
@@ -551,10 +461,10 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('test2', 'fieldtest2');
         $this->create_field_mapping('test2', 'fieldtest4');
 
-        $extra_joins = rlipexport_version1elis_extrafields::get_extra_joins();
+        $extrajoins = rlipexport_version1elis_extrafields::get_extra_joins();
 
-        $expected_joins = array('testfield', 'testfield3', 'fieldtest2', 'fieldtest4');
-        $this->assertEquals($expected_joins, $extra_joins);
+        $expectedjoins = array('testfield', 'testfield3', 'fieldtest2', 'fieldtest4');
+        $this->assertEquals($expectedjoins, $extrajoins);
     }
 
     /**
@@ -567,9 +477,9 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('test2', 'fieldtest2', 'Header 2', 2);
         $this->create_field_mapping('test2', 'fieldtest4', 'Header 0', 0);
 
-        $extra_columns = rlipexport_version1elis_extrafields::get_extra_columns();
-        $expected_columns = array('Header 0', 'Header 1', 'Header 2', 'Header 3', 'Test Field 2');
-        $this->assertEquals($expected_columns, $extra_columns);
+        $extracolumns = rlipexport_version1elis_extrafields::get_extra_columns();
+        $expectedcolumns = array('Header 0', 'Header 1', 'Header 2', 'Header 3', 'Test Field 2');
+        $this->assertEquals($expectedcolumns, $extracolumns);
     }
 
     /**
@@ -592,15 +502,15 @@ class version1elisExtraFieldsTest extends rlip_test {
         $record->fieldtest4 = 'Data 4';
 
         // Perform test.
-        $additional_data = rlipexport_version1elis_extrafields::get_all_data($record);
-        $expected_data = array(
+        $additionaldata = rlipexport_version1elis_extrafields::get_all_data($record);
+        $expecteddata = array(
             0 => 'Data 4',
             1 => 'Data 2',
             2 => 'Data 3',
             3 => 'Data 0',
             4 => 'Data 1',
         );
-        $this->assertEquals($expected_data, $additional_data);
+        $this->assertEquals($expecteddata, $additionaldata);
     }
 
     /**
@@ -661,7 +571,7 @@ class version1elisExtraFieldsTest extends rlip_test {
         $field->save();
 
         // Fake enabled fields configuration.
-        $enabled_fields = array(
+        $enabledfields = array(
             'field_'.$fieldid1 => '',
             'field_'.$fieldid2 => '',
             'field_'.$fieldid3 => '',
@@ -669,7 +579,7 @@ class version1elisExtraFieldsTest extends rlip_test {
             'field_'.$fieldid5 => '',
             'field_'.$fieldid6 => '',
         );
-        $fieldset = new rlipexport_version1elis_extrafieldset_testcustomfields($enabled_fields);
+        $fieldset = new rlipexport_version1elis_extrafieldset_testcustomfields($enabledfields);
         $fieldset->init_customfield_data_test();
 
         // Test proper tracking of multivalue status.
@@ -682,28 +592,28 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->assertArrayHasKey($fieldid5, $fieldset->customfield_multivaluestatus);
         $this->assertArrayHasKey($fieldid6, $fieldset->customfield_multivaluestatus);
         $this->assertEquals(rlipexport_version1elis_extrafieldset_testcustomfields::MULTIVALUE_NONE,
-                            $fieldset->customfield_multivaluestatus[$fieldid1]);
+                $fieldset->customfield_multivaluestatus[$fieldid1]);
         $this->assertEquals(rlipexport_version1elis_extrafieldset_testcustomfields::MULTIVALUE_NONE,
-                            $fieldset->customfield_multivaluestatus[$fieldid2]);
+                $fieldset->customfield_multivaluestatus[$fieldid2]);
         $this->assertEquals(rlipexport_version1elis_extrafieldset_testcustomfields::MULTIVALUE_NONE,
-                            $fieldset->customfield_multivaluestatus[$fieldid3]);
+                $fieldset->customfield_multivaluestatus[$fieldid3]);
         $this->assertEquals(rlipexport_version1elis_extrafieldset_testcustomfields::MULTIVALUE_ENABLED,
-                            $fieldset->customfield_multivaluestatus[$fieldid4]);
+                $fieldset->customfield_multivaluestatus[$fieldid4]);
         $this->assertEquals(rlipexport_version1elis_extrafieldset_testcustomfields::MULTIVALUE_ENABLED,
-                            $fieldset->customfield_multivaluestatus[$fieldid5]);
+                $fieldset->customfield_multivaluestatus[$fieldid5]);
         $this->assertEquals(rlipexport_version1elis_extrafieldset_testcustomfields::MULTIVALUE_HISTORICAL,
                             $fieldset->customfield_multivaluestatus[$fieldid6]);
 
         $this->assertEquals(3, count($fieldset->sql_joins));
         $this->assertEquals(6, count($fieldset->sql_select));
 
-        for ($i=1; $i<=3; $i++) {
+        for ($i = 1; $i <= 3; $i++) {
             $fieldidstr = 'fieldid'.$i;
             $fieldid = $$fieldidstr;
             $this->assertTrue(in_array("custom_data_{$fieldid}.data AS custom_field_{$fieldid}", $fieldset->sql_select));
         }
 
-        for ($i=4; $i<=6; $i++) {
+        for ($i = 4; $i <= 6; $i++) {
             $fieldidstr = 'fieldid'.$i;
             $fieldid = $$fieldidstr;
             $this->assertTrue(in_array("'' AS custom_field_{$fieldid}", $fieldset->sql_select));
@@ -719,15 +629,15 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('testcustomfields', 'field_'.$fieldid1, '');
         $this->create_field_mapping('testcustomfields', 'field_'.$fieldid2, 'Updated Name Two');
 
-        $enabled_fields = rlipexport_version1elis_extrafields::get_enabled_fields();
-        $fieldset = new rlipexport_version1elis_extrafieldset_testcustomfields($enabled_fields['testcustomfields']);
+        $enabledfields = rlipexport_version1elis_extrafields::get_enabled_fields();
+        $fieldset = new rlipexport_version1elis_extrafieldset_testcustomfields($enabledfields['testcustomfields']);
         $columns = $fieldset->get_columns();
 
-        $expected_columns = array(
+        $expectedcolumns = array(
             'field_'.$fieldid1 => 'Custom Field One',
             'field_'.$fieldid2 => 'Updated Name Two'
         );
-        $this->assertEquals($expected_columns, $columns);
+        $this->assertEquals($expectedcolumns, $columns);
     }
 
     /**
@@ -778,10 +688,10 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_data($fieldid7, mktime(10, 20, 30, 7, 24, 2012));
         $field = new field($fieldid7);
         $field->load();
-        $field_owner = new field_owner($field->owners['manual']->id);
-        $field_owner->load();
-        $field_owner->param_inctime = 1;
-        $field_owner->save();
+        $fieldowner = new field_owner($field->owners['manual']->id);
+        $fieldowner->load();
+        $fieldowner->param_inctime = 1;
+        $fieldowner->save();
 
         // Fields with HTML.
         $fieldid8 = $this->create_custom_field('testcf8', 0, false, CONTEXT_ELIS_USER, 'text');
@@ -805,12 +715,12 @@ class version1elisExtraFieldsTest extends rlip_test {
         $record->{'custom_field_'.$fieldid9} = '<i>Test Text Two</i>';
 
         // Perform Test.
-        $enabled_fields = rlipexport_version1elis_extrafields::get_enabled_fields();
-        $fieldset = new rlipexport_version1elis_extrafieldset_testcustomfields($enabled_fields['testcustomfields']);
+        $enabledfields = rlipexport_version1elis_extrafields::get_enabled_fields();
+        $fieldset = new rlipexport_version1elis_extrafieldset_testcustomfields($enabledfields['testcustomfields']);
         $data = $fieldset->get_data($record);
 
         // Verify Result.
-        $expected_data = array(
+        $expecteddata = array(
             'field_'.$fieldid1 => 'option1',
             'field_'.$fieldid2 => 'option2',
             'field_'.$fieldid3 => 'option1 / option2',
@@ -821,7 +731,7 @@ class version1elisExtraFieldsTest extends rlip_test {
             'field_'.$fieldid8 => 'TEST TEXT ONE',
             'field_'.$fieldid9 => '_Test Text Two_',
         );
-        $this->assertEquals($expected_data, $data);
+        $this->assertEquals($expecteddata, $data);
     }
 
     /**
@@ -837,8 +747,8 @@ class version1elisExtraFieldsTest extends rlip_test {
         $field->load();
         $field->delete();
 
-        $enabled_fields = rlipexport_version1elis_extrafields::get_enabled_fields();
-        $fieldset = new rlipexport_version1elis_extrafieldset_testcustomfields($enabled_fields['testcustomfields']);
+        $enabledfields = rlipexport_version1elis_extrafields::get_enabled_fields();
+        $fieldset = new rlipexport_version1elis_extrafieldset_testcustomfields($enabledfields['testcustomfields']);
         $columns = $fieldset->get_columns();
 
         $this->assertInternalType('array', $columns);
@@ -881,10 +791,10 @@ class version1elisExtraFieldsTest extends rlip_test {
      */
     public function multivalue_setup_provider() {
         return array(
-            array(0, false),
-            array(1, false),
-            array(0, true),
-            array(1, true)
+                array(0, false),
+                array(1, false),
+                array(0, true),
+                array(1, true)
         );
     }
 
@@ -892,10 +802,10 @@ class version1elisExtraFieldsTest extends rlip_test {
      * Validate that a single-value default is used when a user does not have data for a multi-value menu of choices field
      *
      * @param int  $multivalued       1 if the custom field should be defined as multivalued, otherwise 0
-     * @param bool $multi_data_exists True if multi-valued data should exist for some other context, otherwise false
+     * @param bool $multidataexists True if multi-valued data should exist for some other context, otherwise false
      * @dataProvider multivalue_setup_provider
      */
-    public function test_export_multivaluedata_menuofchoices_defaults($multivalued, $multi_data_exists) {
+    public function test_export_multivaluedata_menuofchoices_defaults($multivalued, $multidataexists) {
         global $CFG;
 
         // Setup.
@@ -905,7 +815,7 @@ class version1elisExtraFieldsTest extends rlip_test {
         $fieldid = $this->create_custom_field();
         $this->create_field_mapping('testcustomfields', 'field_'.$fieldid);
 
-        if ($multi_data_exists) {
+        if ($multidataexists) {
             // Set up multi-valued data at some context.
             $field = new field($fieldid);
 
@@ -934,8 +844,8 @@ class version1elisExtraFieldsTest extends rlip_test {
         $header = $data[0];
         $this->assertEquals('Header', $header[10]);
 
-        $firstuser = $data[1];
-        $this->assertEquals('option3', $firstuser[10]);
+        $val = ($multivalued === 1 && $multidataexists === false) ? $data[1][10][0] : $data[1][10];
+        $this->assertEquals('option3', $val);
     }
 
     /**
@@ -974,32 +884,32 @@ class version1elisExtraFieldsTest extends rlip_test {
     /**
      * Verify the export against given expected headers and data.
      *
-     * @param  array $expected_headers An array of expected headers.
-     * @param  array $expected_data    An array of expected data.
+     * @param  array $expectedheaders An array of expected headers.
+     * @param  array $expecteddata    An array of expected data.
      */
-    public function verify_export_data($expected_headers, $expected_data) {
+    public function verify_export_data($expectedheaders, $expecteddata) {
         // Obtain data.
         $data = $this->get_export_data();
-        $actual_headers = $data[0];
+        $actualheaders = $data[0];
 
         // Validation.
         $this->assertEquals(2, count($data));
 
-        // Validate extra field headers. (10 built-in fields + size of $expected_headers for total header size).
-        $this->assertEquals((10 + count($expected_headers)), count($actual_headers));
-        $actual_headers_count = count($actual_headers);
-        $expected_headers_numindexed = array_values($expected_headers);
-        for ($i = 10; $i < $actual_headers_count; $i++) {
-            $this->assertEquals($expected_headers_numindexed[$i - 10], $actual_headers[$i]);
+        // Validate extra field headers. (10 built-in fields + size of $expectedheaders for total header size).
+        $this->assertEquals((10 + count($expectedheaders)), count($actualheaders));
+        $actualheaderscount = count($actualheaders);
+        $expectedheadersnumindexed = array_values($expectedheaders);
+        for ($i = 10; $i < $actualheaderscount; $i++) {
+            $this->assertEquals($expectedheadersnumindexed[$i - 10], $actualheaders[$i]);
         }
 
         // Validate data.
-        $actual_data = $data[1];
-        $this->assertEquals((10 + count($expected_data)), count($actual_data));
-        $actual_data_count = count($actual_data);
-        $expected_data_numindexed = array_values($expected_data);
-        for ($i = 10; $i < $actual_data_count; $i++) {
-            $this->assertEquals($expected_data_numindexed[$i - 10], $actual_data[$i]);
+        $actualdata = $data[1];
+        $this->assertEquals((10 + count($expecteddata)), count($actualdata));
+        $actualdatacount = count($actualdata);
+        $expecteddatanumindexed = array_values($expecteddata);
+        for ($i = 10; $i < $actualdatacount; $i++) {
+            $this->assertEquals($expecteddatanumindexed[$i - 10], $actualdata[$i]);
         }
     }
 
@@ -1010,7 +920,7 @@ class version1elisExtraFieldsTest extends rlip_test {
         global $CFG;
 
         // Expected Headers.
-        $expected_headers = array(
+        $expectedheaders = array(
             'mi' => get_string('usermi', 'elis_program'),
             'email' => get_string('email', 'elis_program'),
             'email2' => get_string('email2', 'elis_program'),
@@ -1034,13 +944,13 @@ class version1elisExtraFieldsTest extends rlip_test {
         );
 
         // Add fieldset label prefix.
-        $fieldset_label = rlipexport_version1elis_extrafieldset_user::get_label();
-        foreach ($expected_headers as $field => $label) {
-            $expected_headers[$field] = $fieldset_label.' '.$label;
+        $fieldsetlabel = rlipexport_version1elis_extrafieldset_user::get_label();
+        foreach ($expectedheaders as $field => $label) {
+            $expectedheaders[$field] = $fieldsetlabel.' '.$label;
         }
 
         // Expected data.
-        $expected_data = array(
+        $expecteddata = array(
             'mi' => 'export_mi',
             'email' => 'export_email',
             'email2' => 'export_email2',
@@ -1064,15 +974,17 @@ class version1elisExtraFieldsTest extends rlip_test {
         );
 
         // Basic Data.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, dirname(__FILE__).'/fieldset_user.csv');
-        $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourses.csv');
-        $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclasses.csv');
-        $dataset->addTable(student::TABLE, dirname(__FILE__).'/students.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $csvloc = dirname(__FILE__).'/fixtures';
+        $dataset = $this->createCsvDataSet(array(
+            user::TABLE => $csvloc.'/fieldset_user.csv',
+            course::TABLE => $csvloc.'/pmcourses.csv',
+            pmclass::TABLE => $csvloc.'/pmclasses.csv',
+            student::TABLE => $csvloc.'/students.csv',
+        ));
+        $this->loadDataSet($dataset);
 
         // Enable all fields.
-        foreach ($expected_data as $field => $val) {
+        foreach ($expecteddata as $field => $val) {
             $this->create_field_mapping('user', $field, '');
         }
 
@@ -1081,10 +993,10 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('user', 'field_'.$fieldid, '');
         $data = 'custom field 1 data';
         $this->create_field_data($fieldid, $data);
-        $expected_headers['field_'.$fieldid] = 'custom field 1';
-        $expected_data['field_'.$fieldid] = $data;
+        $expectedheaders['field_'.$fieldid] = 'custom field 1';
+        $expecteddata['field_'.$fieldid] = $data;
 
-        $this->verify_export_data($expected_headers, $expected_data);
+        $this->verify_export_data($expectedheaders, $expecteddata);
     }
 
     /**
@@ -1094,35 +1006,37 @@ class version1elisExtraFieldsTest extends rlip_test {
         global $CFG;
 
         // Expected Headers.
-        $expected_headers = array(
+        $expectedheaders = array(
             'credits' => get_string('credits', 'elis_program')
         );
 
         // Add fieldset label prefix.
-        $fieldset_label = rlipexport_version1elis_extrafieldset_student::get_label();
-        foreach ($expected_headers as $field => $label) {
-            $expected_headers[$field] = $fieldset_label.' '.$label;
+        $fieldsetlabel = rlipexport_version1elis_extrafieldset_student::get_label();
+        foreach ($expectedheaders as $field => $label) {
+            $expectedheaders[$field] = $fieldsetlabel.' '.$label;
         }
 
         // Expected data.
-        $expected_data = array(
+        $expecteddata = array(
             'credits' => '12'
         );
 
         // Basic Data.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, dirname(__FILE__).'/pmuser.csv');
-        $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourses.csv');
-        $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclasses.csv');
-        $dataset->addTable(student::TABLE, dirname(__FILE__).'/fieldset_student.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $csvloc = dirname(__FILE__).'/fixtures';
+        $dataset = $this->createCsvDataSet(array(
+            user::TABLE => $csvloc.'/pmuser.csv',
+            course::TABLE => $csvloc.'/pmcourses.csv',
+            pmclass::TABLE => $csvloc.'/pmclasses.csv',
+            student::TABLE => $csvloc.'/fieldset_student.csv',
+        ));
+        $this->loadDataSet($dataset);
 
         // Enable all fields.
-        foreach ($expected_data as $field => $val) {
+        foreach ($expecteddata as $field => $val) {
             $this->create_field_mapping('student', $field, '');
         }
 
-        $this->verify_export_data($expected_headers, $expected_data);
+        $this->verify_export_data($expectedheaders, $expecteddata);
     }
 
     /**
@@ -1132,7 +1046,7 @@ class version1elisExtraFieldsTest extends rlip_test {
         global $CFG;
 
         // Expected Headers.
-        $expected_headers = array(
+        $expectedheaders = array(
             'name' => get_string('course_name', 'elis_program'),
             'code' => get_string('course_code', 'elis_program'),
             'syllabus' => get_string('course_syllabus', 'elis_program'),
@@ -1147,13 +1061,13 @@ class version1elisExtraFieldsTest extends rlip_test {
         );
 
         // Add fieldset label prefix.
-        $fieldset_label = rlipexport_version1elis_extrafieldset_course::get_label();
-        foreach ($expected_headers as $field => $label) {
-            $expected_headers[$field] = $fieldset_label.' '.$label;
+        $fieldsetlabel = rlipexport_version1elis_extrafieldset_course::get_label();
+        foreach ($expectedheaders as $field => $label) {
+            $expectedheaders[$field] = $fieldsetlabel.' '.$label;
         }
 
         // Expected data.
-        $expected_data = array(
+        $expecteddata = array(
             'name' => 'testcoursename',
             'code' => 'testcode',
             'syllabus' => 'testsyllabus',
@@ -1168,15 +1082,17 @@ class version1elisExtraFieldsTest extends rlip_test {
         );
 
         // Basic Data.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, dirname(__FILE__).'/pmuser.csv');
-        $dataset->addTable(course::TABLE, dirname(__FILE__).'/fieldset_course.csv');
-        $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclasses.csv');
-        $dataset->addTable(student::TABLE, dirname(__FILE__).'/student.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $csvloc = dirname(__FILE__).'/fixtures';
+        $dataset = $this->createCsvDataSet(array(
+            user::TABLE => $csvloc.'/pmuser.csv',
+            course::TABLE => $csvloc.'/fieldset_course.csv',
+            pmclass::TABLE => $csvloc.'/pmclasses.csv',
+            student::TABLE => $csvloc.'/student.csv',
+        ));
+        $this->loadDataSet($dataset);
 
         // Enable all fields.
-        foreach ($expected_data as $field => $val) {
+        foreach ($expecteddata as $field => $val) {
             $this->create_field_mapping('course', $field, '');
         }
 
@@ -1185,10 +1101,10 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('course', 'field_'.$fieldid, '');
         $data = 'course custom field 1 data';
         $this->create_field_data($fieldid, $data);
-        $expected_headers['field_'.$fieldid] = 'course custom field 1';
-        $expected_data['field_'.$fieldid] = $data;
+        $expectedheaders['field_'.$fieldid] = 'course custom field 1';
+        $expecteddata['field_'.$fieldid] = $data;
 
-        $this->verify_export_data($expected_headers, $expected_data);
+        $this->verify_export_data($expectedheaders, $expecteddata);
     }
 
     /**
@@ -1198,7 +1114,7 @@ class version1elisExtraFieldsTest extends rlip_test {
         global $CFG;
 
         // Expected Headers.
-        $expected_headers = array(
+        $expectedheaders = array(
             'idnumber' => get_string('class_idnumber', 'elis_program'),
             'startdate' => get_string('class_startdate', 'elis_program'),
             'enddate' => get_string('class_enddate', 'elis_program'),
@@ -1209,13 +1125,13 @@ class version1elisExtraFieldsTest extends rlip_test {
         );
 
         // Add fieldset label prefix.
-        $fieldset_label = rlipexport_version1elis_extrafieldset_class::get_label();
-        foreach ($expected_headers as $field => $label) {
-            $expected_headers[$field] = $fieldset_label.' '.$label;
+        $fieldsetlabel = rlipexport_version1elis_extrafieldset_class::get_label();
+        foreach ($expectedheaders as $field => $label) {
+            $expectedheaders[$field] = $fieldsetlabel.' '.$label;
         }
 
         // Expected data.
-        $expected_data = array(
+        $expecteddata = array(
             'idnumber' => 'testclass',
             'startdate' => 'Mar/01/2013',
             'enddate' => 'Mar/10/2013',
@@ -1226,16 +1142,18 @@ class version1elisExtraFieldsTest extends rlip_test {
         );
 
         // Basic Data.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, dirname(__FILE__).'/fieldset_class_users.csv');
-        $dataset->addTable(instructor::TABLE, dirname(__FILE__).'/fieldset_class_instructors.csv');
-        $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourse.csv');
-        $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/fieldset_class.csv');
-        $dataset->addTable(student::TABLE, dirname(__FILE__).'/student.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $csvloc = dirname(__FILE__).'/fixtures';
+        $dataset = $this->createCsvDataSet(array(
+            user::TABLE => $csvloc.'/fieldset_class_users.csv',
+            instructor::TABLE => $csvloc.'/fieldset_class_instructors.csv',
+            course::TABLE => $csvloc.'/pmcourse.csv',
+            pmclass::TABLE => $csvloc.'/fieldset_class.csv',
+            student::TABLE => $csvloc.'/student.csv',
+        ));
+        $this->loadDataSet($dataset);
 
         // Enable all fields.
-        foreach ($expected_data as $field => $val) {
+        foreach ($expecteddata as $field => $val) {
             $this->create_field_mapping('class', $field, '');
         }
 
@@ -1244,10 +1162,10 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('class', 'field_'.$fieldid, '');
         $data = 'class custom field 1 data';
         $this->create_field_data($fieldid, $data);
-        $expected_headers['field_'.$fieldid] = 'class custom field 1';
-        $expected_data['field_'.$fieldid] = $data;
+        $expectedheaders['field_'.$fieldid] = 'class custom field 1';
+        $expecteddata['field_'.$fieldid] = $data;
 
-        $this->verify_export_data($expected_headers, $expected_data);
+        $this->verify_export_data($expectedheaders, $expecteddata);
     }
 
     /**
@@ -1257,7 +1175,7 @@ class version1elisExtraFieldsTest extends rlip_test {
         global $CFG;
 
         // Expected Headers.
-        $expected_headers = array(
+        $expectedheaders = array(
             'idnumber' => get_string('curriculum_idnumber', 'elis_program'),
             'name' => get_string('curriculum_name', 'elis_program'),
             'description' => get_string('curriculum_description', 'elis_program'),
@@ -1266,13 +1184,13 @@ class version1elisExtraFieldsTest extends rlip_test {
         );
 
         // Add fieldset label prefix.
-        $fieldset_label = rlipexport_version1elis_extrafieldset_program::get_label();
-        foreach ($expected_headers as $field => $label) {
-            $expected_headers[$field] = $fieldset_label.' '.$label;
+        $fieldsetlabel = rlipexport_version1elis_extrafieldset_program::get_label();
+        foreach ($expectedheaders as $field => $label) {
+            $expectedheaders[$field] = $fieldsetlabel.' '.$label;
         }
 
         // Expected data.
-        $expected_data = array(
+        $expecteddata = array(
             'idnumber' => 'PGM1',
             'name' => 'Test Program One',
             'description' => 'Test Program One Description',
@@ -1281,18 +1199,20 @@ class version1elisExtraFieldsTest extends rlip_test {
         );
 
         // Basic Data.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, dirname(__FILE__).'/pmuser.csv');
-        $dataset->addTable(course::TABLE, dirname(__FILE__).'/pmcourse.csv');
-        $dataset->addTable(pmclass::TABLE, dirname(__FILE__).'/pmclass.csv');
-        $dataset->addTable(student::TABLE, dirname(__FILE__).'/student.csv');
-        $dataset->addTable(curriculum::TABLE, dirname(__FILE__).'/pmprogram.csv');
-        $dataset->addTable(curriculumstudent::TABLE, dirname(__FILE__).'/pmprogramstudent.csv');
-        $dataset->addTable(curriculumcourse::TABLE, dirname(__FILE__).'/pmprogramcourse.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $csvloc = dirname(__FILE__).'/fixtures';
+        $dataset = $this->createCsvDataSet(array(
+            user::TABLE => $csvloc.'/pmuser.csv',
+            course::TABLE => $csvloc.'/pmcourse.csv',
+            pmclass::TABLE => $csvloc.'/pmclass.csv',
+            student::TABLE => $csvloc.'/student.csv',
+            curriculum::TABLE => $csvloc.'/pmprogram.csv',
+            curriculumstudent::TABLE => $csvloc.'/pmprogramstudent.csv',
+            curriculumcourse::TABLE => $csvloc.'/pmprogramcourse.csv',
+        ));
+        $this->loadDataSet($dataset);
 
         // Enable all fields.
-        foreach ($expected_data as $field => $val) {
+        foreach ($expecteddata as $field => $val) {
             $this->create_field_mapping('program', $field, '');
         }
 
@@ -1301,9 +1221,9 @@ class version1elisExtraFieldsTest extends rlip_test {
         $this->create_field_mapping('program', 'field_'.$fieldid, '');
         $data = 'program custom field 1 data';
         $this->create_field_data($fieldid, $data);
-        $expected_headers['field_'.$fieldid] = 'program custom field 1';
-        $expected_data['field_'.$fieldid] = $data;
+        $expectedheaders['field_'.$fieldid] = 'program custom field 1';
+        $expecteddata['field_'.$fieldid] = $data;
 
-        $this->verify_export_data($expected_headers, $expected_data);
+        $this->verify_export_data($expectedheaders, $expecteddata);
     }
 }
