@@ -56,10 +56,10 @@ class rlipexport_version1elis_extrafieldset_test implements rlipexport_version1e
      *
      * Stores $enabled_fields for later use.
      *
-     * @param array $enabled_fields The currently enabled fields for this fieldset, indexed by field name.
+     * @param array $enabledfields The currently enabled fields for this fieldset, indexed by field name.
      */
-    public function __construct(array $enabled_fields) {
-        $this->enabled_fields = $enabled_fields;
+    public function __construct(array $enabledfields) {
+        $this->enabled_fields = $enabledfields;
     }
 
     /**
@@ -96,9 +96,9 @@ class rlipexport_version1elis_extrafieldset_test implements rlipexport_version1e
      */
     public function get_columns() {
         $columns = array();
-        $default_columns = static::get_available_fields();
+        $defaultcolumns = static::get_available_fields();
         foreach ($this->enabled_fields as $field => $record) {
-            $header = ($record->header !== '' && $record->header !== null) ? $record->header : $default_columns[$field];
+            $header = ($record->header !== '' && $record->header !== null) ? $record->header : $defaultcolumns[$field];
             $columns[$field] = $header;
         }
         return $columns;
@@ -112,11 +112,11 @@ class rlipexport_version1elis_extrafieldset_test implements rlipexport_version1e
      * @return array An array of additional data, indexed by field.
      */
     public function get_data($record) {
-        $additional_data = array();
+        $additionaldata = array();
         foreach ($this->enabled_fields as $field => $fieldrec) {
-            $additional_data[$field] = (isset($record->$field)) ? $record->$field : '';
+            $additionaldata[$field] = (isset($record->$field)) ? $record->$field : '';
         }
-        return $additional_data;
+        return $additionaldata;
     }
 }
 

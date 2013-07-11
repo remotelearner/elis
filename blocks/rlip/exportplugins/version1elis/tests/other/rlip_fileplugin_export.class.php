@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipexport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -30,7 +29,9 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
  * File plugin that just stores read records in memory
  */
 class rlip_fileplugin_export extends rlip_fileplugin_base {
-    //stored data
+    /**
+     * @var array Stored data.
+     */
     private $data;
 
     /**
@@ -49,7 +50,7 @@ class rlip_fileplugin_export extends rlip_fileplugin_base {
      * @return array The entry read
      */
     public function read() {
-        //nothing to do
+        // Nothing to do.
     }
 
     /**
@@ -65,7 +66,7 @@ class rlip_fileplugin_export extends rlip_fileplugin_base {
      * Close the file
      */
     public function close() {
-        //nothing to do
+        // Nothing to do.
     }
 
     /**
@@ -84,7 +85,7 @@ class rlip_fileplugin_export extends rlip_fileplugin_base {
      *                           default is NOT to include full path.
      * @return string The file name
      */
-    function get_filename($withpath = false) {
+    public function get_filename($withpath = false) {
         return 'bogus';
     }
 }
