@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,135 +16,66 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins/version1elis/phpunit
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
-require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
+require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 
 /**
- * Unit test for validating basic userset actions
+ * Unit test for validating basic userset actions.
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class elis_userset_import_test extends elis_database_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     *
-     * @return array Mapping of tables to components
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
-        require_once($file);
-        require_once(elispm::lib('data/clusterassignment.class.php'));
-        require_once(elispm::lib('data/clustercurriculum.class.php'));
-        require_once(elispm::lib('data/clustertrack.class.php'));
-        require_once(elispm::lib('data/curriculum.class.php'));
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/track.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-        require_once(elispm::lib('data/userset.class.php'));
-        require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
-
-        $overlaytables = array(
-            clusterassignment::TABLE => 'elis_program',
-            clustercurriculum::TABLE => 'elis_program',
-            clustertrack::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            field::TABLE => 'elis_core',
-            field_data_char::TABLE => 'elis_core',
-            field_data_int::TABLE => 'elis_core',
-            field_data_num::TABLE => 'elis_core',
-            field_data_text::TABLE => 'elis_core',
-            'grading_areas'  => 'moodle',
-            track::TABLE => 'elis_program',
-            user::TABLE => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-            userset_profile::TABLE => 'elis_program',
-            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-            'user' => 'moodle'
-        );
-        if (file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
-            $overlaytables += array('elis_files_userset_store' => 'repository_elis_files');
-        }
-        return $overlaytables;
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     *
-     * @return array Mapping of tables to components
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-
-        return array(RLIP_LOG_TABLE => 'block_rlip',
-                     'block_instances' => 'moodle',
-                     'block_positions' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'comments' => 'moodle',
-                     'context' => 'moodle',
-                     'files' => 'moodle',
-                     'filter_active' => 'moodle',
-                     'filter_config' => 'moodle',
-                     'rating' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'role_capabilities' => 'moodle',
-                     'role_names' => 'moodle',
-                     'user_preferences' => 'moodle');
-    }
+class elis_userset_import_testcase extends rlip_elis_test {
 
     /**
      * Validate that a userset can be created with a minimal set of fields specified
      */
-    function test_create_elis_userset_import_with_minimal_fields() {
+    public function test_create_elis_userset_import_with_minimal_fields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
-        //run the import
+        // Run the import.
         $this->run_core_userset_import(array(), true);
 
-        //validation
-        $data = array('name' => 'testusersetname',
-                      'display' => '',
-                      'parent' => 0,
-                      'depth' => 1);
+        // Validation.
+        $data = array(
+            'name' => 'testusersetname',
+            'display' => '',
+            'parent' => 0,
+            'depth' => 1
+        );
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
     }
 
     /**
      * Validate that a userset can be created, setting all available fields
      */
-    function test_create_elis_userset_import_with_all_fields() {
+    public function test_create_elis_userset_import_with_all_fields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
-        //set up a parent userset
+        // Set up a parent userset.
         $parent = new userset(array('name' => 'testparentusersetname'));
         $parent->save();
 
-        //run the import
+        // Run the import.
         $data = array('display' => 'testusersetdisplay',
                       'parent' => 'testparentusersetname');
         $this->run_core_userset_import($data, true);
 
-        //validation
+        // Validation.
         $data['name'] = 'testusersetname';
         $data['parent'] = $parent->id;
         $data['depth'] = 2;
@@ -156,7 +87,7 @@ class elis_userset_import_test extends elis_database_test {
      *
      * @return array Data needed for the appropriate unit test
      */
-    function minimal_update_field_provider() {
+    public function minimal_update_field_provider() {
         return array(array('display', 'updatedusersetdisplay'));
     }
 
@@ -175,17 +106,15 @@ class elis_userset_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
-        //set up a userset
-        $userset = new userset(array('name' => 'testusersetname',
-                                     'display' => 'testusersetdisplay'));
+        // Set up a userset.
+        $userset = new userset(array('name' => 'testusersetname', 'display' => 'testusersetdisplay'));
         $userset->save();
 
-        //run the import
-        $data = array('action' => 'update',
-                      $fieldname => $value);
+        // Run the import.
+        $data = array('action' => 'update', $fieldname => $value);
         $this->run_core_userset_import($data, true);
 
-        //validation
+        // Validation.
         unset($data['action']);
         $data['name'] = 'testusersetname';
         $data['parent'] = 0;
@@ -202,17 +131,15 @@ class elis_userset_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
-        //set up a userset
-        $userset = new userset(array('name' => 'testusersetname',
-                                     'display' => 'testusersetdisplay'));
+        // Set up a userset.
+        $userset = new userset(array('name' => 'testusersetname', 'display' => 'testusersetdisplay'));
         $userset->save();
 
-        //run the import
-        $data = array('action' => 'update',
-                      'display' => 'updatedusersetdisplay');
+        // Run the import.
+        $data = array('action' => 'update', 'display' => 'updatedusersetdisplay');
         $this->run_core_userset_import($data, true);
 
-        //validation
+        // Validation.
         unset($data['action']);
         $data['name'] = 'testusersetname';
         $data['parent'] = 0;
@@ -229,25 +156,27 @@ class elis_userset_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
-        //set up a userset
+        // Set up a userset.
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
 
-        //run the import
+        // Run the import.
         $data = array('action' => 'delete', 'recursive' => $data);
         $this->run_core_userset_import($data, true);
 
-        //validation
+        // Validation.
         $count = $DB->count_records(userset::TABLE);
         $this->assertEquals(0, $count);
     }
 
-    // Data provider for mapping yes to 1 and no to 0
-    function field_provider() {
-        return array(array('0', '0'),
-                     array('1', '1'),
-                     array('yes', '1'),
-                     array('no', '0'));
+    // Data provider for mapping yes to 1 and no to 0.
+    public function field_provider() {
+        return array(
+                array('0', '0'),
+                array('1', '1'),
+                array('yes', '1'),
+                array('no', '0')
+        );
     }
 
     /**
@@ -255,7 +184,7 @@ class elis_userset_import_test extends elis_database_test {
      */
     public function test_delete_elis_userset_deletes_associations() {
         global $CFG, $DB;
-        //entities
+        // Entities.
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -263,65 +192,68 @@ class elis_userset_import_test extends elis_database_test {
         require_once(elispm::lib('data/track.class.php'));
         require_once(elis::lib('data/customfield.class.php'));
 
-        //associations
+        // Associations.
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/clustercurriculum.class.php'));
         require_once(elispm::lib('data/clustertrack.class.php'));
         require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
 
-        //for context level access
+        // For context level access.
         require_once(elispm::file('accesslib.php'));
 
-        //set up user set
+        $origfieldcount = $DB->count_records(field::TABLE);
+
+        // Set up user set.
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
 
-        //set up other entities and associations
+        // Set up other entities and associations.
 
-        //cluster enrolment
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'test@useremail.com',
-                               'country' => 'CA'));
+        // Cluster enrolment.
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'test@useremail.com',
+            'country' => 'CA'
+        ));
         $user->save();
-        $clusterassignment = new clusterassignment(array('clusterid' => $userset->id,
-                                                         'userid' => $user->id));
+        $clusterassignment = new clusterassignment(array('clusterid' => $userset->id, 'userid' => $user->id));
         $clusterassignment->save();
 
-        //cluster-curriculum assignment
+        // Cluster-curriculum assignment.
         $curriculum = new curriculum(array('idnumber' => 'testcurriculumidnumber'));
         $curriculum->save();
-        $clustercurriculum = new clustercurriculum(array('clusterid' => $userset->id,
-                                                         'curriculumid' => $curriculum->id));
+        $clustercurriculum = new clustercurriculum(array('clusterid' => $userset->id, 'curriculumid' => $curriculum->id));
         $clustercurriculum->save();
 
-        //cluster-track assignment
-        $track = new track(array('curid' => $curriculum->id,
-                                 'idnumber' => 'testtrackidnumber'));
+        // Cluster-track assignment.
+        $track = new track(array('curid' => $curriculum->id, 'idnumber' => 'testtrackidnumber'));
         $track->save();
-        $clustertrack = new clustertrack(array('clusterid' => $userset->id,
-                                               'trackid' => $track->id));
+        $clustertrack = new clustertrack(array('clusterid' => $userset->id, 'trackid' => $track->id));
         $clustertrack->save();
 
-        //custom field
-        $field = new field(array('name' => 'testfieldname',
-                                 'categoryid' => 9999));
+        // Custom field.
+        $field = new field(array('name' => 'testfieldname', 'categoryid' => 9999));
         $field->save();
         $context = context_elis_userset::instance($userset->id);
-        $data = new field_data_int(array('contextid' => $context->id,
-                                         'fieldid' => $field->id,
-                                         'data' => 1));
+        $data = new field_data_int(array(
+            'contextid' => $context->id,
+            'fieldid' => $field->id,
+            'data' => 1
+        ));
         $data->save();
 
-        //cluster profile criteria
-        $clusterprofile = new userset_profile(array('clusterid' => $userset->id,
-                                                    'fieldid' => $field->id,
-                                                    'value' => 0));
+        // Cluster profile criteria.
+        $clusterprofile = new userset_profile(array(
+            'clusterid' => $userset->id,
+            'fieldid' => $field->id,
+            'value' => 0
+        ));
         $clusterprofile->save();
 
-        //validate setup
+        // Validate setup.
         $this->assertEquals(1, $DB->count_records(userset::TABLE));
         $this->assertEquals(1, $DB->count_records(user::TABLE));
         $this->assertEquals(1, $DB->count_records(clusterassignment::TABLE));
@@ -329,15 +261,15 @@ class elis_userset_import_test extends elis_database_test {
         $this->assertEquals(1, $DB->count_records(clustercurriculum::TABLE));
         $this->assertEquals(1, $DB->count_records(track::TABLE));
         $this->assertEquals(1, $DB->count_records(clustertrack::TABLE));
-        $this->assertEquals(1, $DB->count_records(field::TABLE));
+        $this->assertEquals((1 + $origfieldcount), $DB->count_records(field::TABLE));
         $this->assertEquals(1, $DB->count_records(field_data_int::TABLE));
         $this->assertEquals(1, $DB->count_records(userset_profile::TABLE));
 
-        //run the import
+        // Run the import.
         $data = array('action' => 'delete');
         $this->run_core_userset_import($data, true);
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records(userset::TABLE));
         $this->assertEquals(1, $DB->count_records(user::TABLE));
         $this->assertEquals(0, $DB->count_records(clusterassignment::TABLE));
@@ -345,7 +277,7 @@ class elis_userset_import_test extends elis_database_test {
         $this->assertEquals(0, $DB->count_records(clustercurriculum::TABLE));
         $this->assertEquals(1, $DB->count_records(track::TABLE));
         $this->assertEquals(0, $DB->count_records(clustertrack::TABLE));
-        $this->assertEquals(1, $DB->count_records(field::TABLE));
+        $this->assertEquals((1 + $origfieldcount), $DB->count_records(field::TABLE));
         $this->assertEquals(0, $DB->count_records(field_data_int::TABLE));
         $this->assertEquals(0, $DB->count_records(userset_profile::TABLE));
     }
@@ -353,38 +285,40 @@ class elis_userset_import_test extends elis_database_test {
     /**
      * Data provider for the parent field
      *
-     *  @return array Mapping of parent values to expected results in the database
+     * @return array Mapping of parent values to expected results in the database
      */
-    function parent_provider() {
-        return array(array('', 0, 1),
-                     array('top', 0, 1),
-                     array('testparentusersetname', 1, 2));
+    public function parent_provider() {
+        return array(
+                array('', 0, 1),
+                array('top', 0, 1),
+                array('testparentusersetname', 1, 2
+        ));
     }
 
     /**
      * Validate the various behaviours of the parent field during userset creation
      *
-     * @param string $input_value The parent value specified
-     * @param int $db_value The expected parent value stored in the database
+     * @param string $inputvalue The parent value specified
+     * @param int $dbvalue The expected parent value stored in the database
      * @param int $depth The expected userset depth
      * @dataProvider parent_provider
      */
-    function test_create_elis_userset_respects_parent_field($input_value, $db_value, $depth) {
+    public function test_create_elis_userset_respects_parent_field($inputvalue, $dbvalue, $depth) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
-        //set up a parent userset
+        // Set up a parent userset.
         $parent = new userset(array('name' => 'testparentusersetname'));
         $parent->save();
 
-        //run the import
-        $data = array('parent' => $input_value);
+        // Run the import.
+        $data = array('parent' => $inputvalue);
         $this->run_core_userset_import($data, true);
 
-        //validation
+        // Validation.
         $data['name'] = 'testusersetname';
-        $data['parent'] = $db_value;
+        $data['parent'] = $dbvalue;
         $data['depth'] = $depth;
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
     }
@@ -395,9 +329,11 @@ class elis_userset_import_test extends elis_database_test {
      * @return array The userset data
      */
     private function get_core_userset_data() {
-        $data = array('action' => 'create',
-                      'context' => 'cluster',
-                      'name' => 'testusersetname');
+        $data = array(
+            'action' => 'create',
+            'context' => 'cluster',
+            'name' => 'testusersetname'
+        );
         return $data;
     }
 
@@ -405,16 +341,16 @@ class elis_userset_import_test extends elis_database_test {
      * Helper function that runs the userset import for a sample userset
      *
      * @param array $extradata Extra fields to set for the new userset
-     * @param boolean $use_default_data If true, use the default userset data,
+     * @param boolean $usedefaultdata If true, use the default userset data,
      *                                  along with any data specifically provided
      */
-    private function run_core_userset_import($extradata, $use_default_data = true) {
+    private function run_core_userset_import($extradata, $usedefaultdata = true) {
         global $CFG;
 
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
-        if ($use_default_data) {
+        if ($usedefaultdata) {
             $data = $this->get_core_userset_data();
         } else {
             $data = array();
@@ -424,29 +360,9 @@ class elis_userset_import_test extends elis_database_test {
             $data[$key] = $value;
         }
 
-        $provider = new rlip_importprovider_mockuserset($data);
+        $provider = new rlipimport_version1elis_importprovider_mockuserset($data);
 
         $importplugin = new rlip_importplugin_version1elis($provider);
         $importplugin->run();
-    }
-}
-
-/**
- * Class that fetches import files for the userset import
- */
-class rlip_importprovider_mockuserset extends rlip_importprovider_mock {
-
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'course') {
-            return false;
-        }
-        return parent::get_import_file($entity);
     }
 }

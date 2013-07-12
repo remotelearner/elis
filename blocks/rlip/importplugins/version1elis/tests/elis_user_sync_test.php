@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,53 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins/version1elis/phpunit
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
 
 /**
- * Class for validating that ELIS / PM user actions propagate the appropriate
- * users over to Moodle
+ * Class for validating that ELIS / PM user actions propagate the appropriate users over to Moodle.
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class elis_user_sync_test extends elis_database_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-
-        return array(
-            'context' => 'moodle',
-            'user' => 'moodle',
-            'user_info_field' => 'moodle',
-            'user_info_data' => 'moodle',
-            field::TABLE => 'elis_core',
-            field_contextlevel::TABLE => 'elis_core',
-            field_owner::TABLE => 'elis_core',
-            field_category::TABLE => 'elis_core',
-            field_data_int::TABLE => 'elis_core',
-            user::TABLE => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-        );
-    }
+class elis_user_sync_testcase extends rlip_elis_test {
 
     /**
      * Validate that appropriate fields are synched over to Moodle when PM user is created
@@ -74,10 +48,9 @@ class elis_user_sync_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
-        //TODO: may need to actuallu set up language pack later on when
-        //validation is implemented
+        // TODO: may need to actuallu set up language pack later on when validation is implemented.
 
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->idnumber = 'testuseridnumber';
         $record->username = 'testuserusername';
@@ -90,28 +63,28 @@ class elis_user_sync_test extends elis_database_test {
         $record->language = 'fr';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_create($record, 'bogus');
 
-        //validate the connection between the PM and Moodle use records
+        // Validate the connection between the PM and Moodle use records.
         $sql = "SELECT 'x'
-                FROM {".user::TABLE."} crlmu
-                JOIN {".usermoodle::TABLE."} usrmdl
-                  ON crlmu.id = usrmdl.cuserid
-                JOIN {user} mdlu
-                  ON usrmdl.muserid = mdlu.id";
+                  FROM {".user::TABLE."} crlmu
+                  JOIN {".usermoodle::TABLE."} usrmdl ON crlmu.id = usrmdl.cuserid
+                  JOIN {user} mdlu ON usrmdl.muserid = mdlu.id";
         $this->assertTrue($DB->record_exists_sql($sql));
 
-        //validate the Moodle user record
-        $this->assertTrue($DB->record_exists('user', array('idnumber' => $record->idnumber,
-                                                           'username' => $record->username,
-                                                           'firstname' => $record->firstname,
-                                                           'lastname' => $record->lastname,
-                                                           'email' => $record->email,
-                                                           'address' => $record->address,
-                                                           'city' => $record->city,
-                                                           'country' => $record->country,
-                                                           'lang' => $record->language)));
+        // Validate the Moodle user record.
+        $this->assertTrue($DB->record_exists('user', array(
+            'idnumber' => $record->idnumber,
+            'username' => $record->username,
+            'firstname' => $record->firstname,
+            'lastname' => $record->lastname,
+            'email' => $record->email,
+            'address' => $record->address,
+            'city' => $record->city,
+            'country' => $record->country,
+            'lang' => $record->language
+        )));
     }
 
     /**
@@ -119,8 +92,7 @@ class elis_user_sync_test extends elis_database_test {
      * during an import
      */
     public function test_user_custom_field_sync_on_user_create() {
-        //NOTE: not testing all cases because ELIS handles the details and this
-        //seems to already work
+        // NOTE: not testing all cases because ELIS handles the details and this seems to already work.
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
@@ -131,41 +103,41 @@ class elis_user_sync_test extends elis_database_test {
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
 
-        //field category
-        $field_category = new field_category(array('name' => 'testcategoryname'));
-        $field_category->save();
+        // Reset cached custom fields.
+        $user = new user();
+        $user->reset_custom_field_list();
 
-        //custom field
-        $field = new field(array('categoryid' => $field_category->id,
-                                 'shortname' => 'testfieldshortname',
-                                 'name' => 'testfieldname',
-                                 'datatype' => 'bool'));
+        // Field category.
+        $fieldcategory = new field_category(array('name' => 'testcategoryname'));
+        $fieldcategory->save();
+
+        // Custom field.
+        $field = new field(array(
+            'categoryid' => $fieldcategory->id,
+            'shortname' => 'testfieldshortname',
+            'name' => 'testfieldname',
+            'datatype' => 'bool'
+        ));
         $field->save();
 
-        //field owner
+        // Field owner.
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-        $DB->execute("UPDATE {".field_owner::TABLE."}
-                      SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
+        $DB->execute("UPDATE {".field_owner::TABLE."} SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
 
-        //field context level assocation
-        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                           'contextlevel' => CONTEXT_ELIS_USER));
-        $field_contextlevel->save();
+        // Field context level assocation.
+        $fieldcontextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USER));
+        $fieldcontextlevel->save();
 
-        //the associated Moodle user profile field
-        $profile_define_checkbox = new profile_define_checkbox();
+        // The associated Moodle user profile field.
+        $profiledefinecheckbox = new profile_define_checkbox();
         $data = new stdClass;
         $data->datatype = 'checkbox';
         $data->categoryid = 99999;
         $data->shortname = 'testfieldshortname';
         $data->name = 'testfieldname';
-        $profile_define_checkbox->define_save($data);
+        $profiledefinecheckbox->define_save($data);
 
-        //reset cached custom fields
-        $user = new user();
-        $user->reset_custom_field_list();
-
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->idnumber = 'testuseridnumber';
@@ -180,12 +152,13 @@ class elis_user_sync_test extends elis_database_test {
         $record->testfieldshortname = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
-        //validation
+        // Validation.
+        $userid = $DB->get_field('user', 'id', array('username' => 'testuserusername', 'mnethostid' => $CFG->mnet_localhost_id));
         $user = new stdClass;
-        $user->id = 1;
+        $user->id = $userid;
         profile_load_data($user);
 
         $this->assertEquals(1, $user->profile_field_testfieldshortname);
@@ -200,21 +173,25 @@ class elis_user_sync_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
 
-        //TODO: may need to actuallu set up language pack later on when
-        //validation is implemented
+        $origusercount = $DB->count_records('user');
 
-        //create our "existing" user
-        $user = new user(array('idnumber' => 'initial',
-                               'username' => 'initial',
-                               'firstname' => 'initial',
-                               'lastname' => 'initial',
-                               'email' => 'initial@initial.com',
-                               'city' => 'initial',
-                               'country' => 'CA',
-                               'language' => 'fr'));
+        // TODO: may need to actuallu set up language pack later on when.
+        // Validation is implemented.
+
+        // Create our "existing" user.
+        $user = new user(array(
+            'idnumber' => 'initial',
+            'username' => 'initial',
+            'firstname' => 'initial',
+            'lastname' => 'initial',
+            'email' => 'initial@initial.com',
+            'city' => 'initial',
+            'country' => 'CA',
+            'language' => 'fr'
+          ));
         $user->save();
 
-        //run the user update action
+        // Run the user update action.
         $record = new stdClass;
         $record->idnumber = 'initial';
         $record->username = 'initial';
@@ -226,19 +203,21 @@ class elis_user_sync_test extends elis_database_test {
         $record->language = 'en_us';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_update($record, 'bogus');
 
-        //validation
-        $this->assertEquals(1, $DB->count_records('user'));
-        $this->assertTrue($DB->record_exists('user', array('idnumber' => 'initial',
-                                                           'username' => 'initial',
-                                                           'firstname' => $record->firstname,
-                                                           'lastname' => $record->lastname,
-                                                           'email' => 'initial@initial.com',
-                                                           'city' => $record->city,
-                                                           'country' => 'FR',
-                                                           'lang' => 'en_us')));
+        // Validation.
+        $this->assertEquals((1 + $origusercount), $DB->count_records('user'));
+        $this->assertTrue($DB->record_exists('user', array(
+            'idnumber' => 'initial',
+            'username' => 'initial',
+            'firstname' => $record->firstname,
+            'lastname' => $record->lastname,
+            'email' => 'initial@initial.com',
+            'city' => $record->city,
+            'country' => 'FR',
+            'lang' => 'en_us'
+        )));
     }
 
     /**
@@ -246,8 +225,8 @@ class elis_user_sync_test extends elis_database_test {
      * during an import
      */
     public function test_user_custom_field_sync_on_user_update() {
-        //NOTE: not testing all cases because ELIS handles the details and this
-        //seems to already work
+        // NOTE: not testing all cases because ELIS handles the details and this.
+        // Seems to already work.
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
@@ -257,50 +236,52 @@ class elis_user_sync_test extends elis_database_test {
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
 
-        //set up the user
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        // Set up the user.
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        //field category
-        $field_category = new field_category(array('name' => 'testcategoryname'));
-        $field_category->save();
+        // Field category.
+        $fieldcategory = new field_category(array('name' => 'testcategoryname'));
+        $fieldcategory->save();
 
-        //custom field
-        $field = new field(array('categoryid' => $field_category->id,
-                                 'shortname' => 'testfieldshortname',
-                                 'name' => 'testfieldname',
-                                 'datatype' => 'bool'));
+        // Custom field.
+        $field = new field(array(
+            'categoryid' => $fieldcategory->id,
+            'shortname' => 'testfieldshortname',
+            'name' => 'testfieldname',
+            'datatype' => 'bool'
+        ));
         $field->save();
 
-        //field owner
+        // Field owner.
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-        $DB->execute("UPDATE {".field_owner::TABLE."}
-                      SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
+        $DB->execute("UPDATE {".field_owner::TABLE."} SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
 
-        //field context level assocation
-        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                           'contextlevel' => CONTEXT_ELIS_USER));
-        $field_contextlevel->save();
+        // Field context level assocation.
+        $fieldcontextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USER));
+        $fieldcontextlevel->save();
 
-        //the associated Moodle user profile field
-        $profile_define_checkbox = new profile_define_checkbox();
+        // The associated Moodle user profile field.
+        $profiledefinecheckbox = new profile_define_checkbox();
         $data = new stdClass;
         $data->datatype = 'checkbox';
         $data->categoryid = 99999;
         $data->shortname = 'testfieldshortname';
         $data->name = 'testfieldname';
-        $profile_define_checkbox->define_save($data);
+        $profiledefinecheckbox->define_save($data);
 
-        //reset cached custom fields
+        // Reset cached custom fields.
         $user = new user();
         $user->reset_custom_field_list();
 
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->action = 'update';
         $record->idnumber = 'testuseridnumber';
@@ -309,10 +290,10 @@ class elis_user_sync_test extends elis_database_test {
         $record->testfieldshortname = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
-        //validation
+        // Validation.
         $user = new stdClass;
         $user->id = 1;
         profile_load_data($user);

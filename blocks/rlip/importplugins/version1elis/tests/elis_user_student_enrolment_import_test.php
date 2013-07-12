@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,88 +16,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins/version1elis/phpunit
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
 
 /**
- * Class for validating that enrolment of users into class instances as students
- * works
+ * Class for validating that enrolment of users into class instances as students works.
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class elis_user_student_enrolment_test extends elis_database_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/course.class.php'));
-        require_once(elispm::lib('data/pmclass.class.php'));
-        require_once(elispm::lib('data/student.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-
-        return array('config' => 'moodle',
-                     'cache_flags' => 'moodle',
-                     'forum' => 'mod_forum',
-                     'forum_subscriptions' => 'mod_forum',
-                     'forum_read' => 'mod_forum',
-                     'forum_track_prefs' => 'mod_forum',
-                     'groups' => 'moodle',
-                     'groups_members' => 'moodle',
-                     'role_assignments' => 'moodle',
-                     'user' => 'moodle',
-                     'user_enrolments' => 'moodle',
-                     'user_lastaccess' => 'moodle',
-                     course::TABLE => 'elis_program',
-                     pmclass::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     student::TABLE => 'elis_program',
-                     student_grade::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     waitlist::TABLE => 'elis_program');
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/coursetemplate.class.php'));
-
-        return array('context' => 'moodle',
-                     'message' => 'moodle',
-                     'user' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program');
-    }
+class elis_user_student_enrolment_testcase extends rlip_elis_test {
 
     /**
      * Data provider for fields that identify user records
      *
      * @return array Parameter data, as needed by the test methods
      */
-    function user_identifier_provider() {
+    public function user_identifier_provider() {
         return array(
-                array('create', 'delete', 'testuserusername', NULL, NULL),
-                array('enrol', 'unenrol', NULL, 'testuser@email.com', NULL),
-                array('enroll', 'unenroll', NULL, NULL, 'testuseridnumber')
+                array('create', 'delete', 'testuserusername', null, null),
+                array('enrol', 'unenrol', null, 'testuser@email.com', null),
+                array('enroll', 'unenroll', null, null, 'testuseridnumber')
                );
     }
 
@@ -105,12 +56,13 @@ class elis_user_student_enrolment_test extends elis_database_test {
      * Validate that users can be enrolled into class instances as students with
      * the minimum number of fields specified
      *
-     * @param string $username A sample user's username, or NULL if not used in the import
-     * @param string $email A sample user's email, or NULL if not used in the import
-     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @param string $username A sample user's username, or null if not used in the import
+     * @param string $email A sample user's email, or null if not used in the import
+     * @param string $idnumber A sample user's idnumber, or null if not used in the import
      * @dataProvider user_identifier_provider
      */
-    function test_elis_user_student_minimal_fields_enrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
+    public function test_elis_user_student_minimal_fields_enrolment_import($actioncreate, $actiondelete, $username, $email,
+                                                                           $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -119,63 +71,65 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         set_config('noemailever', true);
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
         $course->save();
 
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        //run the class enrolment create action
+        // Run the class enrolment create action.
         $record = new stdClass;
         $record->action = $actioncreate;
         $record->context = 'class_testclassidnumber';
-        if ($username != NULL) {
+        if ($username != null) {
             $record->user_username = $user->username;
         }
-        if ($email != NULL) {
+        if ($email != null) {
             $record->user_email = $user->email;
         }
-        if ($idnumber != NULL) {
+        if ($idnumber != null) {
             $record->user_idnumber = $user->idnumber;
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
-        // validation
-        $midnight_today = rlip_timestamp(0, 0, 0);
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id,
-                                                                   'enrolmenttime' => $midnight_today,
-                                                                   'completetime' => $midnight_today,
-                                                                   'completestatusid' => student::STUSTATUS_NOTCOMPLETE,
-                                                                   'grade' => 0.00000,
-                                                                   'credits' => 0.00,
-                                                                   'locked' => 0)));
+        // Validation.
+        $midnighttoday = rlip_timestamp(0, 0, 0);
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id,
+            'enrolmenttime' => $midnighttoday,
+            'completetime' => $midnighttoday,
+            'completestatusid' => student::STUSTATUS_NOTCOMPLETE,
+            'grade' => 0.00000,
+            'credits' => 0.00,
+            'locked' => 0
+        )));
     }
 
     /**
      * Validate that users can be enrolled into class instances as students, including
      * all supported fields
      *
-     * @param string $username A sample user's username, or NULL if not used in the import
-     * @param string $email A sample user's email, or NULL if not used in the import
-     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @param string $username A sample user's username, or null if not used in the import
+     * @param string $email A sample user's email, or null if not used in the import
+     * @param string $idnumber A sample user's idnumber, or null if not used in the import
      * @dataProvider user_identifier_provider
      */
-    public function test_elis_user_student_maximal_fields_enrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
+    public function test_elis_user_student_maximal_fields_enrolment_import($actioncreate, $actiondelete, $username, $email,
+                                                                           $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -185,33 +139,32 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         set_config('noemailever', true);
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
         $course->save();
 
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        //run the class enrolment create action
+        // Run the class enrolment create action.
         $record = new stdClass;
         $record->context = 'class_testclassidnumber';
-        if ($username != NULL) {
+        if ($username != null) {
             $record->user_username = $user->username;
         }
-        if ($email != NULL) {
+        if ($email != null) {
             $record->user_email = $user->email;
         }
-        if ($idnumber != NULL) {
+        if ($idnumber != null) {
             $record->user_idnumber = $user->idnumber;
         }
         $record->enrolmenttime = 'Jan/01/2012';
@@ -222,10 +175,10 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $record->locked = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(student::TABLE, array(
             'userid' => $user->id,
             'classid' => $class->id,
@@ -243,23 +196,23 @@ class elis_user_student_enrolment_test extends elis_database_test {
      *
      * @return array Parameter data, as needed by the test method
      */
-    function date_provider() {
-        // legacy formats are MM/DD/YYYY, DD-MM-YYYY and YYYY.MM.DD
-        // also need to support cases with no leading zeros
+    public function date_provider() {
+        // Legacy formats are MM/DD/YYYY, DD-MM-YYYY and YYYY.MM.DD.
+        // Also need to support cases with no leading zeros.
 
         return array(
-                // new MMM/DD/YYYY format
-                array('Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('Feb/4/2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
-                // legacy MM/DD/YYYY format
-                array('01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('2/4/2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
-                // legacy DD-MM-YYYY format
-                array('03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('4-2-2012', rlip_timestamp(0, 0, 0, 2, 4, 2012)),
-                // legacy YYYY.MM.DD format
-                array('2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('2012.2.4', rlip_timestamp(0, 0, 0, 2, 4, 2012))
+                // New MMM/DD/YYYY format.
+                array('Jan/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                array('Feb/4/2012', array(0, 0, 0, 2, 4, 2012)),
+                // Legacy MM/DD/YYYY format.
+                array('01/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                array('2/4/2012', array(0, 0, 0, 2, 4, 2012)),
+                // Legacy DD-MM-YYYY format.
+                array('03-01-2012', array(0, 0, 0, 1, 3, 2012)),
+                array('4-2-2012', array(0, 0, 0, 2, 4, 2012)),
+                // Legacy YYYY.MM.DD format.
+                array('2012.01.03', array(0, 0, 0, 1, 3, 2012)),
+                array('2012.2.4', array(0, 0, 0, 2, 4, 2012))
         );
     }
 
@@ -280,24 +233,25 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         set_config('noemailever', true);
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        $timestamp = rlip_timestamp($timestamp[0], $timestamp[1], $timestamp[2], $timestamp[3], $timestamp[4], $timestamp[5]);
+
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
         $course->save();
 
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        //run the class enrolment create action
+        // Run the class enrolment create action.
         $record = new stdClass;
         $record->context = 'class_testclassidnumber';
         $record->user_username = 'testuserusername';
@@ -305,18 +259,20 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $record->completetime = $datestring;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
-        //validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id,
-                                                                   'enrolmenttime' => $timestamp,
-                                                                   'completetime' => $timestamp,
-                                                                   'completestatusid' => student::STUSTATUS_NOTCOMPLETE,
-                                                                   'grade' => 0.00000,
-                                                                   'credits' => 0.00,
-                                                                   'locked' => 0)));
+        // Validation.
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id,
+            'enrolmenttime' => $timestamp,
+            'completetime' => $timestamp,
+            'completestatusid' => student::STUSTATUS_NOTCOMPLETE,
+            'grade' => 0.00000,
+            'credits' => 0.00,
+            'locked' => 0
+        )));
     }
 
     /**
@@ -324,22 +280,24 @@ class elis_user_student_enrolment_test extends elis_database_test {
      *
      * @return array Parameter data, as needed by the test method
      */
-    function completion_provider() {
+    public function completion_provider() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
 
-        //support the numerical values, plus "Not Completed", "Failed", "Passed"
+        // Support the numerical values, plus "Not Completed", "Failed", "Passed".
 
-        return array(array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
-                     array("Not Completed", student::STUSTATUS_NOTCOMPLETE),
-                     array("not completed", student::STUSTATUS_NOTCOMPLETE),
-                     array(student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
-                     array("Failed", student::STUSTATUS_FAILED),
-                     array("failed", student::STUSTATUS_FAILED),
-                     array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
-                     array("Passed", student::STUSTATUS_PASSED),
-                     array("passed", student::STUSTATUS_PASSED));
+        return array(
+                array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
+                array("Not Completed", student::STUSTATUS_NOTCOMPLETE),
+                array("not completed", student::STUSTATUS_NOTCOMPLETE),
+                array(student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
+                array("Failed", student::STUSTATUS_FAILED),
+                array("failed", student::STUSTATUS_FAILED),
+                array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
+                array("Passed", student::STUSTATUS_PASSED),
+                array("passed", student::STUSTATUS_PASSED)
+        );
     }
 
     /**
@@ -359,34 +317,33 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         set_config('noemailever', true);
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
         $course->save();
 
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        //run the class enrolment create action
+        // Run the class enrolment create action.
         $record = new stdClass;
         $record->context = 'class_testclassidnumber';
         $record->user_username = 'testuserusername';
         $record->completestatusid = $completionstring;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
-        //validation
+        // Validation.
         $this->assertTrue($DB->record_exists(student::TABLE, array(
             'userid' => $user->id,
             'classid' => $class->id,
@@ -404,24 +361,23 @@ class elis_user_student_enrolment_test extends elis_database_test {
      *
      * @return array Data needed for the appropriate unit test
      */
-    function minimal_update_field_provider() {
+    public function minimal_update_field_provider() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
 
         set_config('noemailever', true);
 
-        // we are being sneaky and testing specific date and completion status format
-        // cases here as well
+        // We are being sneaky and testing specific date and completion status format cases here as well.
         return array(
-                array('enrolmenttime', 'Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('enrolmenttime', '01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('enrolmenttime', '03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('enrolmenttime', '2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('completetime', 'Jan/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('completetime', '01/03/2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('completetime', '03-01-2012', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
-                array('completetime', '2012.01.03', rlip_timestamp(0, 0, 0, 1, 3, 2012)),
+                array('enrolmenttime', 'Jan/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                array('enrolmenttime', '01/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                array('enrolmenttime', '03-01-2012', array(0, 0, 0, 1, 3, 2012)),
+                array('enrolmenttime', '2012.01.03', array(0, 0, 0, 1, 3, 2012)),
+                array('completetime', 'Jan/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '01/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '03-01-2012', array(0, 0, 0, 1, 3, 2012)),
+                array('completetime', '2012.01.03', array(0, 0, 0, 1, 3, 2012)),
                 array('completestatusid', student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
                 array('completestatusid', "Not Completed", student::STUSTATUS_NOTCOMPLETE),
                 array('completestatusid', student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
@@ -452,57 +408,60 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         set_config('noemailever', true);
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        if ($fieldname === 'enrolmenttime' || $fieldname === 'completetime') {
+            $dbvalue = rlip_timestamp($dbvalue[0], $dbvalue[1], $dbvalue[2], $dbvalue[3], $dbvalue[4], $dbvalue[5]);
+        }
+
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
         $course->save();
 
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        $student = new student(array('userid' => $user->id,
-                                     'classid' => $class->id,
-                                     'enrolmenttime' => 0));
+        $student = new student(array('userid' => $user->id, 'classid' => $class->id, 'enrolmenttime' => 0));
         $student->save();
 
-        //validate setup
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id)));
+        // Validate setup.
+        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id, 'classid' => $class->id)));
 
-        //run the student enrolment update action
+        // Run the student enrolment update action.
         $record = new stdClass;
         $record->context = 'class_testclassidnumber';
         $record->user_username = 'testuserusername';
         $record->$fieldname = $value;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
-        //validation
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id,
-                                                                   $fieldname => $dbvalue)));
+        // Validation.
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id,
+            $fieldname => $dbvalue
+        )));
     }
 
     /**
      * Validate that a "student" enrolment can be updated, setting all available fields
      *
-     * @param string $username A sample user's username, or NULL if not used in the import
-     * @param string $email A sample user's email, or NULL if not used in the import
-     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @param string $username A sample user's username, or null if not used in the import
+     * @param string $email A sample user's email, or null if not used in the import
+     * @param string $idnumber A sample user's idnumber, or null if not used in the import
      * @dataProvider user_identifier_provider
      */
-    public function test_update_elis_user_student_enrolment_with_all_fields($actioncreate, $actiondelete, $username, $email, $idnumber) {
+    public function test_update_elis_user_student_enrolment_with_all_fields($actioncreate, $actiondelete, $username, $email,
+                                                                            $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -512,42 +471,38 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         set_config('noemailever', true);
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
         $course->save();
 
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        $student = new student(array('userid' => $user->id,
-                                     'classid' => $class->id,
-                                     'enrolmenttime' => 0));
+        $student = new student(array('userid' => $user->id, 'classid' => $class->id, 'enrolmenttime' => 0));
         $student->save();
 
-        //validate setup
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id)));
+        // Validate setup.
+        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id, 'classid' => $class->id)));
 
-        //run the student enrolment update action
+        // Run the student enrolment update action.
         $record = new stdClass;
         $record->context = 'class_testclassidnumber';
-        if ($username != NULL) {
+        if ($username != null) {
             $record->user_username = $user->username;
         }
-        if ($email != NULL) {
+        if ($email != null) {
             $record->user_email = $user->email;
         }
-        if ($idnumber != NULL) {
+        if ($idnumber != null) {
             $record->user_idnumber = $user->idnumber;
         }
         $record->enrolmenttime = 'Jan/01/2012';
@@ -558,10 +513,10 @@ class elis_user_student_enrolment_test extends elis_database_test {
         $record->locked = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(student::TABLE, array(
             'userid' => $user->id,
             'classid' => $class->id,
@@ -577,9 +532,9 @@ class elis_user_student_enrolment_test extends elis_database_test {
     /**
      * Validate that users can be enrolled from class instances (when assigned as a student)
      *
-     * @param string $username A sample user's username, or NULL if not used in the import
-     * @param string $email A sample user's email, or NULL if not used in the import
-     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @param string $username A sample user's username, or null if not used in the import
+     * @param string $email A sample user's email, or null if not used in the import
+     * @param string $idnumber A sample user's idnumber, or null if not used in the import
      * @dataProvider user_identifier_provider
      */
     public function test_elis_user_student_unenrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
@@ -592,51 +547,47 @@ class elis_user_student_enrolment_test extends elis_database_test {
 
         set_config('noemailever', true);
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
         $course->save();
 
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        $student = new student(array('userid' => $user->id,
-                                     'classid' => $class->id,
-                                     'enrolmenttime' => 0));
+        $student = new student(array('userid' => $user->id, 'classid' => $class->id, 'enrolmenttime' => 0));
         $student->save();
 
-        //validate setup
-        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id,
-                                                                   'classid' => $class->id)));
+        // Validate setup.
+        $this->assertTrue($DB->record_exists(student::TABLE, array('userid' => $user->id, 'classid' => $class->id)));
 
-        //run the student enrolment delete action
+        // Run the student enrolment delete action.
         $record = new stdClass;
         $record->action = $actiondelete;
         $record->context = 'class_testclassidnumber';
-        if ($username != NULL) {
+        if ($username != null) {
             $record->user_username = $user->username;
         }
-        if ($email != NULL) {
+        if ($email != null) {
             $record->user_email = $user->email;
         }
-        if ($idnumber != NULL) {
+        if ($idnumber != null) {
             $record->user_idnumber = $user->idnumber;
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records(student::TABLE));
     }
 }

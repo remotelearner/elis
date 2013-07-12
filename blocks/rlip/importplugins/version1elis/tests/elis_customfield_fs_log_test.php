@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,123 +16,69 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
 
 /**
- * Class for testing ELIS custom field validation messages
+ * Class for testing ELIS custom field validation messages.
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class elis_customfield_fs_log_test extends rlip_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/course.class.php'));
-        require_once(elispm::lib('data/curriculum.class.php'));
-        require_once(elispm::lib('data/pmclass.class.php'));
-        require_once(elispm::lib('data/track.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-        require_once(elispm::lib('data/userset.class.php'));
-
-        return array(
-            'config_plugins' => 'moodle',
-            'context' => 'moodle',
-            'user' => 'moodle',
-            RLIP_LOG_TABLE => 'block_rlip',
-            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-            course::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            field::TABLE => 'elis_core',
-            field_contextlevel::TABLE => 'elis_core',
-            field_category::TABLE => 'elis_core',
-            field_data_text::TABLE => 'elis_core',
-            field_owner::TABLE => 'elis_core',
-            pmclass::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-            user::TABLE => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program'
-        );
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/coursetemplate.class.php'));
-        require_once(elispm::lib('data/curriculumstudent.class.php'));
-
-        return array(
-            coursetemplate::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program'
-        );
-    }
+class elis_customfield_fs_log_testcase extends rlip_elis_test {
 
     /**
      * Validates that the supplied data produces the expected error
      *
      * @param array $data The import data to process
-     * @param string $expected_error The error we are expecting (message only)
+     * @param string $expectederror The error we are expecting (message only)
      * @param user $entitytype One of 'user', 'course', 'enrolment'
      */
-    protected function assert_data_produces_error($data, $expected_error, $entitytype) {
+    protected function assert_data_produces_error($data, $expectederror, $entitytype) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
-        //set the log file location
-        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
+        // Set the log file location.
+        $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
         self::cleanup_log_files();
 
-        //run the import
-        $classname = "rlip_importprovider_fslog{$entitytype}";
+        // Run the import.
+        $classname = "rlipimport_version1elis_importprovider_fslog{$entitytype}";
         $provider = new $classname($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, true);
-        //suppress output for now
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, true);
+        // Suppress output for now.
         ob_start();
         $instance->run();
         ob_end_clean();
 
-        //validate that a log file was created
+        // Validate that a log file was created.
         $manual = true;
-        //get first summary record - at times, multiple summary records are created and this handles that problem
+        // Get first summary record - at times, multiple summary records are created and this handles that problem.
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {
             $starttime = $record->starttime;
             break;
         }
 
-        //get logfile name
-        $plugin_type = 'import';
+        // Get logfile name.
+        $plugintype = 'import';
         $plugin = 'rlipimport_version1elis';
-        $format = get_string('logfile_timestamp','block_rlip');
-        $testfilename = $filepath.'/'.$plugin_type.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
-        //get most recent logfile
+        $format = get_string('logfile_timestamp', 'block_rlip');
+        $testfilename = $filepath.'/'.$plugintype.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
+        // Get most recent logfile.
 
         $filename = self::get_current_logfile($testfilename);
         if (!file_exists($filename)) {
@@ -140,25 +86,25 @@ class elis_customfield_fs_log_test extends rlip_test {
         }
         $this->assertTrue(file_exists($filename));
 
-        //fetch log line
+        // Fetch log line.
         $pointer = fopen($filename, 'r');
 
-        $prefix_length = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+        $prefixlength = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
 
         while (!feof($pointer)) {
             $error = fgets($pointer);
-            if (!empty($error)) { // could be an empty new line
-                if (is_array($expected_error)) {
-                    $actual_error[] = substr($error, $prefix_length);
+            if (!empty($error)) { // Could be an empty new line.
+                if (is_array($expectederror)) {
+                    $actualerror[] = substr($error, $prefixlength);
                 } else {
-                    $actual_error = substr($error, $prefix_length);
+                    $actualerror = substr($error, $prefixlength);
                 }
             }
         }
 
         fclose($pointer);
 
-        $this->assertEquals($expected_error, $actual_error);
+        $this->assertEquals($expectederror, $actualerror);
     }
 
     /**
@@ -172,25 +118,26 @@ class elis_customfield_fs_log_test extends rlip_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
 
-        //category
-        $field_category = new field_category(array('name' => 'testcategoryname'));
-        $field_category->save();
+        // Category.
+        $fieldcategory = new field_category(array('name' => 'testcategoryname'));
+        $fieldcategory->save();
 
-        //field
-        $field = new field(array('categoryid' => $field_category->id,
-                                 'shortname' => 'testfieldshortname',
-                                 'name' => 'testfieldname',
-                                 'datatype' => 'text'));
+        // Field.
+        $field = new field(array(
+            'categoryid' => $fieldcategory->id,
+            'shortname' => 'testfieldshortname',
+            'name' => 'testfieldname',
+            'datatype' => 'text'
+        ));
         $field->save();
 
-        //field-contextlevel
-        $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                           'contextlevel' => $contextlevel));
-        $field_contextlevel->save();
+        // Field-contextlevel.
+        $fieldcontextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => $contextlevel));
+        $fieldcontextlevel->save();
 
-        //owner
-        $owner_params = array_merge(array('control' => $uitype), $otherparams);
-        field_owner::ensure_field_owner_exists($field, 'manual', $owner_params);
+        // Owner.
+        $ownerparams = array_merge(array('control' => $uitype), $otherparams);
+        field_owner::ensure_field_owner_exists($field, 'manual', $ownerparams);
     }
 
     /**
@@ -198,12 +145,11 @@ class elis_customfield_fs_log_test extends rlip_test {
      *
      * @return int The id of the created program
      */
-    function create_test_program() {
+    public function create_test_program() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
 
-        $program = new curriculum(array('name' => 'testprogramname',
-                                        'idnumber' => 'testprogramidnumber'));
+        $program = new curriculum(array('name' => 'testprogramname', 'idnumber' => 'testprogramidnumber'));
         $program->save();
         return $program->id;
     }
@@ -213,13 +159,15 @@ class elis_customfield_fs_log_test extends rlip_test {
      *
      * @return int The id of the created course description
      */
-    function create_test_course() {
+    public function create_test_course() {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
         return $course->id;
     }
@@ -230,9 +178,11 @@ class elis_customfield_fs_log_test extends rlip_test {
      * @return array data needed for testing
      */
     public function valid_date_format_provider() {
-        return array(array('Jan/01/2012', array('inctime' => 0)),
-                     array('Jan/01/2012', array('inctime' => 1)),
-                     array('Jan/01/2012:00:00', array('inctime' => 1)));
+        return array(
+                array('Jan/01/2012', array('inctime' => 0)),
+                array('Jan/01/2012', array('inctime' => 1)),
+                array('Jan/01/2012:00:00', array('inctime' => 1))
+        );
     }
 
     /**
@@ -263,32 +213,34 @@ class elis_customfield_fs_log_test extends rlip_test {
      * @dataProvider valid_date_format_provider
      */
     public function test_logging_does_not_invalidate_date_customfield_formatsaccepted($value, $otherparams) {
-        //TODO: consider removing once we have unit tests properly validating
-        //date/time custom field imports
+        // TODO: consider removing once we have unit tests properly validating.
+        // Date/time custom field imports.
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/accesslib.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USER, 'datetime', $otherparams);
 
-        $data = array('action' => 'create',
-                      'username' => 'testuserusername',
-                      'email' => 'test@useremail.com',
-                      'idnumber' => 'testuseridnumber',
-                      'firstname' => 'testuserfirstname',
-                      'lastname' => 'testuserlastname',
-                      'country' => 'CA',
-                      'testfieldshortname' => $value);
+        $data = array(
+            'action' => 'create',
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA',
+            'testfieldshortname' => $value
+        );
 
-        //run the import
-        $provider = new rlip_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, true);
-        //suppress output for now
+        // Run the import.
+        $provider = new rlipimport_version1elis_importprovider_fsloguser($data);
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, true);
+        // Suppress output for now.
         ob_start();
         $instance->run();
         ob_end_clean();
 
-        //validate that a user is actually created
+        // Validate that a user is actually created.
         $this->assertEquals(1, $DB->count_records(user::TABLE));
     }
 
@@ -299,82 +251,125 @@ class elis_customfield_fs_log_test extends rlip_test {
      * @return array Test method parameter data, int the expected format
      */
     public function type_error_provider() {
-        return array(array('checkbox',
-                           'nonboolean',
-                           '"nonboolean" is not one of the available options for checkbox custom field "customtestfieldshortname" (0, 1).',
-                           array()),
-                     array('menu',
-                           'unavailable',
-                           '"unavailable" is not one of the available options for menu of choices custom field "customtestfieldshortname".',
-                           array('options' => "1\n2\n3")),
-                     array('text',
-                           str_repeat('a', 41),
-                           'Text input custom field "customtestfieldshortname" value of "'.str_repeat('a', 41).'" exceeds the maximum field length of 40.',
-                           array('maxlength' => 40)),
-                     array('password',
-                           str_repeat('a', 41),
-                           'Password custom field "customtestfieldshortname" value of "'.str_repeat('a', 41).'" exceeds the maximum field length of 40.',
-                           array('maxlength' => 40)),
-                     array('datetime',
-                           'nondate',
-                           '"nondate" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           'Jan/01/2012:00:00',
-                           '"Jan/01/2012:00:00" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           'Jan/01.5/2012',
-                           '"Jan/01.5/2012" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           'Jan/01/2012.5',
-                           '"Jan/01/2012.5" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           'Jan/01/99999',
-                           '"Jan/01/99999" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           'Jan/00/99999',
-                           '"Jan/00/99999" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           '01-01-2012',
-                           '"01-01-2012" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           '2012.01.01',
-                           '"2012.01.01" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           '2012.01.01:00:00',
-                           '"2012.01.01:00:00" is not a valid date in MMM/DD/YYYY format for date custom field "customtestfieldshortname".',
-                           array('inctime' => 0)),
-                     array('datetime',
-                           'nondate',
-                           '"nondate" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "customtestfieldshortname".',
-                           array('inctime' => 1)),
-                     array('datetime',
-                           'Jan/01/2012:00.5:00',
-                           '"Jan/01/2012:00.5:00" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "customtestfieldshortname".',
-                           array('inctime' => 1)),
-                     array('datetime',
-                           'Jan/01/2012:25:00',
-                           '"Jan/01/2012:25:00" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "customtestfieldshortname".',
-                           array('inctime' => 1)),
-                     array('datetime',
-                           'Jan/01/2012:00:00.5',
-                           '"Jan/01/2012:00:00.5" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "customtestfieldshortname".',
-                           array('inctime' => 1)),
-                     array('datetime',
-                           'Jan/01/2012:05',
-                           '"Jan/01/2012:05" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "customtestfieldshortname".',
-                           array('inctime' => 1)),
-                     array('datetime',
-                           'Jan/01/2012:00:61',
-                           '"Jan/01/2012:00:61" is not a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field "customtestfieldshortname".',
-                           array('inctime' => 1)));
+        $cf = 'customtestfieldshortname';
+        $dateformatstr = 'a valid date / time in MMM/DD/YYYY or MMM/DD/YYYY:HH:MM format for date / time custom field';
+        $cfval = str_repeat('a', 41);
+        return array(
+                array(
+                        'checkbox',
+                        'nonboolean',
+                        '"nonboolean" is not one of the available options for checkbox custom field "'.$cf.'" (0, 1).',
+                        array()
+                ),
+                array(
+                        'menu',
+                        'unavailable',
+                        '"unavailable" is not one of the available options for menu of choices custom field "'.$cf.'".',
+                        array('options' => "1\n2\n3")
+                ),
+                array(
+                        'text',
+                        str_repeat('a', 41),
+                        'Text input custom field "'.$cf.'" value of "'.$cfval.'" exceeds the maximum field length of 40.',
+                        array('maxlength' => 40)
+                ),
+                array(
+                        'password',
+                        str_repeat('a', 41),
+                        'Password custom field "'.$cf.'" value of "'.$cfval.'" exceeds the maximum field length of 40.',
+                        array('maxlength' => 40)
+                ),
+                array(
+                        'datetime',
+                        'nondate',
+                        '"nondate" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01/2012:00:00',
+                        '"Jan/01/2012:00:00" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01.5/2012',
+                        '"Jan/01.5/2012" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01/2012.5',
+                        '"Jan/01/2012.5" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01/99999',
+                        '"Jan/01/99999" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        'Jan/00/99999',
+                        '"Jan/00/99999" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        '01-01-2012',
+                        '"01-01-2012" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        '2012.01.01',
+                        '"2012.01.01" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        '2012.01.01:00:00',
+                        '"2012.01.01:00:00" is not a valid date in MMM/DD/YYYY format for date custom field "'.$cf.'".',
+                        array('inctime' => 0)
+                ),
+                array(
+                        'datetime',
+                        'nondate',
+                        '"nondate" is not '.$dateformatstr.' "'.$cf.'".',
+                        array('inctime' => 1)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01/2012:00.5:00',
+                        '"Jan/01/2012:00.5:00" is not '.$dateformatstr.' "'.$cf.'".',
+                        array('inctime' => 1)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01/2012:25:00',
+                        '"Jan/01/2012:25:00" is not '.$dateformatstr.' "'.$cf.'".',
+                        array('inctime' => 1)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01/2012:00:00.5',
+                        '"Jan/01/2012:00:00.5" is not '.$dateformatstr.' "'.$cf.'".',
+                        array('inctime' => 1)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01/2012:05',
+                        '"Jan/01/2012:05" is not '.$dateformatstr.' "'.$cf.'".',
+                        array('inctime' => 1)
+                ),
+                array(
+                        'datetime',
+                        'Jan/01/2012:00:61',
+                        '"Jan/01/2012:00:61" is not '.$dateformatstr.' "'.$cf.'".',
+                        array('inctime' => 1)
+                )
+        );
     }
 
     /**
@@ -392,20 +387,22 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USER, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('user', 'testfieldshortname', 'customtestfieldshortname');
 
-        $data = array('action' => 'create',
-                      'username' => 'testuserusername',
-                      'email' => 'test@useremail.com',
-                      'idnumber' => 'testuseridnumber',
-                      'firstname' => 'testuserfirstname',
-                      'lastname' => 'testuserlastname',
-                      'country' => 'CA',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'create',
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA',
+            'customtestfieldshortname' => $value
+        );
 
-        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", '.
-                   'idnumber "testuseridnumber" could not be created. '.$message."\n";
+        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", ';
+        $message .= 'idnumber "testuseridnumber" could not be created. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'user');
     }
 
@@ -425,25 +422,29 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USER, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('user', 'testfieldshortname', 'customtestfieldshortname');
 
-        $user = new user(array('username' => 'testuserusername',
-                               'email' => 'test@useremail.com',
-                               'idnumber' => 'testuseridnumber',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        $data = array('action' => 'update',
-                      'username' => 'testuserusername',
-                      'email' => 'test@useremail.com',
-                      'idnumber' => 'testuseridnumber',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'update',
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'customtestfieldshortname' => $value
+        );
 
-        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", '.
-                   'idnumber "testuseridnumber" could not be updated. '.$message."\n";
+        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", ';
+        $message .= 'idnumber "testuseridnumber" could not be updated. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'user');
     }
 
@@ -462,14 +463,19 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_PROGRAM, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
-        $data = array('action' => 'create',
-                      'context' => 'curriculum',
-                      'name' => 'testprogramname',
-                      'idnumber' => 'testprogramidnumber',
-                      'customtestfieldshortname' => $value);
+        $temp = new curriculum;
+        $temp->reset_custom_field_list();
+
+        $data = array(
+            'action' => 'create',
+            'context' => 'curriculum',
+            'name' => 'testprogramname',
+            'idnumber' => 'testprogramidnumber',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] Program with idnumber "testprogramidnumber" could not be created. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -491,17 +497,21 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_PROGRAM, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
-        $program = new curriculum(array('name' => 'testprogramname',
-                                        'idnumber' => 'testprogramidnumber'));
+        $program = new curriculum(array('name' => 'testprogramname', 'idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        $data = array('action' => 'update',
-                      'context' => 'curriculum',
-                      'idnumber' => 'testprogramidnumber',
-                      'customtestfieldshortname' => $value);
+        $temp = new curriculum;
+        $temp->reset_custom_field_list();
+
+        $data = array(
+            'action' => 'update',
+            'context' => 'curriculum',
+            'idnumber' => 'testprogramidnumber',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] Program with idnumber "testprogramidnumber" could not be updated. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -522,17 +532,19 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_TRACK, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
         $this->create_test_program();
 
-        $data = array('action' => 'create',
-                      'context' => 'track',
-                      'assignment' => 'testprogramidnumber',
-                      'name' => 'testtrackname',
-                      'idnumber' => 'testtrackidnumber',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'create',
+            'context' => 'track',
+            'assignment' => 'testprogramidnumber',
+            'name' => 'testtrackname',
+            'idnumber' => 'testtrackidnumber',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] Track with idnumber "testtrackidnumber" could not be created. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -554,20 +566,20 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_TRACK, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
         $programid = $this->create_test_program();
 
-        $track = new track(array('curid' => $programid,
-                                 'name' => 'testtrackname',
-                                 'idnumber' => 'testtrackidnumber'));
+        $track = new track(array('curid' => $programid, 'name' => 'testtrackname', 'idnumber' => 'testtrackidnumber'));
         $track->save();
 
-        $data = array('action' => 'update',
-                      'context' => 'track',
-                      'idnumber' => 'testtrackidnumber',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'update',
+            'context' => 'track',
+            'idnumber' => 'testtrackidnumber',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] Track with idnumber "testtrackidnumber" could not be updated. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -588,14 +600,16 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_COURSE, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
-        $data = array('action' => 'create',
-                      'context' => 'course',
-                      'name' => 'testcoursename',
-                      'idnumber' => 'testcourseidnumber',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'create',
+            'context' => 'course',
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] Course description with idnumber "testcourseidnumber" could not be created. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -617,18 +631,22 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_COURSE, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        $data = array('action' => 'update',
-                      'context' => 'course',
-                      'idnumber' => 'testcourseidnumber',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'update',
+            'context' => 'course',
+            'idnumber' => 'testcourseidnumber',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] Course description with idnumber "testcourseidnumber" could not be updated. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -649,17 +667,19 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_CLASS, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
         $this->create_test_course();
 
-        $data = array('action' => 'create',
-                      'context' => 'class',
-                      'assignment' => 'testcourseidnumber',
-                      'name' => 'testclassname',
-                      'idnumber' => 'testclassidnumber',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'create',
+            'context' => 'class',
+            'assignment' => 'testcourseidnumber',
+            'name' => 'testclassname',
+            'idnumber' => 'testclassidnumber',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] Class instance with idnumber "testclassidnumber" could not be created. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -681,19 +701,20 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_CLASS, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
         $courseid = $this->create_test_course();
 
-        $class = new pmclass(array('courseid' => $courseid,
-                                   'idnumber' => 'testclassidnumber'));
+        $class = new pmclass(array('courseid' => $courseid, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        $data = array('action' => 'update',
-                      'context' => 'class',
-                      'idnumber' => 'testclassidnumber',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'update',
+            'context' => 'class',
+            'idnumber' => 'testclassidnumber',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] Class instance with idnumber "testclassidnumber" could not be updated. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -714,13 +735,15 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USERSET, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
-        $data = array('action' => 'create',
-                      'context' => 'cluster',
-                      'name' => 'testusersetname',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'create',
+            'context' => 'cluster',
+            'name' => 'testusersetname',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] User set with name "testusersetname" could not be created. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -742,16 +765,18 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USERSET, $uitype, $otherparams);
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('course', 'testfieldshortname', 'customtestfieldshortname');
 
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
 
-        $data = array('action' => 'update',
-                      'context' => 'cluster',
-                      'name' => 'testusersetname',
-                      'customtestfieldshortname' => $value);
+        $data = array(
+            'action' => 'update',
+            'context' => 'cluster',
+            'name' => 'testusersetname',
+            'customtestfieldshortname' => $value
+        );
 
         $message = '[course.csv line 2] User set with name "testusersetname" could not be updated. '.$message."\n";
         $this->assert_data_produces_error($data, $message, 'course');
@@ -765,22 +790,24 @@ class elis_customfield_fs_log_test extends rlip_test {
         require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USER, 'menu', array('options' => '1'));
-        //create mapping record
+        // Create mapping record.
         $this->create_mapping_record('user', 'testfieldshortname', 'customtestfieldshortname');
-        $DB->execute("UPDATE {".field::TABLE."}
-                     SET multivalued = 1");
+        $DB->execute("UPDATE {".field::TABLE."} SET multivalued = 1");
 
-        $data = array('action' => 'create',
-                      'username' => 'testuserusername',
-                      'email' => 'test@useremail.com',
-                      'idnumber' => 'testuseridnumber',
-                      'firstname' => 'testuserfirstname',
-                      'lastname' => 'testuserlastname',
-                      'country' => 'CA',
-                      'customtestfieldshortname' => '1/2/3');
+        $data = array(
+            'action' => 'create',
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA',
+            'customtestfieldshortname' => '1/2/3'
+        );
 
-        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", '.
-                   'idnumber "testuseridnumber" could not be created. "2" is not one of the available options for menu of choices custom field "customtestfieldshortname".'."\n";
+        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", ';
+        $message .= 'idnumber "testuseridnumber" could not be created. "2" is not one of the available options for menu of ';
+        $message .= 'choices custom field "customtestfieldshortname".'."\n";
         $this->assert_data_produces_error($data, $message, 'user');
     }
 }

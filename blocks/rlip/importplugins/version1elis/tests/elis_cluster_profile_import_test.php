@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,62 +16,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins/version1elis/phpunit
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
 
 /**
  * Test class for validating that users are auto-assigned to clusters (i.e.
  * user sets) based on profile fields set during user import
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class elis_cluster_profile_import_test extends elis_database_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-        require_once(elispm::lib('data/userset.class.php'));
-
-        return array('context' => 'moodle',
-                     'user' => 'moodle',
-                     'user_info_data' => 'moodle',
-                     'user_info_field' => 'moodle',
-                     field::TABLE => 'elis_core',
-                     field_category::TABLE => 'elis_core',
-                     field_contextlevel::TABLE => 'elis_core',
-                     field_data_int::TABLE => 'elis_core',
-                     field_owner::TABLE => 'elis_core',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     userset::TABLE => 'elis_program',
-                     userset_profile::TABLE => 'elis_program');
-    }
+class elis_cluster_profile_import_testcase extends rlip_elis_test {
 
     /**
      * Set up necessary data
      *
-     * @param int $num_fields The number of custom fields used in auto-association
+     * @param int $numfields The number of custom fields used in auto-association
      */
-    private function init_required_data($num_fields = 1) {
+    private function init_required_data($numfields = 1) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
@@ -82,46 +55,48 @@ class elis_cluster_profile_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
 
-        //set up the category only once
-        $field_category = new field_category(array('name' => 'testcategoryname'));
-        $field_category->save();
+        // Set up the category only once.
+        $fieldcategory = new field_category(array('name' => 'testcategoryname'));
+        $fieldcategory->save();
 
-        //ste up the target userset only once
+        // Ste up the target userset only once.
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
 
-        for ($i = 1; $i <= $num_fields; $i++) {
-            //custom field
-            $field = new field(array('categoryid' => $field_category->id,
-                                     'shortname' => 'testfieldshortname'.$i,
-                                     'name' => 'testfieldname'.$i,
-                                     'datatype' => 'bool'));
+        for ($i = 1; $i <= $numfields; $i++) {
+            // Custom field.
+            $field = new field(array(
+                'categoryid' => $fieldcategory->id,
+                'shortname' => 'testfieldshortname'.$i,
+                'name' => 'testfieldname'.$i,
+                'datatype' => 'bool'
+            ));
             $field->save();
-    
-            //field owner
+
+            // Field owner.
             field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-            $DB->execute("UPDATE {".field_owner::TABLE."}
-                          SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
-    
-            //field context level assocation
-            $field_contextlevel = new field_contextlevel(array('fieldid' => $field->id,
-                                                               'contextlevel' => CONTEXT_ELIS_USER));
-            $field_contextlevel->save();
-    
-            //the associated Moodle user profile field
-            $profile_define_checkbox = new profile_define_checkbox();
+            $DB->execute("UPDATE {".field_owner::TABLE."} SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
+
+            // Field context level assocation.
+            $fieldcontextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USER));
+            $fieldcontextlevel->save();
+
+            // The associated Moodle user profile field.
+            $profiledefinecheckbox = new profile_define_checkbox();
             $data = new stdClass;
             $data->datatype = 'checkbox';
             $data->categoryid = 99999;
             $data->shortname = 'testfieldshortname'.$i;
             $data->name = 'testfieldname'.$i;
-            $profile_define_checkbox->define_save($data);
-    
-            //the "cluster-profile" association
-            $userset_profile = new userset_profile(array('clusterid' => $userset->id,
-                                                         'fieldid' => $i,
-                                                         'value' => 1));
-            $userset_profile->save();
+            $profiledefinecheckbox->define_save($data);
+
+            // The "cluster-profile" association.
+            $usersetprofile = new userset_profile(array(
+                'clusterid' => $userset->id,
+                'fieldid' => $field->id,
+                'value' => 1
+            ));
+            $usersetprofile->save();
         }
     }
 
@@ -133,10 +108,10 @@ class elis_cluster_profile_import_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
 
-        //set up data
+        // Set up data.
         $this->init_required_data();
 
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->username = 'testuserusername';
@@ -148,13 +123,17 @@ class elis_cluster_profile_import_test extends elis_database_test {
         $record->testfieldshortname1 = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
-        $importplugin->process_record('user', $record, 'bogus');
+        $importplugin->fslogger = new silent_fslogger(null);
+        $result = $importplugin->process_record('user', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => 1,
-                                                                             'clusterid' => 1,
-                                                                             'plugin' => 'moodle_profile')));
+        $userid = $DB->get_field(user::TABLE, 'id', array('username' => 'testuserusername'));
+
+        // Validation.
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array(
+            'userid' => $userid,
+            'clusterid' => 1,
+            'plugin' => 'moodle_profile'
+        )));
     }
 
     /**
@@ -166,10 +145,10 @@ class elis_cluster_profile_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up data
+        // Set up data.
         $this->init_required_data(2);
 
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->username = 'testuserusername';
@@ -181,17 +160,16 @@ class elis_cluster_profile_import_test extends elis_database_test {
         $record->testfieldshortname1 = 1;
         $record->testfieldshortname2 = 1;
 
-        $user = new user();
-        $user->reset_custom_field_list();
-
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => 1,
-                                                                             'clusterid' => 1,
-                                                                             'plugin' => 'moodle_profile')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array(
+            'userid' => 1,
+            'clusterid' => 1,
+            'plugin' => 'moodle_profile'
+        )));
     }
 
     /**
@@ -203,18 +181,20 @@ class elis_cluster_profile_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up data
+        // Set up data.
         $this->init_required_data();
 
-        $user = new user(array('username' => 'testuserusername',
-                               'email' => 'test@useremail.com',
-                               'idnumber' => 'testuseridnumber',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->action = 'update';
         $record->username = 'testuserusername';
@@ -223,13 +203,15 @@ class elis_cluster_profile_import_test extends elis_database_test {
         $record->testfieldshortname1 = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => 1,
-                                                                             'clusterid' => 1,
-                                                                             'plugin' => 'moodle_profile')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array(
+            'userid' => 1,
+            'clusterid' => 1,
+            'plugin' => 'moodle_profile'
+        )));
     }
 
     /**
@@ -241,18 +223,20 @@ class elis_cluster_profile_import_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up data
+        // Set up data.
         $this->init_required_data(2);
 
-        $user = new user(array('username' => 'testuserusername',
-                               'email' => 'test@useremail.com',
-                               'idnumber' => 'testuseridnumber',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->action = 'update';
         $record->username = 'testuserusername';
@@ -262,14 +246,14 @@ class elis_cluster_profile_import_test extends elis_database_test {
         $record->testfieldshortname2 = 1;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('userid' => 1,
-                                                                             'clusterid' => 1,
-                                                                             'plugin' => 'moodle_profile')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array(
+            'userid' => 1,
+            'clusterid' => 1,
+            'plugin' => 'moodle_profile'
+        )));
     }
 }
-
-?>

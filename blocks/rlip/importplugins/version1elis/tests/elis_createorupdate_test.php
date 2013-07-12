@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,86 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
 
 /**
- * Test the "Datatel" create-or-update functionality for the Version 1 ELIS
- * plugin
+ * Test the "Datatel" create-or-update functionality for the Version 1 ELIS plugin.
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class elis_createorupdate_test extends elis_database_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/course.class.php'));
-        require_once(elispm::lib('data/curriculum.class.php'));
-        require_once(elispm::lib('data/instructor.class.php'));
-        require_once(elispm::lib('data/pmclass.class.php'));
-        require_once(elispm::lib('data/student.class.php'));
-        require_once(elispm::lib('data/track.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-        require_once(elispm::lib('data/userset.class.php'));
-
-        return array(
-            'cache_flags' => 'moodle',
-            'config_plugins' => 'moodle',
-            'context' => 'moodle',
-            'role_assignments' => 'moodle',
-            'user' => 'moodle',
-            'user_enrolments' => 'moodle',
-            classmoodlecourse::TABLE => 'elis_program',
-            course::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            field::TABLE => 'elis_core',
-            field_category::TABLE => 'elis_core',
-            field_contextlevel::TABLE => 'elis_core',
-            instructor::TABLE => 'elis_program',
-            pmclass::TABLE => 'elis_program',
-            student::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-            user::TABLE => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program'
-        );
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/coursetemplate.class.php'));
-        require_once(elispm::lib('data/curriculumcourse.class.php'));
-        require_once(elispm::lib('data/curriculumstudent.class.php'));
-        
-        return array(
-            coursetemplate::TABLE => 'elis_program',
-            curriculumcourse::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program'
-        );
-    }
+class elis_createorupdate_testcase extends rlip_elis_test {
 
     /**
      * Validate that users can still be created when the "creatorupdate" flag is enabled
@@ -104,10 +46,10 @@ class elis_createorupdate_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->username = 'testuserusername';
@@ -118,10 +60,10 @@ class elis_createorupdate_test extends elis_database_test {
         $record->country = 'CA';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
-        //validation
+        // Validation.
         $params = array(
             'username'  => 'testuserusername',
             'email'     => 'test@useremail.com',
@@ -140,19 +82,21 @@ class elis_createorupdate_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test user
-        $user = new user(array('username' => 'testuserusername',
-                               'email' => 'test@useremail.com',
-                               'idnumber' => 'testuseridnumber',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'country' => 'CA'));
+        // Create the test user.
+        $user = new user(array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        //run the user create action
+        // Run the user create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->username = 'testuserusername';
@@ -161,14 +105,16 @@ class elis_createorupdate_test extends elis_database_test {
         $record->firstname = 'updatedtestuserfirstname';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(user::TABLE, array('username' => 'testuserusername',
-                                                                'email' => 'test@useremail.com',
-                                                                'idnumber' => 'testuseridnumber',
-                                                                'firstname' => 'updatedtestuserfirstname')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(user::TABLE, array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'updatedtestuserfirstname'
+        )));
     }
 
     /**
@@ -178,10 +124,10 @@ class elis_createorupdate_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //run the program create action
+        // Run the program create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'curriculum';
@@ -190,13 +136,15 @@ class elis_createorupdate_test extends elis_database_test {
         $record->priority = '0';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(curriculum::TABLE, array('name' => 'testprogramname',
-                                                                      'idnumber' => 'testprogramidnumber',
-                                                                      'priority' => '0')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(curriculum::TABLE, array(
+            'name' => 'testprogramname',
+            'idnumber' => 'testprogramidnumber',
+            'priority' => '0'
+        )));
     }
 
     /**
@@ -207,16 +155,18 @@ class elis_createorupdate_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test program
-        $program = new curriculum(array('name' => 'testprogramname',
-                                        'idnumber' => 'testprogramidnumber',
-                                        'description' => 'testprogramdescription'));
+        // Create the test program.
+        $program = new curriculum(array(
+            'name' => 'testprogramname',
+            'idnumber' => 'testprogramidnumber',
+            'description' => 'testprogramdescription'
+        ));
         $program->save();
 
-        //run the program create action
+        // Run the program create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'curriculum';
@@ -224,13 +174,15 @@ class elis_createorupdate_test extends elis_database_test {
         $record->priority = '5';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(curriculum::TABLE, array('name' => 'testprogramname',
-                                                                      'idnumber' => 'testprogramidnumber',
-                                                                      'priority' => '5')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(curriculum::TABLE, array(
+            'name' => 'testprogramname',
+            'idnumber' => 'testprogramidnumber',
+            'priority' => '5'
+        )));
     }
 
     /**
@@ -241,14 +193,13 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        $program = new curriculum(array('name' => 'testprogramname',
-                                        'idnumber' => 'testprogramidnumber'));
+        $program = new curriculum(array('name' => 'testprogramname', 'idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        //run the track create action
+        // Run the track create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'track';
@@ -258,10 +209,10 @@ class elis_createorupdate_test extends elis_database_test {
         $record->startdate = 'Jan/01/2012';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(track::TABLE, array(
             'name' => 'testtrackname',
             'idnumber' => 'testtrackidnumber',
@@ -278,14 +229,13 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        $program = new curriculum(array('name' => 'testprogramname',
-                                        'idnumber' => 'testprogramidnumber'));
+        $program = new curriculum(array('name' => 'testprogramname', 'idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        // create the test track
+        // Create the test track.
         $track = new track(array(
             'curid' => $program->id,
             'name' => 'testtrackname',
@@ -294,7 +244,7 @@ class elis_createorupdate_test extends elis_database_test {
         ));
         $track->save();
 
-        //run the track create action
+        // Run the track create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'track';
@@ -302,10 +252,10 @@ class elis_createorupdate_test extends elis_database_test {
         $record->startdate = 'Jan/02/2012';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(track::TABLE, array(
             'name' => 'testtrackname',
             'idnumber' => 'testtrackidnumber',
@@ -320,10 +270,10 @@ class elis_createorupdate_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //run the course create action
+        // Run the course create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'course';
@@ -332,13 +282,15 @@ class elis_createorupdate_test extends elis_database_test {
         $record->credits = '0';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(course::TABLE, array('name' => 'testcoursename',
-                                                                  'idnumber' => 'testcourseidnumber',
-                                                                  'credits' => '0')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(course::TABLE, array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'credits' => '0'
+        )));
     }
 
     /**
@@ -349,17 +301,19 @@ class elis_createorupdate_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test course
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => '',
-                                   'credits' => '0'));
+        // Create the test course.
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => '',
+            'credits' => '0'
+        ));
         $course->save();
 
-        //run the course create action
+        // Run the course create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'course';
@@ -367,13 +321,15 @@ class elis_createorupdate_test extends elis_database_test {
         $record->credits = '5';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(course::TABLE, array('name' => 'testcoursename',
-                                                                  'idnumber' => 'testcourseidnumber',
-                                                                  'credits' => 5)));
+        // Validation.
+        $this->assertTrue($DB->record_exists(course::TABLE, array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'credits' => 5
+        )));
     }
 
     /**
@@ -384,16 +340,18 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test course
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        // Create the test course.
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        //run theclass create action
+        // Run theclass create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'class';
@@ -402,12 +360,11 @@ class elis_createorupdate_test extends elis_database_test {
         $record->maxstudents = '5';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(pmclass::TABLE, array('idnumber' => 'testclassidnumber',
-                                                                   'maxstudents' => 5)));
+        // Validation.
+        $this->assertTrue($DB->record_exists(pmclass::TABLE, array('idnumber' => 'testclassidnumber', 'maxstudents' => 5)));
     }
 
     /**
@@ -419,22 +376,26 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test course
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        // Create the test course.
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        //create the test class
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber',
-                                   'maxstudents' => 5));
+        // Create the test class.
+        $class = new pmclass(array(
+            'courseid' => $course->id,
+            'idnumber' => 'testclassidnumber',
+            'maxstudents' => 5
+        ));
         $class->save();
 
-        //run the class create action
+        // Run the class create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'class';
@@ -442,12 +403,11 @@ class elis_createorupdate_test extends elis_database_test {
         $record->maxstudents = '10';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(pmclass::TABLE, array('idnumber' => 'testclassidnumber',
-                                                                   'maxstudents' => '10')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(pmclass::TABLE, array('idnumber' => 'testclassidnumber', 'maxstudents' => '10')));
     }
 
     /**
@@ -457,10 +417,10 @@ class elis_createorupdate_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //run the user set create action
+        // Run the user set create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'cluster';
@@ -468,12 +428,14 @@ class elis_createorupdate_test extends elis_database_test {
         $record->display = 'testusersetdisplay';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(userset::TABLE, array('name' => 'testusersetname',
-                                                                   'display' => 'testusersetdisplay')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(userset::TABLE, array(
+            'name' => 'testusersetname',
+            'display' => 'testusersetdisplay'
+        )));
     }
 
     /**
@@ -484,15 +446,14 @@ class elis_createorupdate_test extends elis_database_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test user set
-        $userset = new userset(array('name' => 'testusersetname',
-                                     'display' => 'testusersetdisplay'));
+        // Create the test user set.
+        $userset = new userset(array('name' => 'testusersetname', 'display' => 'testusersetdisplay'));
         $userset->save();
 
-        //run the user set create action
+        // Run the user set create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'cluster';
@@ -500,12 +461,14 @@ class elis_createorupdate_test extends elis_database_test {
         $record->display = 'updatedtestusersetdisplay';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', $record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(userset::TABLE, array('name' => 'testusersetname',
-                                                                   'display' => 'updatedtestusersetdisplay')));
+        // Validation.
+        $this->assertTrue($DB->record_exists(userset::TABLE, array(
+            'name' => 'testusersetname',
+            'display' => 'updatedtestusersetdisplay'
+        )));
     }
 
     /**
@@ -518,30 +481,33 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test course
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        // Create the test course.
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        //create the test class
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        // Create the test class.
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        //create the test user
-        $user = new user(array('username' => 'testuserusername',
-                               'email' => 'test@useremail.com',
-                               'idnumber' => 'testuseridnumber',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'country' => 'CA'));
+        // Create the test user.
+        $user = new user(array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        //run the student enrolment create action
+        // Run the student enrolment create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'class_testclassidnumber';
@@ -549,10 +515,10 @@ class elis_createorupdate_test extends elis_database_test {
         $record->completetime = 'Jan/01/2012';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', $record, 'bogus');
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(student::TABLE, array(
             'classid' => $class->id,
             'userid' => $user->id,
@@ -571,30 +537,33 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test course
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        // Create the test course.
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        //create the test class
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        // Create the test class.
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        //create the test user
-        $user = new user(array('username' => 'testuserusername',
-                               'email' => 'test@useremail.com',
-                               'idnumber' => 'testuseridnumber',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'country' => 'CA'));
+        // Create the test user.
+        $user = new user(array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        // create the test student enrolment
+        // Create the test student enrolment.
         $student = new student(array(
             'classid' => $class->id,
             'userid' => $user->id,
@@ -602,7 +571,7 @@ class elis_createorupdate_test extends elis_database_test {
         ));
         $student->save();
 
-        //run the student enrolment create action
+        // Run the student enrolment create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'class_testclassidnumber';
@@ -610,10 +579,10 @@ class elis_createorupdate_test extends elis_database_test {
         $record->completetime = 'Jan/02/2012';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', $record, 'bogus');
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(student::TABLE, array(
             'classid' => $class->id,
             'userid' => $user->id,
@@ -631,30 +600,33 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/instructor.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test course
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        // Create the test course.
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        //create the test class
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        // Create the test class.
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        //create the test user
-        $user = new user(array('username' => 'testuserusername',
-                               'email' => 'test@useremail.com',
-                               'idnumber' => 'testuseridnumber',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'country' => 'CA'));
+        // Create the test user.
+        $user = new user(array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        //run the instructor enrolment create action
+        // Run the instructor enrolment create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'class_testclassidnumber';
@@ -663,10 +635,10 @@ class elis_createorupdate_test extends elis_database_test {
         $record->completetime = 'Jan/01/2012';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', $record, 'bogus');
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(instructor::TABLE, array(
             'classid' => $class->id,
             'userid' => $user->id,
@@ -685,30 +657,33 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/instructor.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        //set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        //create the test course
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        // Create the test course.
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        //create the test class
-        $class = new pmclass(array('courseid' => $course->id,
-                                   'idnumber' => 'testclassidnumber'));
+        // Create the test class.
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $class->save();
 
-        //create the test user
-        $user = new user(array('username' => 'testuserusername',
-                               'email' => 'test@useremail.com',
-                               'idnumber' => 'testuseridnumber',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'country' => 'CA'));
+        // Create the test user.
+        $user = new user(array(
+            'username' => 'testuserusername',
+            'email' => 'test@useremail.com',
+            'idnumber' => 'testuseridnumber',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'country' => 'CA'
+        ));
         $user->save();
 
-        // create the instructor enrolment user
+        // Create the instructor enrolment user.
         $instructor = new instructor(array(
             'classid' => $class->id,
             'userid' => $user->id,
@@ -716,7 +691,7 @@ class elis_createorupdate_test extends elis_database_test {
         ));
         $instructor->save();
 
-        //run the instructor enrolment create action
+        // Run the instructor enrolment create action.
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'class_testclassidnumber';
@@ -725,10 +700,10 @@ class elis_createorupdate_test extends elis_database_test {
         $record->completetime = 'Jan/02/2012';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', $record, 'bogus');
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(instructor::TABLE, array(
             'classid' => $class->id,
             'userid' => $user->id,
@@ -752,10 +727,10 @@ class elis_createorupdate_test extends elis_database_test {
         require_once($CFG->dirroot.'/elis/program/lib/data/instructor.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        // Set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        // Create the test course
+        // Create the test course.
         $course = new course(array(
             'name'     => 'testcoursename',
             'idnumber' => 'testcourseidnumber',
@@ -763,14 +738,14 @@ class elis_createorupdate_test extends elis_database_test {
         ));
         $course->save();
 
-        // Create the test class
+        // Create the test class.
         $class = new pmclass(array(
             'courseid' => $course->id,
             'idnumber' => 'testclassidnumber')
         );
         $class->save();
 
-        // Create the test user
+        // Create the test user.
         $user = new user(array(
             'username'  => 'testuserusername',
             'email'     => 'test@useremail.com',
@@ -781,11 +756,10 @@ class elis_createorupdate_test extends elis_database_test {
         ));
         $user->save();
 
-
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
 
-        // (1) Run the first student enrolment
+        // 1 Run the first student enrolment.
         $record = new stdClass;
         $record->action        = 'create';
         $record->context       = 'class_testclassidnumber';
@@ -793,10 +767,10 @@ class elis_createorupdate_test extends elis_database_test {
         $record->role          = 'student';
         $record->completetime  = 'Jan/01/2012';
 
-        // NOTE: we clone() the record because the createorupdate setting will rewrite the action parameter
+        // NOTE: we clone() the record because the createorupdate setting will rewrite the action parameter.
         $importplugin->process_record('enrolment', clone($record), 'bogus');
 
-        // Validation of the enrolment record
+        // Validation of the enrolment record.
         $params = array(
             'classid'      => $class->id,
             'userid'       => $user->id,
@@ -805,20 +779,20 @@ class elis_createorupdate_test extends elis_database_test {
 
         $this->assertTrue($DB->record_exists(student::TABLE, $params));
 
-        // (2) Run the second student enrolment
+        // 2 Run the second student enrolment.
         $record->completetime = 'Jan/02/2012';
         $importplugin->process_record('enrolment', clone($record), 'bogus');
         $params['completetime'] = rlip_timestamp(0, 0, 0, 1, 2, 2012);
         $this->assertTrue($DB->record_exists(student::TABLE, $params));
 
-        // (3) Run the first teacher enrolment
+        // 3 Run the first teacher enrolment.
         $record->role         = 'instructor';
         $record->completetime = 'Jan/01/2012';
         $importplugin->process_record('enrolment', clone($record), 'bogus');
         $params['completetime'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
         $this->assertTrue($DB->record_exists(instructor::TABLE, $params));
 
-        // (4) Run the second teacher enrolment
+        // 4 Run the second teacher enrolment.
         $record->completetime = 'Jan/02/2012';
         $importplugin->process_record('enrolment', clone($record), 'bogus');
         $params['completetime'] = rlip_timestamp(0, 0, 0, 1, 2, 2012);
@@ -829,7 +803,7 @@ class elis_createorupdate_test extends elis_database_test {
      * Validate that createorupdate still works when the class idnumber contains
      * an underscore
      */
-    public function testELISCreateorupdateSupportsUnderscores() {
+    public function testeliscreateorupdatesupportsunderscores() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -837,10 +811,10 @@ class elis_createorupdate_test extends elis_database_test {
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
-        // Set up initial conditions
+        // Set up initial conditions.
         set_config('createorupdate', 1, 'rlipimport_version1elis');
 
-        // Create the test course
+        // Create the test course.
         $course = new course(array(
             'name'     => 'testcoursename',
             'idnumber' => 'testcourseidnumber',
@@ -848,15 +822,15 @@ class elis_createorupdate_test extends elis_database_test {
         ));
         $course->save();
 
-        // Create the test class
+        // Create the test class.
         $class = new pmclass(array(
             'courseid' => $course->id,
-            //idnumber has an underscore in it
+            // Idnumber has an underscore in it.
             'idnumber' => 'testclass_idnumber'
         ));
         $class->save();
 
-        // Create the test user
+        // Create the test user.
         $user = new user(array(
             'username'  => 'testuserusername',
             'email'     => 'test@useremail.com',
@@ -867,7 +841,7 @@ class elis_createorupdate_test extends elis_database_test {
         ));
         $user->save();
 
-        // Set up an existing enrolment
+        // Set up an existing enrolment.
         $student = new student(array(
             'userid'           => $user->id,
             'classid'          => $class->id,
@@ -875,9 +849,9 @@ class elis_createorupdate_test extends elis_database_test {
         ));
         $student->save();
 
-        // Import the record, with create acting as an update
+        // Import the record, with create acting as an update.
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
 
         $record = new stdClass;
         $record->action = 'create';
@@ -887,7 +861,7 @@ class elis_createorupdate_test extends elis_database_test {
 
         $importplugin->process_record('enrolment', $record, 'bogus');
 
-        // Validation
+        // Validation.
         $this->assertEquals(1, $DB->count_records(student::TABLE));
         $params = array(
             'userid' => $user->id,
