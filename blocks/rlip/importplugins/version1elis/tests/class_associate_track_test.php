@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,29 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins/version1elis/phpunit
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
 
 /**
- * Class for testing track-class association creation during class instance
- * create and update actions
+ * Class for testing track-class association creation during class instance create and update actions.
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class elis_class_associate_track_test extends elis_database_test {
+class elis_class_associate_track_testcase extends rlip_elis_test {
     /**
      * Return the list of tables that should be overlayed.
      */
@@ -80,21 +78,23 @@ class elis_class_associate_track_test extends elis_database_test {
      *
      * @return array Data in the expected format
      */
-    function autoenrol_provider() {
-        return array(array(NULL, 0),
-                     array(0, 0),
-                     array(1, 1));
+    public function autoenrol_provider() {
+        return array(
+                array(null, 0),
+                array(0, 0),
+                array(1, 1)
+        );
     }
 
     /**
      * Validate that track-class associations can be created during a class instance
      * create action
      *
-     * @param mixed $autoenrol The appropriate autoenrol value specified 
-     * @param int $db_autoenrol The value expected to be set in the db for autoenrol
+     * @param mixed $autoenrol The appropriate autoenrol value specified
+     * @param int $dbautoenrol The value expected to be set in the db for autoenrol
      * @dataProvider autoenrol_provider
      */
-    function test_associate_track_during_class_create($autoenrol, $db_autoenrol) {
+    public function test_associate_track_during_class_create($autoenrol, $dbautoenrol) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -103,55 +103,57 @@ class elis_class_associate_track_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/track.class.php'));
 
-        //create the course description
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        // Create the course description.
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        //create the curriculum / program
+        // Create the curriculum / program.
         $curriculum = new curriculum(array('idnumber' => 'testcurriculumidnumber'));
         $curriculum->save();
 
-        //associate the course description to the program
-        $curriculumcourse = new curriculumcourse(array('curriculumid' => $curriculum->id,
-                                                       'courseid' => $course->id));
+        // Associate the course description to the program.
+        $curriculumcourse = new curriculumcourse(array('curriculumid' => $curriculum->id, 'courseid' => $course->id));
         $curriculumcourse->save();
 
-        //create the track
-        $track = new track(array('curid' => $curriculum->id,
-                                 'idnumber' => 'testtrackidnumber'));
+        // Create the track.
+        $track = new track(array('curid' => $curriculum->id, 'idnumber' => 'testtrackidnumber'));
         $track->save();
 
-        //run the class instance create action
+        // Run the class instance create action.
         $record = new stdClass;
         $record->assignment = 'testcourseidnumber';
         $record->idnumber = 'testclassidnumber';
         $record->track = 'testtrackidnumber';
-        if ($autoenrol !== NULL) {
+        if ($autoenrol !== null) {
             $record->autoenrol = $autoenrol;
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_create($record, 'bogus');
 
-        //validation
+        // Validation.
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => 'testclassidnumber'));
-        $this->assertTrue($DB->record_exists(trackassignment::TABLE, array('trackid' => $track->id,
-                                                                           'classid' => $classid,
-                                                                           'autoenrol' => $db_autoenrol)));
+        $this->assertTrue($DB->record_exists(trackassignment::TABLE, array(
+            'trackid' => $track->id,
+            'classid' => $classid,
+            'autoenrol' => $dbautoenrol
+        )));
     }
 
     /**
      * Validate that track-class associations can be created during a class instance
      * update action
      *
-     * @param mixed $autoenrol The appropriate autoenrol value specified 
-     * @param int $db_autoenrol The value expected to be set in the db for autoenrol
+     * @param mixed $autoenrol The appropriate autoenrol value specified
+     * @param int $dbautoenrol The value expected to be set in the db for autoenrol
      * @dataProvider autoenrol_provider
      */
-    function test_associate_track_during_class_update($autoenrol, $db_autoenrol) {
+    public function test_associate_track_during_class_update($autoenrol, $dbautoenrol) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
@@ -160,48 +162,50 @@ class elis_class_associate_track_test extends elis_database_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/track.class.php'));
 
-        //create the course description
+        // Create the course description.
         $course = new course(array('name' => 'testcoursename',
                                    'idnumber' => 'testcourseidnumber',
                                    'syllabus' => ''));
         $course->save();
 
-        //create the class instance
+        // Create the class instance.
         $pmclass = new pmclass(array('courseid' => $course->id,
                                      'idnumber' => 'testclassidnumber'));
         $pmclass->save();
 
-        //create the curriculum / program
+        // Create the curriculum / program.
         $curriculum = new curriculum(array('idnumber' => 'testcurriculumidnumber'));
         $curriculum->save();
 
-        //associate the course description to the program
+        // Associate the course description to the program.
         $curriculumcourse = new curriculumcourse(array('curriculumid' => $curriculum->id,
                                                        'courseid' => $course->id));
         $curriculumcourse->save();
 
-        //create the track
+        // Create the track.
         $track = new track(array('curid' => $curriculum->id,
                                  'idnumber' => 'testtrackidnumber'));
         $track->save();
 
-        //run the class instance update action
+        // Run the class instance update action.
         $record = new stdClass;
         $record->assignment = 'testcourseidnumber';
         $record->idnumber = 'testclassidnumber';
         $record->track = 'testtrackidnumber';
-        if ($autoenrol !== NULL) {
+        if ($autoenrol !== null) {
             $record->autoenrol = $autoenrol;
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_update($record, 'bogus');
 
-        //validation
+        // Validation.
         $classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => 'testclassidnumber'));
-        $this->assertTrue($DB->record_exists(trackassignment::TABLE, array('trackid' => $track->id,
-                                                                           'classid' => $classid,
-                                                                           'autoenrol' => $db_autoenrol)));
+        $this->assertTrue($DB->record_exists(trackassignment::TABLE, array(
+            'trackid' => $track->id,
+            'classid' => $classid,
+            'autoenrol' => $dbautoenrol
+        )));
     }
 }

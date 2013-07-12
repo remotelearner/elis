@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,129 +16,46 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins/version1elis/phpunit
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-//TODO: move to a more general location
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/phpunit/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
 
 /**
- * Class that fetches import files for the enrolment import
+ * Class for validating that field mappings work correctly during the ELIS enrolment import.
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class rlip_importprovider_mockenrolment extends rlip_importprovider_mock {
+class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
     /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
+     * @var array Store the mapping we will use.
      */
-    function get_import_file($entity) {
-        if ($entity != 'enrolment') {
-            return false;
-        }
-
-        return parent::get_import_file($entity);
-    }
-}
-
-/**
- * Class for validating that field mappings work correctly during the ELIS
- * enrolment import
- */
-class elis_enrolment_field_mappings_test extends elis_database_test {
-    //store the mapping we will use
-    private $mapping = array('action' => 'customaction',
-                             'context' => 'customcontext',
-                             'user_idnumber' => 'customuser_idnumber',
-                             'user_username' => 'customuser_username',
-                             'user_email' => 'customuser_email',
-                             'enrolmenttime' => 'customenrolmenttime',
-                             'assigntime' => 'customassigntime',
-                             'completetime' => 'customcompletetime',
-                             'completestatusid' => 'customcompletestatusid',
-                             'grade' => 'customgrade',
-                             'credits' => 'customcredits',
-                             'locked' => 'customlocked',
-                             'role' => 'customrole');
-
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/clusterassignment.class.php'));
-        require_once(elispm::lib('data/course.class.php'));
-        require_once(elispm::lib('data/curriculum.class.php'));
-        require_once(elispm::lib('data/curriculumstudent.class.php'));
-        require_once(elispm::lib('data/instructor.class.php'));
-        require_once(elispm::lib('data/student.class.php'));
-        require_once(elispm::lib('data/track.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-        require_once(elispm::lib('data/userset.class.php'));
-
-        return array(
-            'context' => 'moodle',
-            'message' => 'moodle',
-            'role' => 'moodle',
-            'role_assignments' => 'moodle',
-            'role_capabilities' => 'moodle',
-            'user' => 'moodle',
-            'user_info_field' => 'moodle',
-            RLIP_LOG_TABLE => 'block_rlip',
-            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-            clusterassignment::TABLE => 'elis_program',
-            course::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program',
-            field::TABLE => 'elis_core',
-            instructor::TABLE => 'elis_program',
-            pmclass::TABLE => 'elis_program',
-            student::TABLE => 'elis_program',
-            track::TABLE => 'elis_program',
-            trackassignment::TABLE => 'elis_program',
-            user::TABLE => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-            usertrack::TABLE => 'elis_program',
-            waitlist::TABLE => 'elis_program'
-        );
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/coursetemplate.class.php'));
-        require_once(elispm::lib('data/student.class.php'));
-
-        return array(
-            'cache_flags' => 'moodle',
-            'user_enrolments' => 'moodle',
-            coursetemplate::TABLE => 'elis_program',
-            student_grade::TABLE => 'elis_program'
-        );
-    }
+    private $mapping = array(
+        'action' => 'customaction',
+        'context' => 'customcontext',
+        'user_idnumber' => 'customuser_idnumber',
+        'user_username' => 'customuser_username',
+        'user_email' => 'customuser_email',
+        'enrolmenttime' => 'customenrolmenttime',
+        'assigntime' => 'customassigntime',
+        'completetime' => 'customcompletetime',
+        'completestatusid' => 'customcompletestatusid',
+        'grade' => 'customgrade',
+        'credits' => 'customcredits',
+        'locked' => 'customlocked',
+        'role' => 'customrole'
+    );
 
     /**
      * Initialize the db records needed to represent the field mapping
@@ -166,12 +83,14 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         global $CFG;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'test@useremail.com',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'test@useremail.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
         return $user->id;
@@ -187,7 +106,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
-        $provider = new rlip_importprovider_mockenrolment($data);
+        $provider = new rlipimport_version1elis_importprovider_mockenrolment($data);
 
         $importplugin = new rlip_importplugin_version1elis($provider);
         $importplugin->run();
@@ -208,7 +127,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        //run the program enrolment create action
+        // Run the program enrolment create action.
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'curriculum_testprogramidnumber';
@@ -218,9 +137,8 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(curriculumstudent::TABLE, array('curriculumid' => $program->id,
-                                                                             'userid' => $userid)));
+        // Validation.
+        $this->assertTrue($DB->record_exists(curriculumstudent::TABLE, array('curriculumid' => $program->id, 'userid' => $userid)));
     }
 
     /**
@@ -238,11 +156,10 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        $curriculumstudent = new curriculumstudent(array('curriculumid' => $program->id,
-                                                         'userid' => $userid));
+        $curriculumstudent = new curriculumstudent(array('curriculumid' => $program->id, 'userid' => $userid));
         $curriculumstudent->save();
 
-        //run the program enrolment delete action
+        // Run the program enrolment delete action.
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'curriculum_testprogramidnumber';
@@ -252,7 +169,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records(curriculumstudent::TABLE));
     }
 
@@ -271,11 +188,10 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        $track = new track(array('curid' => $program->id,
-                                 'idnumber' => 'testtrackidnumber'));
+        $track = new track(array('curid' => $program->id, 'idnumber' => 'testtrackidnumber'));
         $track->save();
 
-        //run the track enrolment create action
+        // Run the track enrolment create action.
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'track_testtrackidnumber';
@@ -285,9 +201,8 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(usertrack::TABLE, array('trackid' => $track->id,
-                                                                     'userid' => $userid)));
+        // Validation.
+        $this->assertTrue($DB->record_exists(usertrack::TABLE, array('trackid' => $track->id, 'userid' => $userid)));
     }
 
     /**
@@ -305,15 +220,13 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        $track = new track(array('curid' => $program->id,
-                                 'idnumber' => 'testtrackidnumber'));
+        $track = new track(array('curid' => $program->id, 'idnumber' => 'testtrackidnumber'));
         $track->save();
 
-        $usertrack = new usertrack(array('trackid' => $track->id,
-                                         'userid' => $userid));
+        $usertrack = new usertrack(array('trackid' => $track->id, 'userid' => $userid));
         $usertrack->save();
 
-        //run the track enrolment delete action
+        // Run the track enrolment delete action.
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'track_testtrackidnumber';
@@ -323,7 +236,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records(usertrack::TABLE));
     }
 
@@ -342,7 +255,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
 
-        //run the user set enrolment create action
+        // Run the user set enrolment create action.
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'cluster_testusersetname';
@@ -352,9 +265,8 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('clusterid' => $userset->id,
-                                                                             'userid' => $userid)));
+        // Validation.
+        $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array('clusterid' => $userset->id, 'userid' => $userid)));
     }
 
     /**
@@ -372,12 +284,14 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
 
-        $clusterassignment = new clusterassignment(array('clusterid' => $userset->id,
-                                                         'userid' => $userid,
-                                                         'plugin' => 'manual'));
+        $clusterassignment = new clusterassignment(array(
+            'clusterid' => $userset->id,
+            'userid' => $userid,
+            'plugin' => 'manual'
+        ));
         $clusterassignment->save();
 
-        //run the user set enrolment delete action
+        // Run the user set enrolment delete action.
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'cluster_testusersetname';
@@ -387,7 +301,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records(clusterassignment::TABLE));
     }
 
@@ -404,16 +318,17 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $userid = $this->create_test_user();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        $pmclass = new pmclass(array('courseid' => $course->id,
-                                     'idnumber' => 'testclassidnumber'));
+        $pmclass = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $pmclass->save();
 
-        //run the student enrolment create action
+        // Run the student enrolment create action.
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'class_testclassidnumber';
@@ -430,7 +345,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(student::TABLE, array(
             'classid' => $pmclass->id,
             'userid' => $userid,
@@ -456,20 +371,20 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $userid = $this->create_test_user();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        $pmclass = new pmclass(array('courseid' => $course->id,
-                                     'idnumber' => 'testclassidnumber'));
+        $pmclass = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $pmclass->save();
 
-        $student = new student(array('classid' => $pmclass->id,
-                                     'userid' => $userid));
+        $student = new student(array('classid' => $pmclass->id, 'userid' => $userid));
         $student->save();
 
-        //run the student enrolment update action
+        // Run the student enrolment update action.
         $record = new stdClass;
         $record->customaction = 'update';
         $record->customcontext = 'class_testclassidnumber';
@@ -486,7 +401,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(student::TABLE, array(
             'classid' => $pmclass->id,
             'userid' => $userid,
@@ -512,20 +427,26 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $userid = $this->create_test_user();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        $pmclass = new pmclass(array('courseid' => $course->id,
-                                     'idnumber' => 'testclassidnumber'));
+        $pmclass = new pmclass(array(
+            'courseid' => $course->id,
+            'idnumber' => 'testclassidnumber'
+        ));
         $pmclass->save();
 
-        $student = new student(array('classid' => $pmclass->id,
-                                     'userid' => $userid));
+        $student = new student(array(
+            'classid' => $pmclass->id,
+            'userid' => $userid
+        ));
         $student->save();
 
-        //run the student enrolment delete action
+        // Run the student enrolment delete action.
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'class_testclassidnumber';
@@ -536,7 +457,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records(student::TABLE));
     }
 
@@ -553,16 +474,17 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $userid = $this->create_test_user();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        $pmclass = new pmclass(array('courseid' => $course->id,
-                                     'idnumber' => 'testclassidnumber'));
+        $pmclass = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $pmclass->save();
 
-        //run the instructor enrolment create action
+        // Run the instructor enrolment create action.
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'class_testclassidnumber';
@@ -575,7 +497,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(instructor::TABLE, array(
             'classid' => $pmclass->id,
             'userid' => $userid,
@@ -597,20 +519,20 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $userid = $this->create_test_user();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        $pmclass = new pmclass(array('courseid' => $course->id,
-                                     'idnumber' => 'testclassidnumber'));
+        $pmclass = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $pmclass->save();
 
-        $instructor = new instructor(array('classid' => $pmclass->id,
-                                           'userid' => $userid));
+        $instructor = new instructor(array('classid' => $pmclass->id, 'userid' => $userid));
         $instructor->save();
 
-        //run the instructor enrolment update action
+        // Run the instructor enrolment update action.
         $record = new stdClass;
         $record->customaction = 'update';
         $record->customcontext = 'class_testclassidnumber';
@@ -623,13 +545,13 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        // validation
+        // Validation.
         $this->assertTrue($DB->record_exists(instructor::TABLE, array(
             'classid' => $pmclass->id,
             'userid' => $userid,
             'assigntime' => rlip_timestamp(0, 0, 0, 1, 2, 2012),
-            'completetime' => rlip_timestamp(0, 0, 0, 1, 2, 2012))
-        ));
+            'completetime' => rlip_timestamp(0, 0, 0, 1, 2, 2012)
+        )));
     }
 
     /**
@@ -645,20 +567,20 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $userid = $this->create_test_user();
 
-        $course = new course(array('name' => 'testcoursename',
-                                   'idnumber' => 'testcourseidnumber',
-                                   'syllabus' => ''));
+        $course = new course(array(
+            'name' => 'testcoursename',
+            'idnumber' => 'testcourseidnumber',
+            'syllabus' => ''
+        ));
         $course->save();
 
-        $pmclass = new pmclass(array('courseid' => $course->id,
-                                     'idnumber' => 'testclassidnumber'));
+        $pmclass = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
         $pmclass->save();
 
-        $instructor = new instructor(array('classid' => $pmclass->id,
-                                           'userid' => $userid));
+        $instructor = new instructor(array('classid' => $pmclass->id, 'userid' => $userid));
         $instructor->save();
 
-        //run the instructor enrolment delete action
+        // Run the instructor enrolment delete action.
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'class_testclassidnumber';
@@ -669,7 +591,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records(instructor::TABLE));
     }
 
@@ -686,7 +608,7 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $roleid = create_role('testrolename', 'testroleshortname', 'testroledescription');
 
-        //run the user enrolment create actions
+        // Run the user enrolment create actions.
         $record = new stdClass;
         $record->customaction = 'create';
         $record->customcontext = 'user_testuseridnumber';
@@ -697,12 +619,16 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
-        $instance = context_user::instance(1);
+        $userid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
 
-        $this->assertTrue($DB->record_exists('role_assignments', array('roleid' => $roleid,
-                                                                       'contextid' => $instance->id,
-                                                                       'userid' => 1)));
+        // Validation.
+        $instance = context_user::instance($userid);
+
+        $this->assertTrue($DB->record_exists('role_assignments', array(
+            'roleid' => $roleid,
+            'contextid' => $instance->id,
+            'userid' => $userid
+        )));
     }
 
     /**
@@ -715,13 +641,16 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
         $this->init_mapping();
 
         $userid = $this->create_test_user();
+        $user = new user($userid);
+        $user->load();
+        $muser = $user->get_moodleuser();
 
         $roleid = create_role('testrolename', 'testroleshortname', 'testroledescription');
 
-        $instance = context_user::instance(1);
-        role_assign($roleid, 1, $instance->id);
+        $instance = context_user::instance($muser->id);
+        role_assign($roleid, $muser->id, $instance->id);
 
-        //run the user enrolment delete actions
+        // Run the user enrolment delete actions.
         $record = new stdClass;
         $record->customaction = 'delete';
         $record->customcontext = 'user_testuseridnumber';
@@ -732,7 +661,8 @@ class elis_enrolment_field_mappings_test extends elis_database_test {
 
         $this->run_enrolment_import((array)$record);
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records('role_assignments'));
+
     }
 }

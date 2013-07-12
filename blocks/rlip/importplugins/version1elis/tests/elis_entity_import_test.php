@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,62 +16,44 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins/version1elis/phpunit
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(__FILE__) .'/../../../../../config.php');
-require_once(dirname(__FILE__) .'/rlip_mock_provider.class.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 
-// Handy constants for readability
+// Libs.
+require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Handy constants for readability.
 define('ELIS_ENTITY_EXISTS', true);
 define('ELIS_ENTITY_DOESNOT_EXIST', false);
 
-// readable defs for test_setup_data array index
-define('TEST_SETUP_COURSE',     0);
+// Readable defs for test_setup_data array index.
+define('TEST_SETUP_COURSE', 0);
 define('TEST_SETUP_CURRICULUM', 1);
-define('TEST_SETUP_TRACK',      2);
-define('TEST_SETUP_CLASS',      3);
-define('TEST_SETUP_CLUSTER',    4);
-global $NO_TEST_SETUP;
-$NO_TEST_SETUP = array();
+define('TEST_SETUP_TRACK', 2);
+define('TEST_SETUP_CLASS', 3);
+define('TEST_SETUP_CLUSTER', 4);
+global $notestsetup;
+$notestsetup = array();
 
 /**
- * Class that fetches import files for the user import
+ * Test importing entities
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class rlip_importprovider_mockcourse extends rlip_importprovider_mock {
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'course') {
-            return false;
-        }
+class elis_entity_import_testcase extends rlip_elis_test {
 
-        return parent::get_import_file($entity);
-    }
-}
-
-class elis_entity_import_test extends elis_database_test {
-
-    var $context_to_table = array(
+    public $contexttotable = array(
         'course'     => 'crlm_course',
         'curr'       => 'crlm_curriculum',
         'curriculum' => 'crlm_curriculum',
@@ -80,246 +62,107 @@ class elis_entity_import_test extends elis_database_test {
         'cluster'    => 'crlm_cluster'
     );
 
-    var $test_setup_data = array(
-        array(
-            'action'     => 'create',
-            'context'    => 'course',
-            'idnumber'   => 'courseidnumber',
-            'name'       => 'coursename'
-        ),
-        array(
-            'action'     => 'create',
-            'context'    => 'curriculum',
-            'idnumber'   => 'programidnumber',
-            'name'       => 'programname'
-        ),
-        array(
-            'action'     => 'create',
-            'context'    => 'track',
-            'idnumber'   => 'trackidnumber',
-            'name'       => 'trackname',
-            'assignment' => 'programidnumber' // <-- Program/Curriculum idnumber
-        ),
-        array(
-            'action'     => 'create',
-            'context'    => 'class',
-            'idnumber'   => 'classidnumber',
-            'assignment' => 'courseidnumber', // <-- Course Description idnumber
-            'maxstudents'=> 0
-        ),
-        array(
-            'action'     => 'create',
-            'context'    => 'cluster',
-            'name'       => 'usersetname',
-            'display'    => 'usersetdescription'
-        )
+    public $testsetupdata = array(
+            array(
+                'action'     => 'create',
+                'context'    => 'course',
+                'idnumber'   => 'courseidnumber',
+                'name'       => 'coursename'
+            ),
+            array(
+                'action'     => 'create',
+                'context'    => 'curriculum',
+                'idnumber'   => 'programidnumber',
+                'name'       => 'programname'
+            ),
+            array(
+                'action'     => 'create',
+                'context'    => 'track',
+                'idnumber'   => 'trackidnumber',
+                'name'       => 'trackname',
+                'assignment' => 'programidnumber' // Program/Curriculum idnumber.
+            ),
+            array(
+                'action'     => 'create',
+                'context'    => 'class',
+                'idnumber'   => 'classidnumber',
+                'assignment' => 'courseidnumber', // Course Description idnumber.
+                'maxstudents'=> 0
+            ),
+            array(
+                'action'     => 'create',
+                'context'    => 'cluster',
+                'name'       => 'usersetname',
+                'display'    => 'usersetdescription'
+            )
     );
-
-    protected static function get_overlay_tables() {
-        global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
-        require_once($file);
-
-        $tables = array(
-            'block_instances' => 'moodle',
-            'block_positions' => 'moodle',
-            'cache_flags' => 'moodle',
-            'cohort_members' => 'moodle',
-            'comments' => 'moodle',
-            'config' => 'moodle',
-            'config_plugins' => 'moodle',
-            'context' => 'moodle',
-            'course' => 'moodle',
-            'course_categories' => 'moodle',
-            'course_sections' => 'moodle',
-            'crlm_class' => 'elis_program',
-            'crlm_class_graded' => 'elis_program',
-            'crlm_class_instructor' => 'elis_program',
-            'crlm_class_moodle' => 'elis_program',
-            'crlm_cluster' => 'elis_program',
-            'crlm_cluster_assignments' => 'elis_program',
-            'crlm_cluster_curriculum' => 'elis_program',
-            'crlm_cluster_profile' => 'elis_program',
-            'crlm_cluster_track' => 'elis_program',
-            'crlm_course' => 'elis_program',
-            'crlm_coursetemplate' => 'elis_program',
-            'crlm_curriculum' => 'elis_program',
-            'crlm_curriculum_assignment' => 'elis_program',
-            'crlm_curriculum_course' => 'elis_program',
-            'crlm_environment' => 'elis_program',
-            'crlm_results' => 'elis_program',
-            'crlm_results_action' => 'elis_program',
-            'crlm_tag' => 'elis_program',
-            'crlm_tag_instance' => 'elis_program',
-            'crlm_track' => 'elis_program',
-            'crlm_track_class' => 'elis_program',
-            'crlm_user' => 'elis_program',
-            'crlm_user_moodle' => 'elis_program',
-            'crlm_user_track' => 'elis_program',
-            'crlm_usercluster' => 'elis_program',
-            'crlm_wait_list' => 'elis_program',
-            'enrol' => 'moodle',
-            'events_queue' => 'moodle',
-            'events_queue_handlers' => 'moodle',
-            'filter_active' => 'moodle',
-            'filter_config' => 'moodle',
-            'grade_categories' => 'moodle',
-            'grade_categories_history' => 'moodle',
-            'grade_grades' => 'moodle',
-            'grade_grades_history' => 'moodle',
-            'grade_items' => 'moodle',
-            'grade_items_history' => 'moodle',
-            'grading_areas' => 'moodle',
-            'groups' => 'moodle',
-            'groups_members' => 'moodle',
-            'message' => 'moodle',
-            'message_read' => 'moodle',
-            'message_working' => 'moodle',
-            'rating' => 'moodle',
-            'role' => 'moodle',
-            'role_context_levels' => 'moodle',
-            'role_assignments' => 'moodle',
-            'role_capabilities' => 'moodle',
-            'role_names' => 'moodle',
-            'sessions' => 'moodle',
-            'user' => 'moodle',
-            'user_preferences' => 'moodle',
-            'user_info_data' => 'moodle',
-            'user_lastaccess' => 'moodle',
-            'user_enrolments' => 'moodle',
-            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis'
-            );
-
-        if (file_exists($CFG->dirroot.'/repository/elis_files/version.php')) {
-            $tables += array('elis_files_userset_store' => 'repository_elis_files');
-        }
-        return $tables;
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/student.class.php'));
-
-        return array(
-            student::TABLE     => 'elis_program',
-            'log'              => 'moodle',
-            RLIP_LOG_TABLE     => 'block_rlip',
-            'files'            => 'moodle',
-            'external_tokens'  => 'moodle',
-            'external_services_users'      => 'moodle',
-            'elis_field_categories'        => 'elis_program',
-            'elis_field_category_contexts' => 'elis_program',
-            'elis_field_contextlevels'     => 'elis_program',
-            'elis_field_data_char'         => 'elis_program',
-            'elis_field'                   => 'elis_program',
-            'elis_field_data_int'          => 'elis_program',
-            'elis_field_data_num'          => 'elis_program',
-            'elis_field_data_text'         => 'elis_program',
-            'elis_field_owner'             => 'elis_program',
-            'external_tokens'              => 'moodle',
-            'external_services_users'      => 'moodle'
-        );
-    }
-
-    /**
-     * Set up the course and context records needed for many of the
-     * unit tests
-     */
-    private function init_contexts_and_site_course() {
-        global $DB;
-
-        $siteid = SITEID ? SITEID : 1; // TBD
-        $prefix = self::$origdb->get_prefix();
-        $DB->execute("INSERT INTO {context}
-                      SELECT * FROM
-                      {$prefix}context
-                      WHERE contextlevel = ?", array(CONTEXT_SYSTEM));
-        $DB->execute("INSERT INTO {context}
-                      SELECT * FROM
-                      {$prefix}context
-                      WHERE contextlevel = ? and instanceid = ?", array(CONTEXT_COURSE, $siteid));
-        //set up the site course record
-        if ($record = self::$origdb->get_record('course',
-                                                array('id' => $siteid))) {
-            unset($record->id);
-            $DB->insert_record('course', $record);
-        }
-
-        build_context_path();
-    }
 
     /**
      * Test data provider
      *
      * @return array the test data
      */
-    public function dataProviderForTests() {
-        global $NO_TEST_SETUP;
+    public function dataproviderfortests() {
+        global $notestsetup;
 
         $testdata = array();
 
-        // course create - no idnumber
+        // Course create - no idnumber.
         $testdata[] = array(
             'create',
             'course',
             array(
-                'name'        => 'coursename'
+                'name' => 'coursename'
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // course create - no name
+        // Course create - no name.
         $testdata[] = array(
             'create',
             'course',
             array(
-                'idnumber'    => 'courseidnumber',
+                'idnumber' => 'courseidnumber',
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // course create - ok!
+        // Course create - ok!.
         $testdata[] = array(
             'create',
             'course',
             array(
-                'idnumber'    => 'courseidnumber',
-                'name'        => 'coursename',
+                'idnumber' => 'courseidnumber',
+                'name' => 'coursename',
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_EXISTS
         );
 
-        // course create - all fields - ok!
+        // Course create - all fields - ok!.
         $testdata[] = array(
             'create',
             'course',
             array(
-                'idnumber'    => 'courseidnumber',
-                'name'        => 'coursename',
-                'code'        => 'coursecode',
-                'syllabus'    => 'course syllabus',
+                'idnumber' => 'courseidnumber',
+                'name' => 'coursename',
+                'code' => 'coursecode',
+                'syllabus' => 'course syllabus',
                 'lengthdescription'=> 'Length Description',
-                'length'      => '100',
-                'credits'     => '7.5',
+                'length' => '100',
+                'credits' => '7.5',
                 'completion_grade'=> '65',
-                'cost'        => '$355.80',
-                'version'     => '1.01',
-                'assignment'  => 'programidnumber',
-                //'link'        => 'Moodle Course shortname'
+                'cost' => '$355.80',
+                'version' => '1.01',
+                'assignment' => 'programidnumber',
             ),
             array(TEST_SETUP_CURRICULUM),
             ELIS_ENTITY_EXISTS
         );
 
-        // course update - no id
+        // Course update - no id.
         $testdata[] = array(
             'update',
             'course',
@@ -330,7 +173,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // course update - ok!
+        // Course update - ok!.
         $testdata[] = array(
             'update',
             'course',
@@ -342,7 +185,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Course update - all fields being updated
+        // Course update - all fields being updated.
         $testdata[] = array(
             'update',
             'course',
@@ -358,13 +201,12 @@ class elis_entity_import_test extends elis_database_test {
                 'cost'             => '$499.99',
                 'version'          => '2.5',
                 'assignment'       => 'programidnumber',
-                //'link'             => 'Moodle Course shortname'
             ),
             array(TEST_SETUP_COURSE, TEST_SETUP_CURRICULUM),
             ELIS_ENTITY_EXISTS
         );
 
-        // course delete - no id
+        // Course delete - no id.
         $testdata[] = array(
             'delete',
             'course',
@@ -375,7 +217,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // course delete - ok
+        // Course delete - ok.
         $testdata[] = array(
             'delete',
             'course',
@@ -386,29 +228,29 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // curriculum create - no id
+        // Curriculum create - no id.
         $testdata[] = array(
             'create',
             'curriculum',
             array(
                 'name'        => 'programname'
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // curriculum create - no name
+        // Curriculum create - no name.
         $testdata[] = array(
             'create',
             'curriculum',
             array(
                 'idnumber'    => 'programidnumber',
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // curriculum create - ok!
+        // Curriculum create - ok!.
         $testdata[] = array(
             'create',
             'curriculum',
@@ -416,11 +258,11 @@ class elis_entity_import_test extends elis_database_test {
                 'idnumber'    => 'programidnumber',
                 'name'        => 'programname',
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_EXISTS
         );
 
-        // curriculum create - all fields - ok!
+        // Curriculum create - all fields - ok!.
         $testdata[] = array(
             'create',
             'curriculum',
@@ -433,11 +275,11 @@ class elis_entity_import_test extends elis_database_test {
                 'frequency'   => '6h,7d,8w,9m,1y',
                 'priority'    => '2'
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_EXISTS
         );
 
-        // curriculum update - no id
+        // Curriculum update - no id.
         $testdata[] = array(
             'update',
             'curriculum',
@@ -448,7 +290,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // curriculum update - ok!
+        // Curriculum update - ok!.
         $testdata[] = array(
             'update',
             'curriculum',
@@ -460,7 +302,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Curriculum Update - all fields being updated
+        // Curriculum Update - all fields being updated.
         $testdata[] = array(
             'update',
             'curriculum',
@@ -477,7 +319,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // curriculum delete - no id
+        // Curriculum delete - no id.
         $testdata[] = array(
             'delete',
             'curriculum',
@@ -488,7 +330,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // curriculum delete - ok
+        // Curriculum delete - ok.
         $testdata[] = array(
             'delete',
             'curriculum',
@@ -499,7 +341,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // curriculum as curr create - ok!
+        // Curriculum as curr create - ok!.
         $testdata[] = array(
             'create',
             'curr',
@@ -507,11 +349,11 @@ class elis_entity_import_test extends elis_database_test {
                 'idnumber'    => 'programidnumber',
                 'name'        => 'programname',
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_EXISTS
         );
 
-        // track create - no assignment
+        // Track create - no assignment.
         $testdata[] = array(
             'create',
             'track',
@@ -523,7 +365,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // track create - no name
+        // Track create - no name.
         $testdata[] = array(
             'create',
             'track',
@@ -535,7 +377,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // track create - no idnumber
+        // Track create - no idnumber.
         $testdata[] = array(
             'create',
             'track',
@@ -547,7 +389,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // track create - ok!
+        // Track create - ok!.
         $testdata[] = array(
             'create',
             'track',
@@ -560,7 +402,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // track create - all-fields ok!
+        // Track create - all-fields ok!.
         $testdata[] = array(
             'create',
            'track',
@@ -577,7 +419,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // track create - date format YYYY.MM.DD
+        // Track create - date format YYYY.MM.DD.
         $testdata[] = array(
             'create',
            'track',
@@ -592,7 +434,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // track create - date format DD-MM-YYYY
+        // Track create - date format DD-MM-YYYY.
         $testdata[] = array(
             'create',
            'track',
@@ -607,7 +449,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // track create - date format MM/DD/YYYY
+        // Track create - date format MM/DD/YYYY.
         $testdata[] = array(
             'create',
             'track',
@@ -622,7 +464,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // track update - no id
+        // Track update - no id.
         $testdata[] = array(
             'update',
             'track',
@@ -633,7 +475,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // track update - ok!
+        // Track update - ok!.
         $testdata[] = array(
             'update',
             'track',
@@ -645,7 +487,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // track delete - no id
+        // Track delete - no id.
         $testdata[] = array(
             'delete',
             'track',
@@ -656,7 +498,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // track delete - ok
+        // Track delete - ok.
         $testdata[] = array(
             'delete',
             'track',
@@ -667,7 +509,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // class create - no assignment
+        // Class create - no assignment.
         $testdata[] = array(
             'create',
             'class',
@@ -678,7 +520,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // class create - no idnumber
+        // Class create - no idnumber.
         $testdata[] = array(
             'create',
             'class',
@@ -689,7 +531,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // class create - ok!
+        // Class create - ok!.
         $testdata[] = array(
             'create',
             'class',
@@ -701,7 +543,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // class create - all fields - ok!
+        // Class create - all fields - ok!.
         $testdata[] = array(
             'create',
             'class',
@@ -722,7 +564,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // class create - date format YYYY.MM.DD
+        // Class create - date format YYYY.MM.DD.
         $testdata[] = array(
             'create',
             'class',
@@ -736,7 +578,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // class create - date format DD-MM-YYYY
+        // Class create - date format DD-MM-YYYY.
         $testdata[] = array(
             'create',
             'class',
@@ -750,7 +592,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // class create - date format MM/DD/YYYY
+        // Class create - date format MM/DD/YYYY.
         $testdata[] = array(
             'create',
             'class',
@@ -764,7 +606,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Create - enrol_from_waitlist = 0
+        // Class Create - enrol_from_waitlist = 0.
         $testdata[] = array(
             'create',
             'class',
@@ -777,7 +619,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Create - enrol_from_waitlist = no
+        // Class Create - enrol_from_waitlist = no.
         $testdata[] = array(
             'create',
             'class',
@@ -790,7 +632,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Create - enrol_from_waitlist = 1
+        // Class Create - enrol_from_waitlist = 1.
         $testdata[] = array(
             'create',
             'class',
@@ -803,7 +645,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Create - enrol_from_waitlist = 'yes'
+        // Class Create - enrol_from_waitlist = 'yes'.
         $testdata[] = array(
             'create',
             'class',
@@ -816,7 +658,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Create - starttime and endtime out of range (all set to 0)
+        // Class Create - starttime and endtime out of range (all set to 0).
         $testdata[] = array(
             'create',
             'class',
@@ -832,7 +674,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Create - starttime and endtime out of range
+        // Class Create - starttime and endtime out of range.
         $testdata[] = array(
             'create',
             'class',
@@ -848,7 +690,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // class update - no idnumber
+        // Class update - no idnumber.
         $testdata[] = array(
             'update',
             'class',
@@ -859,7 +701,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // class update - ok!
+        // Class update - ok!.
         $testdata[] = array(
             'update',
             'class',
@@ -871,7 +713,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Update - all fields being updated
+        // Class Update - all fields being updated.
         $testdata[] = array(
             'update',
             'class',
@@ -892,7 +734,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Update - enrol_from_waitlist = 0
+        // Class Update - enrol_from_waitlist = 0.
         $testdata[] = array(
             'update',
             'class',
@@ -905,7 +747,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Update - enrol_from_waitlist = no
+        // Class Update - enrol_from_waitlist = no.
         $testdata[] = array(
             'update',
             'class',
@@ -918,7 +760,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Update - enrol_from_waitlist = 1
+        // Class Update - enrol_from_waitlist = 1.
         $testdata[] = array(
             'update',
             'class',
@@ -931,7 +773,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Update - enrol_from_waitlist = 'yes'
+        // Class Update - enrol_from_waitlist = 'yes'.
         $testdata[] = array(
             'update',
             'class',
@@ -944,7 +786,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Class Update - starttime out of range (i.e. unset)
+        // Class Update - starttime out of range (i.e. unset).
         $testdata[] = array(
             'update',
             'class',
@@ -959,7 +801,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // class delete - no id
+        // Class delete - no id.
         $testdata[] = array(
             'delete',
             'class',
@@ -970,7 +812,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // class delete - ok
+        // Class delete - ok.
         $testdata[] = array(
             'delete',
             'class',
@@ -981,40 +823,40 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // cluster create - no name
+        // Cluster create - no name.
         $testdata[] = array(
             'create',
             'cluster',
             array(
                 'display'     => 'usersetdescription',
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // cluster create - ok!
+        // Cluster create - ok!.
         $testdata[] = array(
             'create',
             'cluster',
             array(
                 'name'        => 'usersetname',
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_EXISTS
         );
 
-        // Cluster Create - minimal fields
+        // Cluster Create - minimal fields.
         $testdata[] = array(
             'create',
             'cluster',
             array(
                 'name'        => 'usersetCname'
             ),
-            $NO_TEST_SETUP,
+            $notestsetup,
             ELIS_ENTITY_EXISTS
         );
 
-        // cluster create - all fields - ok!
+        // Cluster create - all fields - ok!.
         $testdata[] = array(
             'create',
             'cluster',
@@ -1028,7 +870,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Cluster Create - parent field = "top"
+        // Cluster Create - parent field = "top".
         $testdata[] = array(
             'create',
             'cluster',
@@ -1041,7 +883,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Cluster Create - parent field = "usersetname"
+        // Cluster Create - parent field = "usersetname".
         $testdata[] = array(
             'create',
             'cluster',
@@ -1054,7 +896,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // cluster update - no name
+        // Cluster update - no name.
         $testdata[] = array(
             'update',
             'cluster',
@@ -1065,7 +907,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // cluster update - ok!
+        // Cluster update - ok!.
         $testdata[] = array(
             'update',
             'cluster',
@@ -1076,7 +918,7 @@ class elis_entity_import_test extends elis_database_test {
             array(TEST_SETUP_CLUSTER),
             ELIS_ENTITY_EXISTS
         );
-        // cluster delete - no name
+        // Cluster delete - no name.
         $testdata[] = array(
             'delete',
             'cluster',
@@ -1087,7 +929,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_EXISTS
         );
 
-        // Cluster Delete - minimal fields
+        // Cluster Delete - minimal fields.
         $testdata[] = array(
             'delete',
             'cluster',
@@ -1098,7 +940,7 @@ class elis_entity_import_test extends elis_database_test {
             ELIS_ENTITY_DOESNOT_EXIST
         );
 
-        // cluster delete - ok
+        // Cluster delete - ok.
         $testdata[] = array(
             'delete',
             'cluster',
@@ -1139,7 +981,7 @@ class elis_entity_import_test extends elis_database_test {
         if (isset($input[$fieldkey])) {
             $date = $input[$fieldkey];
 
-            //determine which case we are in
+            // Determine which case we are in.
             if (strpos($date, '/') !== false) {
                 $delimiter = '/';
             } else if (strpos($date, '-') !== false) {
@@ -1153,7 +995,7 @@ class elis_entity_import_test extends elis_database_test {
             $parts = explode($delimiter, $date);
 
             if ($delimiter == '/') {
-                //MMM/DD/YYYY or MM/DD/YYYY format
+                // MMM/DD/YYYY or MM/DD/YYYY format.
                 list($month, $day, $year) = $parts;
 
                 $months = array('jan', 'feb', 'mar', 'apr',
@@ -1164,10 +1006,10 @@ class elis_entity_import_test extends elis_database_test {
                     $month = $pos + 1;
                 }
             } else if ($delimiter == '-') {
-                //DD-MM-YYYY format
+                // DD-MM-YYYY format.
                 list($day, $month, $year) = $parts;
             } else {
-                //YYYY.MM.DD format
+                // YYYY.MM.DD format.
                 list($year, $month, $day) = $parts;
             }
 
@@ -1224,12 +1066,12 @@ class elis_entity_import_test extends elis_database_test {
         }
         $this->map_bool_field($input, 'autoenrol');
         if (array_key_exists('autoenrol', $input)) {
-            //TBD: verify autoenrol ok???
+            // TBD: verify autoenrol ok???.
             unset($input['autoenrol']);
         }
         $this->map_bool_field($input, 'enrol_from_waitlist');
         if (array_key_exists('track', $input)) {
-            //TBD: test valid
+            // TBD: test valid.
             unset($input['track']);
         }
         return $input;
@@ -1254,7 +1096,7 @@ class elis_entity_import_test extends elis_database_test {
         }
         $this->map_bool_field($input, 'recursive');
         if (array_key_exists('recursive', $input)) {
-            // TBD
+            // TBD.
             unset($input['recursive']);
         }
         return $input;
@@ -1274,15 +1116,15 @@ class elis_entity_import_test extends elis_database_test {
             unset($input['assignment']);
         }
         if (array_key_exists('syllabus', $input)) {
-            $where  = $DB->sql_compare_text('syllabus') .' = ?';
+            $where  = $DB->sql_compare_text('syllabus').' = ?';
             $params = array(substr($input['syllabus'], 0, 32));
             $this->assertEquals($shouldexist, $DB->record_exists_select('crlm_course', $where, $params));
             unset($input['syllabus']);
         }
         if (array_key_exists('link', $input)) {
-            $mdl_courseid = $DB->get_field('course', 'id', array('shortname' => $input['link']));
-            $this->assertEquals($shouldexist && $mdl_courseid !== false,
-                                $DB->record_exists('crlm_coursetemplate', array('location' => $mdl_courseid)));
+            $mdlcourseid = $DB->get_field('course', 'id', array('shortname' => $input['link']));
+            $this->assertEquals($shouldexist && $mdlcourseid !== false,
+                    $DB->record_exists('crlm_coursetemplate', array('location' => $mdlcourseid)));
             unset($input['link']);
         }
         return $input;
@@ -1298,7 +1140,7 @@ class elis_entity_import_test extends elis_database_test {
     public function map_curriculum($input, $shouldexist) {
         global $DB;
         if (array_key_exists('description', $input)) {
-            $where  = $DB->sql_compare_text('description') .' = ?';
+            $where  = $DB->sql_compare_text('description').' = ?';
             $params = array(substr($input['description'], 0, 32));
             $this->assertEquals($shouldexist, $DB->record_exists_select('crlm_curriculum', $where, $params));
             unset($input['description']);
@@ -1321,13 +1163,13 @@ class elis_entity_import_test extends elis_database_test {
         }
         $this->map_bool_field($input, 'autocreate');
         if (array_key_exists('autocreate', $input)) {
-            //TBD: verify autocreate ok???
+            // TBD: verify autocreate ok???.
             unset($input['autocreate']);
         }
         $this->map_date_field($input, 'startdate');
         $this->map_date_field($input, 'enddate');
         if (array_key_exists('description', $input)) {
-            $where  = $DB->sql_compare_text('description') .' = ?';
+            $where  = $DB->sql_compare_text('description').' = ?';
             $params = array(substr($input['description'], 0, 32));
             $this->assertEquals($shouldexist, $DB->record_exists_select('crlm_track', $where, $params));
             unset($input['description']);
@@ -1339,9 +1181,9 @@ class elis_entity_import_test extends elis_database_test {
      * User import test cases
      *
      * @uses $DB
-     * @dataProvider dataProviderForTests
+     * @dataProvider dataproviderfortests
      */
-    public function test_elis_entity_import($action, $context, $entity_data, $setup_array, $entity_exists) {
+    public function test_elis_entity_import($action, $context, $entitydata, $setuparray, $entityexists) {
         global $CFG, $DB;
 
         if (empty($context)) {
@@ -1353,57 +1195,47 @@ class elis_entity_import_test extends elis_database_test {
         require_once($file);
 
         set_config('enable_curriculum_expiration', true, 'elis_program');
-      /* *** TBD ***
-        if ($context == 'course') {
-            // create Moodle course with shortname='Moodle Course shortname'
-            $DB->insert_record('course_categories', array('name' => 'Moodle Course Category 1'));
-            create_course((object)array(
-                'idnumber'  => 'Moodle Course ID',
-                'shortname' => 'Moodle Course shortname','category'  => 1)
-            );
-        }
-      ****** */
 
-        $import_data = array(
+        $importdata = array(
             'action'  => $action,
             'context' => $context
         );
-        foreach ($entity_data as $key => $value) {
-            $import_data[$key] = $value;
+        foreach ($entitydata as $key => $value) {
+            $importdata[$key] = $value;
         }
 
         try {
-            foreach ($setup_array as $index) {
-                $provider = new rlip_importprovider_mockcourse($this->test_setup_data[$index]);
+            foreach ($setuparray as $index) {
+                $provider = new rlipimport_version1elis_importprovider_mockcourse($this->testsetupdata[$index]);
                 $importplugin = new rlip_importplugin_version1elis($provider);
                 @$importplugin->run();
             }
 
-            $provider = new rlip_importprovider_mockcourse($import_data);
+            $provider = new rlipimport_version1elis_importprovider_mockcourse($importdata);
             $importplugin = new rlip_importplugin_version1elis($provider);
             $importplugin->run();
         } catch (Exception $e) {
             mtrace("\nException in test_elis_entity_import(): ".$e->getMessage()."\n");
         }
 
-        // Call any mapping functions to transform IP column to DB field
-        $mapfcn = 'map_'. $context;
+        // Call any mapping functions to transform IP column to DB field.
+        $mapfcn = 'map_'.$context;
         if (method_exists($this, $mapfcn)) {
-            $entity_data = $this->$mapfcn($entity_data, $entity_exists);
+            $entitydata = $this->$mapfcn($entitydata, $entityexists);
         }
 
         ob_start();
-        var_dump($entity_data);
+        var_dump($entitydata);
         $tmp = ob_get_contents();
         ob_end_clean();
 
-        $crlm_table = $this->context_to_table[$context];
+        $crlmtable = $this->contexttotable[$context];
         ob_start();
-        var_dump($DB->get_records($crlm_table));
-        $crlm_table_data = ob_get_contents();
+        var_dump($DB->get_records($crlmtable));
+        $crlmtabledata = ob_get_contents();
         ob_end_clean();
 
-        $this->assertEquals($entity_exists, $DB->record_exists($crlm_table, $entity_data),
-                            "ELIS entity assertion: [mapped]entity_data ; {$crlm_table} = {$tmp} ; {$crlm_table_data}");
+        $this->assertEquals($entityexists, $DB->record_exists($crlmtable, $entitydata),
+                "ELIS entity assertion: [mapped]entity_data ; {$crlmtable} = {$tmp} ; {$crlmtabledata}");
     }
 }

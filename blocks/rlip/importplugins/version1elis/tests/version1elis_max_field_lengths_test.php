@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,117 +16,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/rlip_test.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
-//TODO: move file to a general location
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/rlip_import_version1elis_fslogger.class.php');
-
-/**
- * Class for capturing failure messages
- *
- */
-class capture_fslogger extends rlip_import_version1elis_fslogger {
-    public $message;
-
-    /**
-     * Log a failure message to the log file, and potentially the screen
-     *
-     * @param string $message The message to long
-     * @param int $timestamp The timestamp to associate the message with, or 0
-     *                       for the current time
-     * @param string $filename The name of the import / export file we are
-     *                         reporting on
-     * @param int $entitydescriptor A descriptor of which entity from an import file
-     *                              we are handling, if applicable
-     * @param Object $record Imported data
-     * @param string $type Type of import
-     */
-    function log_failure($message, $timestamp = 0, $filename = NULL, $entitydescriptor = NULL, $record = NULL, $type = NULL) {
-        if (!empty($record) && !empty($type)) {
-            $this->message = $this->general_validation_message($record, $message, $type);
-        }
-
-        return true;
-    }
-}
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
 
 /**
  * Class for validating functionality related to field lengths and related logging
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class version1elisMaxFieldLengthsTest extends rlip_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
-        require_once($file);
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/course.class.php'));
-        require_once(elispm::lib('data/curriculum.class.php'));
-        require_once(elispm::lib('data/track.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-
-        return array(
-            'config_plugins'  => 'moodle',
-            'user'            => 'moodle',
-            'user_info_field' => 'moodle',
-            RLIP_LOG_TABLE    => 'block_rlip',
-            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-            field::TABLE      => 'elis_core',
-            course::TABLE     => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            pmclass::TABLE    => 'elis_program',
-            track::TABLE      => 'elis_program',
-            user::TABLE       => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-            userset::TABLE    => 'elis_program'
-        );
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/coursetemplate.class.php'));
-        require_once(elispm::lib('data/curriculumstudent.class.php'));
-
-        return array(
-            'context'                => 'moodle',
-            coursetemplate::TABLE    => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program'
-        );
-    }
-
-    /**
-     * Unit tests for validating success of create / update actions with max length fields
-     */
+class version1elismaxfieldlengths_testcase extends rlip_elis_test {
 
     /**
      * Validate that users can be created when max-length field values are supplied
      */
-    public function testUserCreateIsSuccessfulWithMaxLengthFields() {
+    public function testusercreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
@@ -140,7 +57,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->password = 'A'.str_repeat('a', 22).'!0';
         $record->mi = str_repeat('a', 100);
         $record->email2 = str_repeat('a', 45).'@'.str_repeat('a', 50).'.com';
-        $record->address = str_repeat('a', 70); // ELIS-6795 -- mdl_user.address is only 70 characters long
+        $record->address = str_repeat('a', 70); // ELIS-6795 -- mdl_user.address is only 70 characters long.
         $record->address2 = str_repeat('a', 100);
         $record->city = str_repeat('a', 100);
         $record->state = str_repeat('a', 100);
@@ -149,10 +66,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->phone2 = str_repeat('a', 100);
         $record->fax = str_repeat('a', 100);
 
-        $expected_password = hash_internal_user_password($record->password);
+        $expectedpassword = hash_internal_user_password($record->password);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_create($record, 'bogus');
 
         $user = $DB->get_record(user::TABLE, array('idnumber' => $record->idnumber));
@@ -160,7 +77,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $this->assertEquals($record->firstname, $user->firstname);
         $this->assertEquals($record->lastname, $user->lastname);
         $this->assertEquals($record->email, $user->email);
-        $this->assertEquals($expected_password, $user->password);
+        $this->assertEquals($expectedpassword, $user->password);
         $this->assertEquals($record->mi, $user->mi);
         $this->assertEquals($record->email2, $user->email2);
         $this->assertEquals($record->address, $user->address);
@@ -176,7 +93,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that users can be updated when max-length field values are supplied
      */
-    public function testUserUpdateIsSuccessfulWithMaxLengthFields() {
+    public function testuserupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
@@ -199,7 +116,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->password = 'A'.str_repeat('a', 22).'!0';
         $record->mi = str_repeat('a', 100);
         $record->email2 = str_repeat('a', 45).'@'.str_repeat('a', 50).'.com';
-        $record->address = str_repeat('a', 70); // ELIS-6795 -- mdl_user.address is only 70 characters long
+        $record->address = str_repeat('a', 70); // ELIS-6795 -- mdl_user.address is only 70 characters long.
         $record->address2 = str_repeat('a', 100);
         $record->city = str_repeat('a', 100);
         $record->state = str_repeat('a', 100);
@@ -208,16 +125,16 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->phone2 = str_repeat('a', 100);
         $record->fax = str_repeat('a', 100);
 
-        $expected_password = hash_internal_user_password($record->password);
+        $expectedpassword = hash_internal_user_password($record->password);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_update($record, 'bogus');
 
         $user = $DB->get_record(user::TABLE, array('idnumber' => $record->idnumber));
         $this->assertEquals($record->firstname, $user->firstname);
         $this->assertEquals($record->lastname, $user->lastname);
-        $this->assertEquals($expected_password, $user->password);
+        $this->assertEquals($expectedpassword, $user->password);
         $this->assertEquals($record->mi, $user->mi);
         $this->assertEquals($record->email2, $user->email2);
         $this->assertEquals($record->address, $user->address);
@@ -233,7 +150,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that course descriptions be created when max-length field values are supplied
      */
-    public function testCourseDescriptionCreateIsSuccessfulWithMaxLengthFields() {
+    public function testcoursedescriptioncreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
@@ -248,7 +165,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->version = str_repeat('a', 100);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->course_create($record, 'bogus');
 
         $course = $DB->get_record(course::TABLE, array('idnumber' => $record->idnumber));
@@ -263,7 +180,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that course description can be updated when max-length field values are supplied
      */
-    public function testCourseDescriptionUpdateIsSuccessfulWithMaxLengthFields() {
+    public function testcoursedescriptionupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
@@ -285,7 +202,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->version = str_repeat('a', 100);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->course_update($record, 'bogus');
 
         $course = $DB->get_record(course::TABLE, array('idnumber' => $record->idnumber));
@@ -300,7 +217,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that programs can be created when max-length field values are supplied
      */
-    public function testProgramCreateIsSuccessfulWithMaxLengthFields() {
+    public function testprogramcreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
 
@@ -314,7 +231,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->frequency = str_repeat('1', 63).'h';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_create($record, 'bogus');
 
         $program = $DB->get_record(curriculum::TABLE, array('idnumber' => $record->idnumber));
@@ -326,7 +243,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that programs can be updated when max-length field values are supplied
      */
-    public function testProgramUpdateIsSuccessfulWithMaxLengthFields() {
+    public function testprogramupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
 
@@ -343,7 +260,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->frequency = str_repeat('1', 63).'h';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_update($record, 'bogus');
 
         $program = $DB->get_record(curriculum::TABLE, array('idnumber' => $record->idnumber));
@@ -355,7 +272,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that tracks can be created when max-length field values are supplied
      */
-    public function testTrackCreateIsSuccessfulWithMaxLengthFields() {
+    public function testtrackcreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
@@ -370,7 +287,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->name = str_repeat('a', 255);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->track_create($record, 'bogus');
 
         $track = $DB->get_record(track::TABLE, array('idnumber' => $record->idnumber));
@@ -380,7 +297,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that tracks can be updated when max-length field values are supplied
      */
-    public function testTrackUpdateIsSuccessfulWithMaxLengthFields() {
+    public function testtrackupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
@@ -399,7 +316,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->name = str_repeat('a', 255);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->track_update($record, 'bogus');
 
         $track = $DB->get_record(track::TABLE, array('idnumber' => $record->idnumber));
@@ -409,7 +326,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that class instances can be created when max-length field values are supplied
      */
-    public function testClassInstanceCreateIsSuccessfulWithMaxLengthFields() {
+    public function testclassinstancecreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
@@ -427,18 +344,18 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->idnumber = str_repeat('a', 100);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_create($record, 'bogus');
 
         $this->assertTrue($DB->record_exists(pmclass::TABLE, array('idnumber' => $record->idnumber)));
     }
 
-    //NOTE: no unit test for class update because only identifying field has a length limit
+    // NOTE: no unit test for class update because only identifying field has a length limit.
 
     /**
      * Validate that usersets can be created when max-length field values are supplied
      */
-    public function testUsersetCreateIsSuccessfulWithMaxLengthFields() {
+    public function testusersetcreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
@@ -448,7 +365,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->display = str_repeat('a', 255);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_create($record, 'bogus');
 
         $userset = $DB->get_record(userset::TABLE, array('name' => $record->name));
@@ -458,7 +375,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate that usersets can be updated when max-length field values are supplied
      */
-    public function testUsersetUpdateIsSuccessfulWithMaxLengthFields() {
+    public function testusersetupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
@@ -471,7 +388,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $record->display = str_repeat('a', 255);
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_update($record, 'bogus');
 
         $userset = $DB->get_record(userset::TABLE, array('name' => $record->name));
@@ -486,43 +403,43 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * Validates that the supplied data produces the expected error
      *
      * @param array $data The import data to process
-     * @param string $expected_error The error we are expecting (message only)
+     * @param string $expectederror The error we are expecting (message only)
      * @param user $entitytype One of 'user', 'course', 'enrolment'
      */
-    protected function assert_data_produces_error($data, $expected_error, $entitytype) {
+    protected function assert_data_produces_error($data, $expectederror, $entitytype) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 
-        //set the log file location
-        $filepath = $CFG->dataroot . RLIP_DEFAULT_LOG_PATH;
+        // Set the log file location.
+        $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
         self::cleanup_log_files();
 
-        //run the import
-        $classname = "rlip_importprovider_fslog{$entitytype}";
+        // Run the import.
+        $classname = "rlipimport_version1elis_importprovider_fslog{$entitytype}";
         $provider = new $classname($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, NULL, true);
-        //suppress output for now
+        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, true);
+        // Suppress output for now.
         ob_start();
         $instance->run();
         ob_end_clean();
 
-        //validate that a log file was created
+        // Validate that a log file was created.
         $manual = true;
-        //get first summary record - at times, multiple summary records are created and this handles that problem
+        // Get first summary record - at times, multiple summary records are created and this handles that problem.
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {
             $starttime = $record->starttime;
             break;
         }
 
-        //get logfile name
-        $plugin_type = 'import';
+        // Get logfile name.
+        $plugintype = 'import';
         $plugin = 'rlipimport_version1elis';
 
-        $format = get_string('logfile_timestamp','block_rlip');
-        $testfilename = $filepath.'/'.$plugin_type.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
-        //get most recent logfile
+        $format = get_string('logfile_timestamp', 'block_rlip');
+        $testfilename = $filepath.'/'.$plugintype.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
+        // Get most recent logfile.
 
         $filename = self::get_current_logfile($testfilename);
         if (!file_exists($filename)) {
@@ -530,36 +447,36 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         }
         $this->assertTrue(file_exists($filename));
 
-        //fetch log line
+        // Fetch log line.
         $pointer = fopen($filename, 'r');
 
         while (!feof($pointer)) {
             $error = fgets($pointer);
 
-            if (!empty($error)) { // could be an empty new line
-                //only use the "specific" section
+            if (!empty($error)) { // Could be an empty new line.
+                // Only use the "specific" section.
 
-                //"could not be ..." should appear near the end of the general message
+                // Msg "could not be ..." should appear near the end of the general message..
                 $position = strpos($error, 'could not be');
                 $this->assertNotEquals(false, $position);
-                $truncated_error = substr($error, $position + 1);
+                $truncatederror = substr($error, $position + 1);
 
-                //subsequent dot (period) ends the general message
-                $position = strpos($truncated_error, '.');
+                // Subsequent dot (period) ends the general message.
+                $position = strpos($truncatederror, '.');
                 $this->assertNotEquals(false, $position);
-                $truncated_error = substr($truncated_error, $position + 2);
+                $truncatederror = substr($truncatederror, $position + 2);
 
-                if (is_array($expected_error)) {
-                    $actual_error[] = $truncated_error;
+                if (is_array($expectederror)) {
+                    $actualerror[] = $truncatederror;
                 } else {
-                    $actual_error = $truncated_error;
+                    $actualerror = $truncatederror;
                 }
             }
         }
 
         fclose($pointer);
 
-        $this->assertEquals($expected_error, $actual_error);
+        $this->assertEquals($expectederror, $actualerror);
     }
 
     /**
@@ -567,23 +484,23 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function userCreateFieldProvider() {
+    public function usercreatefieldprovider() {
         return array(
-            array('username', 101, NULL),
-            array('password', 26, 'A'.str_repeat('a', 23).'!0'),
-            array('idnumber', 256, NULL),
-            array('firstname', 101, NULL),
-            array('lastname', 101, NULL),
-            array('mi', 101, NULL),
-            array('email', 101, str_repeat('a', 46).'@'.str_repeat('a', 50).'.com'),
-            array('email2', 101, str_repeat('a', 46).'@'.str_repeat('a', 50).'.com'),
-            array('address', 101, NULL),
-            array('address2', 101, NULL),
-            array('city', 101, NULL),
-            array('postalcode', 33, NULL),
-            array('phone', 101, NULL),
-            array('phone2', 101, NULL),
-            array('fax', 101, NULL)
+                array('username', 101, null),
+                array('password', 26, 'A'.str_repeat('a', 23).'!0'),
+                array('idnumber', 256, null),
+                array('firstname', 101, null),
+                array('lastname', 101, null),
+                array('mi', 101, null),
+                array('email', 101, str_repeat('a', 46).'@'.str_repeat('a', 50).'.com'),
+                array('email2', 101, str_repeat('a', 46).'@'.str_repeat('a', 50).'.com'),
+                array('address', 101, null),
+                array('address2', 101, null),
+                array('city', 101, null),
+                array('postalcode', 33, null),
+                array('phone', 101, null),
+                array('phone2', 101, null),
+                array('fax', 101, null)
         );
     }
 
@@ -594,10 +511,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider userCreateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider usercreatefieldprovider
      */
-    public function testUserCreateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_usercreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
@@ -611,7 +528,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             'country'   => 'CA'
         );
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -619,8 +536,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'user');
     }
 
     /**
@@ -628,20 +545,20 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function userUpdateFieldProvider() {
+    public function userupdatefieldprovider() {
         return array(
-            array('password', 26, 'A'.str_repeat('a', 23).'!0'),
-            array('firstname', 101, NULL),
-            array('lastname', 101, NULL),
-            array('mi', 101, NULL),
-            array('email2', 101, str_repeat('a', 46).'@'.str_repeat('a', 50).'.com'),
-            array('address', 101, NULL),
-            array('address2', 101, NULL),
-            array('city', 101, NULL),
-            array('postalcode', 33, NULL),
-            array('phone', 101, NULL),
-            array('phone2', 101, NULL),
-            array('fax', 101, NULL)
+                array('password', 26, 'A'.str_repeat('a', 23).'!0'),
+                array('firstname', 101, null),
+                array('lastname', 101, null),
+                array('mi', 101, null),
+                array('email2', 101, str_repeat('a', 46).'@'.str_repeat('a', 50).'.com'),
+                array('address', 101, null),
+                array('address2', 101, null),
+                array('city', 101, null),
+                array('postalcode', 33, null),
+                array('phone', 101, null),
+                array('phone2', 101, null),
+                array('fax', 101, null)
         );
     }
 
@@ -652,10 +569,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider userUpdateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider userupdatefieldprovider
      */
-    public function testUserUpdateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_userupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
@@ -669,10 +586,9 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         );
         $user->save();
 
-        $data = array('action' => 'update',
-                      'idnumber' => 'testuseridnumber');
+        $data = array('action' => 'update', 'idnumber' => 'testuseridnumber');
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -680,8 +596,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'user');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'user');
     }
 
     /**
@@ -689,15 +605,15 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function courseCreateFieldProvider() {
+    public function coursecreatefieldprovider() {
         return array(
-            array('idnumber', 101, NULL),
-            array('name', 256, NULL),
-            array('code', 101, NULL),
-            array('lengthdescription', 101, NULL),
-            array('credits', 11, str_repeat('1', 11)),
-            array('cost', 11, NULL),
-            array('version', 101, NULL)
+                array('idnumber', 101, null),
+                array('name', 256, null),
+                array('code', 101, null),
+                array('lengthdescription', 101, null),
+                array('credits', 11, str_repeat('1', 11)),
+                array('cost', 11, null),
+                array('version', 101, null)
         );
     }
 
@@ -708,10 +624,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider courseCreateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider coursecreatefieldprovider
      */
-    public function testCourseDescriptionCreateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_coursedescriptioncreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
@@ -722,7 +638,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             'idnumber' => 'testcourseidnumber'
         );
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -730,8 +646,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
     /**
@@ -739,14 +655,14 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function courseUpdateFieldProvider() {
+    public function courseupdatefieldprovider() {
         return array(
-            array('name', 256, NULL),
-            array('code', 101, NULL),
-            array('lengthdescription', 101, NULL),
-            array('credits', 11, str_repeat('1', 11)),
-            array('cost', 11, NULL),
-            array('version', 101, NULL)
+                array('name', 256, null),
+                array('code', 101, null),
+                array('lengthdescription', 101, null),
+                array('credits', 11, str_repeat('1', 11)),
+                array('cost', 11, null),
+                array('version', 101, null)
         );
     }
 
@@ -756,11 +672,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
-     * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider courseUpdateFieldProvider
+     * @param string $customvalue A custom value to use rather than simply repeating a character, or null if not applicable.
+     * @dataProvider courseupdatefieldprovider
      */
-    public function testCourseDescriptionUpdateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_coursedescriptionupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
 
@@ -775,7 +690,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
                       'context' => 'course',
                       'idnumber' => 'testcourseidnumber');
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -783,8 +698,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
     /**
@@ -792,12 +707,12 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function programCreateFieldProvider() {
+    public function programcreatefieldprovider() {
         return array(
-            array('idnumber', 101, NULL),
-            array('name', 65, NULL),
-            array('timetocomplete', 65, str_repeat('1', 64).'h'),
-            array('frequency', 65, str_repeat('1', 64).'h')
+               array('idnumber', 101, null),
+               array('name', 65, null),
+               array('timetocomplete', 65, str_repeat('1', 64).'h'),
+               array('frequency', 65, str_repeat('1', 64).'h')
         );
     }
 
@@ -808,20 +723,21 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider programCreateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider programcreatefieldprovider
      */
-    public function testProgramCreateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_programcreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
 
         $data = array(
-            'action'   => 'create',
-            'context'  => 'curriculum',
-            'name'     => 'testcurriculumname',
-            'idnumber' => 'testcurriculumidnumber');
+            'action' => 'create',
+            'context' => 'curriculum',
+            'name' => 'testcurriculumname',
+            'idnumber' => 'testcurriculumidnumber'
+        );
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -829,8 +745,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
     /**
@@ -838,9 +754,9 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function programUpdateFieldProvider() {
+    public function programupdatefieldprovider() {
         return array(
-            array('name', 65, NULL),
+            array('name', 65, null),
             array('timetocomplete', 65, str_repeat('1', 64).'h'),
             array('frequency', 65, str_repeat('1', 64).'h')
         );
@@ -853,10 +769,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider programUpdateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider programupdatefieldprovider
      */
-    public function testProgramUpdateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_programupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
 
@@ -868,7 +784,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             'context'  => 'curriculum',
             'idnumber' => 'testprogramidnumber');
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -876,8 +792,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
     /**
@@ -885,10 +801,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function trackCreateFieldProvider() {
+    public function trackcreatefieldprovider() {
         return array(
-            array('idnumber', 101, NULL),
-            array('name', 256, NULL)
+            array('idnumber', 101, null),
+            array('name', 256, null)
         );
     }
 
@@ -899,10 +815,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider trackCreateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider trackcreatefieldprovider
      */
-    public function testTrackCreateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_trackcreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
@@ -918,7 +834,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             'name'       => 'testtrackname'
         );
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -926,8 +842,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
     /**
@@ -935,8 +851,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function trackUpdateFieldProvider() {
-        return array(array('name', 256, NULL));
+    public function trackupdatefieldprovider() {
+        return array(array('name', 256, null));
     }
 
     /**
@@ -946,10 +862,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider trackUpdateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider trackupdatefieldprovider
      */
-    public function testTrackUpdateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_trackupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
@@ -967,7 +883,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             'idnumber' => 'testtrackidnumber'
         );
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -975,8 +891,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
     /**
@@ -984,8 +900,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function classCreateFieldProvider() {
-        return array(array('idnumber', 101, NULL));
+    public function classcreatefieldprovider() {
+        return array(array('idnumber', 101, null));
     }
 
     /**
@@ -995,10 +911,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider classCreateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider classcreatefieldprovider
      */
-    public function testClassInstanceCreateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_classinstancecreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
@@ -1015,7 +931,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             'idnumber'   => 'testclassidnumber'
         );
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -1023,21 +939,21 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
-    //NOTE: no unit test for class update because only identifying field has a length limit
+    // NOTE: no unit test for class update because only identifying field has a length limit.
 
     /**
      * Data provider for overly long user fields during userset create
      *
      * @return array The data needed by the unit test method
      */
-    public function usersetCreateFieldProvider() {
+    public function usersetcreatefieldprovider() {
         return array(
-            array('name', 256, NULL),
-            array('display', 256, NULL)
+                array('name', 256, null),
+                array('display', 256, null)
         );
     }
 
@@ -1048,10 +964,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider usersetCreateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider usersetcreatefieldprovider
      */
-    public function testUsersetCreateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_usersetcreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
@@ -1061,7 +977,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             'name'    => 'testusersetname'
         );
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -1069,8 +985,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
     /**
@@ -1078,8 +994,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      *
      * @return array The data needed by the unit test method
      */
-    public function usersetUpdateFieldProvider() {
-        return array(array('display', 256, NULL));
+    public function usersetupdatefieldprovider() {
+        return array(array('display', 256, null));
     }
 
     /**
@@ -1088,10 +1004,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
      * @param string $field The identifier for the field we are testing
      * @param int $length The length we are testing at
      * @param string $customvalue A custom value to use rather than simply repeating a character,
-     *                            or NULL if not applicable
-     * @dataProvider usersetUpdateFieldProvider
+     *                            or null if not applicable
+     * @dataProvider usersetupdatefieldprovider
      */
-    public function testUsersetUpdateLogsErrorWhenFieldsTooLong($field, $length, $customvalue) {
+    public function test_usersetupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
 
@@ -1104,7 +1020,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
             'name'    => 'testusersetname'
         );
 
-        if ($customvalue !== NULL) {
+        if ($customvalue !== null) {
             $value = $customvalue;
         } else {
             $value = str_repeat('a', $length);
@@ -1112,8 +1028,8 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
         $data[$field] = $value;
 
         $maxlength = $length - 1;
-        $expected_error = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
-        $this->assert_data_produces_error($data, $expected_error, 'course');
+        $expectederror = "{$field} value of \"{$value}\" exceeds the maximum field length of {$maxlength}.\n";
+        $this->assert_data_produces_error($data, $expectederror, 'course');
     }
 
     /**
@@ -1123,7 +1039,7 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
     /**
      * Validate the "user" general message
      */
-    public function testUserErrorContainsCorrectPrefix() {
+    public function test_usererrorcontainscorrectprefix() {
         $record = new stdClass;
         $record->action = 'create';
         $record->idnumber = str_repeat('a', 256);
@@ -1135,17 +1051,18 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('user');
-        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_user_field_lengths($record, 'bogus');
 
-        $expected_message = "User with username \"{$record->username}\", email \"{$record->email}\", idnumber \"{$record->idnumber}\" could not be created.";
-        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+        $expectedmessage = "User with username \"{$record->username}\", email \"{$record->email}\", idnumber";
+        $expectedmessage .= " \"{$record->idnumber}\" could not be created.";
+        $this->assertStringStartsWith($expectedmessage, $importplugin->fslogger->message);
     }
 
     /**
      * Validate the "course description" general message
      */
-    public function testCourseDescriptionErrorContainsCorrectPrefix() {
+    public function test_coursedescriptionerrorcontainscorrectprefix() {
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'course';
@@ -1154,17 +1071,17 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
-        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_course_field_lengths($record, 'bogus');
 
-        $expected_message = "Course description with idnumber \"testcourseidnumber\" could not be created.";
-        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+        $expectedmessage = "Course description with idnumber \"testcourseidnumber\" could not be created.";
+        $this->assertStringStartsWith($expectedmessage, $importplugin->fslogger->message);
     }
 
     /**
      * Validate the "program" general message
      */
-    public function testProgramErrorContainsCorrectPrefix() {
+    public function test_programerrorcontainscorrectprefix() {
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'curriculum';
@@ -1173,58 +1090,58 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
-        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_program_field_lengths($record, 'bogus');
 
-        $expected_message = "Program with idnumber \"testprogramidnumber\" could not be created.";
-        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+        $expectedmessage = "Program with idnumber \"testprogramidnumber\" could not be created.";
+        $this->assertStringStartsWith($expectedmessage, $importplugin->fslogger->message);
     }
 
     /**
      * Validate the "track" general message
      */
-    public function testTrackErrorContainsCorrectPrefix() {
+    public function test_trackerrorcontainscorrectprefix() {
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'track';
         $record->name = str_repeat('a', 256);
         $record->idnumber = 'testtrackidnumber';
-        //TODO: remove?
+        // TODO: remove?.
         $record->assignment = 'testprogramidnumber';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
-        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_track_field_lengths($record, 'bogus');
 
-        $expected_message = "Track with idnumber \"testtrackidnumber\" could not be created.";
-        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+        $expectedmessage = "Track with idnumber \"testtrackidnumber\" could not be created.";
+        $this->assertStringStartsWith($expectedmessage, $importplugin->fslogger->message);
     }
 
     /**
      * Validate the "class instance" general message
      */
-    public function testClassInstanceErrorContainsCorrectPrefix() {
+    public function test_classinstanceerrorcontainscorrectprefix() {
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'class';
         $record->idnumber = str_repeat('a', 101);
-        //TODO: remove?
+        // TODO: remove?.
         $record->assignment = 'testcourseidnumber';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
-        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_class_field_lengths($record, 'bogus');
 
-        $expected_message = "Class instance with idnumber \"{$record->idnumber}\" could not be created.";
-        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+        $expectedmessage = "Class instance with idnumber \"{$record->idnumber}\" could not be created.";
+        $this->assertStringStartsWith($expectedmessage, $importplugin->fslogger->message);
     }
 
     /**
      * Validate the "userset" general message
      */
-    public function testUsersetErrorContainsCorrectPrefix() {
+    public function test_userseterrorcontainscorrectprefix() {
         $record = new stdClass;
         $record->action = 'create';
         $record->context = 'cluster';
@@ -1233,10 +1150,10 @@ class version1elisMaxFieldLengthsTest extends rlip_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
-        $importplugin->fslogger = new capture_fslogger(NULL);
+        $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_userset_field_lengths($record, 'bogus');
 
-        $expected_message = "User set with name \"testusersetname\" could not be created.";
-        $this->assertStringStartsWith($expected_message, $importplugin->fslogger->message);
+        $expectedmessage = "User set with name \"testusersetname\" could not be created.";
+        $this->assertStringStartsWith($expectedmessage, $importplugin->fslogger->message);
     }
 }

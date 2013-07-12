@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,55 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
-//TODO: move to a more general location
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
-
-/**
- * Class that fetches import files for the user import
- */
-class rlip_importprovider_mockuser extends rlip_importprovider_mock {
-    /**
-     * Hook for providing a file plugin for a particular
-     * import entity type
-     *
-     * @param string $entity The type of entity
-     * @return object The file plugin instance, or false if not applicable
-     */
-    function get_import_file($entity) {
-        if ($entity != 'user') {
-            return false;
-        }
-
-        return parent::get_import_file($entity);
-    }
-}
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/file_delay.class.php');
 
 /*
  * Class that provides a delay for an import
  */
-class rlip_importprovider_manual_delay
-      extends rlip_importprovider_file_delay {
+class rlipimport_version1elis_importprovider_manual_delay extends rlip_importprovider_file_delay {
 
     /**
      * Provides the object used to log information to the database to the
@@ -72,119 +46,26 @@ class rlip_importprovider_manual_delay
      *
      * @return object the DB logger
      */
-    function get_dblogger() {
+    public function get_dblogger() {
         global $CFG;
         require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
 
-        //force MANUAL
+        // Force MANUAL.
         return new rlip_dblogger_import(true);
     }
 }
 
 /**
- * Class for validating database logging functionality for the Version 1 ELIS
- * import
+ * Class for validating database logging functionality for the Version 1 ELIS import.
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class version1elisMaxFieldLengthsTest extends elis_database_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
-        require_once($file);
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once(elispm::lib('data/course.class.php'));
-        require_once(elispm::lib('data/curriculum.class.php'));
-        require_once(elispm::lib('data/pmclass.class.php'));
-        require_once(elispm::lib('data/student.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-
-        return array(
-            'config_plugins'        => 'moodle',
-            'context'               => 'moodle',
-            'elis_scheduled_tasks'  => 'elis_core',
-            'events_queue'          => 'moodle',
-            'events_queue_handlers' => 'moodle',
-            'grade_grades'          => 'moodle',
-            RLIP_LOG_TABLE          => 'block_rlip',
-            RLIP_SCHEDULE_TABLE     => 'block_rlip',
-            course::TABLE           => 'elis_program',
-            curriculum::TABLE       => 'elis_program',
-            curriculumcourse::TABLE => 'elis_program',
-            pmclass::TABLE          => 'elis_program',
-            student::TABLE          => 'elis_program',
-            track::TABLE            => 'elis_program',
-            user::TABLE             => 'elis_program',
-            usermoodle::TABLE       => 'elis_program',
-            clustertrack::TABLE     => 'elis_program',
-            track::TABLE            => 'elis_program',
-            trackassignment::TABLE  => 'elis_program',
-            curriculumcourse::TABLE => 'elis_program',
-            RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE => 'rlipimport_version1elis',
-        );
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/clusterassignment.class.php'));
-        require_once(elispm::lib('data/clustercurriculum.class.php'));
-        require_once(elispm::lib('data/coursetemplate.class.php'));
-        require_once(elispm::lib('data/curriculumstudent.class.php'));
-        require_once(elispm::lib('data/instructor.class.php'));
-        require_once(elispm::lib('data/student.class.php'));
-        require_once(elispm::lib('data/usertrack.class.php'));
-        require_once(elispm::lib('data/waitlist.class.php'));
-
-        return array(
-            'block_instances'         => 'moodle',
-            'block_positions'         => 'moodle',
-            'cohort_members'          => 'moodle',
-            'comments'                => 'moodle',
-            'external_services_users' => 'moodle',
-            'external_tokens'         => 'moodle',
-            'filter_active'           => 'moodle',
-            'filter_config'           => 'moodle',
-            'groups_members'          => 'moodle',
-            'log'                     => 'moodle',
-            'rating'                  => 'moodle',
-            'role_assignments'        => 'moodle',
-            'role_capabilities'       => 'moodle',
-            'role_names'              => 'moodle',
-            'sessions'                => 'moodle',
-            'user'                    => 'moodle',
-            'user_enrolments'         => 'moodle',
-            'user_info_data'          => 'moodle',
-            'user_lastaccess'         => 'moodle',
-            'user_preferences'        => 'moodle',
-            'cache_flags'             => 'moodle',
-            'files'                   => 'moodle',
-            clusterassignment::TABLE  => 'elis_program',
-            clustercurriculum::TABLE  => 'elis_program',
-            coursetemplate::TABLE     => 'elis_program',
-            curriculumstudent::TABLE  => 'elis_program',
-            field_data_char::TABLE    => 'elis_core',
-            field_data_int::TABLE     => 'elis_core',
-            field_data_num::TABLE     => 'elis_core',
-            field_data_text::TABLE    => 'elis_core',
-            instructor::TABLE         => 'elis_program',
-            student_grade::TABLE      => 'elis_program',
-            usertrack::TABLE          => 'elis_program',
-            waitlist::TABLE           => 'elis_program'
-        );
-    }
+class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
 
     /**
      * Validate that a success message is logged on user create
      */
-    public function testUserCreateLogsSuccessMessage() {
+    public function testusercreatelogssuccessmessage() {
         global $DB;
 
         $record = new stdClass;
@@ -197,20 +78,20 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_create($record, 'bogus');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
     /**
      * Validate that a success message is logged on user update
      */
-    public function testUserUpdateLogsSuccessMessage() {
+    public function testuserupdatelogssuccessmessage() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
@@ -230,20 +111,20 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_update($record, 'bogus');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
     /**
      * Validate that a success message is logged on user delete
      */
-    public function testUserDeleteLogsSuccessMessage() {
+    public function testuserdeletelogssuccessmessage() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
@@ -258,27 +139,27 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         $user->save();
 
         $record = new stdClass;
-        //TODO: only use one field when that actually works
+        // TODO: only use one field when that actually works.
         $record->idnumber = 'testuseridnumber';
         $record->username = 'testuserusername';
         $record->email = 'testuser@email.com';
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_delete($record, 'bogus');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
     /**
      * Validate that a success message is logged on pmentity create
      */
-    public function testPmentityCreateLogsSuccessMessage() {
+    public function testpmentitycreatelogssuccessmessage() {
         global $DB;
 
         $record = new stdClass;
@@ -288,20 +169,20 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_create($record, 'bogus');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
     /**
      * Validate that a success message is logged on pmentity update
      */
-    public function testPmentityUpdateLogsSuccessMessage() {
+    public function testpmentityupdatelogssuccessmessage() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
@@ -318,20 +199,20 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_update($record, 'bogus');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
     /**
      * Validate that a success message is logged on pmentity delete
      */
-    public function testPmentityDeleteLogsSuccessMessage() {
+    public function testpmentitydeletelogssuccessmessage() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
 
@@ -347,20 +228,20 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_delete($record, 'bogus');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
     /**
      * Validate that a success message is logged on enrolment create
      */
-    public function testEnrolmentCreateLogsSuccessMessage() {
+    public function testenrolmentcreatelogssuccessmessage() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
@@ -395,20 +276,20 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create_student($record, 'bogus', 'testclassidnumber');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
     /**
      * Validate that a success message is logged on enrolment update
      */
-    public function testEnrolmentUpdateLogsSuccessMessage() {
+    public function testenrolmentupdatelogssuccessmessage() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
@@ -451,20 +332,20 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_update_student($record, 'bogus', 'testclassidnumber');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
     /**
      * Validate that a success message is logged on enrolment delete
      */
-    public function testEnrolmentDeleteLogsSuccessMessage() {
+    public function testenrolmentdeletelogssuccessmessage() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
         require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
@@ -501,7 +382,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         $student->save();
 
         $record = new stdClass;
-        //TODO: consider using fewer fields
+        // TODO: consider using fewer fields.
         $record->context = 'class_testclassidnumber';
         $record->user_idnumber = 'testuseridnumber';
         $record->user_username = 'testuserusername';
@@ -509,13 +390,13 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_delete_student($record, 'bogus', 'testclassidnumber');
         $importplugin->dblogger->flush('bogus');
 
-        $expected_message = 'All lines from import file bogus were successfully processed.';
+        $expectedmessage = 'All lines from import file bogus were successfully processed.';
         $where = 'statusmessage = ?';
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expected_message));
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $where, array($expectedmessage));
         $this->assertTrue($exists);
     }
 
@@ -533,7 +414,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
-        $provider = new rlip_importprovider_mockuser($data);
+        $provider = new rlipimport_version1elis_importprovider_mockuser($data);
 
         $importplugin = new rlip_importplugin_version1elis($provider);
         $importplugin->run();
@@ -542,15 +423,15 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
     /**
      * Determines whether a db log with the specified message exists
      *
-     * @param string $message The message, or NULL to use the default success
+     * @param string $message The message, or null to use the default success
      *                        message
      * @return boolean true if found, otherwise false
      */
-    private function log_with_message_exists($message = NULL) {
+    private function log_with_message_exists($message = null) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        if ($message === NULL) {
+        if ($message === null) {
             $message = 'All lines from import file memoryfile were successfully processed.';
         }
 
@@ -563,7 +444,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
      * Validate that summary log end time is set when an invalid folder is set
      * for the file system log
      */
-    public function testNonWritableLogPathLogsCorrectEndTime() {
+    public function testnonwritablelogpathlogscorrectendtime() {
         global $DB;
 
         set_config('logfilelocation', 'adirectorythatshouldnotexist', 'rlipimport_version1elis');
@@ -591,7 +472,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
      * Validate that summary log end time is set when the action column is not
      * specified in the import
      */
-    public function testMissingActionColumnLogsCorrectEndTime() {
+    public function testmissingactioncolumnlogscorrectendtime() {
         global $DB;
 
         $data = array('idnumber' => 'testuseridnumber');
@@ -609,7 +490,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
      * Validate that summary log end time is set when a required column is not
      * specified in the import
      */
-    public function testMissingRequiredColumnLogsCorrectEndTime() {
+    public function testmissingrequiredcolumnlogscorrectendtime() {
         global $DB;
 
         $data = array('action' => 'create');
@@ -627,15 +508,15 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
      * Validate that summary log end time is set when maximum runtime is exceeded
      * when running the import
      */
-    public function testMaxRuntimeExceededLogsCorrectEndTime() {
+    public function testmaxruntimeexceededlogscorrectendtime() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/phpunit/file_delay.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/tests/other/file_delay.class.php');
 
-        $import_file = $CFG->dirroot.'/blocks/rlip/importplugins/version1elis/phpunit/userfiledelay.csv';
-        $provider = new rlip_importprovider_file_delay($import_file, 'user');
+        $importfile = $CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/fixtures/userfiledelay.csv';
+        $provider = new rlip_importprovider_file_delay($importfile, 'user');
 
-        //run the import
+        // Run the import.
         $mintime = time();
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider);
         $importplugin->run(0, 0, 1);
@@ -650,7 +531,7 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
      * Validate that summary log end time is set when successfully processing an
      * import file
      */
-    public function testSuccessfulProcessingLogsCorrectEndTime() {
+    public function testsuccessfulprocessinglogscorrectendtime() {
         global $DB;
 
         $data = array(
@@ -675,23 +556,27 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
     /**
      * Validates the standard failure message
      */
-    public function testLoggingLogsFailureMessage() {
+    public function testlogginglogsfailuremessage() {
+        global $DB;
         set_config('createorupdate', 0, 'rlipimport_version1elis');
 
-        $data = array('entity' => 'user',
-                      'action' => 'update',
-                      'username' => 'rlipusername',
-                      'password' => 'Rlippassword!0',
-                      'firstname' => 'rlipfirstname',
-                      'lastname' => 'rliplastname',
-                      'email' => 'rlipuser@rlipdomain.com',
-                      'city' => 'rlipcity',
-                      'country' => 'CA');
+        $data = array(
+            'entity' => 'user',
+            'action' => 'update',
+            'username' => 'rlipusername',
+            'password' => 'Rlippassword!0',
+            'firstname' => 'rlipfirstname',
+            'lastname' => 'rliplastname',
+            'email' => 'rlipuser@rlipdomain.com',
+            'city' => 'rlipcity',
+            'country' => 'CA'
+        );
         $result = $this->run_user_import($data);
+
         $this->assertNull($result);
 
-        $message = 'One or more lines from import file memoryfile failed because they contain data errors. '.
-                   'Please fix the import file and re-upload it.';
+        $message = 'One or more lines from import file memoryfile failed because they contain data errors. ';
+        $message .= 'Please fix the import file and re-upload it.';
         $exists = $this->log_with_message_exists($message);
         $this->assertEquals(true, $exists);
     }
@@ -700,54 +585,56 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
      * Serve filenames for the different entities
      * @return array of filenames
      */
-    public function fileProvider() {
-        return array(array('userfile2.csv', 'user'),
-                     array('coursefile2.csv', 'course'),
-                     array('enrolmentfile2.csv', 'enrolment'));
+    public function fileprovider() {
+        return array(
+                array('userfile2.csv', 'user'),
+                array('coursefile2.csv', 'course'),
+                array('enrolmentfile2.csv', 'enrolment')
+        );
     }
 
     /**
      * Validate that MANUAL import obeys maxruntime
-     * @dataProvider fileProvider
+     * @dataProvider fileprovider
      */
-    public function testManualImportObeysMaxRunTime($filename, $entity) {
+    public function test_manualimportobeysmaxruntime($filename, $entity) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/phpunit/csv_delay.class.php');
+        require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
         $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
-        //set the log file name to a fixed value
+        // Set the log file name to a fixed value.
         $filepath = $CFG->dataroot;
 
-        // MUST copy file to temp area 'cause it'll be deleted after import
-        $testfile = dirname(__FILE__) .'/'.$filename;
-        $tempdir = $CFG->dataroot .'/block_rlip_phpunit/';
-        $file = $tempdir .$filename;
+        // MUST copy file to temp area 'cause it'll be deleted after import.
+        $testfile = dirname(__FILE__).'/fixtures/'.$filename;
+        $tempdir = $CFG->dataroot.'/block_rlip_phpunit/';
+        $file = $tempdir.$filename;
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
 
-        $provider = new rlip_importprovider_manual_delay($file, $entity);
-        //run the import
+        $provider = new rlipimport_version1elis_importprovider_manual_delay($file, $entity);
+        // Run the import.
         $importplugin = new rlip_importplugin_version1elis($provider, true);
         ob_start();
-        $result = $importplugin->run(0, 0, 1); // maxruntime 1 sec
+        $result = $importplugin->run(0, 0, 1); // Maxruntime 1 sec.
         ob_end_clean();
         $this->assertNotNull($result);
-        //get most recent record
+        // Get most recent record.
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {
             $ui = $record->statusmessage;
             break;
         }
-        $expected_ui = "/.*Failed importing all lines from import file.*due to time limit exceeded.*/";
-        $this->assertRegExp($expected_ui, $ui);
+        $expectedui = "/.*Failed importing all lines from import file.*due to time limit exceeded.*/";
+        $this->assertRegExp($expectedui, $ui);
 
-        // test that the filename is also included in the error message
-        // the mock provider returns 'filename' as the filename
-        $expected_ui = "/.*filename*/";
-        $this->assertRegExp($expected_ui, $ui);
+        // Test that the filename is also included in the error message.
+        // The mock provider returns 'filename' as the filename.
+        $expectedui = "/.*filename*/";
+        $this->assertRegExp($expectedui, $ui);
 
-        // clean-up data file & tempdir
+        // Clean-up data file & tempdir.
         @unlink($file);
         @rmdir($tempdir);
     }
@@ -757,57 +644,59 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
      *
      * @return array Pameter data, as expected by the test method
      */
-    public function fileAndLineCountProvider() {
-        return array(array('userfile2.csv', 'user', 3),
-                     array('coursefile2.csv', 'course', 1),
-                     array('enrolmentfile2.csv', 'enrolment', 1));
+    public function fileandlinecountprovider() {
+        return array(
+            array('userfile2.csv', 'user', 3),
+            array('coursefile2.csv', 'course', 1),
+            array('enrolmentfile2.csv', 'enrolment', 1)
+        );
     }
 
     /**
      * Validate that SCHEDULED import obeys maxruntime
      *
-     * @dataProvider fileAndLineCountProvider
+     * @dataProvider fileandlinecountprovider
      * @param string $filename The name of the file we are importing
      * @param string $entity The entity type, such as 'user'
      * @param int $numlines The total number of lines in the file
      */
-    public function testScheduledImportObeysMaxRunTime($filename, $entity, $numlines) {
+    public function test_scheduledimportobeysmaxruntime($filename, $entity, $numlines) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 
-        $file_path = '/block_rlip_phpunit/';
-        $file_name = $filename;
-        set_config('schedule_files_path', $file_path, 'rlipimport_version1elis');
-        set_config($entity.'_schedule_file', $file_name, 'rlipimport_version1elis');
+        $filepath = '/block_rlip_phpunit/';
+        $filename = $filename;
+        set_config('schedule_files_path', $filepath, 'rlipimport_version1elis');
+        set_config($entity.'_schedule_file', $filename, 'rlipimport_version1elis');
 
-        //set up the test directory
-        $testdir = $CFG->dataroot . $file_path;
+        // Set up the test directory.
+        $testdir = $CFG->dataroot.$filepath;
         @mkdir($testdir, 0777, true);
-        @copy(dirname(__FILE__) ."/{$file_name}", $testdir.$file_name);
+        @copy(dirname(__FILE__)."/fixtures/{$filename}", $testdir.$filename);
 
-        //create the job
-        $data = array('plugin' => 'rlipimport_version1elis',
-                      'period' => '5m',
-                      'type' => 'rlipimport');
+        // Create the job.
+        $data = array(
+            'plugin' => 'rlipimport_version1elis',
+            'period' => '5m',
+            'type' => 'rlipimport'
+        );
         $taskid = rlip_schedule_add_job($data);
 
-        //set next runtime values to a known state
-        $DB->execute("UPDATE {elis_scheduled_tasks}
-                          SET nextruntime = ?", array(1));
-        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."}
-                      SET nextruntime = ?", array(1));
+        // Set next runtime values to a known state.
+        $DB->execute("UPDATE {elis_scheduled_tasks} SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."} SET nextruntime = ?", array(1));
 
-        //run the import
+        // Run the import.
         $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
         $mintime = time();
         run_ipjob($taskname, -1);
         $maxtime = time();
 
-        //clean-up data file & test dir
-        @unlink($testdir.$file_name);
+        // Clean-up data file & test dir.
+        @unlink($testdir.$filename);
         @rmdir($testdir);
 
-        //validation
+        // Validation.
         $params = array(
             'export' => 0,
             'plugin' => 'rlipimport_version1elis',
@@ -820,22 +709,22 @@ class version1elisMaxFieldLengthsTest extends elis_database_test {
         $exists = $DB->record_exists(RLIP_LOG_TABLE, $params);
 
         $log = $DB->get_record(RLIP_LOG_TABLE, array('id' => 1));
-        //validate entity type
+        // Validate entity type.
         $this->assertEquals($entity, $log->entitytype);
 
-        //validate status message
+        // Validate status message.
         $a = new stdClass;
         $a->filename = $filename;
         $a->recordsprocessed = 0;
         $a->totalrecords = $numlines;
-        $expected_message = get_string('dblogimportexceedstimelimit', 'block_rlip', $a);
-        $this->assertEquals($expected_message, $log->statusmessage);
+        $expectedmessage = get_string('dblogimportexceedstimelimit', 'block_rlip', $a);
+        $this->assertEquals($expectedmessage, $log->statusmessage);
 
-        //validate logged start time
+        // Validate logged start time.
         $this->assertGreaterThanOrEqual($mintime, $log->starttime);
         $this->assertLessThanOrEqual($maxtime, $log->starttime);
 
-        //validate logged end time
+        // Validate logged end time.
         $this->assertGreaterThanOrEqual($mintime, $log->endtime);
         $this->assertLessThanOrEqual($maxtime, $log->endtime);
     }

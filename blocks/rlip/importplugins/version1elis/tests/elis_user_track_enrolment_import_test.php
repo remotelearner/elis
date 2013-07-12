@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,87 +16,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins/version1elis/phpunit
+ * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
-
-require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
+require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/testlib.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+
+// Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/phpunit/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
 
 /**
  * Class for validating that enrolment of users into tracks works
+ * @group block_rlip
+ * @group rlipimport_version1elis
  */
-class elis_user_track_enrolment_test extends elis_database_test {
-    /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elis::lib('data/customfield.class.php'));
-        require_once(elispm::lib('data/curriculum.class.php'));
-        require_once(elispm::lib('data/track.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
-        require_once(elispm::lib('data/usermoodle.class.php'));
-        require_once(elispm::lib('data/usertrack.class.php'));
-
-        return array('config' => 'moodle',
-                     'message' => 'moodle',
-                     curriculum::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     track::TABLE => 'elis_program',
-                     trackassignment::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program',
-                     user::TABLE => 'elis_program',
-                     usermoodle::TABLE => 'elis_program',
-                     usertrack::TABLE => 'elis_program',
-                     waitlist::TABLE => 'elis_program');
-    }
-
-    /**
-     * Return the list of tables that should be ignored for writes.
-     */
-    static protected function get_ignored_tables() {
-        global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/curriculumstudent.class.php'));
-
-        return array('context' => 'moodle',
-                     'user' => 'moodle',
-                     curriculumstudent::TABLE => 'elis_program');
-    }
+class elis_user_track_enrolment_testcase extends rlip_elis_test {
 
     /**
      * Data provider for fields that identify user records
      *
      * @return array Parameter data, as needed by the test methods
      */
-    function user_identifier_provider() {
-        return array(array('create', 'delete', 'testuserusername', NULL, NULL),
-                     array('enrol', 'unenrol', NULL, 'testuser@email.com', NULL),
-                     array('enroll', 'unenroll', NULL, NULL, 'testuseridnumber'));
+    public function user_identifier_provider() {
+        return array(
+                array('create', 'delete', 'testuserusername', null, null),
+                array('enrol', 'unenrol', null, 'testuser@email.com', null),
+                array('enroll', 'unenroll', null, null, 'testuseridnumber')
+        );
     }
 
     /**
      * Validate that users can be enrolled into tracks
      *
-     * @param string $username A sample user's username, or NULL if not used in the import
-     * @param string $email A sample user's email, or NULL if not used in the import
-     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @param string $username A sample user's username, or null if not used in the import
+     * @param string $email A sample user's email, or null if not used in the import
+     * @param string $idnumber A sample user's idnumber, or null if not used in the import
      * @dataProvider user_identifier_provider
      */
-    function test_elis_user_track_enrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
+    public function test_elis_user_track_enrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -104,56 +67,56 @@ class elis_user_track_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        //never send out notification as an email, just in case
+        // Never send out notification as an email, just in case.
         set_config('noemailever', true);
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        $track = new track(array('curid' => $program->id,
-                                 'idnumber' => 'testtrackidnumber'));
+        $track = new track(array('curid' => $program->id, 'idnumber' => 'testtrackidnumber'));
         $track->save();
 
-        //run the track enrolment create action
+        // Run the track enrolment create action.
         $record = new stdClass;
         $record->action = $actioncreate;
         $record->context = 'track_testtrackidnumber';
-        if ($username != NULL) {
+        if ($username != null) {
             $record->user_username = $user->username;
         }
-        if ($email != NULL) {
+        if ($email != null) {
             $record->user_email = $user->email;
         }
-        if ($idnumber != NULL) {
+        if ($idnumber != null) {
             $record->user_idnumber = $user->idnumber;
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
-        //validation
-        $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id,
-                                                                     'trackid' => $track->id)));
+        // Validation.
+        $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id, 'trackid' => $track->id)));
     }
 
     /**
      * Validate that users can be unenrolled from tracks
      *
-     * @param string $username A sample user's username, or NULL if not used in the import
-     * @param string $email A sample user's email, or NULL if not used in the import
-     * @param string $idnumber A sample user's idnumber, or NULL if not used in the import
+     * @param string $username A sample user's username, or null if not used in the import
+     * @param string $email A sample user's email, or null if not used in the import
+     * @param string $idnumber A sample user's idnumber, or null if not used in the import
      * @dataProvider user_identifier_provider
      */
-    function test_elis_user_track_unenrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
+    public function test_elis_user_track_unenrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/elis/program/lib/setup.php');
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -161,48 +124,47 @@ class elis_user_track_enrolment_test extends elis_database_test {
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
 
-        $user = new user(array('idnumber' => 'testuseridnumber',
-                               'username' => 'testuserusername',
-                               'firstname' => 'testuserfirstname',
-                               'lastname' => 'testuserlastname',
-                               'email' => 'testuser@email.com',
-                               'country' => 'CA'));
+        $user = new user(array(
+            'idnumber' => 'testuseridnumber',
+            'username' => 'testuserusername',
+            'firstname' => 'testuserfirstname',
+            'lastname' => 'testuserlastname',
+            'email' => 'testuser@email.com',
+            'country' => 'CA'
+        ));
         $user->save();
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
 
-        $track = new track(array('curid' => $program->id,
-                                 'idnumber' => 'testtrackidnumber'));
+        $track = new track(array('curid' => $program->id, 'idnumber' => 'testtrackidnumber'));
         $track->save();
 
-        $usertrack = new usertrack(array('userid' => $user->id,
-                                         'trackid' => $track->id));
+        $usertrack = new usertrack(array('userid' => $user->id, 'trackid' => $track->id));
         $usertrack->save();
 
-        //validate setup
-        $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id,
-                                                                     'trackid' => $track->id)));
+        // Validate setup.
+        $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id, 'trackid' => $track->id)));
 
-        //run the track enrolment delete action
+        // Run the track enrolment delete action.
         $record = new stdClass;
         $record->action = $actiondelete;
         $record->context = 'track_testtrackidnumber';
-        if ($username != NULL) {
+        if ($username != null) {
             $record->user_username = $user->username;
         }
-        if ($email != NULL) {
+        if ($email != null) {
             $record->user_email = $user->email;
         }
-        if ($idnumber != NULL) {
+        if ($idnumber != null) {
             $record->user_idnumber = $user->idnumber;
         }
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
-        $importplugin->fslogger = new silent_fslogger(NULL);
+        $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
-        //validation
+        // Validation.
         $this->assertEquals(0, $DB->count_records(usertrack::TABLE));
     }
 
