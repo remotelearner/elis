@@ -2264,8 +2264,7 @@ function print_table($table, $return=false) {
         $lastload = time();
         $a = userdate($lastload, $format, $timezone);
 
-        return '<form id="'. $element_id .'" action="'. $CFG->wwwroot .'/blocks/php_report/dynamicreport.php" '.
-               'onsubmit="start_throbber(); return true;" >'.
+        return '<form id="'.$element_id.'" action="'.$CFG->wwwroot.'/blocks/php_report/dynamicreport.php" >'.
                '<input type="hidden" id="id" name="id" value="'. $id .'" />' .
                '<input type="hidden" id="page" name="page" value="'. $this->page .'" />'.
                '<input type="hidden" id="sort" name="sort" value="'. $this->sort .'" />'.

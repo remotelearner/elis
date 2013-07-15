@@ -146,14 +146,6 @@ if ((reportdiv = document.getElementById('php_report_block')) &&
             }
         }
     }
-    for (i = 0; i < reportforms.length; ++i) {
-        reportforms[i].onsubmit = function() {
-                                  if (window.submitname != 'mform_showadvanced') {
-                                      start_throbber();
-                                  //} else { alert('NO THROBBER!');
-                                  }
-                                  return true; };
-    }
 }
 //]]>
 </script>

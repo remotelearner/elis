@@ -102,7 +102,7 @@ class report_page extends elis_page {
                             'divid' => "php_report_body_{$this->report_shortname}",
                             'throbber' => "{$CFG->wwwroot}/blocks/php_report/pix/throbber_loading.gif"
                         )
-                )
+                ), null, true
         );
 
         // output the report contents
