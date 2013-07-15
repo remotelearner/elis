@@ -992,8 +992,7 @@ abstract class php_report {
         $lastload = time();
         $a = userdate($lastload, $format, $timezone);
 
-        return '<form id="' . $element_id . '" action="' . $CFG->wwwroot . '/blocks/php_report/dynamicreport.php" ' .
-               'onsubmit="start_throbber(); return true;" >' .
+        return '<form id="'.$element_id.'" action="'.$CFG->wwwroot.'/blocks/php_report/dynamicreport.php" >'.
                '<input type="hidden" id="id" name="id" value="' . $id . '" />' .
                '<p align="center" class="php_report_caching_info">' . get_string('infocurrent', 'block_php_report', $a) . '<br/>' .
                '<input id="' . $element_id . '" type="submit" value="Refresh"/>' . '</p>' .
@@ -1026,8 +1025,7 @@ abstract class php_report {
         $maxdisplay = 18;
         $output = '';
         if ($totalcount > $perpage) {
-            $attributes = array_merge(array('onclick' => 'start_throbber();'),
-                                      $attributes);
+            // $attributes = array_merge(array('onclick' => 'start_throbber();'), $attributes);
             $output .= '<div class="paging">';
             if (empty($page_label)) {
                 //use the default label
