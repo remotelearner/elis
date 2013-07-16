@@ -1045,6 +1045,8 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
         return false;
     }
 
+    ftp_pasv($ftp, true);
+
     $repo_path = elis_files_node_path($uuid);
 
     // The FTP server represents "Company Home" as "Alfresco" so we need to change that now:

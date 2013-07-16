@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <table name="repository">
+        <column>id</column>
+        <column>type</column>
+        <column>visible</column>
+        <row>
+            <value>99</value>
+            <value>elis_files</value>
+            <value>1</value>
+        </row>
+    </table>
+    <table name="repository_instances">
+        <column>name</column>
+        <column>typeid</column>
+        <column>userid</column>
+        <column>contextid</column>
+        <row>
+            <value>elis files phpunit test</value>
+            <value>99</value>
+            <value>0</value>
+            <value>1</value>
+        </row>
+    </table>
+</dataset>

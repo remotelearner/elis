@@ -1,9 +1,7 @@
 <?php
 /**
- *
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,42 +16,50 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package
- * @subpackage
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
 
 require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
-global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
 
-
-class file_userSynchronisationTest extends elis_database_test {
-
+/**
+ * Tests for the user synchronisation
+ * @group repository_elis_files
+ */
+class repository_elis_files_file_user_synchronisation_testcase extends elis_database_test {
+    /** @var array $userstodelete an array of users to delete */
     private $userstodelete;
 
-    protected static function get_overlay_tables() {
-        return array(
-            'user' => 'moodle'
-        );
+    /**
+     * This function loads data into the PHPUnit tables for testing.
+     */
+    protected function setup_test_data_xml() {
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_user_account_data3.xml'));
     }
 
+    /**
+     * This function initializes all of the setup steps required by each step.
+     */
     protected function setUp() {
         parent::setUp();
-
-        $this->load_csv_data();
+        $this->setAdminUser();
     }
 
+    /**
+     * This function removes any initialized data.
+     */
     protected function tearDown() {
         // Remove any users created on the Aflresco server
         if (!empty($this->userstodelete)) {
@@ -65,16 +71,13 @@ class file_userSynchronisationTest extends elis_database_test {
         parent::tearDown();
     }
 
-    protected function load_csv_data() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('user', dirname(__FILE__).'/mdluser.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
-    }
-
     /**
      * Test the user migration functionality for creating a user by passing a string containing the username.
      */
-    public function testMigrateUserAsString() {
+    public function test_migrate_user_as_string() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+
         if (!$repo = repository_factory::factory('elis_files')) {
             $this->markTestSkipped();
         }
@@ -84,8 +87,14 @@ class file_userSynchronisationTest extends elis_database_test {
         $this->assertTrue($repo->migrate_user('__phpunit_test1__', 'passwords'));
     }
 
+    /**
+     * Test the user migration functionality using an invalid user object
+     * @uses $DB
+     */
+    public function test_migrate_invalid_user_as_object() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
 
-    public function testMigrateInvalidUserAsObject() {
         global $DB;
 
         if (!$repo = repository_factory::factory('elis_files')) {

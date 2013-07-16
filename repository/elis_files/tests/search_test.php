@@ -1,9 +1,7 @@
 <?php
 /**
- *
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,103 +16,84 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package
- * @subpackage
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-define('CLI_SCRIPT', true);
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
+
+require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
-    require_once($CFG->dirroot .'/repository/elis_files/lib.php');
-    require_once($CFG->dirroot .'/repository/elis_files/lib/lib.php');
-    require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
-}
-define('ELIS_FILES_PREFIX', 'elis_files_test_folder_');
+require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
 
-class Search extends elis_database_test {
-
-    protected static function get_overlay_tables() {
-        return array(
-            'config_plugins' => 'moodle'
-        );
+/**
+ * Class to test search
+ * @group repository_elis_files
+ */
+class repository_elis_files_search_testcase extends elis_database_test {
+    /**
+     * This function loads data into the PHPUnit tables for testing.
+     */
+    protected function setup_test_data_xml() {
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
     }
 
-    protected static function get_ignore_tables() {
-        return array(
-            'repository' => 'moodle',
-            'repository_instance' => 'moodle'
-        );
-    }
-
+    /**
+     * This function initializes all of the setup steps required by each step.
+     */
     protected function setUp() {
         parent::setUp();
-
-        $rs = self::$origdb->get_recordset('config_plugins', array('plugin' => 'elis_files'));
-
-        if ($rs->valid()) {
-            foreach ($rs as $setting) {
-                self::$overlaydb->import_record('config_plugins', $setting);
-            }
-            $rs->close();
-        }
-
-        $USER = get_admin();
-        $GLOBALS['USER'] = $USER;
+        $this->setAdminUser();
     }
 
-    public static function tearDownAfterClass() {
-        if ($dir = elis_files_read_dir()) {
-            foreach ($dir->folders as $folder) {
-                if (strpos($folder->title, ELIS_FILES_PREFIX) === 0) {
-                    elis_files_delete($folder->uuid);
-                    break 1;
-                }
-            }
-        }
-
-        parent::tearDownAfterClass();
-    }
-
+    /**
+     * This function removes any initialized data.
+     */
     protected function tearDown() {
         if ($dir = elis_files_read_dir()) {
             foreach ($dir->folders as $folder) {
-                if (strpos($folder->title, ELIS_FILES_PREFIX) === 0) {
+                if (strpos($folder->title, FOLDER_NAME_PREFIX) === 0) {
                     elis_files_delete($folder->uuid);
                     break 1;
                 }
             }
         }
-
         parent::tearDown();
     }
 
     /**
      * Test that searching for folders does not return results
+     * @uses $CFG, $DB
      */
-    public function testFolderSearch() {
+    public function test_folder_search() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+
         global $CFG, $DB;
+
         // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
+        if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
             // RL: ELIS files: Alfresco
             $data = null;
             $listing = null;
-            $sql = 'SELECT i.name, i.typeid, r.type FROM {repository} r, {repository_instances} i WHERE r.type=? AND i.typeid=r.id';
+            $sql = 'SELECT i.name, i.typeid, r.type
+                      FROM {repository} r, {repository_instances} i
+                     WHERE r.type = ? AND i.typeid = r.id';
             $repository = $DB->get_record_sql($sql, array('elis_files'));
             if ($repository) {
                 try {
-                    $repo = @new repository_elis_files('elis_files',
-                                get_context_instance(CONTEXT_SYSTEM),
-                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+                    $repo = @new repository_elis_files('elis_files', context_system::instance(),
+                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
-               }
+                }
             } else {
                 $this->markTestSkipped();
             }
@@ -122,14 +101,13 @@ class Search extends elis_database_test {
             $this->markTestSkipped();
         }
 
-        $parent_folder_uuid = $repo->elis_files->get_root()->uuid;
+        $parentfolderuuid = $repo->elis_files->get_root()->uuid;
 
-        $folder = ELIS_FILES_PREFIX.'1';
-        $repo->elis_files->create_dir($folder, $parent_folder_uuid, '', true);
+        $folder = FOLDER_NAME_PREFIX.'1';
+        $repo->elis_files->create_dir($folder, $parentfolderuuid, '', true);
 
         $result = $repo->search($folder);
 
         $this->assertEmpty($result['list']);
     }
-
 }

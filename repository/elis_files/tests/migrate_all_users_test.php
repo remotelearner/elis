@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,97 +16,84 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package
- * @subpackage
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-define('CLI_SCRIPT', true);
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
+
+require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
 
 /**
  * Tests for the "migrate_all_users" method
+ * @group repository_elis_files
  */
-class migrateAllUsersTest extends elis_database_test {
+class repository_elis_files_migrate_all_users_testcase extends elis_database_test {
     /**
-     * Return the list of tables that should be overlayed.
+     * This function loads data into the PHPUnit tables for testing
      */
-    static protected function get_overlay_tables() {
-        return array(
-            'config_plugins' => 'moodle',
-            'user'           => 'moodle'
-        );
-    }
-
-    /**
-     * Set up a test user from CSV
-     */
-    private function load_csv_data() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('user', dirname(__FILE__).'/mdluser.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+    protected function setup_test_data_xml() {
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config2.xml'));
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_user_account_data2.xml'));
     }
 
     /**
      * Validate that the "migrate_all_users" method correctly deletes legacy
+     * @uses $CFG, $DB
      * numeric user directories
      */
-    public function testMigrateAllUsersHandlesDeletedUsers() {
+    public function test_migrate_all_users_handles_deleted_users() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+
         global $CFG, $DB;
-
-        // Set the configuration to specify whether to remove the user's home
-        // directory when deleting them, for cleanup convenience
-        $DB->execute("INSERT INTO {config_plugins}
-                      SELECT * FROM ".self::$origdb->get_prefix().'config_plugins
-                      WHERE plugin = ?', array('elis_files'));
-        set_config('deleteuserdir', 1, 'elis_files');
-
-        // Set up the user in Moodle
-        $this->load_csv_data();
-        $DB->execute('UPDATE {user} SET mnethostid = ?', array($CFG->mnet_localhost_id));
 
         // Our test username
         $username = '__phpunit_test1__';
 
         // Set up the user in Alfresco
-        $elis_files = new ELIS_files();
-        $elis_files->migrate_user($username);
+        $elisfiles = new ELIS_files();
+        $elisfiles->migrate_user($username);
 
         // Validate that the user exists and that their home directory was set up
         // (for sanity reasons only)
-        $user_exists = elis_files_request('/api/people/'.$username);
-        $this->assertNotEquals(false, $user_exists);
+        $userexists = elis_files_request('/api/people/'.$username);
+        $this->assertNotEquals(false, $userexists);
 
-        $initial_user_home = elis_files_get_home_directory($username);
-        $this->assertNotEquals(false, $initial_user_home);
+        $initialuserhome = elis_files_get_home_directory($username);
+        $this->assertNotEquals(false, $initialuserhome);
 
         // Change the node name to the "old" style
-        $test = elis_files_node_rename($initial_user_home, '100');
+        $test = elis_files_node_rename($initialuserhome, '100');
 
         // Run the migration method
-        $DB->execute('UPDATE {user} SET deleted = 1');
-        $elis_files->migrate_all_users();
+        $usr = new stdClass();
+        $usr->id = 100;
+        $usr->deleted = 1;
+        $DB->update_record('user', $usr);
+
+        $elisfiles->migrate_all_users();
 
         // Validate cleanup for the legacy folder
-        $legacy_uuid = false;
-        $dir = elis_files_read_dir($elis_files->uhomesuid, true);
+        $legacyuuid = false;
+        $dir = elis_files_read_dir($elisfiles->uhomesuid, true);
         foreach ($dir->folders as $folder) {
             if ($folder->title == '100') {
-                $legacy_uuid = $folder->uuid;
+                $legacyuuid = $folder->uuid;
             }
         }
 
         // Clean up the non-legacy data before final validation
-        $elis_files->delete_user($username);
+        $elisfiles->delete_user($username);
 
-        $this->assertEquals(false, $legacy_uuid);
+        $this->assertEquals(false, $legacyuuid);
     }
 }
