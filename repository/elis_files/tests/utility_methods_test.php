@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,108 +17,105 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    repository_elis_files
- * @subpackage PHPUnit_tests
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-define('CLI_SCRIPT', true);
-require_once(dirname(__FILE__) .'/../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot .'/elis/core/lib/setup.php');
-require_once($CFG->dirroot .'/lib/phpunittestlib/testlib.php');
-require_once(elis::lib('testlib.php'));
-require_once($CFG->dirroot .'/repository/elis_files/lib.php');
 
-define('ELIS_FILES_PREFIX', 'elis_files_test_utility_methods');
-define('ONE_MB_BYTES', 1048576);
-define('USERS_HOME', 'userhomedir');
+require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
 
 /**
- *
- * @param integer $mbs The file size (in MB) to generate.
+ * Tests for the utility methods
+ * @group repository_elis_files
  */
-function generate_temp_file($mbs) {
-    global $CFG;
+class repository_elis_files_utility_methods_testcase extends elis_database_test {
+    /** @var object $repo repository instance */
+    public static $repo = null;
+    /** @var string $fileuuid file unique id */
+    public static $fileuuid = null;
 
-    $fname = tempnam($CFG->dataroot.'/temp/', ELIS_FILES_PREFIX);
-    if (!$fh = fopen($fname, 'w+')) {
-        error('Could not open temporary file');
+    /**
+     * This function loads data into the PHPUnit tables for testing.
+     */
+    protected function setup_test_data_xml() {
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_user_account_data2.xml'));
     }
 
-    $maxbytes = $mbs * ONE_MB_BYTES;
-    $data     = '';
-    $fsize    = 0;
+    /**
+     * Generates a temp file
+     * @uses $CFG
+     * @param integer $mbs The file size (in MB) to generate.
+     * @return string the the file name
+     */
+    public static function generate_temp_file($mbs) {
+        global $CFG;
 
-    for ($i = 0; $i < $mbs; $i++) {
-        while ((strlen($data) < ONE_MB_BYTES) && ((strlen($data) + $fsize) < $maxbytes)) {
-            $data .= 'a';
+        $fname = tempnam($CFG->dataroot.'/temp/', ELIS_FILES_PREFIX);
+        if (!$fh = fopen($fname, 'w+')) {
+            error('Could not open temporary file');
         }
 
-        fwrite($fh, $data);
-        $fsize += strlen($data);
-    }
-    fclose($fh);
-    return $fname;
-}
+        $maxbytes = $mbs * ONE_MB_BYTES;
+        $data     = '';
+        $fsize    = 0;
 
-class utilityMethodsTest extends elis_database_test {
-    static $repo = null;
-    static $file_uuid = null;
+        for ($i = 0; $i < $mbs; $i++) {
+            while ((strlen($data) < ONE_MB_BYTES) && ((strlen($data) + $fsize) < $maxbytes)) {
+                $data .= 'a';
+            }
 
-    protected $backupGlobalsBlacklist = array('USER');
-
-    protected static function get_overlay_tables() {
-        return array(
-            'config_plugins' => 'moodle',
-            'user' => 'moodle'
-        );
+            fwrite($fh, $data);
+            $fsize += strlen($data);
+        }
+        fclose($fh);
+        return $fname;
     }
 
-    public static function initRepo() {
-        global $USER;
+    /**
+     * This methods does the initial work initializing the repository
+     */
+    public function init_repo() {
         if (!self::$repo) {
-            $USER = get_test_user('admin');
-            //var_dump($USER);
+            $repo = @new repository_elis_files('elis_files', SYSCONTEXTID,
+                    array('ajax' => false, 'name' => 'bogus', 'type' => 'elis_files'));
+            $filename = self::generate_temp_file(1);
 
-            self::$repo = new repository_elis_files('elis_files', SYSCONTEXTID,
-                              array('ajax' => false, 'name' => 'bogus', 'type' =>'elis_files'));
-            $filename = generate_temp_file(1);
-            $uploadresponse = elis_files_upload_file('', $filename, self::$repo->elis_files->uuuid);
+            $uploadresponse = elis_files_upload_file('', $filename, $repo->elis_files->uuuid);
             unlink($filename);
-            self::$file_uuid = ($uploadresponse && !empty($uploadresponse->uuid))
-                               ? $uploadresponse->uuid : '';
+            self::$fileuuid = ($uploadresponse && !empty($uploadresponse->uuid)) ? $uploadresponse->uuid : '';
+            self::$repo = $repo;
         }
     }
 
-    public static function setUpBeforeClass() {
-        parent::setUpBeforeClass();
-        self::initRepo();
-    }
-
+    /**
+     * This function initializes all of the setup steps required by each step.
+     */
     protected function setUp() {
         parent::setUp();
-
-        $rs = self::$origdb->get_recordset('config_plugins', array('plugin' => 'elis_files'));
-
-        if ($rs->valid()) {
-            foreach ($rs as $setting) {
-                self::$overlaydb->import_record('config_plugins', $setting);
-            }
-            $rs->close();
-        }
-
-        if (!self::$repo) {
-            $this->markTestSkipped('Repository not configured or enabled');
-        }
+        $this->setAdminUser();
     }
 
-    public static function cleanupfiles($uuid = '') {
+    /**
+     * This function removes any initialized data.
+     */
+    protected function tearDown() {
+        parent::tearDown();
+        $this->cleanup_files();
+    }
+
+    public function cleanup_files($uuid = '') {
         if (empty($uuid) &&
-            ($node = self::$repo->elis_files->get_parent(self::$file_uuid)) &&
-            !empty($node->uuid)) {
+                ($node = self::$repo->elis_files->get_parent(self::$fileuuid))
+                && !empty($node->uuid)) {
             $uuid = $node->uuid;
         } else {
             return;
@@ -132,73 +129,97 @@ class utilityMethodsTest extends elis_database_test {
         }
     }
 
-    public static function tearDownAfterClass() {
-        self::cleanupfiles();
-        parent::tearDownAfterClass();
-    }
-
-    public function get_parent_dataProvider() {
-        self::initRepo();
-        if (!self::$repo) {
-            return array();
-        }
-
+    /**
+     * This method originally was a data provider, however when running the test there were errors
+     * when the static properties werw referenced.  Now it is just a regular function that is called
+     * by each individual test
+     * @return array and array of array test data
+     */
+    public function get_parent_data_provider() {
         return array(
-            array(self::$repo->elis_files->muuid, 'Company Home'),
-            array(self::$repo->elis_files->suuid, 'moodle'),
-            array(self::$repo->elis_files->cuuid, 'moodle'),
-            array(self::$repo->elis_files->uuuid, 'User Homes'),
-            array(self::$repo->elis_files->ouuid, 'moodle'),
-            array(self::$file_uuid, USERS_HOME),
-        ); 
+                array(self::$repo->elis_files->muuid, 'Company Home', 'muuid'),
+                array(self::$repo->elis_files->suuid, 'moodle', 'suuid'),
+                array(self::$repo->elis_files->cuuid, 'moodle', 'cuuid'),
+                array(self::$repo->elis_files->uuuid, 'User Homes', 'uuid'),
+                array(self::$repo->elis_files->ouuid, 'moodle', 'ouuid'),
+                array(self::$fileuuid, USERS_HOME, 'fileuuid'),
+        );
     }
 
     /**
      * Test that info is returned for the root uuid
-     * @dataProvider get_parent_dataProvider
+     * @uses $USER
      */
-    public function test_get_parent($child_uuid, $parent_name) {
+    public function test_get_parent() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+        $this->init_repo();
+
         global $USER;
-        // Look for the Company Home folder
-        if (empty($child_uuid)) {
-            $this->markTestSkipped('Warning: Data provider missing uuid!');
+
+        $dataset = $this->get_parent_data_provider();
+
+        foreach ($dataset as $data) {
+
+            $childuuid = $data[0];
+            $parentname = $data[1];
+
+            // This condition was added to test if the uuid was false, assert for a false value and then report on the error
+            // The idea is to mimic a data provider method where by the test will continue if there is one false assertion
+            if (empty($childuuid)) {
+                $this->assertFalse($childuuid, $data[2].' in parent '.$data[1].' is false ');
+                continue;
+            }
+
+            $uuid = self::$repo->elis_files->suuid;
+            $node = self::$repo->elis_files->get_parent($childuuid);
+
+            $this->assertTrue(!empty($node->uuid));
+            if ($parentname == USERS_HOME) {
+                $parentname = elis_files_transform_username($USER->username);
+            }
+            $this->assertEquals($parentname, $node->title);
         }
-        $uuid = self::$repo->elis_files->suuid;
-        $node = self::$repo->elis_files->get_parent($child_uuid);
-        //mtrace("test_get_parent({$child_uuid}, '{$parent_name}') = ");
-        //var_dump($node);
-        $this->assertTrue(!empty($node->uuid));
-        if ($parent_name == USERS_HOME) {
-            $parent_name = elis_files_transform_username($USER->username);
-        }
-        $this->assertEquals($parent_name, $node->title);
     }
 
     /**
      * Test broken method: get_parent_path_from_tree()
-     * @dataProvider get_parent_dataProvider
+     * @uses $USER
      */
-    public function test_get_parent_path_from_tree($child_uuid, $parent_name) {
+    public function test_get_parent_path_from_tree() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+        $this->init_repo();
+
         global $USER;
-        if (empty($child_uuid)) {
-            $this->markTestSkipped('Warning: Data provider missing uuid!');
-        }
-    
-        $foldertree = elis_files_folder_structure();
-        $result_path = array();
-        self::$repo->get_parent_path_from_tree($child_uuid, $foldertree,
-                                               $result_path, 0, 0, false, 0);
-        //mtrace("PHPUnit::get_parent_path({$child_uuid} ...) => ");
-        //var_dump($result_path);
-        if ($parent_name != 'Company Home') {
-            $this->assertTrue(!empty($result_path));
-            if ($parent_name == USERS_HOME) {
-                $parent_name = elis_files_transform_username($USER->username);
+
+        $dataset = $this->get_parent_data_provider();
+
+        foreach ($dataset as $data) {
+
+            $childuuid = $data[0];
+            $parentname = $data[1];
+
+            // This condition was added to test if the uuid was false, assert for a false value and then report on the error
+            // The idea is to mimic a data provider method where by the test will continue if there is one false assertion
+            if (empty($childuuid)) {
+                $this->assertFalse($childuuid, $data[2].' in parent '.$data[1].' is false ');
+                continue;
             }
-            $this->assertEquals($parent_name, $result_path[count($result_path) -1]['name']);
-        } else {
-            $this->assertTrue(empty($result_path));
+
+            $foldertree = elis_files_folder_structure();
+            $resultpath = array();
+            self::$repo->get_parent_path_from_tree($childuuid, $foldertree, $resultpath, 0, 0, false, 0);
+
+            if ($parentname != 'Company Home') {
+                $this->assertTrue(!empty($resultpath));
+                if ($parentname == USERS_HOME) {
+                    $parentname = elis_files_transform_username($USER->username);
+                }
+                $this->assertEquals($parentname, $resultpath[count($resultpath) -1]['name']);
+            } else {
+                $this->assertTrue(empty($resultpath));
+            }
         }
     }
-
 }

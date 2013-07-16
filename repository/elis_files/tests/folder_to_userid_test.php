@@ -1,9 +1,7 @@
 <?php
 /**
- * Alfresco CMIS REST interface API for Alfresco version 3.2 / 3.4
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,85 +14,68 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-define('CLI_SCRIPT', true);
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+defined('MOODLE_INTERNAL') || die();
+
 global $CFG;
+
+require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
 require_once(dirname(__FILE__).'/../lib/lib.php');
 
 /**
- * Class for testing the the method that converts a folder name to a Moodle user
- * id works correctly
+ * Class for testing the the method that converts a folder name to a Moodle user id works correctly
+ * @group repository_elis_files
  */
-class folderToUseridTest extends elis_database_test {
+class repository_elis_files_folder_to_userid_testcase extends elis_database_test {
     /**
-     * Return the list of tables that should be overlayed.
-     */
-    static protected function get_overlay_tables() {
-        return array(
-            'config'         => 'moodle',
-            'config_plugins' => 'moodle',
-            'user'           => 'moodle'
-        );
-    }
-
-    /**
-     * Data provider for testing the folder-to-userid conversion
-     *
+     * Data provider for testing the folder-to-userid conversion.
      * @return array The data as expected by the testing method
      */
-    function folder_to_userid_provider() {
+    public function folder_to_userid_provider() {
         return array(
-            array('user_AT_domain', 1, 'moodleadmin'),
-            array('user', 2, 'moodleadmin'),
-            array('bogus', false, 'moodleadmin'),
-            array('moodleadmin', 3, 'moodleadmin'),
-            array('moodleadmin_AT_domain', 3, 'moodleadmin@domain'),
-            array('moodleadmin@domain', false, 'moodleadmin@domain')
+                array('user_AT_domain', 99, 'moodleadmin'),
+                array('user', 100, 'moodleadmin'),
+                array('bogus', false, 'moodleadmin'),
+                array('moodleadmin', 2, 'moodleadmin'),
+                array('moodleadmin_AT_domain', 2, 'moodleadmin@domain'),
+                array('moodleadmin@domain', false, 'moodleadmin@domain')
         );
     }
 
     /**
-     * Load Moodle users into the database from a pre-defined user CSV file
+     * This function loads data into the PHPUnit tables for testing.
      */
-    protected function load_csv_data() {
-        // load initial data from a CSV file
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('user', dirname(__FILE__).'/folderusers.csv');
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+    protected function setup_test_data_xml() {
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_user_account_data.xml'));
     }
 
     /**
-     * Validate that the given user name is converted to the provided user id
-     *
+     * Validate that the given user name is converted to the provided user id.
      * @dataProvider folder_to_userid_provider
-     * @param string $folder_name The name of the ELIS Files folder
-     * @param mixed $expected_userid The userid the method should return (or false
-     *                               if no valid user exists)
-     * @param string $admin_username The config value to use for the admin username setting
+     * @param string $foldername The name of the ELIS Files folder
+     * @param mixed $expecteduserid The userid the method should return (or false if no valid user exists)
+     * @param string $adminusername The config value to use for the admin username setting
      */
-    public function testMethodReturnsCorrectUserid($folder_name, $expected_userid, $admin_username) {
-        // Load in our user data
-        $this->load_csv_data();
+    public function test_method_returns_correct_userid($foldername, $expecteduserid, $adminusername) {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
 
         // Set up the configured admin username
-        set_config('admin_username', $admin_username, 'elis_files');
+        set_config('admin_username', $adminusername, 'elis_files');
         set_config('mnethostid', 1);
         elis::$config = new elis_config();
 
         // Validate method output
-        $userid = elis_files_folder_to_userid($folder_name);
-        $this->assertEquals($expected_userid, $userid);
+        $userid = elis_files_folder_to_userid($foldername);
+        $this->assertEquals($expecteduserid, $userid);
     }
 }

@@ -1,9 +1,7 @@
 <?php
 /**
- *
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,64 +16,55 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package
- * @subpackage
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-define('CLI_SCRIPT', true);
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
+
+require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
-    require_once($CFG->dirroot .'/repository/elis_files/lib.php');
-    require_once($CFG->dirroot .'/repository/elis_files/lib/lib.php');
+if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
+    require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+    require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
     require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 }
-define('ELIS_FILES_PREFIX', 'elis_files_test_folder_');
+require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
 
-class folderPathTest extends elis_database_test {
-
-
-
-    protected static function get_overlay_tables() {
-        return array(
-            'config_plugins' => 'moodle'
-        );
+/**
+ * Tests for the utility methods
+ * @group repository_elis_files
+ */
+class repository_elis_files_folder_path_testcase extends elis_database_test {
+    /**
+     * This function loads data into the PHPUnit tables for testing.
+     */
+    protected function setup_test_data_xml() {
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_permissions_test_data.xml'));
     }
 
-    protected static function get_ignore_tables() {
-        return array(
-            'repository' => 'moodle',
-            'repository_instance' => 'moodle'
-        );
-    }
-
-
+    /**
+     * This function initializes all of the setup steps required by each step.
+     */
     protected function setUp() {
         parent::setUp();
-
-        $rs = self::$origdb->get_recordset('config_plugins', array('plugin' => 'elis_files'));
-
-        if ($rs->valid()) {
-            foreach ($rs as $setting) {
-                self::$overlaydb->import_record('config_plugins', $setting);
-            }
-            $rs->close();
-        }
-
-        $USER = get_admin();
-        $GLOBALS['USER'] = $USER;
+        $this->setAdminUser();
     }
 
+    /**
+     * This method is called after the last test of this test class is run.
+     * This method overrides the parent class and the name must not change to meet
+     * style code
+     */
     public static function tearDownAfterClass() {
         if ($dir = elis_files_read_dir()) {
             foreach ($dir->folders as $folder) {
-                if (strpos($folder->title, ELIS_FILES_PREFIX) === 0) {
+                if (strpos($folder->title, FOLDER_NAME_PREFIX) === 0) {
                     elis_files_delete($folder->uuid);
                     break 1;
                 }
@@ -85,10 +74,13 @@ class folderPathTest extends elis_database_test {
         parent::tearDownAfterClass();
     }
 
+    /**
+     * This function removes any initialized data.
+     */
     protected function tearDown() {
         if ($dir = elis_files_read_dir()) {
             foreach ($dir->folders as $folder) {
-                if (strpos($folder->title, ELIS_FILES_PREFIX) === 0) {
+                if (strpos($folder->title, FOLDER_NAME_PREFIX) === 0) {
                     elis_files_delete($folder->uuid);
                     break 1;
                 }
@@ -100,24 +92,29 @@ class folderPathTest extends elis_database_test {
 
     /**
      * Test that both get_parent and elis_files_folder_structure return the same path
+     * @uses $CFG, $DB
      */
-    public function testParentAndTreeStructureSame() {
+    public function test_parent_and_tree_structure_same() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+
         global $CFG, $DB;
         // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
+        if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
             // RL: ELIS files: Alfresco
             $data = null;
             $listing = null;
-            $sql = 'SELECT i.name, i.typeid, r.type FROM {repository} r, {repository_instances} i WHERE r.type=? AND i.typeid=r.id';
+            $sql = 'SELECT i.name, i.typeid, r.type
+                      FROM {repository} r, {repository_instances} i
+                     WHERE r.type = ? AND i.typeid = r.id';
             $repository = $DB->get_record_sql($sql, array('elis_files'));
             if ($repository) {
                 try {
-                    $repo = @new repository_elis_files('elis_files',
-                                get_context_instance(CONTEXT_SYSTEM),
-                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+                    $repo = @new repository_elis_files('elis_files', context_system::instance(),
+                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
-               }
+                }
             } else {
                 $this->markTestSkipped();
             }
@@ -126,48 +123,54 @@ class folderPathTest extends elis_database_test {
         }
 
         // create folder, get uuid, get path via get_parent_path and elis_files_folder structure
-        //for first folder, create under moodle, then create under the previous folder...
-        $parent_folder_uuid = $repo->elis_files->get_root()->uuid;
+        // for first folder, create under moodle, then create under the previous folder...
+        $parentfolderuuid = $repo->elis_files->get_root()->uuid;
         for ($i = 1; $i <= 20; $i++) {
-            $current_folder = ELIS_FILES_PREFIX.$i;
-            $current_folder_uuid = $repo->elis_files->create_dir($current_folder,$parent_folder_uuid, '', true);
+            $currentfolder = FOLDER_NAME_PREFIX.$i;
+            $currentfolderuuid = $repo->elis_files->create_dir($currentfolder, $parentfolderuuid, '', true);
 
             // get_parent recursive  get_parent_path test
-            $recursive_path = array();
-            $repo->get_parent_path($current_folder_uuid,$recursive_path, 0, 0, 0, 0,'parent');
+            $recursivepath = array();
+            $repo->get_parent_path($currentfolderuuid, $recursivepath, 0, 0, 0, 0, 'parent');
 
             // elis_files_folder_structure get_parent_path test
             $folders = elis_files_folder_structure();
-            $alt_recursive_path = array();
-            $repo->get_parent_path($current_folder_uuid,$alt_recursive_path, 0, 0, 0, 0);
+            $altrecursivepath = array();
+            $repo->get_parent_path($currentfolderuuid, $altrecursivepath, 0, 0, 0, 0);
 
-            $this->assertEquals($recursive_path, $alt_recursive_path);
+            $this->assertEquals($recursivepath, $altrecursivepath);
 
-            //for nested folders
-            $parent_folder_uuid = $current_folder_uuid;
+            // for nested folders
+            $parentfolderuuid = $currentfolderuuid;
         }
     }
 
     /**
      * Test times for get_parent using recursive get_parent alfresco calls
+     * @uses $CFG, $DB
      */
-    public function testGetParentPathParent() {
+    public function test_get_parent_path_parent() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+
         global $CFG, $DB;
+
         // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
+        if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
             // RL: ELIS files: Alfresco
             $data = null;
             $listing = null;
-            $sql = 'SELECT i.name, i.typeid, r.type FROM {repository} r, {repository_instances} i WHERE r.type=? AND i.typeid=r.id';
+            $sql = 'SELECT i.name, i.typeid, r.type
+                      FROM {repository} r, {repository_instances} i
+                     WHERE r.type = ? AND i.typeid = r.id';
             $repository = $DB->get_record_sql($sql, array('elis_files'));
             if ($repository) {
                 try {
-                    $repo = @new repository_elis_files('elis_files',
-                                get_context_instance(CONTEXT_SYSTEM),
-                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+                    $repo = @new repository_elis_files('elis_files', context_system::instance(),
+                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
-               }
+                }
             } else {
                 $this->markTestSkipped();
             }
@@ -176,67 +179,73 @@ class folderPathTest extends elis_database_test {
         }
 
         // set up the storage for the full path of the path's UUIDs to validate against
-        $expected_path = array();
+        $expectedpath = array();
 
         // create folder, get uuid, get path via get_parent_path and elis_files_folder structure
-        //for first folder, create under moodle, then create under the previous folder...
-        $parent_folder_uuid = $repo->elis_files->get_root()->uuid;
+        // for first folder, create under moodle, then create under the previous folder...
+        $parentfolderuuid = $repo->elis_files->get_root()->uuid;
         $times = array();
         for ($i = 1; $i <= 20; $i++) {
-            $current_folder = ELIS_FILES_PREFIX.$i;
+            $currentfolder = FOLDER_NAME_PREFIX.$i;
 
-            $current_folder_uuid = $repo->elis_files->create_dir($current_folder,$parent_folder_uuid, '', true);
+            $currentfolderuuid = $repo->elis_files->create_dir($currentfolder, $parentfolderuuid, '', true);
 
             // add the parent folder to our expected sequence of UUIDs
-            $expected_path[] = repository_elis_files::build_encodedpath($parent_folder_uuid);
+            $expectedpath[] = repository_elis_files::build_encodedpath($parentfolderuuid);
 
             // get_parent recursive  get_parent_path test
             $starttime = microtime();
-            $recursive_path = array();
-            $repo->get_parent_path($current_folder_uuid,$recursive_path, 0, 0, 0, 0,'parent');
+            $recursivepath = array();
+            $repo->get_parent_path($currentfolderuuid, $recursivepath, 0, 0, 0, 0, 'parent');
             $recursive_time = microtime_diff($starttime, microtime());
 
             // validate the count
-            $this->assertEquals($i, count($recursive_path));
+            $this->assertEquals($i, count($recursivepath));
             // validate the encoded folder UUIDs
 
             // look over the expected path parts
-            foreach ($expected_path as $path_index => $expected_part) {
+            foreach ($expectedpath as $pathindex => $expectedpart) {
                 // obtain the matching part from the actual return value
-                $result_part = $recursive_path[$path_index];
-                $this->assertEquals($expected_part, $result_part['path']);
+                $resultpart = $recursivepath[$pathindex];
+                $this->assertEquals($expectedpart, $resultpart['path']);
             }
 
-            //NOTE: add this back in if we are testing performance
-            //$times[] = "Folder: $current_folder and time: $recursive_time";
-            //for nested folders
-            $parent_folder_uuid = $current_folder_uuid;
+            // NOTE: add this back in if we are testing performance
+            // $times[] = "Folder: $currentfolder and time: $recursive_time";
+            // for nested folders
+            $parentfolderuuid = $currentfolderuuid;
         }
 
-        //NOTE: use this instead of an actual assert if we want to check performance
-        //$this->markTestIncomplete("These are the times for get_parent_path_from_parent \n".implode("\n",$times));
+        // NOTE: use this instead of an actual assert if we want to check performance
+        // $this->markTestIncomplete("These are the times for get_parent_path_from_parent \n".implode("\n", $times));
     }
 
     /**
      * Test times for get_parent using recursive get_parent alfresco calls
+     * @uses $CFG, $DB
      */
-    public function testGetParentPathTree() {
+    public function test_get_parent_path_tree() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+
         global $CFG, $DB;
+
         // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot .'/repository/elis_files/')) {
+        if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
             // RL: ELIS files: Alfresco
             $data = null;
             $listing = null;
-            $sql = 'SELECT i.name, i.typeid, r.type FROM {repository} r, {repository_instances} i WHERE r.type=? AND i.typeid=r.id';
+            $sql = 'SELECT i.name, i.typeid, r.type
+                      FROM {repository} r, {repository_instances} i
+                     WHERE r.type = ? AND i.typeid = r.id';
             $repository = $DB->get_record_sql($sql, array('elis_files'));
             if ($repository) {
                 try {
-                    $repo = @new repository_elis_files('elis_files',
-                                get_context_instance(CONTEXT_SYSTEM),
-                                array('ajax'=>false, 'name'=>$repository->name, 'type'=>'elis_files'));
+                    $repo = @new repository_elis_files('elis_files', context_system::instance(),
+                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
-               }
+                }
             } else {
                 $this->markTestSkipped();
             }
@@ -245,47 +254,47 @@ class folderPathTest extends elis_database_test {
         }
 
         // set up the storage for the full path of the path's UUIDs to validate against
-        $expected_path = array();
+        $expectedpath = array();
 
         // create folder, get uuid, get path via get_parent_path and elis_files_folder structure
-        //for first folder, create under moodle, then create under the previous folder...
-        $parent_folder_uuid = $repo->elis_files->get_root()->uuid;
+        // for first folder, create under moodle, then create under the previous folder...
+        $parentfolderuuid = $repo->elis_files->get_root()->uuid;
         $times = array();
         for ($i = 1; $i <= 20; $i++) {
-            $current_folder = ELIS_FILES_PREFIX.$i;
+            $currentfolder = FOLDER_NAME_PREFIX.$i;
 
-            $current_folder_uuid = $repo->elis_files->create_dir($current_folder,$parent_folder_uuid, '', true);
+            $currentfolderuuid = $repo->elis_files->create_dir($currentfolder, $parentfolderuuid, '', true);
 
             // add the parent folder to our expected sequence of UUIDs
-            $expected_path[] = repository_elis_files::build_encodedpath($parent_folder_uuid);
+            $expectedpath[] = repository_elis_files::build_encodedpath($parentfolderuuid);
 
             // elis_files_folder_structure get_parent_path test
             $starttime = microtime();
             $folders = elis_files_folder_structure();
-            $alt_recursive_path = array();
-            $repo->get_parent_path($current_folder_uuid,$alt_recursive_path, 0, 0, 0, 0,'tree');
-            $end_time = time();
-            $structure_time = microtime_diff($starttime, microtime());
+            $altrecursivepath = array();
+            $repo->get_parent_path($currentfolderuuid, $altrecursivepath, 0, 0, 0, 0, 'tree');
+            $endtime = time();
+            $structuretime = microtime_diff($starttime, microtime());
 
             // validate the count
-            $this->assertEquals($i, count($alt_recursive_path));
+            $this->assertEquals($i, count($altrecursivepath));
             // validate the encoded folder UUIDs
 
             // look over the expected path parts
-            foreach ($expected_path as $path_index => $expected_part) {
+            foreach ($expectedpath as $pathindex => $expectedpart) {
                 // obtain the matching part from the actual return value
-                $result_part = $alt_recursive_path[$path_index];
-                $this->assertEquals($expected_part, $result_part['path']);
+                $resultpart = $altrecursivepath[$pathindex];
+                $this->assertEquals($expectedpart, $resultpart['path']);
             }
 
-            //NOTE: add this back in if we are testing performance
-            $times[] = $times[] = "Folder: $current_folder and time: $structure_time";
+            // NOTE: add this back in if we are testing performance
+            $times[] = $times[] = "Folder: $currentfolder and time: $structuretime";
 
-            //for nested folders
-            $parent_folder_uuid = $current_folder_uuid;
+            // or nested folders
+            $parentfolderuuid = $currentfolderuuid;
         }
 
-        //NOTE: use this instead of an actual assert if we want to check performance
-        //$this->markTestIncomplete("These are the times for get_parent_path_from_tree \n".implode("\n",$times));
+        // NOTE: use this instead of an actual assert if we want to check performance
+        // $this->markTestIncomplete("These are the times for get_parent_path_from_tree \n".implode("\n", $times));
     }
 }
