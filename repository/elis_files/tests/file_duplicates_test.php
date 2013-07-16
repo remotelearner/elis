@@ -1,9 +1,7 @@
 <?php
 /**
- *
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,85 +16,98 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package
- * @subpackage
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-define('CLI_SCRIPT', true);
+defined('MOODLE_INTERNAL') || die();
+
 require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once(elis::lib('testlib.php'));
 require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
-
-define('ONE_MB_BYTES', 1048576);
-define('ELIS_FILES_PREFIX', 'elis_files_test_file_upload_');
+require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
 
 /**
- *
- * @param integer $mbs The file size (in MB) to generate.
+ * Class for testing for duplicate files
+ * @group repository_elis_files
  */
-function generate_temp_file($mbs) {
-    global $CFG;
+class repository_elis_files_file_duplicate_testcase extends elis_database_test {
+    /**
+     * This function generates a temporary file for testing.
+     * @uses $CFG
+     * @param int $mbs The file size (in MB) to generate.
+     * @return string the temp file name.
+     */
+    protected function generate_temp_file($mbs) {
+        global $CFG;
 
-    $fname = tempnam($CFG->dataroot.'/temp/', ELIS_FILES_PREFIX);
+        $fname = tempnam($CFG->dataroot.'/temp/', ELIS_FILES_PREFIX);
 
-    if (!$fh = fopen($fname, 'w+')) {
-        error('Could not open temporary file');
-    }
-
-    $maxbytes = $mbs * ONE_MB_BYTES;
-    $data     = '';
-    $fsize    = 0;
-
-    for ($i = 0; $i < $mbs; $i++) {
-        while ((strlen($data) < ONE_MB_BYTES) && ((strlen($data) + $fsize) < $maxbytes)) {
-            $data .= 'a';
+        if (!$fh = fopen($fname, 'w+')) {
+            error('Could not open temporary file');
         }
 
-        fwrite($fh, $data);
-        $fsize += strlen($data);
-    }
+        $maxbytes = $mbs * ONE_MB_BYTES;
+        $data     = '';
+        $fsize    = 0;
 
-    fclose($fh);
-
-    return $fname;
-}
-class fileduplicatesTest extends elis_database_test {
-
-    protected static function get_overlay_tables() {
-        return array(
-            'config_plugins' => 'moodle'
-        );
-    }
-
-    protected function setUp() {
-        parent::setUp();
-
-        $rs = self::$origdb->get_recordset('config_plugins', array('plugin' => 'elis_files'));
-
-        if ($rs->valid()) {
-            foreach ($rs as $setting) {
-                self::$overlaydb->import_record('config_plugins', $setting);
+        for ($i = 0; $i < $mbs; $i++) {
+            while ((strlen($data) < ONE_MB_BYTES) && ((strlen($data) + $fsize) < $maxbytes)) {
+                $data .= 'a';
             }
-            $rs->close();
+
+            fwrite($fh, $data);
+            $fsize += strlen($data);
         }
 
-        $USER = get_admin();
-        $GLOBALS['USER'] = $USER;
+        fclose($fh);
+
+        return $fname;
     }
 
+    /**
+     * This function loads data into the PHPUnit tables for testing
+     */
+    protected function setup_test_data_xml() {
+        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config.xml')) {
+            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
+            return false;
+        }
+        $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
+
+        // Check if Alfresco is enabled, configured and running first.
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
+        }
+    }
+
+    /**
+     * A function to do the initial setup work
+     * @uses $GLOBAL, $USER, $DB
+     */
+    protected function setUp() {
+        global $DB;
+        parent::setUp();
+        $this->setAdminUser();
+    }
+
+    /**
+     * Take down any temporary setup data
+     */
     protected function tearDown() {
         $this->cleanupfiles();
-
         parent::tearDown();
     }
 
+    /**
+     * Remove temp files
+     * @param string $uuid a unique id
+     */
     public function cleanupfiles($uuid='') {
         if ($dir = elis_files_read_dir($uuid)) {
             foreach ($dir->files as $file) {
@@ -108,39 +119,37 @@ class fileduplicatesTest extends elis_database_test {
     }
 
     /**
-     * Test that uploading a duplicate file handles overwrites
+     * Test that uploading a duplicate file handles overwrites.
+     * @uses $CFG, $_POST
      */
-    public function testOverwriteDuplicate() {
+    public function test_overwrite_duplicate() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+
         global $CFG, $_POST;
 
+        $this->resetAfterTest(true);
         $this->markTestSkipped('elis_files_handle_duplicate_file() - removed');
 
-        // Check if Alfresco is enabled, configured and running first
-        if (!$repo = repository_factory::factory('elis_files')) {
-            $this->markTestSkipped();
-        }
-
-        if (!$repo = repository_factory::factory('elis_files')) {
-            $this->markTestSkipped('Repository not configured or enabled');
-        }
+        $repo = repository_factory::factory('elis_files');
 
         // Generate a file
         $filesize = 1 * ONE_MB_BYTES;
-        $filename = generate_temp_file(1);
+        $filename = $this->generate_temp_file(1);
 
-        $uploadresponse = elis_files_upload_file('',$filename);
+        $uploadresponse = elis_files_upload_file('', $filename);
 
-        //set overwrite param
+        // Set overwrite param
         $_POST['overwrite'] = true;
 
-        //setup filemeta
-        $path_parts = pathinfo($filename);
+        // Setup filemeta
+        $pathparts = pathinfo($filename);
         $filemeta = new stdClass;
-        $filemeta->name = $path_parts['basename'];
+        $filemeta->name = $pathparts['basename'];
         $filemeta->filepath = $CFG->dataroot.'/temp/';
         $filemeta->type = mime_content_type($filename);
         $filemeta->size = $filesize;
-        //we need the uuid of the file to send to the elis_files_handle_duplicate function
+        // We need the uuid of the file to send to the elis_files_handle_duplicate function
         $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid, '', $filemeta);
 
         if (file_exists($filename)) {
@@ -173,29 +182,26 @@ class fileduplicatesTest extends elis_database_test {
 
     /**
      * Test that uploading a duplicate file handles overwrites
+     * @uses $CFG, $_POST
      */
-    public function testRenameDuplicate() {
+    public function test_rename_duplicate() {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+
         global $CFG, $_POST;
 
+        $this->resetAfterTest(true);
         $this->markTestSkipped('elis_files_handle_duplicate_file() - removed');
 
-        // Check if Alfresco is enabled, configured and running first
-        if (!$repo = repository_factory::factory('elis_files')) {
-            $this->markTestSkipped();
-        }
-
-        if (!$repo = repository_factory::factory('elis_files')) {
-            $this->markTestSkipped('Repository not configured or enabled');
-        }
+        $repo = repository_factory::factory('elis_files');
 
         // Generate a file
         $filesize = 1 * ONE_MB_BYTES;
-        $filename = generate_temp_file(1);
+        $filename = $this->generate_temp_file(1);
 
+        $uploadresponse = elis_files_upload_file('', $filename);
 
-        $uploadresponse = elis_files_upload_file('',$filename);
-
-        //setup filemeta
+        // setup filemeta
         $path_parts = pathinfo($filename);
         $filemeta = new stdClass;
         $filemeta->name = $path_parts['basename'];
@@ -208,7 +214,7 @@ class fileduplicatesTest extends elis_database_test {
                                               'uuid'  => true));
         $newfilename =  elis_files_generate_unique_filename($filemeta->name, $listing);
 
-        //we need the uuid of the file to send to the elis_files_handle_duplicate function
+        // we need the uuid of the file to send to the elis_files_handle_duplicate function
         $duplicateresponse = elis_files_handle_duplicate_file('', $filename, '', $uploadresponse->uuid, $newfilename, $filemeta);
 
         if (file_exists($filename)) {
@@ -225,8 +231,8 @@ class fileduplicatesTest extends elis_database_test {
         // Check that the uuid returned exists
         $node = elis_files_node_properties($duplicateresponse->uuid);
 
-        //Verify that the node title is the same as the new filename
-        $this->assertEquals($newfilename,$node->title);
+        // Verify that the node title is the same as the new filename
+        $this->assertEquals($newfilename, $node->title);
 
         // Get info on the uploaded file's uuid...
         $response = $repo->get_info($duplicateresponse->uuid);
