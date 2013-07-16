@@ -70,6 +70,34 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
          * @default false
          */
         classinnerhtmlscriptsrun: false,
+        /**
+         * context for loadform and loadlink
+         * @property context
+         * @type {Object}
+         * @default null (this)
+         */
+        context: null,
+        /**
+         * link types to load into internal div
+         * @property linktypes
+         * @type {String}
+         * @default 'a'
+         */
+        linktypes: 'a',
+        /**
+         * loadlink function
+         * @property loadlink
+         * @type {Function}
+         * @default null
+         */
+        loadlink: null,
+        /**
+         * loadform function
+         * @property loadform
+         * @type {Function}
+         * @default null
+         */
+        loadform: null,
 
         /**
          * Entry method into this module.  Acts on the domready event to retrieve an element by name
@@ -78,16 +106,17 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
          */
         initializer : function(params) {
             this.lastrequest = params.basepage;
-            Y.on('domready', this.handler_dom_ready_events(params));
-        },
-
-        /**
-         * Method to call other methods on dom ready event
-         * @method handler_dom_ready_events
-         * @param {Object} params parameters passed into the module class
-         */
-        handler_dom_ready_events : function(params) {
-            this.get_element_by_name('_selection');
+            // Grab the _selection element in the nodelist and set it's value to an empty string.
+            this.selectionfield = this.get_element_by_name('_selection');
+            if (this.selectionfield) {
+                this.selectionfield.value = '';
+            }
+            if (params.linktypes) {
+                this.linktypes = params.linktypes;
+            }
+            this.context = params.context ? params.context : this;
+            this.loadlink = params.loadlink ? params.loadlink : this.load_link;
+            this.loadform = params.loadform ? params.loadform : this.load_form;
             this.make_links_internal(params.divid);
         },
 
@@ -98,8 +127,8 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
          */
         make_links_internal : function(divid) {
             var dividnode = Y.one('#'+divid);
-            dividnode.delegate('click', this.load_link, 'a', this);
-            dividnode.delegate('click', this.load_form, 'input[type=submit]', this);
+            dividnode.delegate('click', this.loadlink, this.linktypes, this.context);
+            dividnode.delegate('click', this.loadform, 'input[type=submit]', this.context);
         },
 
         /**
@@ -127,7 +156,7 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
                 throbber.setAttribute('id', 'throbber');
                 reportblock.all('div').item(0).prepend(throbber);
             }
-
+            window.scrollTo(0, 0);
             throbber.getDOMNode().innerHTML = '<center><img src="'+this.get('throbber')+'" /></center>';
         },
 
@@ -139,7 +168,9 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
             var formdataoverride = '';
             // Because of this YUI Known issue {@link http://yuilibrary.com/yui/docs/io/#known-issues}, where multiple submit buttons on a form
             // are not supported... check for the button that was clicked and override the submitted data
-            switch (e.target.getAttribute('id')) {
+            var targetid = e.target.getAttribute('id');
+            // console.log('associateclass::load_form(): target id = '+targetid);
+            switch (targetid) {
                 case 'id_reset_form':
                     formdataoverride = 'show_report=canceltest=&mform_showadvanced=';
                     break;
@@ -153,7 +184,9 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
                     break;
                 default:
                     // Check if the show refresh button is clicked
-                    if (-1 != e.target.getAttribute('name').indexOf('refresh_')) {
+                    if (-1 != targetid.indexOf('refresh_')) {
+                        // Show throbber
+                        this.show_throbber();
                         formdataoverride = 'reset_form=&canceltest=&mform_showadvanced=&show_report=';
                     }
                     break;
@@ -208,10 +241,18 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
             parentnodedom.replaceChild(newdivnode.getDOMNode(), olddivnode.getDOMNode())
 
             this.make_links_internal(this.get('divid'));
+            this.run_inner_html_scripts(newdivnode.getAttribute('id'));
+        },
 
-            var divregionnode = Y.one('#'+newdivnode.getAttribute('id'));
-            var divregionnodelist = divregionnode.all('script');
-            divregionnodelist.each(function (el) {eval(el.getHTML());});
+        /**
+         * Run innner html scripts
+         * @param {String} elid The element id to run inner html scripts on
+         */
+        run_inner_html_scripts : function(elid) {
+            var el = Y.one('#'+elid);
+            if (el) {
+                el.all('script').each(function(el) { eval(el.getHTML()); });
+            }
         },
 
         /**
@@ -271,20 +312,15 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
         },
 
         /**
-         * This method searches the main region div for elements whose name contains an '_selection'
-         * @method initializer
+         * This method searches document for element with specified name
+         * @method get_element_by_name
          * @param {String} name the name to search for
+         * @return {Object}|null the matching node or null if none found
          */
         get_element_by_name : function(name) {
-            var mainregion = Y.one('#region-main-box');
-            var mainregionnodelist = mainregion.all(name);
-
-            // Grab the first element in the nodelist and set it's value to an empty string.
-            if (mainregionnodelist.size()) {
-                this.selectionfield = mainregionnodelist.shift();
-                this.selectionfield.value = '';
-            }
+            return Y.one('*[name="'+name+'"]');
         }
+
     }, {
         NAME : ASSOCIATECLASSNAME,
         ATTRS : {
