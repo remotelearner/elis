@@ -24,17 +24,18 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
-require_once(elispm::lib('data/user.class.php'));
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
+
+require_once(elispm::lib('data/curriculum.class.php'));
+require_once(elispm::lib('data/track.class.php'));
 
 /**
- * Mock user datatable class exposing protected methods and properties
+ * Mock track datatable class exposing protected methods and properties
  */
-class deepsight_datatable_user_mock extends deepsight_datatable_user {
+class deepsight_datatable_track_mock extends deepsight_datatable_track {
 
     /**
      * Magic function to expose protected properties
@@ -76,21 +77,11 @@ class deepsight_datatable_user_mock extends deepsight_datatable_user {
 }
 
 /**
- * Tests the base user datatable class.
+ * Tests the base track datatable class.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_user_test extends deepsight_datatable_standard_implementation_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return overlay tables.
-     *
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'crlm_user' => 'elis_program'
-        );
-    }
+class deepsight_datatable_track_testcase extends deepsight_datatable_standard_implementation_test {
 
     /**
      * Construct the datatable we're testing.
@@ -99,16 +90,18 @@ class deepsight_datatable_user_test extends deepsight_datatable_standard_impleme
      */
     protected function get_test_table() {
         global $DB;
-        return new deepsight_datatable_user_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        return new deepsight_datatable_track_mock($DB, 'test', 'http://localhost', 'testuniqid');
     }
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv'),
+            track::TABLE => elispm::file('tests/fixtures/deepsight_track.csv'),
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -118,7 +111,7 @@ class deepsight_datatable_user_test extends deepsight_datatable_standard_impleme
      */
     public function dataprovider_bulklist_get_display() {
         return array(
-            array(array(100, 101), array(101 => 'Test User101', 100 => 'Test User100'), 2)
+            array(array(100, 101), array(101 => 'Test Track 101', 100 => 'Test Track 100'), 2)
         );
     }
 
@@ -128,30 +121,29 @@ class deepsight_datatable_user_test extends deepsight_datatable_standard_impleme
      * @return array The array of argument arrays.
      */
     public function dataprovider_get_search_results() {
-
-        // Parse the csv to get user information and create user arrays, indexed by user id.
-        $userdata = file_get_contents(dirname(__FILE__).'/csv_user.csv');
-        $userdata = explode("\n", $userdata);
-        $keys = explode(',', $userdata[0]);
-        $lines = count($userdata);
-        $users = array();
+        // Parse the csv to get information and create element arrays, indexed by element id.
+        $csvdata = file_get_contents(dirname(__FILE__).'/fixtures/deepsight_track.csv');
+        $csvdata = explode("\n", $csvdata);
+        $keys = explode(',', $csvdata[0]);
+        $lines = count($csvdata);
+        $csvelements = array();
         for ($i=1; $i<$lines; $i++) {
-            $curuser = explode(',', $userdata[$i]);
-            $users[$curuser[0]] = array_combine($keys, $curuser);
+            $curele = explode(',', $csvdata[$i]);
+            $csvelements[$curele[0]] = array_combine($keys, $curele);
         }
-        unset($userdata, $keys);
+        unset($csvdata, $keys);
 
-        // Create search result arrays, indexed by user id.
+        // Create search result arrays, indexed by element id.
         $results = array();
-        foreach ($users as $id => $user) {
+        foreach ($csvelements as $id => $element) {
             $results[$id] = array(
                 'element_id' => $id,
-                'element_idnumber' => $user['idnumber'],
-                'element_firstname' => $user['firstname'],
-                'element_lastname' => $user['lastname'],
+                'element_name' => $element['name'],
+                'element_idnumber' => $element['idnumber'],
+                'pgm_name' => 'Test Program '.$element['curid'],
                 'id' => $id,
                 'meta' => array(
-                    'label' => $user['firstname'].' '.$user['lastname']
+                    'label' => $element['name']
                 )
             );
         }
@@ -160,38 +152,47 @@ class deepsight_datatable_user_test extends deepsight_datatable_standard_impleme
             // Test Default.
             array(
                 array(),
-                array('element.idnumber' => 'ASC'),
+                array('element.name' => 'ASC'),
                 0,
                 20,
-                array($results[100], $results[101]),
-                2
+                array($results[100], $results[101], $results[102], $results[103]),
+                4
             ),
             // Test Sorting.
             array(
                 array(),
-                array('element.idnumber' => 'DESC'),
+                array('element.name' => 'DESC'),
                 0,
                 20,
-                array($results[101], $results[100]),
-                2
+                array($results[103], $results[102], $results[101], $results[100]),
+                4
             ),
             // Test Basic Searching.
             array(
                 array('name' => array('Test 100')),
-                array('element.idnumber' => 'DESC'),
+                array('element.name' => 'DESC'),
                 0,
                 20,
                 array($results[100]),
                 1
             ),
+            // Test program searching.
+            array(
+                array('program_name' => array('Test Program 5')),
+                array('element.name' => 'ASC'),
+                0,
+                20,
+                array($results[100], $results[101]),
+                2
+            ),
             // Test limited page results.
             array(
                 array(),
-                array('element.idnumber' => 'ASC'),
+                array('element.name' => 'ASC'),
                 0,
                 2,
                 array($results[100], $results[101]),
-                2
+                4
             ),
         );
     }

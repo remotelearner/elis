@@ -16,20 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanager
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('data/curriculumstudent.class.php'));
 
@@ -125,32 +123,24 @@ class deepsight_datatable_useruserset_available_mock extends deepsight_datatable
 
 /**
  * Tests useruserset datatable functions.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_useruserset_test extends deepsight_datatable_searchresults_test {
-    protected $resultscsv = 'csv_usersetwithsubsets.csv';
-
-
+class deepsight_datatable_useruserset_testcase extends deepsight_datatable_searchresults_test {
     /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
+     * @var string The CSV to use for results.
      */
-    protected static function get_overlay_tables() {
-        $overlay = array(
-            clusterassignment::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-        );
-        return array_merge(parent::get_overlay_tables(), $overlay);
-    }
+    protected $resultscsv = 'deepsight_usersetwithsubsets.csv';
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_usersetwithsubsets.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv'),
+            userset::TABLE => elispm::file('tests/fixtures/deepsight_usersetwithsubsets.csv'),
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -601,7 +591,7 @@ class deepsight_datatable_useruserset_test extends deepsight_datatable_searchres
      * @param int $expectedtotal The expected number of total results.
      */
     public function test_available_permissions_userset_enrol_userset_user($usersetidsforperm, $clusterassignments,
-                                                                        $tableuserid, $expectedresults, $expectedtotal) {
+                                                                          $tableuserid, $expectedresults, $expectedtotal) {
         global $USER, $DB, $CFG;
 
         $userbackup = $USER;

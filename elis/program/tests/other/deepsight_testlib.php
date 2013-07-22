@@ -24,7 +24,7 @@
  *
  */
 
-require(dirname(__FILE__).'/../lib/lib.php');
+require(dirname(__FILE__).'/../../lib/deepsight/lib/lib.php');
 require_once(elispm::lib('deepsightpage.class.php'));
 require_once(elispm::lib('selectionpage.class.php'));
 require_once(elispm::lib('data/clusterassignment.class.php'));
@@ -37,7 +37,6 @@ require_once(elispm::lib('data/usermoodle.class.php'));
  * Base unit test class providing useful functions to test the search results of a datatable.
  */
 abstract class deepsight_datatable_searchresults_test extends elis_database_test {
-    protected $backupGlobalsBlacklist = array('DB');
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
@@ -49,25 +48,6 @@ abstract class deepsight_datatable_searchresults_test extends elis_database_test
      * @return array A single search result array.
      */
     abstract protected function create_search_result_from_csvelement($element);
-
-    /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'cache_flags' => 'moodle',
-            'config' => 'moodle',
-            'context' => 'moodle',
-            'role' => 'moodle',
-            'role_assignments' => 'moodle',
-            'role_capabilities' => 'moodle',
-            'user' => 'moodle',
-            user::TABLE => 'elis_program',
-            usermoodle::TABLE => 'elis_program',
-            usertrack::TABLE => 'elis_program',
-        );
-    }
 
     /**
      * Perform setup before every test.
@@ -121,12 +101,6 @@ abstract class deepsight_datatable_searchresults_test extends elis_database_test
         set_config('siteguest', '');
         set_config('siteadmins', '');
 
-        // Insert base contexts.
-        $sql = "INSERT INTO {context} SELECT * FROM ".self::$origdb->get_prefix()."context WHERE contextlevel = ?";
-        $params = array(CONTEXT_SYSTEM);
-        $DB->execute($sql, $params);
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
-
         // Create moodle user.
         $assigninguserdata = array(
             'idnumber' => 'assigninguser',
@@ -154,7 +128,7 @@ abstract class deepsight_datatable_searchresults_test extends elis_database_test
 
         if (empty($results[$csv])) {
             // Parse the csv to get information and create element arrays, indexed by element id.
-            $csvdata = file_get_contents(dirname(__FILE__).'/'.$csv);
+            $csvdata = file_get_contents(dirname(__FILE__).'/../fixtures/'.$csv);
             $csvdata = explode("\n", $csvdata);
             $keys = explode(',', $csvdata[0]);
             $lines = count($csvdata);
@@ -432,9 +406,9 @@ class deepsight_datatable_mock extends deepsight_datatable_standard {
      */
     protected function get_filters() {
         return array(
-            new deepsight_filter_mock($this->DB, 'testfilter1', 'Test Filter', array('name' => 'Name')),
-            new deepsight_filter_mock($this->DB, 'testfilter2', 'Test Filter 2', array('city' => 'City')),
-            'invalid filter entry'
+                new deepsight_filter_mock($this->DB, 'testfilter1', 'Test Filter', array('name' => 'Name')),
+                new deepsight_filter_mock($this->DB, 'testfilter2', 'Test Filter 2', array('city' => 'City')),
+                'invalid filter entry'
         );
     }
 
@@ -470,8 +444,8 @@ class deepsight_datatable_mock extends deepsight_datatable_standard {
      */
     public function get_actions() {
         return array(
-            new deepsight_action_mock($this->DB, 'testaction'),
-            'invalid action entry'
+                new deepsight_action_mock($this->DB, 'testaction'),
+                'invalid action entry'
         );
     }
 
