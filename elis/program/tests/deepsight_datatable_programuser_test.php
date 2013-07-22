@@ -24,18 +24,26 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
+require_once(elispm::lib('deepsightpage.class.php'));
+require_once(elispm::lib('selectionpage.class.php'));
+
+require_once(elispm::lib('data/clusterassignment.class.php'));
+require_once(elispm::lib('data/clustercurriculum.class.php'));
+require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elispm::lib('data/curriculumstudent.class.php'));
+require_once(elispm::lib('data/user.class.php'));
+require_once(elispm::lib('data/userset.class.php'));
+require_once(elispm::lib('data/usermoodle.class.php'));
 
 /**
- * Mock usersetuser_assigned datatable class to expose protected methods and properties.
+ * Mock programuser_assigned datatable class to expose protected methods and properties.
  */
-class deepsight_datatable_usersetuser_assigned_mock extends deepsight_datatable_usersetuser_assigned {
+class deepsight_datatable_programuser_assigned_mock extends deepsight_datatable_programuser_assigned {
 
     /**
      * Magic function to expose protected properties.
@@ -59,7 +67,6 @@ class deepsight_datatable_usersetuser_assigned_mock extends deepsight_datatable_
      * Expose protected methods.
      * @param string $name The name of the called method.
      * @param array $args Array of arguments.
-     * @return string|int|bool|float|array|object The return value of the function.
      */
     public function __call($name, $args) {
         if (method_exists($this, $name)) {
@@ -78,9 +85,9 @@ class deepsight_datatable_usersetuser_assigned_mock extends deepsight_datatable_
 }
 
 /**
- * Mock usersetuser_available datatable class to expose protected methods and properties.
+ * Mock programuser_available datatable class to expose protected methods and properties.
  */
-class deepsight_datatable_usersetuser_available_mock extends deepsight_datatable_usersetuser_available {
+class deepsight_datatable_programuser_available_mock extends deepsight_datatable_programuser_available {
 
     /**
      * Magic function to expose protected properties.
@@ -104,7 +111,6 @@ class deepsight_datatable_usersetuser_available_mock extends deepsight_datatable
      * Expose protected methods.
      * @param string $name The name of the called method.
      * @param array $args Array of arguments.
-     * @return string|int|bool|float|array|object The return value of the function.
      */
     public function __call($name, $args) {
         if (method_exists($this, $name)) {
@@ -123,35 +129,30 @@ class deepsight_datatable_usersetuser_available_mock extends deepsight_datatable
 }
 
 /**
- * Tests usersetuser datatable functions.
+ * Tests programuser datatable functions.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchresults_test {
-
+class deepsight_datatable_programuser_testcase extends deepsight_datatable_searchresults_test {
     /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
+     * @var string The CSV to use when asserting search results.
      */
-    protected static function get_overlay_tables() {
-        $overlay = array(
-            clusterassignment::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-        );
-        return array_merge(parent::get_overlay_tables(), $overlay);
-    }
+    protected $resultscsv = 'deepsight_user.csv';
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_usersetwithsubsets.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv'),
+            user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv')
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
      * Transform an element from a csv into a search result array.
+     * @param array $element An array of raw data from the CSV.
      * @return array A single search result array.
      */
     protected function create_search_result_from_csvelement($element) {
@@ -169,7 +170,7 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
 
     /**
      * Get search result array for the assigning user (created when testing with permissions.)
-     * @param array $element An array of raw data from the CSV.
+     *
      * @return array A single search result array for the assigning user.
      */
     protected function get_search_result_row_assigning_user() {
@@ -187,6 +188,7 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
 
     /**
      * Dataprovider for test_assigned_shows_assigned_users.
+     *
      * @return array Array of test parameters.
      */
     public function dataprovider_assigned_shows_assigned_users() {
@@ -194,40 +196,40 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
                 // Test table shows nothing when no associations present.
                 array(
                         array(),
-                        2,
+                        101,
                         array(),
                         0,
                 ),
-                // Test table shows nothing when no associations present for current cluster.
+                // Test table shows nothing when no associations present for current program.
                 array(
                         array(
-                                array('clusterid' => 2, 'userid' => 100),
+                                array('curriculumid' => 6, 'userid' => 100),
                         ),
-                        3,
+                        5,
                         array(),
                         0,
                 ),
                 // Test table shows existing associations.
                 array(
                         array(
-                                array('clusterid' => 3, 'userid' => 101),
+                                array('curriculumid' => 5, 'userid' => 101),
                         ),
-                        3,
+                        5,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         1,
                 ),
                 // Test table shows existing associations.
                 array(
                         array(
-                                array('clusterid' => 3, 'userid' => 100),
-                                array('clusterid' => 3, 'userid' => 101),
+                                array('curriculumid' => 5, 'userid' => 100),
+                                array('curriculumid' => 5, 'userid' => 101),
                         ),
-                        3,
+                        5,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2,
                 ),
@@ -236,99 +238,84 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
 
     /**
      * Test assigned table shows assigned users.
+     *
      * @dataProvider dataprovider_assigned_shows_assigned_users
-     * @param array $associations An array of arrays of parameters to construct clusterassignment associations.
-     * @param int $tableusersetid The ID of the userset we're managing.
+     * @param array $associations An array of arrays of parameters to construct curriculumstudent associations.
+     * @param int $tableprogramid The program ID of the program we're managing.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
      */
-    public function test_assigned_shows_assigned_users($associations, $tableusersetid, $expectedresults, $expectedtotal) {
+    public function test_assigned_shows_assigned_users($associations, $tableprogramid, $expectedresults, $expectedtotal) {
         global $DB;
 
         foreach ($associations as $association) {
-            $clusterassignment = new clusterassignment($association);
-            $clusterassignment->save();
+            $curriculumstudent = new curriculumstudent($association);
+            $curriculumstudent->save();
         }
 
-        $table = new deepsight_datatable_usersetuser_assigned_mock($DB, 'test', 'http://localhost', 'testuniqid');
-        $table->set_usersetid($tableusersetid);
+        $table = new deepsight_datatable_programuser_assigned_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table->set_programid($tableprogramid);
 
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
         $this->assert_search_results($expectedresults, $expectedtotal, $actualresults);
     }
 
     /**
-     * Dataprovider for test_available_userset_enrol_perms.
+     * Dataprovider for test_available_program_enrol_perms.
+     *
      * @return array Array of test parameters.
      */
-    public function dataprovider_available_userset_enrol_perms() {
+    public function dataprovider_available_program_enrol_perms() {
         return array(
                 // Test empty results when user has no permissions.
                 array(
                         array(),
-                        1,
+                        100,
                         array(),
                         0,
                 ),
                 // Test all users are returned when user has permission at the system context.
                 array(
                         array('system' => 1),
-                        1,
+                        100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         3,
                 ),
-                // Test no users are returned when the user has only on a child userset, but we're looking at the parent userset.
+                // Test no users are returned when the user has permission at wrong program context.
                 array(
-                        array('userset' => 2),
-                        1,
+                        array('program' => 6),
+                        5,
                         array(),
                         0,
                 ),
-                // Test all users are returned when the user has permission at a parent userset.
+                // Test all users are returned when the user has permission at right program context.
                 array(
-                        array('userset' => 1),
-                        2,
+                        array('program' => 5),
+                        5,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         3,
                 ),
-                // Test no users are returned when the user has permission at the wrong userset context.
-                array(
-                        array('userset' => 3),
-                        1,
-                        array(),
-                        0,
-                ),
-                // Test all users are returned when the user has permission at the right userset context.
-                array(
-                        array('userset' => 3),
-                        3,
-                        array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
-                                $this->get_search_result_row_assigning_user(),
-                        ),
-                        3,
-                )
         );
     }
 
     /**
-     * Test available table shows correct search results based on elis/program:userset_enrol perms.
-     * @dataProvider dataprovider_available_userset_enrol_perms
-     * @param array $permcontexts An array of context objects for which to assign the elis/program:userset_enrol permission.
-     * @param int $tableusersetid The ID of the userset to use for the table.
+     * Test available table shows correct search results based on elis/program:program_enrol perms.
+     *
+     * @dataProvider dataprovider_available_program_enrol_perms
+     * @param array $permcontexts An array of context information for which to assign the elis/program:program_enrol permission.
+     * @param int $tableprogramid The ID of the program to use for the table.
      * @param array $expectedresults An array of expected search results.
      * @param int $expectedtotal The expected total number of search results.
      */
-    public function test_available_userset_enrol_perms($permcontexts, $tableusersetid, $expectedresults, $expectedtotal) {
+    public function test_available_program_enrol_perms($permcontexts, $tableprogramid, $expectedresults, $expectedtotal) {
         global $USER, $DB, $CFG;
         $userbackup = $USER;
 
@@ -341,16 +328,16 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
                 case 'system':
                     $permcontext = get_context_instance(CONTEXT_SYSTEM);
                     break;
-                case 'userset':
-                    $permcontext = context_elis_userset::instance($id);
+                case 'program':
+                    $permcontext = context_elis_program::instance($id);
                     break;
             }
-            $this->give_permission_for_context($USER->id, 'elis/program:userset_enrol', $permcontext);
+            $this->give_permission_for_context($USER->id, 'elis/program:program_enrol', $permcontext);
         }
 
         // Construct test table.
-        $table = new deepsight_datatable_usersetuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
-        $table->set_usersetid($tableusersetid);
+        $table = new deepsight_datatable_programuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table->set_programid($tableprogramid);
 
         // Perform test.
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
@@ -372,10 +359,10 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
                 // Test table shows all users when nothing is assigned.
                 array(
                         array(),
-                        1,
+                        100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         3,
@@ -383,11 +370,11 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
                 // Test table doesn't show assigned users.
                 array(
                         array(
-                                array('clusterid' => 1, 'userid' => 101),
+                                array('curriculumid' => 100, 'userid' => 101),
                         ),
-                        1,
+                        100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
+                                $this->get_search_result_row($this->resultscsv, 100),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         2,
@@ -395,24 +382,24 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
                 // Test multiple assignments.
                 array(
                         array(
-                                array('clusterid' => 1, 'userid' => 100),
-                                array('clusterid' => 1, 'userid' => 101),
+                                array('curriculumid' => 100, 'userid' => 100),
+                                array('curriculumid' => 100, 'userid' => 101),
                         ),
-                        1,
+                        100,
                         array(
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         1,
                 ),
-                // Test only assignments for the current userset affect results.
+                // Test only assignments for the current program affect results.
                 array(
                         array(
-                                array('clusterid' => 3, 'userid' => 100),
-                                array('clusterid' => 1, 'userid' => 101),
+                                array('curriculumid' => 101, 'userid' => 100),
+                                array('curriculumid' => 100, 'userid' => 101),
                         ),
-                        1,
+                        100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
+                                $this->get_search_result_row($this->resultscsv, 100),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         2,
@@ -423,27 +410,27 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
     /**
      * Test available table doesn't show assigned users.
      * @dataProvider dataprovider_available_doesnt_show_assigned_users
-     * @param array $associations An array of arrays of parameters to construct clusterassignment associations.
-     * @param int $tableusersetid The ID of the userset user we're going to manage.
+     * @param array $associations An array of arrays of parameters to construct curriculumstudent associations.
+     * @param int $tableprogramid The ID of the program we're going to manage.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
      */
-    public function test_available_doesnt_show_assigned_users($associations, $tableusersetid, $expectedresults, $expectedtotal) {
+    public function test_available_doesnt_show_assigned_users($associations, $tableprogramid, $expectedresults, $expectedtotal) {
         global $USER, $DB, $CFG;
         $userbackup = $USER;
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:userset_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'elis/program:program_enrol', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($associations as $association) {
-            $clusterassignment = new clusterassignment($association);
-            $clusterassignment->save();
+            $curriculumstudent = new curriculumstudent($association);
+            $curriculumstudent->save();
         }
 
         // Construct test table.
-        $table = new deepsight_datatable_usersetuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
-        $table->set_usersetid($tableusersetid);
+        $table = new deepsight_datatable_programuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table->set_programid($tableprogramid);
 
         // Perform test.
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
@@ -456,143 +443,181 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
     }
 
     /**
-     * Dataprovider for test_available_permissions_userset_enrol_userset_user.
+     * Dataprovider for test_available_permissions_program_enrol_userset_user.
      * @return array Array of test parameters.
      */
-    public function dataprovider_available_permissions_userset_enrol_userset_user() {
+    public function dataprovider_available_permissions_program_enrol_userset_user() {
         return array(
                 // 0: Test when no permissions or associations exist, no users are returned.
                 array(
                         array(),
                         array(),
-                        1,
+                        array(),
+                        5,
                         array(),
                         0,
                 ),
-                // 1: Test when users are assigned but permissions are not present, users are not returned.
+                // 1: Test when associations exist but permissions are not present, users are not returned.
                 array(
                         array(),
                         array(
-                                array('userid' => 101, 'clusterid' => 1),
-                        ),
-                        2,
-                        array(),
-                        0,
-                ),
-                // 2: Test when permissions exist but no users are assigned, users are not returned.
-                array(
-                        array(1),
-                        array(),
-                        2,
-                        array(),
-                        0,
-                ),
-                // 3: Test when permissions exist on the parent and users are assigned to the parent, those users are returned
-                // when looking at the child userset's available users.
-                array(
-                        array(1),
-                        array(
-                                array('userid' => 101, 'clusterid' => 1),
-                        ),
-                        2,
-                        array(
-                                $this->get_search_result_row('csv_user.csv', 101),
-                        ),
-                        1,
-                ),
-                // 4: Test when permissions exist on the parent and multiple users are assigned to the parent, multiple users are
-                // returned when looking at the child userset's available users.
-                array(
-                        array(1),
-                        array(
-                                array('userid' => 100, 'clusterid' => 1),
-                                array('userid' => 101, 'clusterid' => 1),
-                        ),
-                        2,
-                        array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
-                        ),
-                        2,
-                ),
-                // 5: Test that user assignments to other clusters do not appear.
-                array(
-                        array(1),
-                        array(
-                                array('userid' => 100, 'clusterid' => 1),
                                 array('userid' => 101, 'clusterid' => 3),
                         ),
-                        2,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
+                                array('clusterid' => 3, 'curriculumid' => 5),
+                        ),
+                        5,
+                        array(),
+                        0,
+                ),
+                // 2: Test when permissions exist but no associations exist, users are not returned.
+                array(
+                        array(3),
+                        array(),
+                        array(),
+                        5,
+                        array(),
+                        0,
+                ),
+                // 3: Test when permissions exist, and users are assigned to userset, but program is not assigned, users are not
+                // returned.
+                array(
+                        array(3),
+                        array(
+                                array('userid' => 101, 'clusterid' => 3),
+                        ),
+                        array(),
+                        5,
+                        array(),
+                        0,
+                ),
+                // 4: Test when permissions exist, and program is assigned to userset, but users are not assigned, users are not
+                // returned.
+                array(
+                        array(3),
+                        array(),
+                        array(
+                                array('clusterid' => 3, 'curriculumid' => 5),
+                        ),
+                        5,
+                        array(),
+                        0,
+                ),
+                // 5: Test when permissions exist, and associations exist, users are returned.
+                array(
+                        array(3),
+                        array(
+                                array('userid' => 100, 'clusterid' => 3),
+                        ),
+                        array(
+                                array('clusterid' => 3, 'curriculumid' => 5),
+                        ),
+                        5,
+                        array(
+                                $this->get_search_result_row($this->resultscsv, 100),
                         ),
                         1,
                 ),
-                // 6: Test that when looking at a sub-subset, and permissions are assigned at the grandparent userset, all users
-                // from the grandparent and parent are returned.
-                //
+                // 6: Test when permissions exist, and associations exist for multiple, users are returned.
                 array(
-                        array(1),
+                        array(3),
                         array(
-                                array('userid' => 100, 'clusterid' => 1),
-                                array('userid' => 101, 'clusterid' => 2),
+                                array('userid' => 100, 'clusterid' => 3),
+                                array('userid' => 101, 'clusterid' => 3),
                         ),
-                        4,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                array('clusterid' => 3, 'curriculumid' => 6),
+                        ),
+                        6,
+                        array(
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2,
                 ),
-                // 7: Test when looking at a sub-subset, and permissions are assigned at the parent userset, only users from the
-                // parent userset and NOT the grandparent userset are returned.
+                // 7: Test that user associations to other clusters do not appear.
                 array(
-                        array(2),
+                        array(3),
                         array(
-                                array('userid' => 100, 'clusterid' => 1),
-                                array('userid' => 101, 'clusterid' => 2),
+                                array('userid' => 100, 'clusterid' => 3),
+                                array('userid' => 101, 'clusterid' => 4),
                         ),
-                        4,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                array('clusterid' => 3, 'curriculumid' => 7),
+                        ),
+                        7,
+                        array(
+                                $this->get_search_result_row($this->resultscsv, 100),
                         ),
                         1,
+                ),
+                // 8: Test that program associations to other, non-permissioned, clusters do not appear.
+                array(
+                        array(3),
+                        array(
+                                array('userid' => 100, 'clusterid' => 3),
+                                array('userid' => 101, 'clusterid' => 4),
+                        ),
+                        array(
+                                array('clusterid' => 3, 'curriculumid' => 6),
+                                array('clusterid' => 4, 'curriculumid' => 6),
+                        ),
+                        6,
+                        array(
+                                $this->get_search_result_row($this->resultscsv, 100),
+                        ),
+                        1,
+                ),
+                // 9: Test that permissions on multiple clusters return the users in all permissioned clusters.
+                array(
+                        array(3, 4),
+                        array(
+                                array('userid' => 100, 'clusterid' => 3),
+                                array('userid' => 101, 'clusterid' => 4),
+                        ),
+                        array(
+                                array('clusterid' => 3, 'curriculumid' => 6),
+                                array('clusterid' => 4, 'curriculumid' => 6),
+                        ),
+                        6,
+                        array(
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                        ),
+                        2,
                 ),
         );
     }
 
     /**
-     * Test available table obeys userset_enrol_userset_users permission.
+     * Test available table obeys program_enrol_userset_users permission.
      *
-     * Test available table shows only users that are in usersets where:
-     *     - the assigner has the elis/program:userset_enrol_userset_user permission
-     *     - the current userset is associated with the userset.
+     * Test available table shows only users that are in clusters where:
+     *     - the assigner has the elis/program:program_enrol_userset_user permission
+     *     - the current program is associated with the cluster.
      *
-     * @dataProvider dataprovider_available_permissions_userset_enrol_userset_user
-     * @param array $usersetidsforperm An array of userset IDs to assign the elis/program:userset_enrol_userset_user on.
+     * @dataProvider dataprovider_available_permissions_program_enrol_userset_user
+     * @param array $usersetidsforperm An array of userset IDs to assign the elis/program:program_enrol_userset_user on.
      * @param array $clusterassignments An array of arrays of parameters to construct clusterassignments with.
-     * @param int $tableusersetid The id of the userset to manage associations for.
+     * @param array $clustercurriculums An array of arrays of parameters to construct clustercurriculums with.
+     * @param int $tableprogramid The id of the program to manage associations for.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
      */
-    public function test_available_permissions_userset_enrol_userset_user($usersetidsforperm, $clusterassignments,
-                                                                          $tableusersetid, $expectedresults, $expectedtotal) {
+    public function test_available_permissions_program_enrol_userset_user($usersetidsforperm, $clusterassignments,
+                                                                          $clustercurriculums, $tableprogramid, $expectedresults,
+                                                                          $expectedtotal) {
         global $USER, $DB, $CFG;
 
         $userbackup = $USER;
 
+        // Import usersets.
+        $dataset = $this->createCsvDataSet(array(userset::TABLE => elispm::file('tests/fixtures/deepsight_userset.csv')));
+        $this->loadDataSet($dataset);
+
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-
-        // Set up userset contexts.
-        for ($i = 1; $i <= 6; $i++) {
-            $ctx = context_elis_userset::instance($i);
-        }
-
-        accesslib_clear_all_caches(true);
-
-        // Assign capabilities.
-        $capability = 'elis/program:userset_enrol_userset_user';
+        $capability = 'elis/program:program_enrol_userset_user';
         foreach ($usersetidsforperm as $usersetid) {
             $this->give_permission_for_context($USER->id, $capability, context_elis_userset::instance($usersetid));
         }
@@ -603,9 +628,15 @@ class deepsight_datatable_usersetuser_test extends deepsight_datatable_searchres
             $clusterassignment->save();
         }
 
+        // Create clustercurriculums.
+        foreach ($clustercurriculums as $clustercurriculum) {
+            $clustercurriculum = new clustercurriculum($clustercurriculum);
+            $clustercurriculum->save();
+        }
+
         // Construct test table.
-        $table = new deepsight_datatable_usersetuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
-        $table->set_usersetid($tableusersetid);
+        $table = new deepsight_datatable_programuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table->set_programid($tableprogramid);
 
         // Perform test.
         $actualresults = $table->get_search_results(array(), array(), 0, 20);

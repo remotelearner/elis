@@ -18,17 +18,16 @@
  *
  * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('deepsightpage.class.php'));
 require_once(elispm::lib('selectionpage.class.php'));
@@ -131,32 +130,24 @@ class deepsight_datatable_userprogram_available_mock extends deepsight_datatable
 
 /**
  * Tests userprogram datatable functions.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_userprogram_test extends deepsight_datatable_searchresults_test {
-
+class deepsight_datatable_userprogram_testcase extends deepsight_datatable_searchresults_test {
     /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
+     * @var string The CSV to use for asserting search results
      */
-    protected static function get_overlay_tables() {
-        $overlay = array(
-            clusterassignment::TABLE => 'elis_program',
-            clustercurriculum::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-        );
-        return array_merge(parent::get_overlay_tables(), $overlay);
-    }
+    private $resultscsv = 'deepsight_program.csv';
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(curriculum::TABLE, elispm::lib('deepsight/phpunit/csv_program.csv'));
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv'),
+            user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv'),
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -205,7 +196,7 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5)
+                                $this->get_search_result_row($this->resultscsv, 5)
                         ),
                         1
                 ),
@@ -217,8 +208,8 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
-                                $this->get_search_result_row('csv_program.csv', 6)
+                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 6)
                         ),
                         2
                 )
@@ -272,9 +263,9 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
 
         // Verify result.
         $expectedresults = array(
-                $this->get_search_result_row('csv_program.csv', 5),
-                $this->get_search_result_row('csv_program.csv', 6),
-                $this->get_search_result_row('csv_program.csv', 7),
+                $this->get_search_result_row($this->resultscsv, 5),
+                $this->get_search_result_row($this->resultscsv, 6),
+                $this->get_search_result_row($this->resultscsv, 7),
         );
         $expectedtotal = 3;
         $this->assert_search_results($expectedresults, $expectedtotal, $actualresults);
@@ -294,9 +285,9 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         array(),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
-                                $this->get_search_result_row('csv_program.csv', 6),
-                                $this->get_search_result_row('csv_program.csv', 7),
+                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 6),
+                                $this->get_search_result_row($this->resultscsv, 7),
                         ),
                         3,
                 ),
@@ -307,8 +298,8 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 6),
-                                $this->get_search_result_row('csv_program.csv', 7),
+                                $this->get_search_result_row($this->resultscsv, 6),
+                                $this->get_search_result_row($this->resultscsv, 7),
                         ),
                         2,
                 ),
@@ -320,7 +311,7 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 7),
+                                $this->get_search_result_row($this->resultscsv, 7),
                         ),
                         1
                 ),
@@ -333,7 +324,7 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
+                                $this->get_search_result_row($this->resultscsv, 5),
                         ),
                         1
                 ),
@@ -393,7 +384,7 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         array(5),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5)
+                                $this->get_search_result_row($this->resultscsv, 5)
                         ),
                         1
                 ),
@@ -402,8 +393,8 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         array(5, 6),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
-                                $this->get_search_result_row('csv_program.csv', 6),
+                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 6),
                         ),
                         2
                 ),
@@ -531,7 +522,7 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
+                                $this->get_search_result_row($this->resultscsv, 5),
                         ),
                         1
                 ),
@@ -547,8 +538,8 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
-                                $this->get_search_result_row('csv_program.csv', 6),
+                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 6),
                         ),
                         2
                 ),
@@ -566,7 +557,7 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
+                                $this->get_search_result_row($this->resultscsv, 5),
                         ),
                         1
                 ),
@@ -583,8 +574,8 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
-                                $this->get_search_result_row('csv_program.csv', 6),
+                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 6),
                         ),
                         2
                 ),
@@ -600,8 +591,8 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 6),
-                                $this->get_search_result_row('csv_program.csv', 7),
+                                $this->get_search_result_row($this->resultscsv, 6),
+                                $this->get_search_result_row($this->resultscsv, 7),
                         ),
                         2
                 ),
@@ -621,9 +612,9 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
-                                $this->get_search_result_row('csv_program.csv', 6),
-                                $this->get_search_result_row('csv_program.csv', 7),
+                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 6),
+                                $this->get_search_result_row($this->resultscsv, 7),
                         ),
                         3
                 ),
@@ -643,8 +634,8 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
                         ),
                         101,
                         array(
-                                $this->get_search_result_row('csv_program.csv', 5),
-                                $this->get_search_result_row('csv_program.csv', 6),
+                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 6),
                         ),
                         2
                 ),
@@ -671,9 +662,10 @@ class deepsight_datatable_userprogram_test extends deepsight_datatable_searchres
         $userbackup = $USER;
 
         // Import usersets.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_userset.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            userset::TABLE => elispm::file('tests/fixtures/deepsight_userset.csv')
+        ));
+        $this->loadDataSet($dataset);
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();

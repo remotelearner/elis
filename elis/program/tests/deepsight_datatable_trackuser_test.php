@@ -18,33 +18,33 @@
  *
  * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('deepsightpage.class.php'));
 require_once(elispm::lib('selectionpage.class.php'));
 
 require_once(elispm::lib('data/clusterassignment.class.php'));
-require_once(elispm::lib('data/clustercurriculum.class.php'));
+require_once(elispm::lib('data/clustertrack.class.php'));
 require_once(elispm::lib('data/curriculum.class.php'));
-require_once(elispm::lib('data/curriculumstudent.class.php'));
+require_once(elispm::lib('data/track.class.php'));
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
+require_once(elispm::lib('data/usertrack.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 
 /**
- * Mock programuser_assigned datatable class to expose protected methods and properties.
+ * Mock trackuser_assigned datatable class to expose protected methods and properties.
  */
-class deepsight_datatable_programuser_assigned_mock extends deepsight_datatable_programuser_assigned {
+class deepsight_datatable_trackuser_assigned_mock extends deepsight_datatable_trackuser_assigned {
 
     /**
      * Magic function to expose protected properties.
@@ -86,9 +86,9 @@ class deepsight_datatable_programuser_assigned_mock extends deepsight_datatable_
 }
 
 /**
- * Mock programuser_available datatable class to expose protected methods and properties.
+ * Mock trackuser_available datatable class to expose protected methods and properties.
  */
-class deepsight_datatable_programuser_available_mock extends deepsight_datatable_programuser_available {
+class deepsight_datatable_trackuser_available_mock extends deepsight_datatable_trackuser_available {
 
     /**
      * Magic function to expose protected properties.
@@ -130,33 +130,26 @@ class deepsight_datatable_programuser_available_mock extends deepsight_datatable
 }
 
 /**
- * Tests programuser datatable functions.
+ * Tests trackuser datatable functions.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_programuser_test extends deepsight_datatable_searchresults_test {
-
+class deepsight_datatable_trackuser_testcase extends deepsight_datatable_searchresults_test {
     /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
+     * @var string The CSV to use when asserting results.
      */
-    protected static function get_overlay_tables() {
-        $overlay = array(
-            clusterassignment::TABLE => 'elis_program',
-            clustercurriculum::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            curriculumstudent::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-        );
-        return array_merge(parent::get_overlay_tables(), $overlay);
-    }
+    protected $resultscsv = 'deepsight_user.csv';
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(curriculum::TABLE, elispm::lib('deepsight/phpunit/csv_program.csv'));
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv'),
+            track::TABLE => elispm::file('tests/fixtures/deepsight_track.csv'),
+            user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv'),
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -209,36 +202,36 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                         array(),
                         0,
                 ),
-                // Test table shows nothing when no associations present for current program.
+                // Test table shows nothing when no associations present for current track.
                 array(
                         array(
-                                array('curriculumid' => 6, 'userid' => 100),
+                                array('trackid' => 101, 'userid' => 100),
                         ),
-                        5,
+                        100,
                         array(),
                         0,
                 ),
                 // Test table shows existing associations.
                 array(
                         array(
-                                array('curriculumid' => 5, 'userid' => 101),
+                                array('trackid' => 100, 'userid' => 101),
                         ),
-                        5,
+                        100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         1,
                 ),
                 // Test table shows existing associations.
                 array(
                         array(
-                                array('curriculumid' => 5, 'userid' => 100),
-                                array('curriculumid' => 5, 'userid' => 101),
+                                array('trackid' => 100, 'userid' => 100),
+                                array('trackid' => 100, 'userid' => 101),
                         ),
-                        5,
+                        100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2,
                 ),
@@ -249,32 +242,32 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
      * Test assigned table shows assigned users.
      *
      * @dataProvider dataprovider_assigned_shows_assigned_users
-     * @param array $associations An array of arrays of parameters to construct curriculumstudent associations.
-     * @param int $tableprogramid The program ID of the program we're managing.
+     * @param array $associations An array of arrays of parameters to construct usertrack associations.
+     * @param int $tabletrackid The ID of the track we're managing.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
      */
-    public function test_assigned_shows_assigned_users($associations, $tableprogramid, $expectedresults, $expectedtotal) {
+    public function test_assigned_shows_assigned_users($associations, $tabletrackid, $expectedresults, $expectedtotal) {
         global $DB;
 
         foreach ($associations as $association) {
-            $curriculumstudent = new curriculumstudent($association);
-            $curriculumstudent->save();
+            $usertrack = new usertrack($association);
+            $usertrack->save();
         }
 
-        $table = new deepsight_datatable_programuser_assigned_mock($DB, 'test', 'http://localhost', 'testuniqid');
-        $table->set_programid($tableprogramid);
+        $table = new deepsight_datatable_trackuser_assigned_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table->set_trackid($tabletrackid);
 
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
         $this->assert_search_results($expectedresults, $expectedtotal, $actualresults);
     }
 
     /**
-     * Dataprovider for test_available_program_enrol_perms.
+     * Dataprovider for test_available_track_enrol_perms.
      *
      * @return array Array of test parameters.
      */
-    public function dataprovider_available_program_enrol_perms() {
+    public function dataprovider_available_track_enrol_perms() {
         return array(
                 // Test empty results when user has no permissions.
                 array(
@@ -288,8 +281,8 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                         array('system' => 1),
                         100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         3,
@@ -297,34 +290,52 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                 // Test no users are returned when the user has permission at wrong program context.
                 array(
                         array('program' => 6),
-                        5,
+                        100,
                         array(),
                         0,
                 ),
                 // Test all users are returned when the user has permission at right program context.
                 array(
                         array('program' => 5),
-                        5,
+                        100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         3,
                 ),
+                // Test no users are returned when the user has permission at the wrong track context.
+                array(
+                        array('track' => 101),
+                        100,
+                        array(),
+                        0,
+                ),
+                // Test all users are returned when the user has permission at the right track context.
+                array(
+                        array('track' => 100),
+                        100,
+                        array(
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row_assigning_user(),
+                        ),
+                        3,
+                )
         );
     }
 
     /**
-     * Test available table shows correct search results based on elis/program:program_enrol perms.
+     * Test available table shows correct search results based on elis/program:track_enrol perms.
      *
-     * @dataProvider dataprovider_available_program_enrol_perms
-     * @param array $permcontexts An array of context information for which to assign the elis/program:program_enrol permission.
-     * @param int $tableprogramid The ID of the program to use for the table.
+     * @dataProvider dataprovider_available_track_enrol_perms
+     * @param array $permcontexts An array of context objects for which to assign the elis/program:track_enrol permission.
+     * @param int $tabletrackid The ID of the track to use for the table.
      * @param array $expectedresults An array of expected search results.
      * @param int $expectedtotal The expected total number of search results.
      */
-    public function test_available_program_enrol_perms($permcontexts, $tableprogramid, $expectedresults, $expectedtotal) {
+    public function test_available_track_enrol_perms($permcontexts, $tabletrackid, $expectedresults, $expectedtotal) {
         global $USER, $DB, $CFG;
         $userbackup = $USER;
 
@@ -340,13 +351,16 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                 case 'program':
                     $permcontext = context_elis_program::instance($id);
                     break;
+                case 'track':
+                    $permcontext = context_elis_track::instance($id);
+                    break;
             }
-            $this->give_permission_for_context($USER->id, 'elis/program:program_enrol', $permcontext);
+            $this->give_permission_for_context($USER->id, 'elis/program:track_enrol', $permcontext);
         }
 
         // Construct test table.
-        $table = new deepsight_datatable_programuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
-        $table->set_programid($tableprogramid);
+        $table = new deepsight_datatable_trackuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table->set_trackid($tabletrackid);
 
         // Perform test.
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
@@ -370,8 +384,8 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                         array(),
                         100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         3,
@@ -379,11 +393,11 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                 // Test table doesn't show assigned users.
                 array(
                         array(
-                                array('curriculumid' => 100, 'userid' => 101),
+                                array('trackid' => 100, 'userid' => 101),
                         ),
                         100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
+                                $this->get_search_result_row($this->resultscsv, 100),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         2,
@@ -391,8 +405,8 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                 // Test multiple assignments.
                 array(
                         array(
-                                array('curriculumid' => 100, 'userid' => 100),
-                                array('curriculumid' => 100, 'userid' => 101),
+                                array('trackid' => 100, 'userid' => 100),
+                                array('trackid' => 100, 'userid' => 101),
                         ),
                         100,
                         array(
@@ -400,15 +414,15 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                         ),
                         1,
                 ),
-                // Test only assignments for the current program affect results.
+                // Test only assignments for the current track affect results.
                 array(
                         array(
-                                array('curriculumid' => 101, 'userid' => 100),
-                                array('curriculumid' => 100, 'userid' => 101),
+                                array('trackid' => 101, 'userid' => 100),
+                                array('trackid' => 100, 'userid' => 101),
                         ),
                         100,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
+                                $this->get_search_result_row($this->resultscsv, 100),
                                 $this->get_search_result_row_assigning_user(),
                         ),
                         2,
@@ -419,27 +433,27 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
     /**
      * Test available table doesn't show assigned users.
      * @dataProvider dataprovider_available_doesnt_show_assigned_users
-     * @param array $associations An array of arrays of parameters to construct curriculumstudent associations.
-     * @param int $tableprogramid The ID of the program we're going to manage.
+     * @param array $associations An array of arrays of parameters to construct usertrack associations.
+     * @param int $tabletrackid The ID of the track user we're going to manage.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
      */
-    public function test_available_doesnt_show_assigned_users($associations, $tableprogramid, $expectedresults, $expectedtotal) {
+    public function test_available_doesnt_show_assigned_users($associations, $tabletrackid, $expectedresults, $expectedtotal) {
         global $USER, $DB, $CFG;
         $userbackup = $USER;
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:program_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'elis/program:track_enrol', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($associations as $association) {
-            $curriculumstudent = new curriculumstudent($association);
-            $curriculumstudent->save();
+            $usertrack = new usertrack($association);
+            $usertrack->save();
         }
 
         // Construct test table.
-        $table = new deepsight_datatable_programuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
-        $table->set_programid($tableprogramid);
+        $table = new deepsight_datatable_trackuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table->set_trackid($tabletrackid);
 
         // Perform test.
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
@@ -452,17 +466,17 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
     }
 
     /**
-     * Dataprovider for test_available_permissions_program_enrol_userset_user.
+     * Dataprovider for test_available_permissions_track_enrol_userset_user.
      * @return array Array of test parameters.
      */
-    public function dataprovider_available_permissions_program_enrol_userset_user() {
+    public function dataprovider_available_permissions_track_enrol_userset_user() {
         return array(
                 // 0: Test when no permissions or associations exist, no users are returned.
                 array(
                         array(),
                         array(),
                         array(),
-                        5,
+                        100,
                         array(),
                         0,
                 ),
@@ -473,9 +487,9 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                                 array('userid' => 101, 'clusterid' => 3),
                         ),
                         array(
-                                array('clusterid' => 3, 'curriculumid' => 5),
+                                array('clusterid' => 3, 'trackid' => 102),
                         ),
-                        5,
+                        102,
                         array(),
                         0,
                 ),
@@ -484,11 +498,11 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                         array(3),
                         array(),
                         array(),
-                        5,
+                        102,
                         array(),
                         0,
                 ),
-                // 3: Test when permissions exist, and users are assigned to userset, but program is not assigned, users are not
+                // 3: Test when permissions exist, and users are assigned to userset, but track is not assigned, users are not
                 // returned.
                 array(
                         array(3),
@@ -496,19 +510,19 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                                 array('userid' => 101, 'clusterid' => 3),
                         ),
                         array(),
-                        5,
+                        102,
                         array(),
                         0,
                 ),
-                // 4: Test when permissions exist, and program is assigned to userset, but users are not assigned, users are not
+                // 4: Test when permissions exist, and track is assigned to userset, but users are not assigned, users are not
                 // returned.
                 array(
                         array(3),
                         array(),
                         array(
-                                array('clusterid' => 3, 'curriculumid' => 5),
+                                array('clusterid' => 3, 'trackid' => 102),
                         ),
-                        5,
+                        102,
                         array(),
                         0,
                 ),
@@ -519,11 +533,11 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                                 array('userid' => 100, 'clusterid' => 3),
                         ),
                         array(
-                                array('clusterid' => 3, 'curriculumid' => 5),
+                                array('clusterid' => 3, 'trackid' => 102),
                         ),
-                        5,
+                        102,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
+                                $this->get_search_result_row($this->resultscsv, 100),
                         ),
                         1,
                 ),
@@ -535,12 +549,12 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                                 array('userid' => 101, 'clusterid' => 3),
                         ),
                         array(
-                                array('clusterid' => 3, 'curriculumid' => 6),
+                                array('clusterid' => 3, 'trackid' => 102),
                         ),
-                        6,
+                        102,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2,
                 ),
@@ -552,15 +566,15 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                                 array('userid' => 101, 'clusterid' => 4),
                         ),
                         array(
-                                array('clusterid' => 3, 'curriculumid' => 7),
+                                array('clusterid' => 3, 'trackid' => 102),
                         ),
-                        7,
+                        102,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
+                                $this->get_search_result_row($this->resultscsv, 100),
                         ),
                         1,
                 ),
-                // 8: Test that program associations to other, non-permissioned, clusters do not appear.
+                // 8: Test that track associations to other, non-permissioned, clusters do not appear.
                 array(
                         array(3),
                         array(
@@ -568,12 +582,12 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                                 array('userid' => 101, 'clusterid' => 4),
                         ),
                         array(
-                                array('clusterid' => 3, 'curriculumid' => 6),
-                                array('clusterid' => 4, 'curriculumid' => 6),
+                                array('clusterid' => 3, 'trackid' => 102),
+                                array('clusterid' => 4, 'trackid' => 102),
                         ),
-                        6,
+                        102,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
+                                $this->get_search_result_row($this->resultscsv, 100),
                         ),
                         1,
                 ),
@@ -585,13 +599,13 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
                                 array('userid' => 101, 'clusterid' => 4),
                         ),
                         array(
-                                array('clusterid' => 3, 'curriculumid' => 6),
-                                array('clusterid' => 4, 'curriculumid' => 6),
+                                array('clusterid' => 3, 'trackid' => 102),
+                                array('clusterid' => 4, 'trackid' => 102),
                         ),
-                        6,
+                        102,
                         array(
-                                $this->get_search_result_row('csv_user.csv', 100),
-                                $this->get_search_result_row('csv_user.csv', 101),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2,
                 ),
@@ -599,35 +613,34 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
     }
 
     /**
-     * Test available table obeys program_enrol_userset_users permission.
+     * Test available table obeys track_enrol_userset_users permission.
      *
      * Test available table shows only users that are in clusters where:
-     *     - the assigner has the elis/program:program_enrol_userset_user permission
-     *     - the current program is associated with the cluster.
+     *     - the assigner is also in the cluster
+     *     - the assigner has the elis/program:track_enrol_userset_user permission
+     *     - the current track is associated with the cluster.
      *
-     * @dataProvider dataprovider_available_permissions_program_enrol_userset_user
-     * @param array $usersetidsforperm An array of userset IDs to assign the elis/program:program_enrol_userset_user on.
+     * @dataProvider dataprovider_available_permissions_track_enrol_userset_user
+     * @param array $usersetidsforperm An array of userset IDs to assign the elis/program:track_enrol_userset_user on.
      * @param array $clusterassignments An array of arrays of parameters to construct clusterassignments with.
-     * @param array $clustercurriculums An array of arrays of parameters to construct clustercurriculums with.
-     * @param int $tableprogramid The id of the program to manage associations for.
+     * @param array $clustertracks An array of arrays of parameters to construct clustertracks with.
+     * @param int $tabletrackid The id of the track to manage associations for.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
      */
-    public function test_available_permissions_program_enrol_userset_user($usersetidsforperm, $clusterassignments,
-                                                                          $clustercurriculums, $tableprogramid, $expectedresults,
-                                                                          $expectedtotal) {
+    public function test_available_permissions_track_enrol_userset_user($usersetidsforperm, $clusterassignments, $clustertracks,
+                                                                        $tabletrackid, $expectedresults, $expectedtotal) {
         global $USER, $DB, $CFG;
 
         $userbackup = $USER;
 
         // Import usersets.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_userset.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(userset::TABLE => elispm::file('tests/fixtures/deepsight_userset.csv')));
+        $this->loadDataSet($dataset);
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $capability = 'elis/program:program_enrol_userset_user';
+        $capability = 'elis/program:track_enrol_userset_user';
         foreach ($usersetidsforperm as $usersetid) {
             $this->give_permission_for_context($USER->id, $capability, context_elis_userset::instance($usersetid));
         }
@@ -638,15 +651,15 @@ class deepsight_datatable_programuser_test extends deepsight_datatable_searchres
             $clusterassignment->save();
         }
 
-        // Create clustercurriculums.
-        foreach ($clustercurriculums as $clustercurriculum) {
-            $clustercurriculum = new clustercurriculum($clustercurriculum);
-            $clustercurriculum->save();
+        // Create clustertracks.
+        foreach ($clustertracks as $clustertrack) {
+            $clustertrack = new clustertrack($clustertrack);
+            $clustertrack->save();
         }
 
         // Construct test table.
-        $table = new deepsight_datatable_programuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
-        $table->set_programid($tableprogramid);
+        $table = new deepsight_datatable_trackuser_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table->set_trackid($tabletrackid);
 
         // Perform test.
         $actualresults = $table->get_search_results(array(), array(), 0, 20);

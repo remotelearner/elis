@@ -24,30 +24,17 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 /**
  * Tests datatable functions
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_test extends elis_database_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return overlay tables.
-     *
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'context' => 'moodle',
-            user::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-        );
-    }
+class deepsight_datatable_testcase extends elis_database_test {
 
     /**
      * Dataprovider for test_get_userset_subsets.
@@ -90,10 +77,11 @@ class deepsight_datatable_test extends elis_database_test {
      * @param array $expectedresults The expected return value.
      */
     public function test_get_userset_subsets($parentuserset, $includeparent, $expectedresults) {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_usersetwithsubsets.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv'),
+            userset::TABLE => elispm::file('tests/fixtures/deepsight_usersetwithsubsets.csv'),
+        ));
+        $this->loadDataSet($dataset);
 
         accesslib_clear_all_caches(true);
 

@@ -24,28 +24,17 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 /**
  * Test various filter operations.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_filter_test extends elis_database_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Return overlay tables.
-     *
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'crlm_user' => 'elis_program'
-        );
-    }
+class deepsight_filter_testcase extends elis_database_test {
 
     /**
      * Dataprovider for filter parameters
@@ -461,9 +450,9 @@ class deepsight_filter_test extends elis_database_test {
 
         // Expected choices, in order.
         $expectedchoices = array(
-            array('label' => 'Springfield', 'id' => 'Springfield'),
-            array('label' => 'Toronto', 'id' => 'Toronto'),
-            array('label' => 'Waterloo', 'id' => 'Waterloo'),
+                array('label' => 'Springfield', 'id' => 'Springfield'),
+                array('label' => 'Toronto', 'id' => 'Toronto'),
+                array('label' => 'Waterloo', 'id' => 'Waterloo'),
         );
         $expectedchoicesinternal = array('Springfield' => 'Springfield', 'Toronto' => 'Toronto', 'Waterloo' => 'Waterloo');
 
@@ -684,24 +673,24 @@ class deepsight_filter_test extends elis_database_test {
         $tests = array();
 
         $fieldsets = array(
-            array(
-                'field1' => 'Field One'
-            ),
-            array(
-                'field1' => 'Field One',
-                'field2' => 'Field Two',
-            ),
-            array(
-                'field1' => 'Field One',
-                'field2' => 'Field Two',
-                'field3' => 'Field Three',
-            ),
-            array(
-                'field1' => 'Field One',
-                'field2' => 'Field Two',
-                'field3' => 'Field Three',
-                'field4' => 'Field Four',
-            ),
+                array(
+                    'field1' => 'Field One'
+                ),
+                array(
+                    'field1' => 'Field One',
+                    'field2' => 'Field Two',
+                ),
+                array(
+                    'field1' => 'Field One',
+                    'field2' => 'Field Two',
+                    'field3' => 'Field Three',
+                ),
+                array(
+                    'field1' => 'Field One',
+                    'field2' => 'Field Two',
+                    'field3' => 'Field Three',
+                    'field4' => 'Field Four',
+                ),
         );
 
         $invalidvals = array(null, true, false, array(), 0, 10, -1, 'test', array(null), array(false), array(true), array(array()));

@@ -24,25 +24,24 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once(dirname(__FILE__).'/lib.php');
+require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('deepsightpage.class.php'));
 require_once(elispm::lib('selectionpage.class.php'));
 
-require_once(elispm::lib('data/clustercurriculum.class.php'));
+require_once(elispm::lib('data/curriculumcourse.class.php'));
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elispm::lib('data/user.class.php'));
-require_once(elispm::lib('data/userset.class.php'));
+require_once(elispm::lib('data/course.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 
 /**
- * Mock programuserset_assigned datatable class to expose protected methods and properties.
+ * Mock programcourse_assigned datatable class to expose protected methods and properties.
  */
-class deepsight_datatable_programuserset_assigned_mock extends deepsight_datatable_programuserset_assigned {
+class deepsight_datatable_programcourse_assigned_mock extends deepsight_datatable_programcourse_assigned {
 
     /**
      * Magic function to expose protected properties.
@@ -85,9 +84,9 @@ class deepsight_datatable_programuserset_assigned_mock extends deepsight_datatab
 }
 
 /**
- * Mock programuserset_available datatable class to expose protected methods and properties.
+ * Mock programcourse_available datatable class to expose protected methods and properties.
  */
-class deepsight_datatable_programuserset_available_mock extends deepsight_datatable_programuserset_available {
+class deepsight_datatable_programcourse_available_mock extends deepsight_datatable_programcourse_available {
 
     /**
      * Magic function to expose protected properties.
@@ -111,6 +110,7 @@ class deepsight_datatable_programuserset_available_mock extends deepsight_datata
      * Expose protected methods.
      * @param string $name The name of the called method.
      * @param array $args Array of arguments.
+     * @return string|int|bool|float|array|object The return value of the function.
      */
     public function __call($name, $args) {
         if (method_exists($this, $name)) {
@@ -129,34 +129,27 @@ class deepsight_datatable_programuserset_available_mock extends deepsight_datata
 }
 
 /**
- * Tests programuserset datatable functions.
+ * Tests programcourse datatable functions.
+ * @group elis_program
+ * @group deepsight
  */
-class deepsight_datatable_programuserset_test extends deepsight_datatable_searchresults_test {
-    public $resultscsv = 'csv_userset.csv';
+class deepsight_datatable_programcourse_testcase extends deepsight_datatable_searchresults_test {
 
     /**
-     * Return overlay tables.
-     * @return array An array of overlay tables.
+     * @var string The name of the CSV file results will come from.
      */
-    protected static function get_overlay_tables() {
-        $overlay = array(
-            clustercurriculum::TABLE => 'elis_program',
-            curriculum::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-            field::TABLE => 'elis_core'
-        );
-        return array_merge(parent::get_overlay_tables(), $overlay);
-    }
+    public $resultscsv = 'deepsight_course.csv';
 
     /**
      * Do any setup before tests that rely on data in the database - i.e. create users/courses/classes/etc or import csvs.
      */
     protected function set_up_tables() {
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(curriculum::TABLE, elispm::lib('deepsight/phpunit/csv_program.csv'));
-        $dataset->addTable(userset::TABLE, elispm::lib('deepsight/phpunit/csv_userset.csv'));
-        $dataset->addTable(user::TABLE, elispm::lib('deepsight/phpunit/csv_user.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            course::TABLE => elispm::file('tests/fixtures/deepsight_course.csv'),
+            curriculum::TABLE => elispm::file('tests/fixtures/deepsight_program.csv'),
+            user::TABLE => elispm::file('tests/fixtures/deepsight_user.csv'),
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
@@ -168,19 +161,19 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
         return array(
             'element_id' => $element['id'],
             'element_name' => $element['name'],
+            'element_idnumber' => $element['idnumber'],
             'id' => $element['id'],
             'meta' => array(
                 'label' => $element['name']
             ),
-            'autoenroldefault' => 0,
         );
     }
 
     /**
-     * Dataprovider for test_assigned_shows_assigned_usersets.
+     * Dataprovider for test_assigned_shows_assigned_courses.
      * @return array Array of test parameters.
      */
-    public function dataprovider_assigned_shows_assigned_usersets() {
+    public function dataprovider_assigned_shows_assigned_courses() {
         return array(
                 // 0: Test table shows nothing when no associations present.
                 array(
@@ -192,7 +185,7 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
                 // 1: Test table shows nothing when no associations present for current program.
                 array(
                         array(
-                                array('curriculumid' => 5, 'clusterid' => 2),
+                                array('curriculumid' => 5, 'courseid' => 100),
                         ),
                         6,
                         array(),
@@ -201,24 +194,24 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
                 // 2: Test table shows existing associations for the current program.
                 array(
                         array(
-                                array('curriculumid' => 5, 'clusterid' => 2),
+                                array('curriculumid' => 5, 'courseid' => 100),
                         ),
                         5,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 2),
+                                $this->get_search_result_row($this->resultscsv, 100),
                         ),
                         1,
                 ),
                 // 3: Test table shows multiple existing associations for the current program.
                 array(
                         array(
-                                array('curriculumid' => 5, 'clusterid' => 1),
-                                array('curriculumid' => 5, 'clusterid' => 2),
+                                array('curriculumid' => 5, 'courseid' => 100),
+                                array('curriculumid' => 5, 'courseid' => 101),
                         ),
                         5,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 1),
-                                $this->get_search_result_row($this->resultscsv, 2),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         2,
                 ),
@@ -226,15 +219,14 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
                 // don't appear.
                 array(
                         array(
-                                array('curriculumid' => 5, 'clusterid' => 1),
-                                array('curriculumid' => 5, 'clusterid' => 2),
-                                array('curriculumid' => 6, 'clusterid' => 3),
-                                array('curriculumid' => 6, 'clusterid' => 4),
+                                array('curriculumid' => 5, 'courseid' => 100),
+                                array('curriculumid' => 6, 'courseid' => 101),
+                                array('curriculumid' => 6, 'courseid' => 102),
                         ),
                         6,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 3),
-                                $this->get_search_result_row($this->resultscsv, 4),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
                         2,
                 ),
@@ -242,36 +234,47 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
     }
 
     /**
-     * Test assigned table shows assigned usersets.
+     * Test assigned table shows assigned courses.
      *
-     * @dataProvider dataprovider_assigned_shows_assigned_usersets
-     * @param array $associations An array of arrays of parameters to construct clustercurriculum associations.
+     * @dataProvider dataprovider_assigned_shows_assigned_courses
+     * @param array $associations An array of arrays of parameters to construct curriculumcourse associations.
      * @param int $tableprogramid The ID of the program we're going to manage.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
      */
-    public function test_assigned_shows_assigned_usersets($associations, $tableprogramid, $expectedresults, $expectedtotal) {
+    public function test_assigned_shows_assigned_courses($associations, $tableprogramid, $expectedresults, $expectedtotal) {
         global $DB;
 
         foreach ($associations as $association) {
-            $clustercurriculum = new clustercurriculum($association);
-            $clustercurriculum->save();
+            $curriculumcourse = new curriculumcourse($association);
+            $curriculumcourse->save();
         }
 
-        $table = new deepsight_datatable_programuserset_assigned_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table = new deepsight_datatable_programcourse_assigned_mock($DB, 'test', 'http://localhost', 'testuniqid');
         $table->set_programid($tableprogramid);
 
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
-        foreach ($expectedresults as &$result) {
-            unset($result['autoenroldefault']);
+        foreach ($actualresults[0] as &$result) {
+            // We unset these are they are needed for the real tables, but we're not interested in them at the moment.
+            $extrakeys = array(
+                    'curcrs_id',
+                    'curcrs_curriculumid',
+                    'assocdata_required',
+                    'assocdata_frequency',
+                    'assocdata_timeperiod',
+                    'assocdata_position'
+            );
+            foreach ($extrakeys as $key) {
+                unset($result[$key]);
+            }
         }
         $this->assert_search_results($expectedresults, $expectedtotal, $actualresults);
     }
 
     /**
-     * Test available table can show all usersets.
+     * Test available table can show all courses.
      */
-    public function test_available_can_show_all_usersets() {
+    public function test_available_can_show_all_courses() {
         global $USER, $DB, $CFG;
         $userbackup = $USER;
 
@@ -280,7 +283,7 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
         $this->give_permission_for_context($USER->id, 'elis/program:associate', get_context_instance(CONTEXT_SYSTEM));
 
         // Construct test table.
-        $table = new deepsight_datatable_programuserset_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table = new deepsight_datatable_programcourse_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
         $table->set_programid(5);
 
         // Perform test.
@@ -288,13 +291,11 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
 
         // Verify result.
         $expectedresults = array(
-                $this->get_search_result_row($this->resultscsv, 1),
-                $this->get_search_result_row($this->resultscsv, 2),
-                $this->get_search_result_row($this->resultscsv, 3),
-                $this->get_search_result_row($this->resultscsv, 4),
-                $this->get_search_result_row($this->resultscsv, 5),
+                $this->get_search_result_row($this->resultscsv, 100),
+                $this->get_search_result_row($this->resultscsv, 101),
+                $this->get_search_result_row($this->resultscsv, 102),
         );
-        $expectedtotal = 5;
+        $expectedtotal = 3;
         $this->assert_search_results($expectedresults, $expectedtotal, $actualresults);
 
         // Restore user.
@@ -302,79 +303,72 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
     }
 
     /**
-     * Dataprovider for test_available_doesnt_show_assigned_usersets.
+     * Dataprovider for test_available_doesnt_show_assigned_courses.
      * @return array Array of test parameters.
      */
-    public function dataprovider_available_doesnt_show_assigned_usersets() {
+    public function dataprovider_available_doesnt_show_assigned_courses() {
         return array(
-                // Test the table shows all usersets when nothing is assigned.
+                // Test the table shows all courses when nothing is assigned.
                 array(
                         array(),
                         100,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 1),
-                                $this->get_search_result_row($this->resultscsv, 2),
-                                $this->get_search_result_row($this->resultscsv, 3),
-                                $this->get_search_result_row($this->resultscsv, 4),
-                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
-                        5
+                        3
                 ),
-                // Test the table doesn't show assigned usersets.
+                // Test the table doesn't show assigned courses.
                 array(
                         array(
-                                array('curriculumid' => 6, 'clusterid' => 2),
+                                array('curriculumid' => 6, 'courseid' => 101),
                         ),
                         6,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 1),
-                                $this->get_search_result_row($this->resultscsv, 3),
-                                $this->get_search_result_row($this->resultscsv, 4),
-                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
-                        4
+                        2
                 ),
                 // Test multiple assignments.
                 array(
                         array(
-                                array('curriculumid' => 6, 'clusterid' => 3),
-                                array('curriculumid' => 6, 'clusterid' => 4),
+                                array('curriculumid' => 6, 'courseid' => 100),
+                                array('curriculumid' => 6, 'courseid' => 102),
                         ),
                         6,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 1),
-                                $this->get_search_result_row($this->resultscsv, 2),
-                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
-                        3
+                        1
                 ),
-                // Test only assignments for the current userset affect results.
+                // Test only assignments for the current course affect results.
                 array(
                         array(
-                                array('curriculumid' => 5, 'clusterid' => 1),
-                                array('curriculumid' => 6, 'clusterid' => 2),
-                                array('curriculumid' => 6, 'clusterid' => 3),
+                                array('curriculumid' => 5, 'courseid' => 100),
+                                array('curriculumid' => 5, 'courseid' => 101),
+                                array('curriculumid' => 6, 'courseid' => 102),
                         ),
                         6,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 1),
-                                $this->get_search_result_row($this->resultscsv, 4),
-                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
-                        3
+                        2
                 ),
         );
     }
 
     /**
-     * Test available table doesn't show assigned usersets.
-     * @dataProvider dataprovider_available_doesnt_show_assigned_usersets
-     * @param array $associations An array of arrays of parameters to construct clustercurriculum associations.
+     * Test available table doesn't show assigned courses.
+     * @dataProvider dataprovider_available_doesnt_show_assigned_courses
+     * @param array $associations An array of arrays of parameters to construct curriculumcourse associations.
      * @param int $tableprogramid The ID of the program we're going to manage.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
      */
-    public function test_available_doesnt_show_assigned_usersets($associations, $tableprogramid, $expectedresults, $expectedtotal) {
+    public function test_available_doesnt_show_assigned_courses($associations, $tableprogramid, $expectedresults, $expectedtotal) {
         global $USER, $DB, $CFG;
         $userbackup = $USER;
 
@@ -383,12 +377,12 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
         $this->give_permission_for_context($USER->id, 'elis/program:associate', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($associations as $association) {
-            $clustercurriculum = new clustercurriculum($association);
-            $clustercurriculum->save();
+            $curriculumcourse = new curriculumcourse($association);
+            $curriculumcourse->save();
         }
 
         // Construct test table.
-        $table = new deepsight_datatable_programuserset_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table = new deepsight_datatable_programcourse_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
         $table->set_programid($tableprogramid);
 
         // Perform test.
@@ -419,30 +413,28 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
                         array('system' => true),
                         5,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 1),
-                                $this->get_search_result_row($this->resultscsv, 2),
-                                $this->get_search_result_row($this->resultscsv, 3),
-                                $this->get_search_result_row($this->resultscsv, 4),
-                                $this->get_search_result_row($this->resultscsv, 5),
+                                $this->get_search_result_row($this->resultscsv, 100),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
-                        5,
+                        3,
                 ),
-                // 2: Test permissions on one userset returns that userset.
+                // 2: Test permissions on one course returns that course.
                 array(
-                        array('userset' => array(1)),
+                        array('course' => array(101)),
                         6,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 1),
+                                $this->get_search_result_row($this->resultscsv, 101),
                         ),
                         1,
                 ),
-                // 3: Test permissions on multiple usersets returns those userset.
+                // 3: Test permissions on multiple courses returns those course.
                 array(
-                        array('userset' => array(1, 3)),
+                        array('course' => array(101, 102)),
                         6,
                         array(
-                                $this->get_search_result_row($this->resultscsv, 1),
-                                $this->get_search_result_row($this->resultscsv, 3),
+                                $this->get_search_result_row($this->resultscsv, 101),
+                                $this->get_search_result_row($this->resultscsv, 102),
                         ),
                         2,
                 ),
@@ -450,10 +442,10 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
     }
 
     /**
-     * Test available table only shows usersets that the assigner has the elis/program::associate permission on.
+     * Test available table only shows courses that the assigner has the elis/program::associate permission on.
      * @dataProvider dataprovider_available_permissions_associate
      * @param array $contextstoassign An array of information specifying the contexts to assign the associate permission on.
-     *                                This is formatted like array('system' => true, 'userset' => array(1, 2, 3))
+     *                                This is formatted like array('system' => true, 'course' => array(100, 101))
      * @param int $tableprogramid The ID of the program we're going to manage.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
@@ -472,8 +464,8 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
             } else {
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
-                        case 'userset':
-                            $context = context_elis_userset::instance($contextinstanceid);
+                        case 'course':
+                            $context = context_elis_course::instance($contextinstanceid);
                             break;
                     }
                     $this->give_permission_for_context($USER->id, 'elis/program:associate', $context);
@@ -484,7 +476,7 @@ class deepsight_datatable_programuserset_test extends deepsight_datatable_search
         accesslib_clear_all_caches(true);
 
         // Construct test table.
-        $table = new deepsight_datatable_programuserset_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
+        $table = new deepsight_datatable_programcourse_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
         $table->set_programid($tableprogramid);
 
         // Perform test.
