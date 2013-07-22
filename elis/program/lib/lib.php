@@ -1257,7 +1257,9 @@ function pm_update_student_progress($muserid = 0) {
 
 /// Start with the Moodle classes...
     if ($muserid == 0) {
-        mtrace("Synchronizing Moodle class grades<br />\n");
+        if (in_cron()) {
+            mtrace("Synchronizing Moodle class grades<br />\n");
+        }
     }
     pm_synchronize_moodle_class_grades($muserid);
 
@@ -1267,7 +1269,9 @@ function pm_update_student_progress($muserid = 0) {
 /// other than Moodle.
     if ($muserid == 0) {
         //running for all users
-        mtrace("Updating all class grade completions.<br />\n");
+        if (in_cron()) {
+            mtrace("Updating all class grade completions.<br />\n");
+        }
         pm_update_enrolment_status();
     } else {
         //attempting to run for a particular user
