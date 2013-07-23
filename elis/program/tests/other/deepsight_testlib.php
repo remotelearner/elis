@@ -24,7 +24,7 @@
  *
  */
 
-require(dirname(__FILE__).'/../../lib/deepsight/lib/lib.php');
+require_once(dirname(__FILE__).'/../../lib/deepsight/lib/lib.php');
 require_once(elispm::lib('deepsightpage.class.php'));
 require_once(elispm::lib('selectionpage.class.php'));
 require_once(elispm::lib('data/clusterassignment.class.php'));
