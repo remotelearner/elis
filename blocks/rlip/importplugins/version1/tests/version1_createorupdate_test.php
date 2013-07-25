@@ -172,7 +172,6 @@ class version1createorupdate_testcase extends rlip_test {
         // Validate that the standard create action still works.
         $expecteddata = array(
             'username' => 'rlipusername',
-            'password' => hash_internal_user_password('Rlippassword!1234'),
             'mnethostid' => $CFG->mnet_localhost_id,
             'firstname' => 'rlipfirstname',
             'lastname' => 'rliplastname',
@@ -191,8 +190,13 @@ class version1createorupdate_testcase extends rlip_test {
             'city' => 'rlipcity',
             'country' => 'CA'
         );
+
         $this->run_core_user_import($importdata);
         $this->assert_record_exists('user', $expecteddata);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $importdata['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $importdata['password']));
 
         // Reset state.
         $DB->delete_records('user');
@@ -213,7 +217,6 @@ class version1createorupdate_testcase extends rlip_test {
         // Initial data setup.
         $expecteddata = array(
             'username' => 'rlipusername',
-            'password' => hash_internal_user_password('Rlippassword!1234'),
             'mnethostid' => $CFG->mnet_localhost_id,
             'firstname' => 'rlipfirstname',
             'lastname' => 'rliplastname',
@@ -235,8 +238,11 @@ class version1createorupdate_testcase extends rlip_test {
         $this->run_core_user_import($importdata);
         $this->assert_record_exists('user', $expecteddata);
 
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $importdata['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $importdata['password']));
+
         // Validate that creates are converted to updates.
-        $expecteddata['password'] = hash_internal_user_password('Rlippassword!12342');
         $expecteddata['firstname'] = 'rlipfirstname2';
         $expecteddata['lastname'] = 'rliplastname2';
         $importdata['password'] = 'Rlippassword!12342';
@@ -244,10 +250,14 @@ class version1createorupdate_testcase extends rlip_test {
         $importdata['lastname'] = 'rliplastname2';
         $this->run_core_user_import($importdata);
         $this->assert_record_exists('user', $expecteddata);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $importdata['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $importdata['password']));
+
         $this->assertEquals($DB->count_records('user'), $initalusercount+1);
 
         // Validate that the standard update action still works.
-        $expecteddata['password'] = hash_internal_user_password('Rlippassword!12342');
         $expecteddata['firstname'] = 'rlipfirstname2';
         $expecteddata['lastname'] = 'rliplastname2';
         $importdata['action'] = 'update';
@@ -256,6 +266,11 @@ class version1createorupdate_testcase extends rlip_test {
         $importdata['lastname'] = 'rliplastname2';
         $this->run_core_user_import($importdata);
         $this->assert_record_exists('user', $expecteddata);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $importdata['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $importdata['password']));
+
         $this->assertEquals($DB->count_records('user'), $initalusercount+1);
     }
 
@@ -274,7 +289,6 @@ class version1createorupdate_testcase extends rlip_test {
         // Validate that create still works with the mapping set.
         $expecteddata = array(
             'username' => 'rlipusername',
-            'password' => hash_internal_user_password('Rlippassword!1234'),
             'mnethostid' => $CFG->mnet_localhost_id,
             'firstname' => 'rlipfirstname',
             'lastname' => 'rliplastname',
@@ -295,6 +309,10 @@ class version1createorupdate_testcase extends rlip_test {
         );
         $this->run_core_user_import($importdata);
         $this->assert_record_exists('user', $expecteddata);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $importdata['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $importdata['password']));
 
         // Reset state.
         $DB->delete_records('user');
@@ -535,7 +553,6 @@ class version1createorupdate_testcase extends rlip_test {
         // Validate that the standard delete action still works first create the user.
         $expecteddata = array(
             'username' => 'rlipusername',
-            'password' => hash_internal_user_password('Rlippassword!1234'),
             'mnethostid' => $CFG->mnet_localhost_id,
             'firstname' => 'rlipfirstname',
             'lastname' => 'rliplastname',
@@ -556,6 +573,11 @@ class version1createorupdate_testcase extends rlip_test {
         );
         $this->run_core_user_import($importdata);
         $this->assert_record_exists('user', $expecteddata);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $importdata['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $importdata['password']));
+
         // Then delete the user.
         $importdata = array('entity' => 'user', 'action' => 'delete', 'username' => 'rlipusername');
         $this->run_core_user_import($importdata);

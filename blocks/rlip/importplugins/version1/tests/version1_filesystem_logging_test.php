@@ -1034,7 +1034,7 @@ class version1filesystemlogging_testcase extends rlip_test {
      * Validates that error logging works correctly with the user "create or update" functionality
      */
     public function test_version1importloggingsupportsusercreateorupdate() {
-        global $CFG;
+        global $CFG, $DB;
 
         set_config('createorupdate', 1, 'rlipimport_version1');
 
@@ -1047,12 +1047,14 @@ class version1filesystemlogging_testcase extends rlip_test {
         $this->create_mapping_record('user', 'city', 'customcity');
         $this->create_mapping_record('user', 'country', 'customcountry');
 
+        $password = 'Rlippassword!0';
+
         // Create a user so it can be updated.
         self::cleanup_log_files();
         $data = array(
             'action' => 'create',
             'customusername' => 'rlipusername',
-            'custompassword' => 'Rlippassword!0',
+            'custompassword' => $password,
             'customfirstname' => 'rlipfirstname',
             'customlastname' => 'rliplastname',
             'customemail' => 'rlipuser@rlipdomain.com',
@@ -1068,7 +1070,6 @@ class version1filesystemlogging_testcase extends rlip_test {
         $data = array(
             'mnethostid' => $CFG->mnet_localhost_id,
             'username' => $data['customusername'],
-            'password' => hash_internal_user_password($data['custompassword']),
             'firstname' => $data['customfirstname'],
             'lastname' => $data['customlastname'],
             'email' => $data['customemail'],
@@ -1076,6 +1077,10 @@ class version1filesystemlogging_testcase extends rlip_test {
             'country' => $data['customcountry']
         );
         $this->assert_record_exists('user', $data);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $data['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $password));
 
         // Update validation using create.
         $data = array(
@@ -1108,7 +1113,6 @@ class version1filesystemlogging_testcase extends rlip_test {
         $data = array(
             'username' => 'rlipusername',
             'mnethostid' => $CFG->mnet_localhost_id,
-            'password' => hash_internal_user_password('Rlippassword!0'),
             'firstname' => 'updatedrlipfirstname',
             'lastname' => 'rliplastname',
             'email' => 'rlipuser@rlipdomain.com',
@@ -1116,6 +1120,10 @@ class version1filesystemlogging_testcase extends rlip_test {
             'country' => 'CA'
         );
         $this->assert_record_exists('user', $data);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $data['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $password));
     }
 
     /**

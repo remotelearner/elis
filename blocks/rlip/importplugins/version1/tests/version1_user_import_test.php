@@ -213,16 +213,20 @@ class version1userimport_testcase extends rlip_test {
         $importplugin = new rlip_importplugin_version1($provider);
         $importplugin->run();
 
+        $password = $data['password'];
+        unset($data['password']);
         unset($data['entity']);
         unset($data['action']);
         $data['mnethostid'] = $CFG->mnet_localhost_id;
-        $data['password'] = hash_internal_user_password($data['password']);
         // User should be confirmed by default.
         $data['confirmed'] = 1;
 
         $exists = $DB->record_exists('user', $data);
+        $this->assertTrue($exists);
 
-        $this->assertEquals($exists, true);
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $data['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $password));
     }
 
     /**
@@ -240,14 +244,18 @@ class version1userimport_testcase extends rlip_test {
         $importplugin = new rlip_importplugin_version1($provider);
         $importplugin->run();
 
+        $password = $data['password'];
+        unset($data['password']);
         unset($data['entity']);
         unset($data['action']);
         $data['mnethostid'] = $CFG->mnet_localhost_id;
-        $data['password'] = hash_internal_user_password($data['password']);
 
         $exists = $DB->record_exists('user', $data);
+        $this->assertTrue($exists);
 
-        $this->assertEquals($exists, true);
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $data['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $password));
     }
 
     /**
@@ -468,8 +476,11 @@ class version1userimport_testcase extends rlip_test {
         $this->assert_record_exists('user', array(
                 'username' => 'rlipusername',
                 'mnethostid' => $CFG->mnet_localhost_id,
-                'password' => hash_internal_user_password('Rlippassword!1234')
         ));
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => 'rlipusername'));
+        $this->assertTrue(validate_internal_user_password($userrec, 'Rlippassword!1234'));
     }
 
     /**
@@ -1739,7 +1750,7 @@ class version1userimport_testcase extends rlip_test {
      * in the user data
      */
     public function test_version1importonlyupdatessupplieduserfields() {
-        global $CFG;
+        global $CFG, $DB;
 
         $this->run_core_user_import(array());
 
@@ -1752,13 +1763,18 @@ class version1userimport_testcase extends rlip_test {
         $this->run_core_user_import($data, false);
 
         $data = $this->get_core_user_data();
+        $password = $data['password'];
+        unset($data['password']);
         unset($data['entity']);
         unset($data['action']);
         $data['mnethostid'] = $CFG->mnet_localhost_id;
-        $data['password'] = hash_internal_user_password($data['password']);
         $data['firstname'] = 'updatedfirstname';
 
         $this->assert_record_exists('user', $data);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $data['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, $password));
     }
 
     /**
@@ -2459,7 +2475,6 @@ class version1userimport_testcase extends rlip_test {
         $select = "username = :username AND
                    mnethostid = :mnethostid AND
                    auth = :auth AND
-                   password = :password AND
                    firstname = :firstname AND
                    lastname = :lastname AND
                    email = :email AND
@@ -2478,7 +2493,6 @@ class version1userimport_testcase extends rlip_test {
             'username' => 'rlipusername',
             'mnethostid' => $CFG->mnet_localhost_id,
             'auth' => 'mnet',
-            'password' => hash_internal_user_password('Rlippassword!0'),
             'firstname' => 'rlipfirstname',
             'lastname' => 'rliplastname',
             'email' => 'rlipuser@rlipdomain.com',
@@ -2496,7 +2510,11 @@ class version1userimport_testcase extends rlip_test {
             'department' => 'rlipdepartment'
         );
         $exists = $DB->record_exists_select('user', $select, $params);
-        $this->assertEquals($exists, true);
+        $this->assertTrue($exists);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $data['username1']));
+        $this->assertTrue(validate_internal_user_password($userrec, $data['password1']));
     }
 
     /**
