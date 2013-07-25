@@ -59,7 +59,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
      * blank out fields for users
      */
     public function test_version1userupdateignoresemptyvalues() {
-        global $CFG;
+        global $CFG, $DB;
 
         set_config('createorupdate', 0, 'rlipimport_version1');
 
@@ -99,7 +99,6 @@ class version1emptyvalueupdates_testcase extends rlip_test {
         $params = array(
             'username' => 'rlipusername',
             'mnethostid' => $CFG->mnet_localhost_id,
-            'password' => hash_internal_user_password('Rlippassword!0'),
             'firstname' => 'updatedrlipfirstname',
             'lastname' => 'rliplastname',
             'email' => 'rlipuser@rlipdomain.com',
@@ -108,6 +107,10 @@ class version1emptyvalueupdates_testcase extends rlip_test {
             'idnumber' => 'rlipidnumber'
         );
         $this->assert_record_exists('user', $params);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $params['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, 'Rlippassword!0'));
     }
 
     /**

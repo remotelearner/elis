@@ -77,7 +77,6 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $this->assertEquals($record->firstname, $user->firstname);
         $this->assertEquals($record->lastname, $user->lastname);
         $this->assertEquals($record->email, $user->email);
-        $this->assertEquals($expectedpassword, $user->password);
         $this->assertEquals($record->mi, $user->mi);
         $this->assertEquals($record->email2, $user->email2);
         $this->assertEquals($record->address, $user->address);
@@ -88,6 +87,10 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $this->assertEquals($record->phone, $user->phone);
         $this->assertEquals($record->phone2, $user->phone2);
         $this->assertEquals($record->fax, $user->fax);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $record->username));
+        $this->assertTrue(validate_internal_user_password($userrec, $expectedpassword));
     }
 
     /**
@@ -134,7 +137,6 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $user = $DB->get_record(user::TABLE, array('idnumber' => $record->idnumber));
         $this->assertEquals($record->firstname, $user->firstname);
         $this->assertEquals($record->lastname, $user->lastname);
-        $this->assertEquals($expectedpassword, $user->password);
         $this->assertEquals($record->mi, $user->mi);
         $this->assertEquals($record->email2, $user->email2);
         $this->assertEquals($record->address, $user->address);
@@ -145,6 +147,10 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $this->assertEquals($record->phone, $user->phone);
         $this->assertEquals($record->phone2, $user->phone2);
         $this->assertEquals($record->fax, $user->fax);
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $record->username));
+        $this->assertTrue(validate_internal_user_password($userrec, $expectedpassword));
     }
 
     /**

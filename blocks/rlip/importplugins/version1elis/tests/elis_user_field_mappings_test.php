@@ -191,7 +191,6 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
         // Validation.
         $data = array(
             'username' => 'testuserusername',
-            'password' => hash_internal_user_password('Testpassword!0'),
             'idnumber' => 'testuseridnumber',
             'firstname' => 'testuserfirstname',
             'lastname' => 'testuserlastname',
@@ -215,6 +214,10 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
         );
 
         $this->assertTrue($DB->record_exists(user::TABLE, $data));
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $data['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, 'Testpassword!0'));
 
         $record = $DB->get_record(user::TABLE, array('username' => 'testuserusername'));
         $this->assertEquals('testusercomments', $record->comments);
@@ -289,7 +292,6 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
         // Validation.
         $data = array(
             'username' => 'testuserusername',
-            'password' => hash_internal_user_password('updatedTestpassword!0'),
             'idnumber' => 'testuseridnumber',
             'firstname' => 'updatedtestuserfirstname',
             'lastname' => 'updatedtestuserlastname',
@@ -312,6 +314,10 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
             'inactive' => 1
         );
         $this->assertTrue($DB->record_exists(user::TABLE, $data));
+
+        // Validate password.
+        $userrec = $DB->get_record('user', array('username' => $data['username']));
+        $this->assertTrue(validate_internal_user_password($userrec, 'updatedTestpassword!0'));
 
         $record = $DB->get_record(user::TABLE, array('username' => 'testuserusername'));
         $this->assertEquals('updatedtestusercomments', $record->comments);
