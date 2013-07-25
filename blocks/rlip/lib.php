@@ -60,11 +60,12 @@ class rlip_category_settingpage extends admin_settingpage implements parentable_
      * non-equivalent
      *
      * @param object $setting is the admin_setting object you want to add
-     * @param string $bogus only defined to satisfy interface
+     * @param string $bogus only defined to satisfy interface.
+     * @param string $bogus2 only defined to satisfy interface.
      * @return bool true if successful, false if not
      */
-    public function add($setting, $bogus = '') {
-        //note: this is only called as is done for admin_settingpage
+    public function add($setting, $bogus = '', $bogus2 = null) {
+        // Note: this is only called as is done for admin_settingpage.
         return parent::add($setting);
     }
 }
@@ -77,16 +78,17 @@ class rlip_category_settingpage extends admin_settingpage implements parentable_
  */
 class rlip_category_externalpage extends admin_externalpage implements parentable_part_of_admin_tree {
     /**
-    * Method that satisfies requirements of parent interface but delegates to
-    * the admin_externalpage functionality, depsite methods being non-equivalent
-    *
-    * @param object $external is the admin_external object you want to add
-    * @param string $bogus only defined to satisfy interface
-    * @return bool true if successful, false if not
-    */
-    public function add($external, $bogus = '') {
-        //note: this is only called as is done for admin_externalpage
-        return parent::add($external);
+     * Method that satisfies requirements of parent interface but delegates to
+     * the admin_externalpage functionality, depsite methods being non-equivalent
+     *
+     * @param object $external is the admin_external object you want to add
+     * @param string $bogus only defined to satisfy interface.
+     * @param string $bogus2 only defined to satisfy interface.
+     * @return bool true if successful, false if not
+     */
+    public function add($setting, $bogus = '', $bogus2 = null) {
+        // Note: this is only called as is done for admin_settingpage.
+        return parent::add($setting);
     }
 }
 
