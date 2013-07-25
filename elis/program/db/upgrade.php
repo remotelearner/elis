@@ -679,5 +679,15 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2013051500, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2013051502) {
+        // Change password field length to 255
+        $table = new xmldb_table('crlm_user');
+        $field = new xmldb_field('password', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'username');
+
+        $dbman->change_field_precision($table, $field);
+
+        upgrade_plugin_savepoint($result, 2013051502, 'elis', 'program');
+    }
+
     return $result;
 }

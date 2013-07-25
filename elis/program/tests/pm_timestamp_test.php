@@ -81,8 +81,8 @@ class pm_timestamp_testcase extends basic_testcase {
         );
         return array(
                 array($datetimeparts1, 0, $today101gmt),
-                array($datetimeparts2, 14, mktime(2, 3, 4, 1, 1, 2013)),
-                array($datetimeparts2, 13.1, mktime(2, 3, 4, 1, 1, 2013)),
+                array($datetimeparts2, 14, 0),
+                array($datetimeparts2, 13.1, 0),
                 array($datetimeparts2, 12, 1356962584),
                 array($datetimeparts2, -12, 1357048984),
                 array($datetimeparts2, 12.5, 1356960784),
@@ -99,6 +99,9 @@ class pm_timestamp_testcase extends basic_testcase {
      * @dataProvider pm_timestamp_dataprovider
      */
     public function test_pm_timestamp($intimeparts, $timezone, $outtimestamp) {
+        if ($outtimestamp == 0) {
+            $outtimestamp = mktime(2, 3, 4, 1, 1, 2013);
+        }
         if (get_user_timezone_offset($timezone) == 99) {
             $this->markTestSkipped("\nSkipping test_pm_gmt_from_usertime() with undefined timezone = '{$timezone}'\n");
         } else {

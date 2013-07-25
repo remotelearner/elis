@@ -611,6 +611,9 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
     require_once($CFG->dirroot.'/grade/lib.php');
     require_once(elispm::lib('data/classmoodlecourse.class.php'));
 
+    // Note: As of Moodle 2.5, cannot set time limit to non-zero
+    set_time_limit(0);
+
     if ($moodleclasses = moodle_get_classes()) {
         $timenow = time();
 
@@ -935,7 +938,6 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                     }
                 }
             }
-            set_time_limit(600);
         }
     }
 }
@@ -1313,6 +1315,9 @@ function pm_update_enrolment_status($pmuserid = 0) {
 /// function that then manages the student objects. Once this is in place, add completion notice
 /// to the code.
 
+    // Note: As of Moodle 2.5, cannot set time limit to non-zero
+    set_time_limit(0);
+
     /// Get all classes with unlocked enrolments.
     $sql = 'SELECT cce.classid as classid, COUNT(cce.userid) as numusers
             FROM {'.student::TABLE.'} cce
@@ -1330,8 +1335,6 @@ function pm_update_enrolment_status($pmuserid = 0) {
     foreach ($rs as $rec) {
         $pmclass = new pmclass($rec->classid);
         $pmclass->update_enrolment_status($pmuserid);
-        //todo: investigate as to whether ten minutes is too long for one class
-        set_time_limit(600);
     }
 }
 
