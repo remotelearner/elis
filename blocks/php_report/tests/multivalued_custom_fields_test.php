@@ -16,82 +16,55 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage block_php_report
+ * @package    blocks-php_report
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
+require_once(elis::lib('data/customfield.class.php'));
 require_once($CFG->dirroot.'/blocks/php_report/php_report_base.php');
 require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
-ini_set('error_reporting', 1);
-ini_set('display_errors', 1);
 
-class multivalued_custom_field_test extends elis_database_test {
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Method to return required overlay tables
-     * @return array  required overlay tables
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            'context' => 'moodle',
-            'course' => 'moodle',
-            field::TABLE => 'elis_core',
-            field_category::TABLE => 'elis_core',
-            field_category_contextlevel::TABLE => 'elis_core',
-            field_contextlevel::TABLE => 'elis_core',
-            field_data_char::TABLE => 'elis_core',
-            field_data_text::TABLE => 'elis_core',
-            user::TABLE => 'elis_program',
-            userset::TABLE => 'elis_program',
-        );
-    }
-
-    /**
-     * Method to load site course record into overlay table
-     */
-    protected function load_orig_site_course_data() {
-        $site = self::$origdb->get_record('course', array('id' => SITEID));
-        self::$overlaydb->import_record('course', $site);
-    }
-
+/**
+ * Class to test PHP report multivalued custom fields.
+ * @group block_php_report
+ */
+class multivalued_custom_field_testcase extends elis_database_test {
     /**
      * Data provider method for test_format_default_data
-     * @return array the test data - entry format: array(input, expectedoutput)
+     * @return array The test data - entry format: array(input, expectedoutput)
      */
     public function format_default_data_dataprovider() {
         return array(
-            array(0, 0),
-            array(1, 1),
-            array('scalar', 'scalar'),
-            array(array(1, 2, 3), '1, 2, 3'),
-            array(array('a', 'b', 'c'), 'a, b, c'),
-            array(array('foo', 'bar', 'gizmo'), 'foo, bar, gizmo'),
+                array(0, 0),
+                array(1, 1),
+                array('scalar', 'scalar'),
+                array(array(1, 2, 3), '1, 2, 3'),
+                array(array('a', 'b', 'c'), 'a, b, c'),
+                array(array('foo', 'bar', 'gizmo'), 'foo, bar, gizmo'),
         );
     }
 
     /**
      * Method to test table report method: format_default_data()
-     * @param mixed $inputdata the input field data, scalar unless multi-valued array
-     * @param string $expected the expected output string
+     * @param mixed $inputdata The input field data, scalar unless multi-valued array
+     * @param string $expected The expected output string
      * @dataProvider format_default_data_dataprovider
+     * @uses $CFG
      */
     public function test_format_default_data($inputdata, $expected) {
+        global $CFG;
         static $report = null;
         if (!$report) {
-            global $CFG;
-            require_once(dirname(__FILE__).'/../instances/course_progress_summary/course_progress_summary_report.class.php');
+            require_once($CFG->dirroot.'/blocks/php_report/instances/course_progress_summary/course_progress_summary_report.class.php');
             $report = new course_progress_summary_report('test_course_progress_summary');
         }
         $this->assertEquals($expected, $report->format_default_data($inputdata));
@@ -99,21 +72,27 @@ class multivalued_custom_field_test extends elis_database_test {
 
     /**
      * Data provider method for test_multiline_get_select_columns()
-     * @return array the test data - entry format: array(reportdir)
+     * @return array The test data - entry format: array(reportdir)
      */
     public function multiline_reports_dataprovider() {
-        return array(array('course_progress_summary'), array('individual_course_progress'), array('user_class_completion'), array('user_class_completion_details'));
+        return array(
+                array('course_progress_summary'),
+                array('individual_course_progress'),
+                array('user_class_completion'),
+                array('user_class_completion_details')
+        );
     }
 
     /**
      * Method to test changes from ELIS-4070 to get_select_columns()
-     * @param string $reportdir the report directory under /instances
+     * @param string $reportdir The report directory under /instances
      * @dataProvider multiline_reports_dataprovider
+     * @uses $CFG
      */
     public function test_multiline_get_select_columns($reportdir) {
         global $CFG;
         $rclass = $reportdir.'_report';
-        require_once(dirname(__FILE__)."/../instances/{$reportdir}/{$rclass}.class.php");
+        require_once($CFG->dirroot."/blocks/php_report/instances/{$reportdir}/{$rclass}.class.php");
         $report = new $rclass('test_'.$reportdir);
         $mlgrps = $report->get_report_sql_multiline_groups();
         if (!empty($mlgrps)) {
@@ -131,241 +110,242 @@ class multivalued_custom_field_test extends elis_database_test {
      */
     public function multiline_groupby_dataprovider() {
         return array(
-            // ICPR
-            array(
-                'individual_course_progress',
-                array( // lastrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 3
+                // ICPR
+                array(
+                        'individual_course_progress',
+                        array( // lastrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 3
+                        ),
+                        array( // currentrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 3,
+                            'enrolid' => 1
+                        ),
+                        false
                 ),
-                array( // currentrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 3,
-                    'enrolid' => 1
+                array(
+                        'individual_course_progress',
+                        array( // lastrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 3,
+                            'enrolid' => 2
+                        ),
+                        array( // currentrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 3,
+                            'enrolid' => 1
+                        ),
+                        false
                 ),
-                false
-            ),
-            array(
-                'individual_course_progress',
-                array( // lastrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 3,
-                    'enrolid' => 2
+                array(
+                        'individual_course_progress',
+                        array( // lastrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 3,
+                            'enrolid' => 4
+                        ),
+                        array( // currentrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 3,
+                            'enrolid' => 4
+                        ),
+                        true
                 ),
-                array( // currentrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 3,
-                    'enrolid' => 1
+                array(
+                        'individual_course_progress',
+                        array( // lastrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 3,
+                            'enrolid' => 4
+                        ),
+                        array( // currentrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 20,
+                            'userid' => 3,
+                            'enrolid' => 5
+                        ),
+                        false
                 ),
-                false
-            ),
-            array(
-                'individual_course_progress',
-                array( // lastrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 3,
-                    'enrolid' => 4
+                array(
+                        'individual_course_progress',
+                        array( // lastrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 3,
+                            'enrolid' => 4
+                        ),
+                        array( // currentrec
+                            'id' => 1,
+                            'name' => 'course_name',
+                            'idnumber' => 'class_idnumber',
+                            'classid' => 2,
+                            'userid' => 30,
+                            'enrolid' => 4
+                        ),
+                        true
                 ),
-                array( // currentrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 3,
-                    'enrolid' => 4
+                // UCCR
+                array(
+                        'user_class_completion',
+                        array( // lastrec
+                            'id' => 3,
+                            'useridnumber' => 'user_idnumber',
+                            'curid' => 1,
+                            'userid' => 3
+                        ),
+                        array( // currentrec
+                            'id' => 3,
+                            'useridnumber' => 'user_idnumber',
+                            'curid' => 1,
+                            'userid' => 3,
+                            'uid' => 3,
+                        ),
+                        false
                 ),
-                true
-            ),
-            array(
-                'individual_course_progress',
-                array( // lastrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 3,
-                    'enrolid' => 4
+                array(
+                        'user_class_completion',
+                        array( // lastrec
+                            'id' => 3,
+                            'useridnumber' => 'user_idnumber',
+                            'curid' => 1,
+                            'userid' => 3,
+                            'uid' => 3,
+                        ),
+                        array( // currentrec
+                            'id' => 3,
+                            'useridnumber' => 'user_idnumber_2',
+                            'curid' => 1,
+                            'userid' => 3,
+                            'uid' => 3,
+                        ),
+                        true
                 ),
-                array( // currentrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 20,
-                    'userid' => 3,
-                    'enrolid' => 5
+                array(
+                        'user_class_completion',
+                        array( // lastrec
+                            'id' => 3,
+                            'useridnumber' => 'user_idnumber',
+                            'curid' => 1,
+                            'userid' => 3,
+                            'uid' => 3,
+                        ),
+                        array( // currentrec
+                            'id' => 4,
+                            'useridnumber' => 'user_idnumber',
+                            'curid' => 1,
+                            'userid' => 4,
+                            'uid' => 4,
+                        ),
+                        false
                 ),
-                false
-            ),
-            array(
-                'individual_course_progress',
-                array( // lastrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 3,
-                    'enrolid' => 4
+                array(
+                        'user_class_completion',
+                        array( // lastrec
+                            'id' => 3,
+                            'useridnumber' => 'user_idnumber',
+                            'curid' => 1,
+                            'userid' => 3,
+                            'uid' => 3,
+                        ),
+                        array( // currentrec
+                            'id' => 3,
+                            'useridnumber' => 'user_idnumber',
+                            'curid' => 2,
+                            'userid' => 3,
+                            'uid' => 3,
+                        ),
+                        true
                 ),
-                array( // currentrec
-                    'id' => 1,
-                    'name' => 'course_name',
-                    'idnumber' => 'class_idnumber',
-                    'classid' => 2,
-                    'userid' => 30,
-                    'enrolid' => 4
+                // UCCDR
+                array(
+                        'user_class_completion_details',
+                        array( // lastrec
+                            'id' => 3,
+                            'coursename' => 'course_name',
+                            'classid' => 'class_idnumber',
+                        ),
+                        array( // currentrec
+                            'id' => 3,
+                            'coursename' => 'course_name',
+                            'classid' => 'class_idnumber',
+                            'clsid' => 2,
+                        ),
+                        false
                 ),
-                true
-            ),
-            // UCCR
-            array(
-                'user_class_completion',
-                array( // lastrec
-                    'id' => 3,
-                    'useridnumber' => 'user_idnumber',
-                    'curid' => 1,
-                    'userid' => 3
+                array(
+                        'user_class_completion_details',
+                        array( // lastrec
+                            'id' => 3,
+                            'coursename' => 'course_name',
+                            'classid' => 'class_idnumber',
+                            'clsid' => 4,
+                        ),
+                        array( // currentrec
+                            'id' => 3,
+                            'coursename' => 'course_name',
+                            'classid' => 'class_idnumber',
+                            'clsid' => 4,
+                        ),
+                        true
                 ),
-                array( // currentrec
-                    'id' => 3,
-                    'useridnumber' => 'user_idnumber',
-                    'curid' => 1,
-                    'userid' => 3,
-                    'uid' => 3,
+                array(
+                        'user_class_completion_details',
+                        array( // lastrec
+                            'id' => 3,
+                            'coursename' => 'course_name',
+                            'classid' => 'class_idnumber',
+                            'clsid' => 4,
+                        ),
+                        array( // currentrec
+                            'id' => 3,
+                            'coursename' => 'course_name2',
+                            'classid' => 'class_idnumber2',
+                            'clsid' => 4,
+                        ),
+                        true
                 ),
-                false
-            ),
-            array(
-                'user_class_completion',
-                array( // lastrec
-                    'id' => 3,
-                    'useridnumber' => 'user_idnumber',
-                    'curid' => 1,
-                    'userid' => 3,
-                    'uid' => 3,
-                ),
-                array( // currentrec
-                    'id' => 3,
-                    'useridnumber' => 'user_idnumber_2',
-                    'curid' => 1,
-                    'userid' => 3,
-                    'uid' => 3,
-                ),
-                true
-            ),
-            array(
-                'user_class_completion',
-                array( // lastrec
-                    'id' => 3,
-                    'useridnumber' => 'user_idnumber',
-                    'curid' => 1,
-                    'userid' => 3,
-                    'uid' => 3,
-                ),
-                array( // currentrec
-                    'id' => 4,
-                    'useridnumber' => 'user_idnumber',
-                    'curid' => 1,
-                    'userid' => 4,
-                    'uid' => 4,
-                ),
-                false
-            ),
-            array(
-                'user_class_completion',
-                array( // lastrec
-                    'id' => 3,
-                    'useridnumber' => 'user_idnumber',
-                    'curid' => 1,
-                    'userid' => 3,
-                    'uid' => 3,
-                ),
-                array( // currentrec
-                    'id' => 3,
-                    'useridnumber' => 'user_idnumber',
-                    'curid' => 2,
-                    'userid' => 3,
-                    'uid' => 3,
-                ),
-                true
-            ),
-            // UCCDR
-            array(
-                'user_class_completion_details',
-                array( // lastrec
-                    'id' => 3,
-                    'coursename' => 'course_name',
-                    'classid' => 'class_idnumber',
-                ),
-                array( // currentrec
-                    'id' => 3,
-                    'coursename' => 'course_name',
-                    'classid' => 'class_idnumber',
-                    'clsid' => 2,
-                ),
-                false
-            ),
-            array(
-                'user_class_completion_details',
-                array( // lastrec
-                    'id' => 3,
-                    'coursename' => 'course_name',
-                    'classid' => 'class_idnumber',
-                    'clsid' => 4,
-                ),
-                array( // currentrec
-                    'id' => 3,
-                    'coursename' => 'course_name',
-                    'classid' => 'class_idnumber',
-                    'clsid' => 4,
-                ),
-                true
-            ),
-            array(
-                'user_class_completion_details',
-                array( // lastrec
-                    'id' => 3,
-                    'coursename' => 'course_name',
-                    'classid' => 'class_idnumber',
-                    'clsid' => 4,
-                ),
-                array( // currentrec
-                    'id' => 3,
-                    'coursename' => 'course_name2',
-                    'classid' => 'class_idnumber2',
-                    'clsid' => 4,
-                ),
-                true
-            ),
         );
     }
 
     /**
      * Method to test table report method: multiline_groupby()
-     * @param string $reportdir the report directory under /instances
-     * @param array $lastrec the previous report record
-     * @param array $currentrec the current report record
-     * @param bool $expected the expected return from multiline_groupby()
+     * @param string $reportdir The report directory under /instances
+     * @param array $lastrec The previous report record
+     * @param array $currentrec The current report record
+     * @param bool $expected The expected return from multiline_groupby()
      * @dataProvider multiline_groupby_dataprovider
+     * @uses $CFG
      */
     public function test_multiline_groupby($reportdir, $lastrec, $currentrec, $expected) {
         global $CFG;
         $rclass = $reportdir.'_report';
-        require_once(dirname(__FILE__)."/../instances/{$reportdir}/{$rclass}.class.php");
+        require_once($CFG->dirroot."/blocks/php_report/instances/{$reportdir}/{$rclass}.class.php");
         $report = new $rclass('test_'.$reportdir);
         $report->init_groupings();
         $this->assertEquals($expected, $report->multiline_groupby((object)$lastrec, (object)$currentrec));
@@ -373,184 +353,185 @@ class multivalued_custom_field_test extends elis_database_test {
 
     /**
      * Data provider method for test_append_data()
-     * @return array the test data - entry format: array(reportdir, exportformat, lastrec, currectrec, rowdata, expectedrowdata)
+     * @return array The test data - entry format: array(reportdir, exportformat, lastrec, currectrec, rowdata, expectedrowdata)
      */
     public function append_data_dataprovider() {
         return array(
-            // ICPR
-            array(
-                'individual_course_progress',
-                php_report::$EXPORT_FORMAT_HTML,
-                array( // lastrec
-                    'customfield' => 1
+                // ICPR
+                array(
+                        'individual_course_progress',
+                        php_report::$EXPORT_FORMAT_HTML,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 1
+                        ),
+                        array(),
+                        array(),
                 ),
-                array( // currentrec
-                    'customfield' => 1
+                array(
+                        'individual_course_progress',
+                        php_report::$EXPORT_FORMAT_HTML,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 2
+                        ),
+                        array( // rowdata
+                            'customfield' => '1'
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => "1<br/>\n2"
+                        )
                 ),
-                array(),
-                array(),
-            ),
-            array(
-                'individual_course_progress',
-                php_report::$EXPORT_FORMAT_HTML,
-                array( // lastrec
-                    'customfield' => 1
+                array(
+                        'individual_course_progress',
+                        php_report::$EXPORT_FORMAT_PDF,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 2
+                        ),
+                        array( // rowdata
+                            'customfield' => '1'
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => "1\n2"
+                        )
                 ),
-                array( // currentrec
-                    'customfield' => 2
+                array(
+                        'individual_course_progress',
+                        php_report::$EXPORT_FORMAT_CSV,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 2
+                        ),
+                        array( // rowdata
+                            'customfield' => '1'
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => "1, 2"
+                        )
                 ),
-                array( // rowdata
-                    'customfield' => '1'
+                array(
+                        'user_class_completion',
+                        php_report::$EXPORT_FORMAT_HTML,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 1
+                        ),
+                        array( // rowdata
+                            'customfield' => '1'
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => '1'
+                        )
                 ),
-                array( // expectedrowdata
-                    'customfield' => "1<br/>\n2"
-                )
-            ),
-            array(
-                'individual_course_progress',
-                php_report::$EXPORT_FORMAT_PDF,
-                array( // lastrec
-                    'customfield' => 1
+                array(
+                        'user_class_completion',
+                        php_report::$EXPORT_FORMAT_HTML,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 2
+                        ),
+                        array( // rowdata
+                            'customfield' => "1<br/>\n2"
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => "1<br/>\n2"
+                        )
                 ),
-                array( // currentrec
-                    'customfield' => 2
+                array(
+                        'user_class_completion',
+                        php_report::$EXPORT_FORMAT_PDF,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 2
+                        ),
+                        array( // rowdata
+                            'customfield' => "1\n2"
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => "1\n2"
+                        )
                 ),
-                array( // rowdata
-                    'customfield' => '1'
+                array(
+                        'user_class_completion_details',
+                        php_report::$EXPORT_FORMAT_CSV,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 2
+                        ),
+                        array( // rowdata
+                            'customfield' => "1, 2"
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => "1, 2"
+                        )
                 ),
-                array( // expectedrowdata
-                    'customfield' => "1\n2"
-                )
-            ),
-            array(
-                'individual_course_progress',
-                php_report::$EXPORT_FORMAT_CSV,
-                array( // lastrec
-                    'customfield' => 1
+                array(
+                        'user_class_completion_details',
+                        php_report::$EXPORT_FORMAT_HTML,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 3
+                        ),
+                        array( // rowdata
+                            'customfield' => "1<br/>\n2"
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => "1<br/>\n2<br/>\n3"
+                        )
                 ),
-                array( // currentrec
-                    'customfield' => 2
+                array(
+                        'user_class_completion_details',
+                        php_report::$EXPORT_FORMAT_HTML,
+                        array( // lastrec
+                            'customfield' => 1
+                        ),
+                        array( // currentrec
+                            'customfield' => 3
+                        ),
+                        array( // rowdata
+                            'customfield' => "1<br/>\n2<br/>\n3"
+                        ),
+                        array( // expectedrowdata
+                            'customfield' => "1<br/>\n2<br/>\n3"
+                        )
                 ),
-                array( // rowdata
-                    'customfield' => '1'
-                ),
-                array( // expectedrowdata
-                    'customfield' => "1, 2"
-                )
-            ),
-            array(
-                'user_class_completion',
-                php_report::$EXPORT_FORMAT_HTML,
-                array( // lastrec
-                    'customfield' => 1
-                ),
-                array( // currentrec
-                    'customfield' => 1
-                ),
-                array( // rowdata
-                    'customfield' => '1'
-                ),
-                array( // expectedrowdata
-                    'customfield' => '1'
-                )
-            ),
-            array(
-                'user_class_completion',
-                php_report::$EXPORT_FORMAT_HTML,
-                array( // lastrec
-                    'customfield' => 1
-                ),
-                array( // currentrec
-                    'customfield' => 2
-                ),
-                array( // rowdata
-                    'customfield' => "1<br/>\n2"
-                ),
-                array( // expectedrowdata
-                    'customfield' => "1<br/>\n2"
-                )
-            ),
-            array(
-                'user_class_completion',
-                php_report::$EXPORT_FORMAT_PDF,
-                array( // lastrec
-                    'customfield' => 1
-                ),
-                array( // currentrec
-                    'customfield' => 2
-                ),
-                array( // rowdata
-                    'customfield' => "1\n2"
-                ),
-                array( // expectedrowdata
-                    'customfield' => "1\n2"
-                )
-            ),
-            array(
-                'user_class_completion_details',
-                php_report::$EXPORT_FORMAT_CSV,
-                array( // lastrec
-                    'customfield' => 1
-                ),
-                array( // currentrec
-                    'customfield' => 2
-                ),
-                array( // rowdata
-                    'customfield' => "1, 2"
-                ),
-                array( // expectedrowdata
-                    'customfield' => "1, 2"
-                )
-            ),
-            array(
-                'user_class_completion_details',
-                php_report::$EXPORT_FORMAT_HTML,
-                array( // lastrec
-                    'customfield' => 1
-                ),
-                array( // currentrec
-                    'customfield' => 3
-                ),
-                array( // rowdata
-                    'customfield' => "1<br/>\n2"
-                ),
-                array( // expectedrowdata
-                    'customfield' => "1<br/>\n2<br/>\n3"
-                )
-            ),
-            array(
-                'user_class_completion_details',
-                php_report::$EXPORT_FORMAT_HTML,
-                array( // lastrec
-                    'customfield' => 1
-                ),
-                array( // currentrec
-                    'customfield' => 3
-                ),
-                array( // rowdata
-                    'customfield' => "1<br/>\n2<br/>\n3"
-                ),
-                array( // expectedrowdata
-                    'customfield' => "1<br/>\n2<br/>\n3"
-                )
-            ),
         );
     }
 
     /**
      * Method to test table report method: append_data()
-     * @param string $reportdir the report directory under /instances
-     * @param string $exportformat the export format
-     * @param array $lastrec the previous report record
-     * @param array $currentrec the current report record
-     * @param array $rowdata the current row data
-     * @param array $expectedrowdata the row data after processing recs
+     * @param string $reportdir The report directory under /instances
+     * @param string $exportformat The export format
+     * @param array $lastrec The previous report record
+     * @param array $currentrec The current report record
+     * @param array $rowdata The current row data
+     * @param array $expectedrowdata The row data after processing recs
      * @dataProvider append_data_dataprovider
+     * @uses $CFG
      */
     public function test_append_data($reportdir, $exportformat, $lastrec, $currentrec, $rowdata, $expectedrowdata) {
         global $CFG;
         $rclass = $reportdir.'_report';
-        require_once(dirname(__FILE__)."/../instances/{$reportdir}/{$rclass}.class.php");
+        require_once($CFG->dirroot."/blocks/php_report/instances/{$reportdir}/{$rclass}.class.php");
         $report = new $rclass('test_'.$reportdir);
         $rowdata = (object)$rowdata;
         $report->append_data($rowdata, (object)$lastrec, (object)$currentrec, $exportformat);
