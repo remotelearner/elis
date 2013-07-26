@@ -38,6 +38,7 @@ require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 
 /**
  * Class to test PHP report contexts.
+ * @group block_php_report
  */
 class reports_contexts_testcase extends elis_database_test {
     /**
