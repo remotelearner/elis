@@ -30,6 +30,7 @@ require_once(dirname(__FILE__).'/../lib/filtering.php');
 
 /**
  * Class to test report sessions.
+ * @group block_php_report
  */
 class report_session_testcase extends PHPUnit_Framework_TestCase {
     /**

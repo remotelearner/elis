@@ -1212,12 +1212,14 @@ class user_class_completion_report extends table_report {
                            'filter-summarycolumns', $this->filter);
             $cols = $filters[0]['value'];
             // Check if any curricula fields are displayed.
-            foreach ($cols as $col => $value) {
-                if ((substr($col, 0, 4) === 'cur_') && $value) {
-                    $this->_show_curricula = true;
-                    break;
-                } else if ((substr($col, 0, 7) === 'custom_') && $value) {
-                    $customfields[substr($col, 7)] = 1;
+            if (!empty($cols)) {
+                foreach ($cols as $col => $value) {
+                    if ((substr($col, 0, 4) === 'cur_') && $value) {
+                        $this->_show_curricula = true;
+                        break;
+                    } else if ((substr($col, 0, 7) === 'custom_') && $value) {
+                        $customfields[substr($col, 7)] = 1;
+                    }
                 }
             }
         }
