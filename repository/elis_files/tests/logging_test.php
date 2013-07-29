@@ -29,6 +29,10 @@ global $CFG;
 
 require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/elis_files_logger.class.php');
+require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
 
 /**
  * Class for testing the ELIS Files logging object and its related functionality
@@ -39,7 +43,16 @@ class repository_elis_files_logging_testcase extends elis_database_test {
      * This function loads data into the PHPUnit tables for testing
      */
     protected function setup_test_data_xml() {
+        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config.xml')) {
+            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
+            return false;
+        }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
+
+        // Check if Alfresco is enabled, configured and running first.
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
+        }
     }
 
     /**
@@ -56,10 +69,9 @@ class repository_elis_files_logging_testcase extends elis_database_test {
     }
 
     /**
-     * Data provider used to provide error codes and associated error strings
-     * @return array Data array containing error codes and associated strings
+     * Validate that the correct message is returned during polling, when the logger object is in the correct error state.
      */
-    public function error_code_and_message_provider() {
+    public function test_logger_returns_correct_message_on_error() {
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
@@ -68,21 +80,8 @@ class repository_elis_files_logging_testcase extends elis_database_test {
         $uri = parse_url($config->server_host);
         $a = $uri['host'].':'.$config->ftp_port;
 
-        return array(
-            array(ELIS_FILES_ERROR_FTP, get_string('errorftpinvalidport', 'repository_elis_files', $a))
-        );
-    }
-
-    /**
-     * Validate that the correct message is returned during polling, when the
-     * logger object is in the correct error state
-     * @dataProvider error_code_and_message_provider
-     * @param int $errorcode The error code to signal in the logger object
-     * @param string $expectedstring The expected human-readable error string that the logger should return when polled
-     */
-    public function test_logger_returns_correct_message_on_error($errorcode, $expectedstring) {
-        $this->resetAfterTest(true);
-        $this->setup_test_data_xml();
+        $errorcode = ELIS_FILES_ERROR_FTP;
+        $expectedstring = get_string('errorftpinvalidport', 'repository_elis_files', $a);
 
         // Get the logger into an error state
         $logger = elis_files_logger::instance();

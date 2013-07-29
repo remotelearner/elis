@@ -31,7 +31,9 @@ require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php'
 require_once($CFG->dirroot.'/repository/elis_files/lib.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
 require_once($CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+}
 require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
 
 /**
@@ -234,9 +236,18 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      * This function loads data into the PHPUnit tables for testing.
      */
     protected function setup_test_data_xml() {
+        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config.xml')) {
+            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
+            return false;
+        }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_permissions_test_data.xml'));
+
+        // Check if Alfresco is enabled, configured and running first.
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
+        }
     }
 
     /**
@@ -493,6 +504,11 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      * @dataProvider userset_capability_provider
      */
     public function test_permission_check_respects_capabilities_for_userset_file($capability) {
+        if (!class_exists('elispm')) {
+            $this->markTestSkipped('elis_program needed for test');
+            return false;
+        }
+
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
@@ -740,6 +756,11 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      * @dataProvider userset_folders_provider
      */
     public function test_find_userset_folders_respects_site_files($capability, $createonly, $names) {
+        if (!class_exists('elispm')) {
+            $this->markTestSkipped('elis_program needed for test');
+            return false;
+        }
+
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
@@ -833,6 +854,11 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      * @dataProvider get_repository_location_provider
      */
     public function test_get_repository_location_respects_capabilities($course, $shared, $userset, $own, $capability) {
+        if (!class_exists('elispm')) {
+            $this->markTestSkipped('elis_program needed for test');
+            return false;
+        }
+
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
@@ -1022,6 +1048,11 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      * @dataProvider node_flag_provider
      */
     public function test_check_editing_permissions_respects_site_files($course, $shared, $userset, $own) {
+        if (!class_exists('elispm')) {
+            $this->markTestSkipped('elis_program needed for test');
+            return false;
+        }
+
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
@@ -1116,10 +1147,16 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      * @dataProvider hierarchy_provider
      */
     public function test_permission_check_hierarchical_capabilities_for_userset_file($depth) {
+        if (!class_exists('elispm')) {
+            $this->markTestSkipped('elis_program needed for test');
+            return false;
+        }
+
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
         global $CFG, $DB, $SESSION, $USER;
+
         require_once(elispm::lib('data/userset.class.php'));
 
         // Make sure the test user is not mistaken for a site admin or guest
@@ -1206,6 +1243,11 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      * @dataProvider hierarchy_provider
      */
     public function test_permission_check_respects_hierarchy_for_course_file($depth) {
+        if (!class_exists('elispm')) {
+            $this->markTestSkipped('elis_program needed for test');
+            return false;
+        }
+
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 

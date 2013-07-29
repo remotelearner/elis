@@ -41,8 +41,17 @@ class repository_elis_files_migrate_all_users_testcase extends elis_database_tes
      * This function loads data into the PHPUnit tables for testing
      */
     protected function setup_test_data_xml() {
+        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config2.xml')) {
+            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
+            return false;
+        }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config2.xml'));
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_user_account_data2.xml'));
+
+        // Check if Alfresco is enabled, configured and running first.
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
+        }
     }
 
     /**
@@ -55,6 +64,8 @@ class repository_elis_files_migrate_all_users_testcase extends elis_database_tes
         $this->setup_test_data_xml();
 
         global $CFG, $DB;
+
+        $repo = repository_factory::factory('elis_files');
 
         // Our test username
         $username = '__phpunit_test1__';

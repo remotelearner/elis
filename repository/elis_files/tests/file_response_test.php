@@ -76,7 +76,16 @@ class repository_elis_files_file_response_testcase extends elis_database_test {
      * This function loads data into the PHPUnit tables for testing.
      */
     protected function setup_test_data_xml() {
+        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config.xml')) {
+            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
+            return false;
+        }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
+
+        // Check if Alfresco is enabled, configured and running first.
+        if (!$repo = repository_factory::factory('elis_files')) {
+            $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
+        }
     }
 
     /**
@@ -127,14 +136,7 @@ class repository_elis_files_file_response_testcase extends elis_database_test {
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
-        // Check if Alfresco is enabled, configured and running first
-        if (!$repo = repository_factory::factory('elis_files')) {
-            $this->markTestSkipped();
-        }
-
-        if (!$repo = repository_factory::factory('elis_files')) {
-            $this->markTestSkipped('Repository not configured or enabled');
-        }
+        $repo = repository_factory::factory('elis_files');
 
         // Used data provider to just generate one file
         $filesize = $mb * ONE_MB_BYTES;
@@ -176,14 +178,7 @@ class repository_elis_files_file_response_testcase extends elis_database_test {
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
-        // Check if Alfresco is enabled, configured and running first
-        if (!$repo = repository_factory::factory('elis_files')) {
-            $this->markTestSkipped();
-        }
-
-        if (!$repo = repository_factory::factory('elis_files')) {
-            $this->markTestSkipped('Repository not configured or enabled');
-        }
+        $repo = repository_factory::factory('elis_files');
 
         // Used data provider to just generate one file
         $filesize = $mb * ONE_MB_BYTES;
