@@ -947,6 +947,7 @@ class repository_elis_files extends repository {
 
         $mform->addElement('text', 'server_host', get_string('serverurl', 'repository_elis_files'), array('size' => '40'));
         $mform->setDefault('server_host', 'http://localhost');
+        $mform->setType('server_host', PARAM_TEXT);
         $mform->addElement('static', 'server_host_default', '', get_string('elis_files_default_server_host', 'repository_elis_files'));
         $mform->addElement('static', 'server_host_intro', '', get_string('elis_files_server_host', 'repository_elis_files'));
         $mform->addRule('server_host', get_string('required'), 'required', null, 'client');
@@ -957,15 +958,18 @@ class repository_elis_files extends repository {
 
         $mform->addRule('server_port', get_string('required'), 'required', null, 'client');
         $mform->setDefault('server_port', '8080');
+        $mform->setType('server_port', PARAM_INT);
 
         $mform->addElement('text', 'server_username', get_string('serverusername', 'repository_elis_files'), array('size' => '30'));
         $mform->addElement('static', 'server_username_default', '', get_string('elis_files_default_server_username', 'repository_elis_files'));
         $mform->addElement('static', 'server_username_intro', '', get_string('elis_files_server_username', 'repository_elis_files'));
         $mform->addRule('server_username', get_string('required'), 'required', null, 'client');
+        $mform->setType('server_username', PARAM_TEXT);
 
         $mform->addElement('passwordunmask', 'server_password', get_string('serverpassword', 'repository_elis_files'), array('size' => '30'));
         $mform->addElement('static', 'server_password_intro', '', get_string('elis_files_server_password', 'repository_elis_files'));
         $mform->addRule('server_password', get_string('required'), 'required', null, 'client');
+        $mform->setType('server_password', PARAM_TEXT);
 
         $options = array(
             ELIS_FILES_XFER_WS  => get_string('webservices', 'repository_elis_files'),
@@ -982,6 +986,7 @@ class repository_elis_files extends repository {
         $ftp_indicator = self::get_ftp_config_indicator();
         $mform->addElement('text', 'ftp_port', get_string('ftpport', 'repository_elis_files'), array('size' => '30'));
         $mform->setDefault('ftp_port', '21');
+        $mform->setType('ftp_port', PARAM_INT);
         $mform->addElement('static', 'ftp_port_default', '', $ftp_indicator.'&nbsp'.get_string('ftpportdefault', 'repository_elis_files'));
         $mform->addElement('static', 'ftp_port_desc', '', get_string('ftpportdesc', 'repository_elis_files'));
 
@@ -1006,14 +1011,13 @@ class repository_elis_files extends repository {
         $root_folder = get_config('elis_files', 'root_folder');
         $button = self::output_root_folder_html($root_folder);
 
-
-
         $rootfolderarray=array();
         $rootfolderarray[] = $mform->createElement('text', 'root_folder', get_string('rootfolder', 'repository_elis_files'), array('size' => '30'));
         $rootfolderarray[] = $mform->createElement('button', 'root_folder_popup', get_string('chooserootfolder', 'repository_elis_files'), $button);
 
         $mform->addGroup($rootfolderarray, 'rootfolderar', get_string('rootfolder', 'repository_elis_files'), array(' '), false);
         $mform->setDefault('root_folder', '/moodle');
+        $mform->setType('root_folder', PARAM_TEXT);
 
         // Add checkmark if get root folder works, or whatever...
         $valid = self::root_folder_is_valid($root_folder);
@@ -1024,6 +1028,7 @@ class repository_elis_files extends repository {
         $mform->addElement('text', 'cache_time', get_string('cachetime', 'repository_elis_files'), array('size' => '10'));
         $mform->addElement('static', 'cache_time_default', '', get_string('elis_files_default_cache_time', 'repository_elis_files'));
         $mform->setDefault('cache_time', $CFG->repositorycacheexpire);
+        $mform->setType('cache_time', PARAM_INT);
         $mform->freeze('cache_time');
 
         // Generate the list of options for choosing a quota limit size.
@@ -1100,11 +1105,13 @@ class repository_elis_files extends repository {
             if ($repo = repository_factory::factory()) {
                 if (elis_files_get_home_directory($adminusername) == false) {
                     $mform->addElement('text', 'admin_username', get_string('adminusername', 'repository_elis_files'), array('size' => '30'));
+                    $mform->setType('admin_username', PARAM_TEXT);
                     $mform->addElement('static', 'admin_username_default', '', get_string('elis_files_default_admin_username', 'repository_elis_files'));
                     $mform->addElement('static', 'admin_username_intro', '', get_string('configadminusername', 'repository_elis_files'));
                 } else {
                     // Added to prevent an empty value from being stored in the database on form submit
                     $mform->addElement('hidden', 'admin_username', $adminusername);
+                    $mform->setType('admin_username', PARAM_TEXT);
 
                     // An Alfresco account with the specified username has been created, check if a Moodle account exists with that
                     // username and display a warning if that is the case.

@@ -40,7 +40,7 @@ require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
  * Mock class that allows us to not run back-end Alfresco calls when we can avoid them
  * @author brendan
  */
-class mock_repository_elis_files extends repository_elis_files {
+class repository_elis_files_mock extends repository_elis_files {
     /** @var string $type this property is required otherwise a bunch of phpunit tests will fail */
     public $type = 'repository_elis_files';
 
@@ -403,7 +403,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new mock_repository_elis_files('repository_elis_files', context_system::instance(),
+        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
                 array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
 
         $this->setUser(100);
@@ -457,7 +457,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new mock_repository_elis_files('repository_elis_files', context_system::instance(),
+        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
                 array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
 
         $courseid = 99;
@@ -521,7 +521,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new mock_repository_elis_files('repository_elis_files', context_system::instance(),
+        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
                 array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
 
         $userset = new userset(array(
@@ -582,7 +582,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new mock_repository_elis_files('repository_elis_files', context_system::instance(),
+        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
                 array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
 
         $this->setUser(100);
@@ -619,7 +619,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new mock_repository_elis_files('repository_elis_files', context_system::instance(),
+        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
                 array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
 
         $this->setUser(100);
