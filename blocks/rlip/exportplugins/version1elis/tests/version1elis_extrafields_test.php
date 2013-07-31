@@ -28,25 +28,29 @@ global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
 require_once(dirname(__FILE__).'/other/rlip_fileplugin_export.class.php');
 require_once(dirname(__FILE__).'/../lib.php');
-require_once(elispm::lib('data/user.class.php'));
-require_once(elispm::lib('data/classmoodlecourse.class.php'));
-require_once(elispm::lib('data/course.class.php'));
-require_once(elispm::lib('data/pmclass.class.php'));
-require_once(elispm::lib('data/student.class.php'));
-require_once($CFG->dirroot.'/elis/program/accesslib.php');
 require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
 require_once(dirname(__FILE__).'/other/mock_obj.php');
+
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/user.class.php'));
+    require_once(elispm::lib('data/classmoodlecourse.class.php'));
+    require_once(elispm::lib('data/course.class.php'));
+    require_once(elispm::lib('data/pmclass.class.php'));
+    require_once(elispm::lib('data/student.class.php'));
+    require_once($CFG->dirroot.'/elis/program/accesslib.php');
+}
 
 /**
  * Test the version1elis export extrafield feature.
  * @group block_rlip
  * @group rlipexport_version1elis
  */
-class version1elisextrafields_testcase extends rlip_test {
+class version1elisextrafields_testcase extends rlip_elis_test {
 
     /**
      * Perform test setup and reset context caches.

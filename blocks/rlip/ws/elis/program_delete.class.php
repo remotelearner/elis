@@ -21,14 +21,26 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/curriculum.class.php'));
-require_once(elispm::lib('datedelta.class.php'));
-
 /**
  * Delete program webservices method.
  */
 class block_rldh_elis_program_delete extends external_api {
+
+    /**
+     * Require ELIS dependencies if ELIS is installed, otherwise return false.
+     * @return bool Whether ELIS dependencies were successfully required.
+     */
+    public static function require_elis_dependencies() {
+        global $CFG;
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/curriculum.class.php'));
+            require_once(elispm::lib('datedelta.class.php'));
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Gets a description of the program/currciulum object for use in the parameter and return functions.
@@ -61,6 +73,10 @@ class block_rldh_elis_program_delete extends external_api {
      */
     public static function program_delete(array $data) {
         global $USER, $DB;
+
+        if (static::require_elis_dependencies() !== true) {
+            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+        }
 
         // Parameter validation.
         $params = self::validate_parameters(self::program_delete_parameters(), array('data' => $data));

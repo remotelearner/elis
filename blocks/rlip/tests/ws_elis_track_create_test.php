@@ -30,14 +30,16 @@ require_once($dirname.'/other/rlip_test.class.php');
 
 // Libs.
 require_once($dirname.'/../lib.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/curriculum.class.php'));
-require_once(elispm::lib('data/track.class.php'));
-require_once(elispm::lib('data/user.class.php'));
-require_once(elispm::lib('data/usermoodle.class.php'));
 require_once($CFG->libdir.'/externallib.php');
-require_once($dirname.'/../ws/elis/track_create.class.php');
-require_once(elispm::file('tests/other/datagenerator.php'));
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/curriculum.class.php'));
+    require_once(elispm::lib('data/track.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+    require_once(elispm::lib('data/usermoodle.class.php'));
+    require_once($dirname.'/../ws/elis/track_create.class.php');
+    require_once(elispm::file('tests/other/datagenerator.php'));
+}
 
 /**
  * Tests webservice method block_rldh_elis_track_create.

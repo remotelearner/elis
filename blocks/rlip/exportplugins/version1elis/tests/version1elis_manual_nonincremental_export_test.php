@@ -30,20 +30,24 @@ require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 // Libs.
 require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
 require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/classmoodlecourse.class.php'));
-require_once(elispm::lib('data/course.class.php'));
-require_once(elispm::lib('data/pmclass.class.php'));
-require_once(elispm::lib('data/student.class.php'));
-require_once(elispm::lib('data/user.class.php'));
 require_once($CFG->dirroot.'/course/lib.php');
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/classmoodlecourse.class.php'));
+    require_once(elispm::lib('data/course.class.php'));
+    require_once(elispm::lib('data/pmclass.class.php'));
+    require_once(elispm::lib('data/student.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+}
+
 
 /**
  * Test class for validating basic export data during a manual, nonincremental export.
  * @group block_rlip
  * @group rlipexport_version1elis
  */
-class version1elismanualnonincrementalexport_testcase extends rlip_test {
+class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
+
     /**
      * Fetches our export data as a multi-dimensional array
      * @param bool $manual Set to true if a manual run
@@ -195,12 +199,17 @@ class version1elismanualnonincrementalexport_testcase extends rlip_test {
      * @return array The list of tables containing required data
      */
     public function necessary_associations_provider() {
-        return array(
-                array(course::TABLE),
-                array(pmclass::TABLE),
-                array(student::TABLE),
-                array(user::TABLE)
-        );
+        global $CFG;
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            return array(
+                    array(course::TABLE),
+                    array(pmclass::TABLE),
+                    array(student::TABLE),
+                    array(user::TABLE)
+            );
+        } else {
+            return array();
+        }
     }
 
     /**
@@ -229,11 +238,16 @@ class version1elismanualnonincrementalexport_testcase extends rlip_test {
      * @return array An array containing each possible completion status state
      */
     public function completion_status_provider() {
-        return array(
-                array(student::STUSTATUS_NOTCOMPLETE),
-                array(student::STUSTATUS_FAILED),
-                array(student::STUSTATUS_PASSED)
-        );
+        global $CFG;
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            return array(
+                    array(student::STUSTATUS_NOTCOMPLETE),
+                    array(student::STUSTATUS_FAILED),
+                    array(student::STUSTATUS_PASSED)
+            );
+        } else {
+            return array();
+        }
     }
 
     /**
