@@ -282,22 +282,26 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
      */
     public function completion_provider() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/student.class.php'));
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/student.class.php'));
 
-        // Support the numerical values, plus "Not Completed", "Failed", "Passed".
+            // Support the numerical values, plus "Not Completed", "Failed", "Passed".
 
-        return array(
-                array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
-                array("Not Completed", student::STUSTATUS_NOTCOMPLETE),
-                array("not completed", student::STUSTATUS_NOTCOMPLETE),
-                array(student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
-                array("Failed", student::STUSTATUS_FAILED),
-                array("failed", student::STUSTATUS_FAILED),
-                array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
-                array("Passed", student::STUSTATUS_PASSED),
-                array("passed", student::STUSTATUS_PASSED)
-        );
+            return array(
+                    array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
+                    array("Not Completed", student::STUSTATUS_NOTCOMPLETE),
+                    array("not completed", student::STUSTATUS_NOTCOMPLETE),
+                    array(student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
+                    array("Failed", student::STUSTATUS_FAILED),
+                    array("failed", student::STUSTATUS_FAILED),
+                    array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
+                    array("Passed", student::STUSTATUS_PASSED),
+                    array("passed", student::STUSTATUS_PASSED)
+            );
+        } else {
+            return array();
+        }
     }
 
     /**
@@ -363,31 +367,36 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
      */
     public function minimal_update_field_provider() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/student.class.php'));
 
-        set_config('noemailever', true);
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/student.class.php'));
 
-        // We are being sneaky and testing specific date and completion status format cases here as well.
-        return array(
-                array('enrolmenttime', 'Jan/03/2012', array(0, 0, 0, 1, 3, 2012)),
-                array('enrolmenttime', '01/03/2012', array(0, 0, 0, 1, 3, 2012)),
-                array('enrolmenttime', '03-01-2012', array(0, 0, 0, 1, 3, 2012)),
-                array('enrolmenttime', '2012.01.03', array(0, 0, 0, 1, 3, 2012)),
-                array('completetime', 'Jan/03/2012', array(0, 0, 0, 1, 3, 2012)),
-                array('completetime', '01/03/2012', array(0, 0, 0, 1, 3, 2012)),
-                array('completetime', '03-01-2012', array(0, 0, 0, 1, 3, 2012)),
-                array('completetime', '2012.01.03', array(0, 0, 0, 1, 3, 2012)),
-                array('completestatusid', student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
-                array('completestatusid', "Not Completed", student::STUSTATUS_NOTCOMPLETE),
-                array('completestatusid', student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
-                array('completestatusid', "Failed", student::STUSTATUS_FAILED),
-                array('completestatusid', student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
-                array('completestatusid', "Passed", student::STUSTATUS_PASSED),
-                array('grade', 50, 50),
-                array('credits', 1, 1),
-                array('locked', 1, 1)
-        );
+            set_config('noemailever', true);
+
+            // We are being sneaky and testing specific date and completion status format cases here as well.
+            return array(
+                    array('enrolmenttime', 'Jan/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                    array('enrolmenttime', '01/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                    array('enrolmenttime', '03-01-2012', array(0, 0, 0, 1, 3, 2012)),
+                    array('enrolmenttime', '2012.01.03', array(0, 0, 0, 1, 3, 2012)),
+                    array('completetime', 'Jan/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                    array('completetime', '01/03/2012', array(0, 0, 0, 1, 3, 2012)),
+                    array('completetime', '03-01-2012', array(0, 0, 0, 1, 3, 2012)),
+                    array('completetime', '2012.01.03', array(0, 0, 0, 1, 3, 2012)),
+                    array('completestatusid', student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE),
+                    array('completestatusid', "Not Completed", student::STUSTATUS_NOTCOMPLETE),
+                    array('completestatusid', student::STUSTATUS_FAILED, student::STUSTATUS_FAILED),
+                    array('completestatusid', "Failed", student::STUSTATUS_FAILED),
+                    array('completestatusid', student::STUSTATUS_PASSED, student::STUSTATUS_PASSED),
+                    array('completestatusid', "Passed", student::STUSTATUS_PASSED),
+                    array('grade', 50, 50),
+                    array('credits', 1, 1),
+                    array('locked', 1, 1)
+            );
+        } else {
+            return array();
+        }
     }
 
     /**

@@ -32,8 +32,10 @@ require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 global $CFG;
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/pmclass.class.php'));
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/pmclass.class.php'));
+}
 
 /**
  * Test class import.

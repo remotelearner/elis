@@ -33,8 +33,11 @@ require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/user.class.php'));
+
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/user.class.php'));
+}
 
 // Handy constants for readability.
 define('ELIS_USER_EXISTS', true);

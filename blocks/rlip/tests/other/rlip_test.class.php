@@ -288,8 +288,18 @@ abstract class rlip_elis_test extends rlip_test {
      * Do setup before tests.
      */
     protected function setUp() {
+        global $CFG;
+        // Skip test if ELIS is not installed.
+        $elis = (file_exists($CFG->dirroot.'/elis/program/lib/setup.php') === true) ? true : false;
+
+        if ($elis !== true) {
+            $this->markTestSkipped('Test requires ELIS to run.');
+        }
+
         parent::setUp();
-        if (file_exists(dirname(__FILE__).'/../../../../elis/program')) {
+
+
+        if ($elis === true) {
             // Clear custom field caches.
             $classes = array('curriculum', 'track', 'course', 'pmclass', 'user', 'userset');
             foreach ($classes as $class) {
@@ -342,6 +352,21 @@ abstract class rlip_test_ws extends rlip_test {
         }
 
         role_assign($roleid, $assigningmuser->id, $syscontext->id);
+    }
+
+    /**
+     * Do setup before tests.
+     */
+    protected function setUp() {
+        global $CFG;
+        // Skip test if ELIS is not installed.
+        $elis = (file_exists($CFG->dirroot.'/elis/program/lib/setup.php') === true) ? true : false;
+
+        if ($elis !== true) {
+            $this->markTestSkipped('Test requires ELIS to run.');
+        }
+
+        parent::setUp();
     }
 }
 

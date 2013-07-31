@@ -30,11 +30,13 @@ require_once($dirname.'/other/rlip_test.class.php');
 
 // Libs.
 require_once($dirname.'/../lib.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/user.class.php'));
-require_once(elispm::lib('data/usermoodle.class.php'));
 require_once($CFG->libdir.'/externallib.php');
-require_once($dirname.'/../ws/elis/user_update_identifiers.class.php');
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/user.class.php'));
+    require_once(elispm::lib('data/usermoodle.class.php'));
+    require_once($dirname.'/../ws/elis/user_update_identifiers.class.php');
+}
 
 /**
  * Tests webservice method block_rldh_elis_user_update_identifiers.
@@ -88,6 +90,7 @@ class block_rlip_ws_elis_user_update_identifiers_testcase extends rlip_test_ws {
      */
     public function test_success($update) {
         global $DB;
+
         $this->give_permissions(array('elis/program:user_edit'));
 
         $user = array(

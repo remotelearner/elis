@@ -29,18 +29,20 @@ require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/course.class.php'));
-require_once(elispm::lib('data/pmclass.class.php'));
-require_once(elispm::lib('data/student.class.php'));
-require_once(elispm::lib('data/user.class.php'));
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/course.class.php'));
+    require_once(elispm::lib('data/pmclass.class.php'));
+    require_once(elispm::lib('data/student.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+}
 
 /**
  * Test class for validating basic export data during a scheduled, nonincremental export.
  * @block_rlip
  * @rlipexport_version1elis
  */
-class version1elisschedulednonincrementalexport_testcase extends rlip_test {
+class version1elisschedulednonincrementalexport_testcase extends rlip_elis_test {
 
     /**
      * Load in our test data from CSV files
