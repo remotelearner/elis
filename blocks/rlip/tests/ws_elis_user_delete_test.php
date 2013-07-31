@@ -30,12 +30,14 @@ require_once($dirname.'/other/rlip_test.class.php');
 
 // Libs.
 require_once($dirname.'/../lib.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/user.class.php'));
-require_once(elispm::lib('data/usermoodle.class.php'));
-require_once(elispm::lib('data/curriculumstudent.class.php'));
 require_once($CFG->libdir.'/externallib.php');
-require_once($dirname.'/../ws/elis/user_delete.class.php');
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/user.class.php'));
+    require_once(elispm::lib('data/usermoodle.class.php'));
+    require_once(elispm::lib('data/curriculumstudent.class.php'));
+    require_once($dirname.'/../ws/elis/user_delete.class.php');
+}
 
 /**
  * Tests webservice method block_rldh_elis_user_delete.

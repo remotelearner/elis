@@ -21,14 +21,26 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/user.class.php'));
-require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
-
 /**
  * Delete user webservices method.
  */
 class block_rldh_elis_user_delete extends external_api {
+
+    /**
+     * Require ELIS dependencies if ELIS is installed, otherwise return false.
+     * @return bool Whether ELIS dependencies were successfully required.
+     */
+    public static function require_elis_dependencies() {
+        global $CFG;
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/user.class.php'));
+            require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Returns description of method parameters
@@ -54,6 +66,10 @@ class block_rldh_elis_user_delete extends external_api {
      */
     public static function user_delete(array $data) {
         global $USER, $DB;
+
+        if (static::require_elis_dependencies() !== true) {
+            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+        }
 
         // Parameter validation.
         $params = self::validate_parameters(self::user_delete_parameters(), array('data' => $data));
