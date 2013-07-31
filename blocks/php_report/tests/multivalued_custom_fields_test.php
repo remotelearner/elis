@@ -72,10 +72,15 @@ class multivalued_custom_field_testcase extends elis_database_test {
 
     /**
      * Data provider method for test_multiline_get_select_columns()
-     * @return array the test data - entry format: array(reportdir)
+     * @return array The test data - entry format: array(reportdir)
      */
     public function multiline_reports_dataprovider() {
-        return array(array('course_progress_summary'), array('individual_course_progress'), array('user_class_completion'), array('user_class_completion_details'));
+        return array(
+                array('course_progress_summary'),
+                array('individual_course_progress'),
+                array('user_class_completion'),
+                array('user_class_completion_details')
+        );
     }
 
     /**
