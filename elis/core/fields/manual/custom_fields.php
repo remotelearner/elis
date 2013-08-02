@@ -52,6 +52,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
     $attrfields = array('manual_field_edit_capability',
                         'manual_field_view_capability',
                         'manual_field_control',
+                        'manual_field_options',
                         'manual_field_options_source',
                         'manual_field_columns',
                         'manual_field_rows',
