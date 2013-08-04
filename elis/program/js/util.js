@@ -74,17 +74,22 @@ function toggleVisible(e, element) {
 }
 
 function toggleVisibleInit(addBefore, nameAttr, buttonLabel, hideText, showText, element) {
-    var showHideButton = document.createElement("input");
-    showHideButton.type = 'button';
-    showHideButton.value = buttonLabel;
-    showHideButton.name = nameAttr;
-    showHideButton.moodle = {
-        hideLabel: hideText,
-        showLabel: showText
-    };
-    YAHOO.util.Event.addListener(showHideButton, 'click', toggleVisible, element);
-    el = document.getElementById(addBefore);
-    el.parentNode.insertBefore(showHideButton, el);
+    YUI().use("dom", "event", function(Y) {
+        var showHideButton = document.createElement("input");
+        showHideButton.type = 'button';
+        showHideButton.value = buttonLabel;
+        showHideButton.name = nameAttr;
+        showHideButton.id = 'showhide'+nameAttr;
+        showHideButton.moodle = {
+            hideLabel: hideText,
+            showLabel: showText
+        };
+        el = document.getElementById(addBefore);
+        el.parentNode.insertBefore(showHideButton, el);
+
+        var button = Y.one('#showhide'+nameAttr);
+        button.on('click', function(e) {toggleVisible(e, element) });
+    });
 }
 
 // Takes an integer and returns a string representing the integer, padded to a minimum of two characters
@@ -160,9 +165,9 @@ function changeNamesearch(anchoritem) {
 
 // date formatter for YUI table that understands 0 dates
 function cmFormatDate(elCell, oRecord, oColumn, oData) {
-    if (oData.getDate()) {
-	elCell.innerHTML = YAHOO.util.Date.format(oData, {format:"%b %d, %Y"});
+    if (typeof(oData) != 'undefined' && oData.getDate()) {
+        elCell.innerHTML = YAHOO.util.Date.format(oData, {format:"%b %d, %Y"});
     } else {
-	elCell.innerHTML = '-';
+        elCell.innerHTML = '-';
     }
 }
