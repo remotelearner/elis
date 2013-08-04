@@ -165,7 +165,7 @@ class coursecatalogpage extends pm_page {
                     echo "<div id=\"$usercur->curid\"></div>";
 
                     $table = new waitlisttable($courses);
-                    $table->print_yui_table($usercur->curid);
+                    $table->print_yui_table('curriculum'.$usercur->curid);
                 } else {
                     echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
                 }
@@ -418,7 +418,7 @@ class coursecatalogpage extends pm_page {
                     echo '<div id="curriculum' . $usercur->curid ."\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass . '">';
                     $table = new currentclasstable($classes, $this->url);
                     echo "<div id=\"$usercur->id\"></div>";
-                    $table->print_yui_table($usercur->id);
+                    $table->print_yui_table('curriculum'.$usercur->curid);
                 } else {
                     $buttonLabel2 = ($usercur->curid == $showcurid) ? get_string('hide') : get_string('show');
                     $extraclass2 = ($usercur->curid == $showcurid) ? '' : ' hide';
@@ -511,7 +511,7 @@ class coursecatalogpage extends pm_page {
                     echo "<div id=\"$usercur->id\"></div>";
 
                     $table = new availablecoursetable($courses);
-                    $table->print_yui_table($usercur->id);
+                    $table->print_yui_table('curriculum'.$usercur->curid);
                 } else {
                     echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
                 }
@@ -608,7 +608,7 @@ class yui_table extends display_table {
         $s = '[';
         foreach($this->columns as $column_id => $val) {
             $column_label = $val['header'];
-            $s .= "{key:\"$column_id\", sortable:true, label:\"$column_label\", resizeable:true";
+            $s .= "{key:\"$column_id\", sortable:true, label:\"$column_label\", allowHTML:true, resizeable:true";
             if(!empty($this->yui_formatters[$column_id])) {
                 $s .= ', formatter:' . $this->yui_formatters[$column_id];
             }
@@ -623,36 +623,30 @@ class yui_table extends display_table {
 
     /**
      * Prints the code for a YUI DataTable containing this table's data.
-     * @return unknown_type
+     * @param string $elementid The ID of the element to print the table to.
      */
-    function print_yui_table($tablename) {
+    function print_yui_table($elementid) {
         $this->build_table();
 ?>
-
 <script type="text/javascript">
-YUI().use("yui2-datasource", "yui2-datatable", "yui2-dom", "yui2-element", "yui2-event", "yui2-utilities", function(Y) {
-    var YAHOO = Y.YUI2;
-    YAHOO.util.Event.addListener(window, "load", function() {
-        YAHOO.example.Basic = function() {
-            var myColumnDefs = <?php echo $this->get_yui_columns(); ?>;
-            var myData = <?php echo $this->get_json(); ?>;
-            var myDataSource = new YAHOO.util.DataSource(myData);
-            myDataSource.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
-            myDataSource.responseSchema = <?php echo $this->get_json_schema(); ?>;
-            var myDataTable = new YAHOO.widget.DataTable("<?php echo $tablename; ?>", myColumnDefs, myDataSource);
+YUI().use("datasource", "datatable", "dom", "event", function(Y) {
 
-            return {
-                oDS: myDataSource,
-                oDT: myDataTable
-            };
-        }();
-    });
-});
-</script>
+    var loadtables = function() {
 
-<?php
+        var myColumnDefs = <?php echo $this->get_yui_columns(); ?>;
+        var myData = <?php echo $this->get_json(); ?>;
+        var table = new Y.DataTable({
+            columns: myColumnDefs,
+            data: myData
+        });
+        table.render("#<?php echo $elementid; ?>");
     }
 
+    Y.on('domready', loadtables);
+});
+</script>
+<?php
+    }
 }
 
 if (!defined('ENVTABLE')) {
