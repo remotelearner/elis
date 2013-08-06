@@ -126,7 +126,7 @@ class scheduling_form_step_schedule extends moodleform {
         function initCalendar() {
             YUI().use("yui2-event", function(Y) {
                 var YAHOO = Y.YUI2;
-                YAHOO.util.Event.addListener(window, "load", switchCalendar());
+                YAHOO.util.Event.onDOMReady(switchCalendar());
             });
         }
         YUI().use("yui2-event", function(Y) {
