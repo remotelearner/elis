@@ -16,23 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage program
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
  */
-
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
+
+// Libs.
 require_once(elispm::lib('lib.php'));
-require_once(elispm::file('phpunit/datagenerator.php'));
+require_once(elispm::file('tests/other/datagenerator.php'));
 require_once(elispm::lib('data/certificateissued.class.php'));
 
 // The data class below is required because pm_issue_user_certificate()
@@ -45,26 +42,16 @@ require_once(elispm::lib('certificate.php'));
 
 /**
  * PHPUnit test to retrieve a user's certificates
+ * @group elis_program
  */
-class issue_user_certificate_test extends elis_database_test {
-    /**
-     * @var array Array of globals that will be backed-up/restored for each test.
-     */
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Setup overlay tables array.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            certificateissued::TABLE => 'elis_program'
-        );
-    }
+class issue_user_certificate_testcase extends elis_database_test {
 
     /**
      * This function tests issuing a user a certificate by inserting the record in the crlm_certificate_issued table
      */
     public function test_issue_user_certificate() {
+        global $DB;
+
         $certsettingid = 1;
         $user = array();
         $user[0] = new stdClass();
@@ -74,10 +61,10 @@ class issue_user_certificate_test extends elis_database_test {
 
         $result = pm_issue_user_certificate($certsettingid, $user, $certissued);
 
-        $record = self::$overlaydb->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
+        $record = $DB->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
 
         $conditions = array('cm_userid' => 20, 'cert_setting_id' => 1, 'timeissued' => 1357851284);
-        self::$overlaydb->delete_records('crlm_certificate_issued', $conditions);
+        $DB->delete_records('crlm_certificate_issued', $conditions);
 
         // Cannot test for the certificate code or time created, because both values are generated at runtime.
         $expected = array();
@@ -97,6 +84,7 @@ class issue_user_certificate_test extends elis_database_test {
      * This function tests issuing a user a certificate with an empty user
      */
     public function test_issue_user_certificate_empty_user_set_fail() {
+        global $DB;
         $certsettingid = 1;
         $user = array();
 
@@ -104,7 +92,7 @@ class issue_user_certificate_test extends elis_database_test {
 
         $result = pm_issue_user_certificate($certsettingid, $user, $certissued);
 
-        $record = self::$overlaydb->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
+        $record = $DB->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
 
         $this->assertEquals(false, $record);
         $this->assertEquals(true, $result);
@@ -115,6 +103,7 @@ class issue_user_certificate_test extends elis_database_test {
      * This function tests issuing a user a certificate with an empty certificate setting id
      */
     public function test_issue_user_certificate_empty_cert_setting_fail() {
+        global $DB;
         $certsettingid = 0;
         $user = array();
         $user[0] = new stdClass();
@@ -124,7 +113,7 @@ class issue_user_certificate_test extends elis_database_test {
 
         $result = pm_issue_user_certificate($certsettingid, $user, $certissued);
 
-        $record = self::$overlaydb->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
+        $record = $DB->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
 
         $this->assertEquals(false, $record);
         $this->assertEquals(false, $result);
@@ -135,6 +124,7 @@ class issue_user_certificate_test extends elis_database_test {
      * This function tests issuing a user a certificate with an illegit data class
      */
     public function test_issue_user_certificate_illegit_data_class_fail() {
+        global $DB;
         $certsettingid = 1;
         $user = array();
         $user[0] = new stdClass();
@@ -144,7 +134,7 @@ class issue_user_certificate_test extends elis_database_test {
 
         $result = pm_issue_user_certificate($certsettingid, $user, $certissued);
 
-        $record = self::$overlaydb->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
+        $record = $DB->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
 
         $this->assertEquals(false, $record);
         $this->assertEquals(false, $result);

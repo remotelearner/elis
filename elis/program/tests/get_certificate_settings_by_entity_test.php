@@ -16,52 +16,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage program
+ * @package    elis_program
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
  */
-
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elis::lib('testlib.php'));
-require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
+
+// Libs.
 require_once(elispm::lib('data/certificatesettings.class.php'));
-require_once(elispm::file('phpunit/datagenerator.php'));
+require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
  * PHPUnit test to retrieve a certificate settings record by entity id and type
+ * @group elis_program
  */
-class get_certificate_settings_by_entity_test extends elis_database_test {
-    /**
-     * @var array Array of globals that will be backed-up/restored for each test.
-     */
-    protected $backupGlobalsBlacklist = array('DB');
-
-    /**
-     * Setup overlay tables array
-     * @return array An array of overlay tables.
-     */
-    protected static function get_overlay_tables() {
-        return array(
-            certificatesettings::TABLE => 'elis_program'
-        );
-    }
+class get_certificate_settings_by_entity_testcase extends elis_database_test {
 
     /**
      * Load PHPUnit test data
      */
     protected function load_csv_data() {
-        // Load initial data from a CSV file.
-        $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(certificatesettings::TABLE, elis::component_file('program', 'phpunit/certificate_settings.csv'));
-        load_phpunit_data_set($dataset, true, self::$overlaydb);
+        $dataset = $this->createCsvDataSet(array(
+            certificatesettings::TABLE => elis::component_file('program', 'tests/fixtures/certificate_settings.csv')
+        ));
+        $this->loadDataSet($dataset);
     }
 
     /**
