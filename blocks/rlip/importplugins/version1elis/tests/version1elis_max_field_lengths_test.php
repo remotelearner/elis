@@ -66,7 +66,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->phone2 = str_repeat('a', 100);
         $record->fax = str_repeat('a', 100);
 
-        $expectedpassword = hash_internal_user_password($record->password);
+        $expectedpassword = $record->password;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
@@ -128,7 +128,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->phone2 = str_repeat('a', 100);
         $record->fax = str_repeat('a', 100);
 
-        $expectedpassword = hash_internal_user_password($record->password);
+        $expectedpassword = $record->password;
 
         $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
