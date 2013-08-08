@@ -328,7 +328,7 @@ function moodle_profile_field_edit_form_definition($form) {
         return;
     }
 
-    $form->addElement('header', '', get_string('field_moodlesync', 'elisfields_moodle_profile'));
+    $form->addElement('header', 'moodlesyncsettings', get_string('field_moodlesync', 'elisfields_moodle_profile'));
 
     $choices = array(
         -1 => get_string('field_no_sync', 'elisfields_moodle_profile'),

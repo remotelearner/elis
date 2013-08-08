@@ -68,7 +68,7 @@ function manual_field_edit_form_definition($form, $attrs = array()) {
 
     $attrs['manual_field_inctime']['group'] = 1;
 
-    $form->addElement('header', '', get_string('field_manual_header', 'elisfields_manual'));
+    $form->addElement('header', 'manualeditingsettings', get_string('field_manual_header', 'elisfields_manual'));
 
     $form->addElement('checkbox', 'manual_field_enabled', get_string('field_manual_allow_editing', 'elisfields_manual'));
     $form->setDefault('manual_field_enabled', 'checked');
