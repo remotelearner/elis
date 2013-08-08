@@ -158,7 +158,7 @@ YUI.add('moodle-elis_program-checkboxselection', function(Y) {
         load_link : function(ev) {
             this.debugfcn('load_link');
             var target = ev.target; // TBD: Y.EventTarget.getTargets(ev).item(0);
-            if (!target.getAttribute("href") || target.hasClass('moreless-toggler')) {
+            if (!target.getAttribute("href") || target.hasClass('moreless-toggler') || e.target.hasClass('fheader')) {
                 return;
             }
             this.lastrequest = target.getAttribute("href");
