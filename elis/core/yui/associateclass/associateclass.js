@@ -288,7 +288,8 @@ YUI.add('moodle-elis_core-associateclass', function(Y) {
             }
 
             // If an onclick is being used, let it handle this event ...unless it's our own start_throbber() function
-            if (e.target.hasClass('moreless-toggler') || linktarget || (linkclick && linkclick.indexOf('start_throbber') == -1)) {
+            // Moodle2.5x - make sure not Show-More/Less link or clustertree checkbox
+            if (e.target.hasClass('moreless-toggler') || e.target.hasClass('ygtvspacer') || linktarget || (linkclick && linkclick.indexOf('start_throbber') == -1)) {
                 return;
             }
 
