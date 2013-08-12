@@ -450,15 +450,12 @@ function manual_field_add_help_button($mform, $elementname, $field) {
             //$mform->setAdvanced($elementname .'_help');
         }
         //$mform->addElement('static', $elementname .'_help',
-        $mform->addElement('html',
-            '<div class="'. $divclass .'"><div class="fitemtitle"><label for="id_'.
-            $elementname .'"><span class="helplink"><a href="'. $url
-            .'" title="'. $heading .'" id="'. $id .'"><img src="'.
-            $OUTPUT->pix_url('help') .'" alt="'. $heading .'" title="'.
-            $heading .'" class="iconhelp"></a></span>&nbsp;</label></div></div>'
+        $mform->addElement('html', '<div class="'.$divclass.'"><div class="fitemtitle"><label for="id_'.$elementname.
+                '"><span class="helplink"><a href="'.$url.'" title="'.$heading.'" id="'.$id.
+                '" target="_blank" aria-haspopup="true" class="tooltip"><img src="'.$OUTPUT->pix_url('help').'" alt="'.$heading.'" title="'.
+                $heading.'" class="iconhelp"></a></span>&nbsp;</label></div></div>'
         );
-        $PAGE->requires->js_init_call('M.util.help_icon.add',
-                             array(array('id' => $id, 'url' => $url)));
+        $PAGE->requires->js_init_call('M.util.help_icon.setup');
     }
 }
 
