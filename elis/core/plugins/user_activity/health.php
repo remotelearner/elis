@@ -25,8 +25,9 @@
  */
 
 $user_activity_health_checks = array(
-    'user_activity_health_empty'
-    );
+        'user_activity_health_empty',
+        'user_activity_health_log_prune'
+);
 
 class user_activity_health_empty extends crlm_health_check_base {
     function __construct() {
@@ -87,5 +88,80 @@ site-wide time summary) from working.";
         } else {
             return "If the Moodle cron is run regularly, then the ETL cron should run automatically overnight.  Please check back tomorrow.  If the problem persists, please contact support.  Support, please escalate to the development team.";
         }
+    }
+}
+
+/**
+ * health check class for user activity and log table pruning interactions
+ */
+class user_activity_health_log_prune extends crlm_health_check_base {
+    /**
+     * @var int The last run time of the ETL process
+     */
+    protected $lastrun = 0;
+
+    /**
+     * @var bool true if the ETL process is in saved state, false otherwise
+     */
+    protected $inprogress = 0;
+
+    /**
+     * user_activity_health_log_prune class constructor
+     */
+    function __construct() {
+        $this->lastrun = isset(elis::$config->eliscoreplugins_user_activity->last_run)
+                ? (int)elis::$config->eliscoreplugins_user_activity->last_run : 0;
+        $this->inprogress = !empty(elis::$config->eliscoreplugins_user_activity->state);
+    }
+
+    /**
+     * user_activity_health_log_prune class exists() method
+     * @return bool true if health problem exists, false otherwise
+     */
+    public function exists() {
+        global $DB;
+        // health warning if ETL processing, Moodle's loglifetime set and within 30 days of current ETL record's time
+        if ($this->inprogress && ($loglifetime = get_config('moodle', 'loglifetime')) &&
+                ($this->lastrun + ($loglifetime - 29) * DAYSECS) <= time()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * user_activity_health_log_prune class title() method
+     * @return string the health check title string
+     */
+    public function title() {
+        return get_string('health_etl_prune_log_title', 'elis_core');
+    }
+
+    /**
+     * user_activity_health_log_prune class serverity() method
+     * @return mixed the health check severity constant
+     */
+    public function severity() {
+        $loglifetime = get_config('moodle', 'loglifetime');
+        if (($this->lastrun + ($loglifetime - 6) * DAYSECS) <= time()) {
+            return healthpage::SEVERITY_SIGNIFICANT;
+        }
+        return healthpage::SEVERITY_NOTICE;
+    }
+
+    /**
+     * user_activity_health_log_prune class description() method
+     * @return string the health check description
+     */
+    public function description() {
+        $loglifetime = get_config('moodle', 'loglifetime');
+        return get_string('health_etl_prune_log_desc', 'elis_core', $loglifetime);
+    }
+
+    /**
+     * user_activity_health_log_prune class solution() method
+     * @return string the health check solution
+     */
+    public function solution() {
+        return get_string('health_etl_prune_log_soln', 'elis_core');
     }
 }
