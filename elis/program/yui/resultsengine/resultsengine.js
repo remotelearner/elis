@@ -89,7 +89,7 @@ YUI.add('moodle-elis_program-resultsengine', function(Y) {
                 message = message+"<br />\n"+response.responseText;
             }
 
-            divnode.setHTML(message);
+            divnode.setContent(message);
         }
     }, {
         NAME : PROCESSMANUALCLASSNAME,
@@ -412,9 +412,12 @@ YUI.add('moodle-elis_program-resultsengine', function(Y) {
 
             // Convert all entity links to contain hidden element nodes
             selectorpanelmodalnode.delegate('mouseenter', this.preprocess_entity_links, 'table', this);
+
             // Add event listeners to the various elements on the panel
             selectorpanelmodalnode.delegate('click', this.anchor_click_selector_modal, 'a', this);
-            selectorpanelmodalnode.delegate('submit', this.search_form_submit_selector_modal, 'form', this);
+            Y.one('#selectorpanelmodal form').setAttribute('id', 'searchform');
+            var main = this;
+            Y.one('#selectorpanelmodal form').on('submit', function(e) { main.search_form_submit_selector_modal(e); });
             selectorpanelmodalnode.delegate('click', this.search_form_show_all, 'input[type=button]', this);
         },
 
@@ -533,7 +536,7 @@ YUI.add('moodle-elis_program-resultsengine', function(Y) {
             if ('#' == e.target.getAttribute('href')) {
                 // Retrieve hidden element data from panel and update entity form
                 var entityformelementnode = e.target.ancestor().one('[name='+this.selectortype+'_elementid]');
-                Y.one('#'+entityformelementnode.getAttribute('value')+'label').setAttribute('value', Y.Lang.trim(e.target.getHTML()));
+                Y.one('#'+entityformelementnode.getAttribute('value')+'label').setAttribute('value', Y.Lang.trim(e.target.getContent()));
 
                 entityselectorelementid = e.target.ancestor().one('[name='+this.selectortype+'_elemententityid]').getAttribute('value');
                 Y.one('#'+entityformelementnode.getAttribute('value')+'selected').setAttribute('value', entityselectorelementid);
@@ -570,6 +573,10 @@ YUI.add('moodle-elis_program-resultsengine', function(Y) {
 
             // Remove document.location onclick call
             var selectorpanelmodalnode = Y.one('#selectorpanelmodal');
+
+            Y.one('#selectorpanelmodal form').setAttribute('id', 'searchform');
+            var main = this;
+            Y.one('#selectorpanelmodal form').on('submit', function(e) { main.search_form_submit_selector_modal(e); });
 
             if (null !== selectorpanelmodalnode) {
                 var seeallbuttonnode = selectorpanelmodalnode.one('input[type=button]');
