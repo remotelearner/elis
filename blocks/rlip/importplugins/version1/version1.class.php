@@ -92,7 +92,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                             'password', 'visible', 'lang', 'category', 'link',
                                             'theme');
     static $available_fields_enrolment = array('username', 'email', 'idnumber', 'context',
-                                               'instance', 'role', 'group', 'grouping');
+                                               'instance', 'role', 'group', 'grouping', 'enrolmenttime', 'completetime');
 
     //store mappings for the current entity type
     var $mappings = array();
@@ -1974,6 +1974,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
+        // Check for valid enrolment time
+        if (isset($record->enrolmenttime)) {
+            $value = $this->parse_date($record->enrolmenttime);
+            if ($value === false) {
+                $identifier = $this->mappings['enrolmenttime'];
+                $this->fslogger->log_failure("$identifier value of \"{$record->enrolmenttime}\" is not a valid date in ".
+                        "MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.", 0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        // Check for valid complete time
+        if (isset($record->completetime)) {
+            $value = $this->parse_date($record->completetime);
+            if ($value === false) {
+                $identifier = $this->mappings['completetime'];
+                $this->fslogger->log_failure("$identifier value of \"{$record->completetime}\" is not a valid date in ".
+                        "MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.", 0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
         //find existing user record
         if (!$userid = $this->get_userid_from_record($record, $filename)) {
             return false;
@@ -2078,17 +2100,16 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         if ($record->context == 'course') {
 
-            //set enrolment start time to the course start date
-            //$timestart = $DB->get_field('course', 'startdate', array('id' => $context->instanceid));
-            // ELIS-6694: set enrolment time to 'now' to allow immediate access
-            $timestart = time();
-            if ($role_assignment_exists && !$enrolment_exists) {
+            // Set enrolment start and end time if specified, otherwise set enrolment time to 'now' to allow immediate access.
+            $timestart = empty($record->enrolmenttime) ? time() : $this->parse_date($record->enrolmenttime);
+            $timeend = empty($record->completetime) ? 0 : $this->parse_date($record->completetime);
 
-                //role assignment already exists, so just enrol the user
-                enrol_try_internal_enrol($context->instanceid, $userid, null, $timestart);
+            if ($role_assignment_exists && !$enrolment_exists) {
+                // Role assignment already exists, so just enrol the user.
+                enrol_try_internal_enrol($context->instanceid, $userid, null, $timestart, $timeend);
             } else if (!$enrolment_exists) {
-                //role assignment does not exist, so enrol and assign role
-                enrol_try_internal_enrol($context->instanceid, $userid, $roleid, $timestart);
+                // Role assignment does not exist, so enrol and assign role.
+                enrol_try_internal_enrol($context->instanceid, $userid, $roleid, $timestart, $timeend);
 
                 //collect success message for logging at end of action
                 $logmessages[] = "User with {$user_descriptor} successfully assigned role with shortname ".
