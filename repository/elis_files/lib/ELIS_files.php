@@ -2485,9 +2485,20 @@ class ELIS_files {
         //Check defaults
         $opts = array();
 
-        if (empty($cid)) {
-            $cid = $COURSE->id;
+        if (empty($cid) || $cid == SITEID) {
+            // In Moodle 2.5 $COURSE is no longer set
+            if (!empty($_SERVER["HTTP_REFERER"]) && ($crspos = strpos($_SERVER["HTTP_REFERER"], 'course=')) !== false) {
+                $crs = substr($_SERVER["HTTP_REFERER"], $crspos + strlen('course='));
+                // error_log("file_browse_options(): crs = {$crs}");
+                $cid = intval($crs);
+            } else {
+                $cid = $COURSE->id;
+            }
         }
+        if (empty($cid)) {
+            $cid = SITEID;
+        }
+        // error_log("file_browse_options(): cid = {$cid}");
         if (empty($uid)) {
             $uid = $USER->id;
         }
@@ -2594,7 +2605,6 @@ class ELIS_files {
                     'uid'    => 0
                 );
                 $unbiasedpath = base64_encode(serialize($unbiasedparams));
-
                 $opts[] = array('name'=> get_string('repositorycoursefiles','repository_elis_files'),
                                 'path'=> $encodedpath,
                                 'unbiasedpath' => $unbiasedpath);
