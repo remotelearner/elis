@@ -70,14 +70,31 @@ class user_activity_health_empty extends crlm_health_check_base {
         if ($this->inprogress) {
             require_once(dirname(__FILE__) .'/etl.php');
             $state = user_activity_task_init(false);
-            $last_time = (int)$state['starttime'];
-            $records_done = $DB->count_records_select('log', "time < $last_time");
-            $records_togo = $DB->count_records_select('log', "time >= $last_time");
-            return "The ETL process has not completed running.  Certain reports (such as the site-wide time summary) may show incomplete data until the ETL process has completed.
-Currently, <b>{$records_done}</b> records have been processed and <b>{$records_togo}</b> records remain to be processed.";
+            $lasttime = (int)$state['starttime'];
+            $lastprocessed = (int)$state['recs_last_processed'];
+            $etlminhour = $DB->get_field('etl_user_activity', 'MIN(hour)', array());
+            $etlmaxhour = $DB->get_field('etl_user_activity', 'MAX(hour)', array());
+            $logendtime = $DB->get_field('log', 'MAX(time)', array());
+            if (empty($logendtime) || $logendtime < $etlmaxhour) {
+                $logendtime = time();
+            }
+            $percentcomplete = sprintf('%.2f', ($etlmaxhour - $etlminhour)/($logendtime - $etlminhour) * 100);
+            $description = 'The ETL process has not completed running.  Certain reports (such as the site-wide time summary) may show incomplete data '.
+                    "until the ETL process has completed.<br/>Currently, the ETL process is <b>{$percentcomplete}%</b> complete";
+            if ($lastprocessed) {
+                if (isset($state['log_entries_per_day']) && ($logentriesperday = (float)$state['log_entries_per_day']) > 0) {
+                    $est1 = (float)$DB->count_records_select('log', 'time >= ?', array($lasttime)) / $lastprocessed;
+                    $daystodo = ceil($est1 + ($logentriesperday * $est1 / $lastprocessed));
+                } else {
+                    $daystodo = ceil($DB->count_records_select('log', 'time >= ?', array($lasttime)) / $lastprocessed);
+                }
+                $description .= " and should take ~ {$daystodo} days to complete.";
+            } else {
+                $description .= '.';
+            }
+            return $description;
         } else {
-            return "The ETL process has not been run.  This prevents certain reports (such as the
-site-wide time summary) from working.";
+            return "The ETL process has not been run. This prevents certain reports (such as the site-wide time summary) from working.";
         }
     }
 
