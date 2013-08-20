@@ -2486,9 +2486,10 @@ class ELIS_files {
         $opts = array();
 
         if (empty($cid) || $cid == SITEID) {
-            // In Moodle 2.5 $COURSE is no longer set
-            if (!empty($_SERVER["HTTP_REFERER"]) && ($crspos = strpos($_SERVER["HTTP_REFERER"], 'course=')) !== false) {
-                $crs = substr($_SERVER["HTTP_REFERER"], $crspos + strlen('course='));
+            // In Moodle 2.5 $COURSE is no longer set correctly
+            $referer = get_referer(false);
+            if (!empty($referer) && ($crspos = strpos($referer, 'course=')) !== false) {
+                $crs = substr($referer, $crspos + strlen('course='));
                 // error_log("file_browse_options(): crs = {$crs}");
                 $cid = intval($crs);
             } else {
