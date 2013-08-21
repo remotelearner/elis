@@ -92,7 +92,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                             'password', 'visible', 'lang', 'category', 'link',
                                             'theme');
     static $available_fields_enrolment = array('username', 'email', 'idnumber', 'context',
-                                               'instance', 'role', 'group', 'grouping');
+                                               'instance', 'role', 'group', 'grouping', 'enrolmenttime', 'completetime');
 
     //store mappings for the current entity type
     var $mappings = array();
@@ -1034,13 +1034,18 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         if (!empty($createorupdate)) {
             if (isset($record->shortname) && $record->shortname !== '') {
-                //identify the course
+                // Identify the course.
                 if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
-                    //course exists, so the action is an update
+                    // Course shortname exists, so the action is an update
                     $action = 'update';
                 } else {
-                    //course does not exist, so the action is a create
-                    $action = 'create';
+                    if (isset($record->idnumber) && $record->idnumber !== '' && $DB->count_records('course', array('idnumber' => $record->idnumber)) == 1) {
+                        // Course idnumber exists, so the action is an update.
+                        $action = 'update';
+                    } else {
+                        // Course does not exist, so the action is a create.
+                        $action = 'create';
+                    }
                 }
             } else {
                 $action = 'create';
@@ -1570,6 +1575,15 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
+        // ID number uniqueness check
+        if (isset($record->idnumber) && $record->idnumber !== '' && $DB->record_exists('course', array('idnumber' => $record->idnumber))) {
+            $identifier = $this->mappings['idnumber'];
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" already exists ".
+                    "in an existing course.", 0, $filename, $this->linenumber, $record, 'course');
+
+            return false;
+        }
+
         //final data sanitization
         if (isset($record->guest)) {
             if ($record->guest == 0) {
@@ -1664,9 +1678,24 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $record->id = $DB->get_field('course', 'id', array('shortname' => $record->shortname));
         if (empty($record->id)) {
-            $identifier = $this->mappings['shortname'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" does not refer to a valid course.", 0, $filename, $this->linenumber, $record, "course");
-            return false;
+            if (isset($record->idnumber) && $record->idnumber !== '' && $DB->count_records('course', array('idnumber' => $record->idnumber)) == 1) {
+                $record->id = $DB->get_field('course', 'id', array('idnumber' => $record->idnumber));
+            } else {
+                $identifier = $this->mappings['shortname'];
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" does not refer to a valid course.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        } else {
+            if (isset($record->idnumber) && $record->idnumber !== '' && $DB->record_exists('course', array('idnumber' => $record->idnumber))) {
+                $checkrecordid = $DB->get_field('course', 'id', array('idnumber' => $record->idnumber));
+                if ($checkrecordid != $record->id) {
+                    $identifier = $this->mappings['idnumber'];
+                    $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" already exists ".
+                            "in an existing course.", 0, $filename, $this->linenumber, $record, 'course');
+
+                    return false;
+                }
+            }
         }
 
         update_course($record);
@@ -1974,6 +2003,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
+        // Check for valid enrolment time
+        if (isset($record->enrolmenttime)) {
+            $value = $this->parse_date($record->enrolmenttime);
+            if ($value === false) {
+                $identifier = $this->mappings['enrolmenttime'];
+                $this->fslogger->log_failure("$identifier value of \"{$record->enrolmenttime}\" is not a valid date in ".
+                        "MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.", 0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
+        // Check for valid complete time
+        if (isset($record->completetime)) {
+            $value = $this->parse_date($record->completetime);
+            if ($value === false) {
+                $identifier = $this->mappings['completetime'];
+                $this->fslogger->log_failure("$identifier value of \"{$record->completetime}\" is not a valid date in ".
+                        "MM/DD/YYYY, DD-MM-YYYY, YYYY.MM.DD, or MMM/DD/YYYY format.", 0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
+        }
+
         //find existing user record
         if (!$userid = $this->get_userid_from_record($record, $filename)) {
             return false;
@@ -2078,17 +2129,16 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         if ($record->context == 'course') {
 
-            //set enrolment start time to the course start date
-            //$timestart = $DB->get_field('course', 'startdate', array('id' => $context->instanceid));
-            // ELIS-6694: set enrolment time to 'now' to allow immediate access
-            $timestart = time();
-            if ($role_assignment_exists && !$enrolment_exists) {
+            // Set enrolment start and end time if specified, otherwise set enrolment time to 'now' to allow immediate access.
+            $timestart = empty($record->enrolmenttime) ? time() : $this->parse_date($record->enrolmenttime);
+            $timeend = empty($record->completetime) ? 0 : $this->parse_date($record->completetime);
 
-                //role assignment already exists, so just enrol the user
-                enrol_try_internal_enrol($context->instanceid, $userid, null, $timestart);
+            if ($role_assignment_exists && !$enrolment_exists) {
+                // Role assignment already exists, so just enrol the user.
+                enrol_try_internal_enrol($context->instanceid, $userid, null, $timestart, $timeend);
             } else if (!$enrolment_exists) {
-                //role assignment does not exist, so enrol and assign role
-                enrol_try_internal_enrol($context->instanceid, $userid, $roleid, $timestart);
+                // Role assignment does not exist, so enrol and assign role.
+                enrol_try_internal_enrol($context->instanceid, $userid, $roleid, $timestart, $timeend);
 
                 //collect success message for logging at end of action
                 $logmessages[] = "User with {$user_descriptor} successfully assigned role with shortname ".

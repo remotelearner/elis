@@ -2161,6 +2161,10 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
+        if (!isset($record->timetocomplete)) {
+            $record->timetocomplete = '';
+        }
+
         $cur = new curriculum();
         $cur->set_from_data($record);
         $cur->save();
