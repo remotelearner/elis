@@ -1034,13 +1034,18 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         if (!empty($createorupdate)) {
             if (isset($record->shortname) && $record->shortname !== '') {
-                //identify the course
+                // Identify the course.
                 if ($DB->record_exists('course', array('shortname' => $record->shortname))) {
-                    //course exists, so the action is an update
+                    // Course shortname exists, so the action is an update
                     $action = 'update';
                 } else {
-                    //course does not exist, so the action is a create
-                    $action = 'create';
+                    if (isset($record->idnumber) && $record->idnumber !== '' && $DB->count_records('course', array('idnumber' => $record->idnumber)) == 1) {
+                        // Course idnumber exists, so the action is an update.
+                        $action = 'update';
+                    } else {
+                        // Course does not exist, so the action is a create.
+                        $action = 'create';
+                    }
                 }
             } else {
                 $action = 'create';
@@ -1570,6 +1575,15 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
+        // ID number uniqueness check
+        if (isset($record->idnumber) && $record->idnumber !== '' && $DB->record_exists('course', array('idnumber' => $record->idnumber))) {
+            $identifier = $this->mappings['idnumber'];
+            $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" already exists ".
+                    "in an existing course.", 0, $filename, $this->linenumber, $record, 'course');
+
+            return false;
+        }
+
         //final data sanitization
         if (isset($record->guest)) {
             if ($record->guest == 0) {
@@ -1664,9 +1678,24 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $record->id = $DB->get_field('course', 'id', array('shortname' => $record->shortname));
         if (empty($record->id)) {
-            $identifier = $this->mappings['shortname'];
-            $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" does not refer to a valid course.", 0, $filename, $this->linenumber, $record, "course");
-            return false;
+            if (isset($record->idnumber) && $record->idnumber !== '' && $DB->count_records('course', array('idnumber' => $record->idnumber)) == 1) {
+                $record->id = $DB->get_field('course', 'id', array('idnumber' => $record->idnumber));
+            } else {
+                $identifier = $this->mappings['shortname'];
+                $this->fslogger->log_failure("{$identifier} value of \"{$record->shortname}\" does not refer to a valid course.", 0, $filename, $this->linenumber, $record, "course");
+                return false;
+            }
+        } else {
+            if (isset($record->idnumber) && $record->idnumber !== '' && $DB->record_exists('course', array('idnumber' => $record->idnumber))) {
+                $checkrecordid = $DB->get_field('course', 'id', array('idnumber' => $record->idnumber));
+                if ($checkrecordid != $record->id) {
+                    $identifier = $this->mappings['idnumber'];
+                    $this->fslogger->log_failure("{$identifier} value of \"{$record->idnumber}\" already exists ".
+                            "in an existing course.", 0, $filename, $this->linenumber, $record, 'course');
+
+                    return false;
+                }
+            }
         }
 
         update_course($record);
