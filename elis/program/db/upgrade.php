@@ -680,16 +680,6 @@ function xmldb_elis_program_upgrade($oldversion=0) {
     }
 
     if ($result && $oldversion < 2013051502) {
-        // Change password field length to 255
-        $table = new xmldb_table('crlm_user');
-        $field = new xmldb_field('password', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'username');
-
-        $dbman->change_field_precision($table, $field);
-
-        upgrade_plugin_savepoint($result, 2013051502, 'elis', 'program');
-    }
-
-    if ($result && $oldversion < 2013051503) {
         // Define table crlm_certificate_settings to be created
         // Conditionally launch create table for crlm_certificate_settings.
         $table = new xmldb_table('crlm_certificate_settings');
@@ -739,13 +729,23 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         }
 
         // ELIS savepoint reached.
-        upgrade_plugin_savepoint($result, 2013051503, 'elis', 'program');
+        upgrade_plugin_savepoint($result, 2013051502, 'elis', 'program');
     }
 
     // ELIS-8528: remove orphaned LOs
-    if ($result && $oldversion < 2013082100) {
+    if ($result && $oldversion < 2013051503) {
         $where = 'NOT EXISTS (SELECT \'x\' FROM {crlm_course} cc WHERE cc.id = {crlm_course_completion}.courseid)';
         $DB->delete_records_select('crlm_course_completion', $where);
+        upgrade_plugin_savepoint($result, 2013051503, 'elis', 'program');
+    }
+
+    if ($result && $oldversion < 2013082100) {
+        // Change password field length to 255
+        $table = new xmldb_table('crlm_user');
+        $field = new xmldb_field('password', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'username');
+
+        $dbman->change_field_precision($table, $field);
+
         upgrade_plugin_savepoint($result, 2013082100, 'elis', 'program');
     }
 
