@@ -30,16 +30,18 @@ require_once($dirname.'/other/rlip_test.class.php');
 
 // Libs.
 require_once($dirname.'/../lib.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/clusterassignment.class.php'));
-require_once(elispm::lib('data/clustercurriculum.class.php'));
-require_once(elispm::lib('data/clustertrack.class.php'));
-require_once(elispm::lib('data/userset.class.php'));
-require_once(elispm::lib('data/user.class.php'));
-require_once(elispm::lib('data/usermoodle.class.php'));
-require_once($CFG->dirroot.'/elis/program/enrol/userset/moodle_profile/userset_profile.class.php');
 require_once($CFG->libdir.'/externallib.php');
-require_once($dirname.'/../ws/elis/userset_delete.class.php');
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/clusterassignment.class.php'));
+    require_once(elispm::lib('data/clustercurriculum.class.php'));
+    require_once(elispm::lib('data/clustertrack.class.php'));
+    require_once(elispm::lib('data/userset.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+    require_once(elispm::lib('data/usermoodle.class.php'));
+    require_once($CFG->dirroot.'/elis/program/enrol/userset/moodle_profile/userset_profile.class.php');
+    require_once($dirname.'/../ws/elis/userset_delete.class.php');
+}
 
 /**
  * Tests webservice method block_rldh_elis_userset_delete.

@@ -31,19 +31,23 @@ require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
 require_once(dirname(__FILE__).'/../lib.php');
 require_once(dirname(__FILE__).'/other/mock_obj.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/classmoodlecourse.class.php'));
-require_once(elispm::lib('data/course.class.php'));
-require_once(elispm::lib('data/pmclass.class.php'));
-require_once(elispm::lib('data/student.class.php'));
-require_once(elispm::lib('data/user.class.php'));
+
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/classmoodlecourse.class.php'));
+    require_once(elispm::lib('data/course.class.php'));
+    require_once(elispm::lib('data/pmclass.class.php'));
+    require_once(elispm::lib('data/student.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+}
 
 /**
  * Test class for validating basic export data during a manual, nonincremental export.
  * @group block_rlip
  * @group rlipexport_version1elis
  */
-class version1elismanualincrementalexport_testcase extends rlip_test {
+class version1elismanualincrementalexport_testcase extends rlip_elis_test {
+
     /**
      * Fetches our export data as a multi-dimensional array
      *
@@ -327,17 +331,23 @@ class version1elismanualincrementalexport_testcase extends rlip_test {
      */
     public function necessary_associations_provider() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/classmoodlecourse.class.php'));
-        require_once(elispm::lib('data/course.class.php'));
-        require_once(elispm::lib('data/pmclass.class.php'));
-        require_once(elispm::lib('data/student.class.php'));
-        require_once(elispm::lib('data/user.class.php'));
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/classmoodlecourse.class.php'));
+            require_once(elispm::lib('data/course.class.php'));
+            require_once(elispm::lib('data/pmclass.class.php'));
+            require_once(elispm::lib('data/student.class.php'));
+            require_once(elispm::lib('data/user.class.php'));
 
-        return array(array(course::TABLE),
-                     array(pmclass::TABLE),
-                     array(student::TABLE),
-                     array(user::TABLE));
+            return array(
+                    array(course::TABLE),
+                    array(pmclass::TABLE),
+                    array(student::TABLE),
+                    array(user::TABLE)
+            );
+        } else {
+            return array();
+        }
     }
 
     /**
@@ -367,12 +377,18 @@ class version1elismanualincrementalexport_testcase extends rlip_test {
      */
     public function completion_status_provider() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elispm::lib('data/pmclass.class.php'));
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/pmclass.class.php'));
 
-        return array(array(student::STUSTATUS_NOTCOMPLETE),
-                     array(student::STUSTATUS_FAILED),
-                     array(student::STUSTATUS_PASSED));
+            return array(
+                   array(student::STUSTATUS_NOTCOMPLETE),
+                  array(student::STUSTATUS_FAILED),
+                  array(student::STUSTATUS_PASSED)
+            );
+        } else {
+            return array();
+        }
     }
 
     /**

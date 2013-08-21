@@ -109,13 +109,18 @@ class elis_notifications_testcase extends rlip_elis_test {
      */
     public function enrolment_completion_on_create_provider() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
 
-        return array(
-                array(student::STUSTATUS_NOTCOMPLETE, false),
-                array(student::STUSTATUS_FAILED, false),
-                array(student::STUSTATUS_PASSED, true)
-        );
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+
+            return array(
+                    array(student::STUSTATUS_NOTCOMPLETE, false),
+                    array(student::STUSTATUS_FAILED, false),
+                    array(student::STUSTATUS_PASSED, true)
+            );
+        } else {
+            return array();
+        }
     }
 
     /**
@@ -201,14 +206,18 @@ class elis_notifications_testcase extends rlip_elis_test {
      */
     public function enrolment_completion_on_update_provider() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
 
-        return array(
-                array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE, false),
-                array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_FAILED, false),
-                array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_PASSED, true),
-                array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED, false
-        ));
+            return array(
+                    array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE, false),
+                    array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_FAILED, false),
+                    array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_PASSED, true),
+                    array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED, false
+            ));
+        } else {
+            return array();
+        }
     }
 
     /**
