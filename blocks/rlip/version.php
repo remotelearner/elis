@@ -26,10 +26,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2013061101;
+$plugin->version = 2013061102;
 $plugin->requires = 2012120300;  // Requires this Moodle version
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '2.4.2.3 (Build: 20130620)';
+$plugin->release = '2.4.3.0 (Build: 20130821)';
 $plugin->dependencies = array(
-    'elis_core' => 2013051400
+    'elis_core' => 2013051401
 );

@@ -209,6 +209,7 @@ $string['ws_class_update_success_code'] = 'class_updated';
 $string['ws_class_update_success_msg'] = 'Class updated successfully';
 $string['ws_class_update_fail_badidnumber'] = 'Could not find class with that idnumber.';
 $string['ws_class_update_fail_cannotreassign'] = 'Class instance was not re-assigned to course description because moving class instances between course descriptions is not supported.';
+$string['ws_function_requires_elis'] = 'This webservices method requires ELIS. ELIS was not found. Cannot continue.';
 $string['ws_program_create_success_code'] = 'program_created';
 $string['ws_program_create_success_msg'] = 'Program created successfully';
 $string['ws_program_create_fail'] = 'Could not create program';
