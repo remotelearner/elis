@@ -40,10 +40,6 @@ define('MANUAL_FIELD_EDITABLE', 1);
  * @param  object  $mform  A moodle quickform to add the necessary fields to
  * @param  array   $attrs  Optional extra attributes to pass to form fields
  *                 format: $attr[<fieldid>] = array('option1' => val1, ...);
- *
- * NOTE: including forms definition() must call
- *       $PAGE->requires->yui2_lib(array('yahoo',
- *                                       'dom'));
  */
 function manual_field_edit_form_definition($form, $attrs = array()) {
     global $CFG;
@@ -451,15 +447,10 @@ function manual_field_add_help_button($mform, $elementname, $field) {
             //$mform->setAdvanced($elementname .'_help');
         }
         //$mform->addElement('static', $elementname .'_help',
-        $mform->addElement('html',
-            '<div class="'. $divclass .'"><div class="fitemtitle"><label for="id_'.
-            $elementname .'"><span class="helplink"><a href="'. $url
-            .'" title="'. $heading .'" id="'. $id .'"><img src="'.
-            $OUTPUT->pix_url('help') .'" alt="'. $heading .'" title="'.
-            $heading .'" class="iconhelp"></a></span>&nbsp;</label></div></div>'
+        $mform->addElement('html', '<div class="'.$divclass.'"><div class="fitemtitle"><label for="id_'.$elementname.
+                '"><span class="helptooltip"><a href="'.$url.'" title="'.$heading.'" id="'.$id.'" target="_blank" aria-haspopup="true"><img src="'.
+                $OUTPUT->pix_url('help').'" alt="'.$heading.'" title="'.$heading.'" class="iconhelp"></a></span>&nbsp;</label></div></div>'
         );
-        $PAGE->requires->js_init_call('M.util.help_icon.add',
-                             array(array('id' => $id, 'url' => $url)));
     }
 }
 
