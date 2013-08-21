@@ -666,7 +666,20 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         $DB->delete_records_select('capabilities', $where, $params);
         upgrade_plugin_savepoint($result, 2012123103, 'elis', 'program');
     }
+
     if ($result && $oldversion < 2012123104) {
+        // Change results engine action min/max fields from integer to float
+        $table = new xmldb_table('crlm_results_action');
+        if ($dbman->table_exists($table)) {
+            $field = new xmldb_field('minimum', XMLDB_TYPE_NUMBER, '10,5', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, 'actiontype');
+            $dbman->change_field_type($table, $field);
+            $field = new xmldb_field('maximum', XMLDB_TYPE_NUMBER, '10,5', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, 'minimum');
+            $dbman->change_field_type($table, $field);
+        }
+        upgrade_plugin_savepoint($result, 2012123104, 'elis', 'program');
+    }
+
+    if ($result && $oldversion < 2012123106) {
         // Define table crlm_certificate_settings to be created
         // Conditionally launch create table for crlm_certificate_settings.
         $table = new xmldb_table('crlm_certificate_settings');
@@ -714,21 +727,9 @@ function xmldb_elis_program_upgrade($oldversion=0) {
 
             $dbman->create_table($table);
         }
+
         // elis savepoint reached
-        upgrade_plugin_savepoint($result, 2012123104, 'elis', 'program');
-    }
-
-
-    if ($result && $oldversion < 2012123104) {
-        // Change results engine action min/max fields from integer to float
-        $table = new xmldb_table('crlm_results_action');
-        if ($dbman->table_exists($table)) {
-            $field = new xmldb_field('minimum', XMLDB_TYPE_NUMBER, '10,5', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, 'actiontype');
-            $dbman->change_field_type($table, $field);
-            $field = new xmldb_field('maximum', XMLDB_TYPE_NUMBER, '10,5', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null, 'minimum');
-            $dbman->change_field_type($table, $field);
-        }
-        upgrade_plugin_savepoint($result, 2012123104, 'elis', 'program');
+        upgrade_plugin_savepoint($result, 2012123106, 'elis', 'program');
     }
 
     return $result;
