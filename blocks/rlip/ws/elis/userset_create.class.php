@@ -21,13 +21,25 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/userset.class.php'));
-
 /**
  * Create userset webservices method.
  */
 class block_rldh_elis_userset_create extends external_api {
+
+    /**
+     * Require ELIS dependencies if ELIS is installed, otherwise return false.
+     * @return bool Whether ELIS dependencies were successfully required.
+     */
+    public static function require_elis_dependencies() {
+        global $CFG;
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/userset.class.php'));
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Gets userset custom fields
@@ -35,12 +47,17 @@ class block_rldh_elis_userset_create extends external_api {
      */
     public static function get_userset_custom_fields() {
         global $DB;
-        // get custom fields.
-        $sql = 'SELECT shortname, name, datatype, multivalued
-                  FROM {'.field::TABLE.'} f
-                  JOIN {'.field_contextlevel::TABLE.'} fctx ON f.id = fctx.fieldid AND fctx.contextlevel = ?';
-        $sqlparams = array(CONTEXT_ELIS_USERSET);
-        return $DB->get_records_sql($sql, $sqlparams);
+
+        if (static::require_elis_dependencies() === true) {
+            // Get custom fields.
+            $sql = 'SELECT shortname, name, datatype, multivalued
+                      FROM {'.field::TABLE.'} f
+                      JOIN {'.field_contextlevel::TABLE.'} fctx ON f.id = fctx.fieldid AND fctx.contextlevel = ?';
+            $sqlparams = array(CONTEXT_ELIS_USERSET);
+            return $DB->get_records_sql($sql, $sqlparams);
+        } else {
+            return array();
+        }
     }
 
     /**
@@ -142,6 +159,10 @@ class block_rldh_elis_userset_create extends external_api {
      */
     public static function userset_create(array $data) {
         global $USER, $DB;
+
+        if (static::require_elis_dependencies() !== true) {
+            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+        }
 
         // Parameter validation.
         $params = self::validate_parameters(self::userset_create_parameters(), array('data' => $data));

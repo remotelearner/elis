@@ -110,7 +110,7 @@ class rlipexport_version1elis_fileplugin_memoryexport extends rlip_fileplugin_ba
  * @group block_rlip
  * @group rlipexport_version1elis
  */
-class rlipexport_version1elis_databaselogging_testcase extends rlip_test {
+class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
 
     /**
      * Load in our test data from CSV files

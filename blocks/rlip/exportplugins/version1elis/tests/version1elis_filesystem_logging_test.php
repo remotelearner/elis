@@ -29,18 +29,20 @@ require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/course.class.php'));
-require_once(elispm::lib('data/pmclass.class.php'));
-require_once(elispm::lib('data/student.class.php'));
-require_once(elispm::lib('data/user.class.php'));
+if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once(elispm::lib('data/course.class.php'));
+    require_once(elispm::lib('data/pmclass.class.php'));
+    require_once(elispm::lib('data/student.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+}
 
 /**
  * Class for testing export filesystem logging for the "Version 1 ELIS" plugin
  * @group block_rlip
  * @group rlipexport_version1elis
  */
-class version1elisfilesytemlogging_testcase extends rlip_test {
+class version1elisfilesytemlogging_testcase extends rlip_elis_test {
 
     /**
      * Load in our test data from CSV files

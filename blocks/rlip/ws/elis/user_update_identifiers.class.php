@@ -21,14 +21,45 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-require_once(elispm::lib('data/user.class.php'));
-require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
-
 /**
  * Update user identifiers webservices method.
  */
 class block_rldh_elis_user_update_identifiers extends external_api {
+
+    /**
+     * Require ELIS dependencies if ELIS is installed, otherwise return false.
+     * @return bool Whether ELIS dependencies were successfully required.
+     */
+    public static function require_elis_dependencies() {
+        global $CFG;
+        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once(elispm::lib('data/user.class.php'));
+            require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Gets user custom fields
+     * @return array An array of custom user fields
+     */
+    public static function get_user_custom_fields() {
+        global $DB;
+
+        if (static::require_elis_dependencies() === true) {
+            // Get custom fields.
+            $sql = 'SELECT shortname, name, datatype, multivalued
+                      FROM {'.field::TABLE.'} f
+                      JOIN {'.field_contextlevel::TABLE.'} fctx ON f.id = fctx.fieldid AND fctx.contextlevel = ?';
+            $sqlparams = array(CONTEXT_ELIS_USER);
+            return $DB->get_records_sql($sql, $sqlparams);
+        } else {
+            return array();
+        }
+    }
 
     /**
      * Gets a description of the user object for use in the return function.
@@ -64,30 +95,32 @@ class block_rldh_elis_user_update_identifiers extends external_api {
             'inactive' => new external_value(PARAM_BOOL, 'User inactive status', VALUE_OPTIONAL),
         );
 
-        // Add custom fields.
-        $sql = 'SELECT shortname, name, datatype
-                  FROM {'.field::TABLE.'} f
-                  JOIN {'.field_contextlevel::TABLE.'} fctx ON f.id = fctx.fieldid AND fctx.contextlevel = ?';
-        $sqlparams = array(CONTEXT_ELIS_USER);
-        $fields = $DB->get_records_sql($sql, $sqlparams);
-        foreach ($fields as $field) {
-            // Generate name using custom field prefix.
-            $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
+        if (static::require_elis_dependencies() === true) {
+            $fields = self::get_user_custom_fields();
+            foreach ($fields as $field) {
+                // Generate name using custom field prefix.
+                $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
 
-            // Convert datatype to param type.
-            switch($field->datatype) {
-                case 'bool':
-                    $paramtype = PARAM_BOOL;
-                    break;
-                case 'int':
-                    $paramtype = PARAM_INT;
-                    break;
-                default:
+                if ($field->multivalued) {
                     $paramtype = PARAM_TEXT;
-            }
+                } else {
+                    // Convert datatype to param type.
+                    switch($field->datatype) {
+                        case 'bool':
+                            $paramtype = PARAM_BOOL;
+                            break;
+                        case 'int':
+                            $paramtype = PARAM_INT;
+                            break;
+                        default:
+                            $paramtype = PARAM_TEXT;
+                    }
+                }
 
-            // Assemble the parameter entry and add to array.
-            $params[$fullfieldname] = new external_value($paramtype, $field->name, VALUE_OPTIONAL);
+
+                // Assemble the parameter entry and add to array.
+                $params[$fullfieldname] = new external_value($paramtype, $field->name, VALUE_OPTIONAL);
+            }
         }
 
         return $params;
@@ -119,6 +152,10 @@ class block_rldh_elis_user_update_identifiers extends external_api {
      */
     public static function user_update_identifiers(array $data) {
         global $USER, $DB;
+
+        if (static::require_elis_dependencies() !== true) {
+            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+        }
 
         // Parameter validation.
         $params = self::validate_parameters(self::user_update_identifiers_parameters(), array('data' => $data));
@@ -170,6 +207,18 @@ class block_rldh_elis_user_update_identifiers extends external_api {
         // Respond.
         $userrec = (array)$DB->get_record(user::TABLE, array('id' => $user->id));
         $userobj = $user->to_array();
+
+        // Convert multi-valued custom field arrays to comma-separated listing.
+        $fields = self::get_user_custom_fields();
+        foreach ($fields as $field) {
+            // Generate name using custom field prefix.
+            $fullfieldname = data_object_with_custom_fields::CUSTOM_FIELD_PREFIX.$field->shortname;
+
+            if ($field->multivalued && isset($userobj[$fullfieldname]) && is_array($userobj[$fullfieldname])) {
+                $userobj[$fullfieldname] = implode(',', $userobj[$fullfieldname]);
+            }
+        }
+
         return array(
             'messagecode' => get_string('ws_user_update_identifiers_success_code', 'block_rlip'),
             'message' => get_string('ws_user_update_identifiers_success_msg', 'block_rlip'),
