@@ -40,7 +40,7 @@ function php_report_schedule_export_instance($report_schedule, $now = 0) {
     global $CFG;
 
     if ($now == 0) {
-        $now = gmmktime(); // time();
+        $now = time();
     }
 
     $data = unserialize($report_schedule->config);
