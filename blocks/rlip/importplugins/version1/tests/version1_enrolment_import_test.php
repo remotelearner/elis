@@ -218,7 +218,9 @@ class version1enrolmentimport_testcase extends rlip_test {
             'username' => 'rlipusername',
             'context' => 'course',
             'instance' => 'rlipshortname',
-            'role' => 'courseshortname'
+            'role' => 'courseshortname',
+            'enrolmenttime' => date('m/d/Y', strtotime(date('Y/m/d 00:00:00').' -1 day')),
+            'completetime' => date('m/d/Y', strtotime(date('Y/m/d 00:00:00').' +1 day'))
         );
         return $data;
     }
@@ -416,6 +418,25 @@ class version1enrolmentimport_testcase extends rlip_test {
     }
 
     /**
+     * Validate that the import sets correct enrolment and complete time on enrolment creation
+     * @uses $DB
+     */
+    public function test_version1importsetsenrolmentandcompletetimeoncreate() {
+        global $DB;
+        $this->run_core_enrolment_import(array());
+
+        $this->assertEquals($DB->count_records('user_enrolments'), 1);
+
+        $timestart = strtotime(date('Y/m/d 00:00:00').' -1 day');
+        $exists = $DB->record_exists('user_enrolments', array('timestart' => $timestart));
+        $this->assertEquals($exists, true);
+
+        $timeend = strtotime(date('Y/m/d 00:00:00').' +1 day');
+        $exists = $DB->record_exists('user_enrolments', array('timeend' => $timeend));
+        $this->assertEquals($exists, true);
+    }
+
+    /**
      * Validate that invalid username values can't be set on enrolment creation
      */
     public function test_version1importpreventsinvalidenrolmentusernameoncreate() {
@@ -463,6 +484,24 @@ class version1enrolmentimport_testcase extends rlip_test {
     public function test_version1importpreventsinvalidcourseinstanceoncreate() {
         $this->run_core_enrolment_import(array('instance' => 'bogusshortname'));
         $this->assert_no_role_assignments_exist();
+    }
+
+    /**
+     * Validate that invalid enrolment time value can't be set on enrolment creation
+     */
+    public function test_version1importpreventsinvalidenrolmenttimeoncreate() {
+        $this->run_core_enrolment_import(array('enrolmenttime' => 'bogusenrolmenttime'));
+        $this->assert_no_role_assignments_exist();
+        $this->assert_no_enrolments_exist();
+    }
+
+    /**
+     * Validate that invalid complete time value can't be set on enrolment creation
+     */
+    public function test_version1importpreventsinvalidcompletetimeoncreate() {
+        $this->run_core_enrolment_import(array('completetime' => 'boguscompletetime'));
+        $this->assert_no_role_assignments_exist();
+        $this->assert_no_enrolments_exist();
     }
 
     /**
