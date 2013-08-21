@@ -57,6 +57,7 @@ if ($report_schedule = php_report_schedule_get_instance($taskname)) {
 }
 
 //spit out information regarding the current position
+$a = new stdClass;
 $a->current = $current;
 $a->total = $total;
 

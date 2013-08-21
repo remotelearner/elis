@@ -98,7 +98,7 @@ foreach ($test_scheduleids as $scheduleid) {
     }
 }
 
-//calculate the labels to display 
+// Calculate the labels to display.
 $runninglabel = get_string('popup_running_label', 'block_php_report');
 $donerunninglabel = get_string('popup_done_running_label', 'block_php_report');
 
@@ -115,12 +115,7 @@ $params = array($CFG->wwwroot,
                 $runninglabel,
                 $donerunninglabel,
                 $progress_text);
-$PAGE->requires->js_function_call('php_report_schedule_run_jobs', $params, true, array(
-    'yui2-connection',
-    'yui2-dom',
-    'yui2-event',
-    'yui2-json'
-));
+$PAGE->requires->js_function_call('php_report_schedule_run_jobs', $params, true, 0);
 
 //temporarily change the config global to prevent the documentation link
 //from showing up

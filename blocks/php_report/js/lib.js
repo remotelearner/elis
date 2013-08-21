@@ -138,24 +138,22 @@ function php_report_schedule_run_jobs(wwwroot, scheduleids, schedulenames, index
     // success handler
     var php_report_success = function(o) {
         // parse the reponse data, consisting of progress text and an error message
-        var response_data;
         YUI().use('yui2-json', function(Y) {
             var YAHOO = Y.YUI2;
-            response_data = YAHOO.lang.JSON.parse(o.responseText);
+            var responsedata = YAHOO.lang.JSON.parse(o.responseText);
+            php_report_schedule_update_progress_bar(index + 1, scheduleids.length);
+
+            if ((index + 1) < scheduleids.length) {
+                // chain on to the next job
+                php_report_schedule_run_jobs(wwwroot, scheduleids, schedulenames, index + 1, runninglabel, donerunninglabel, responsedata[0]);
+            } else {
+                php_report_schedule_set_current_job(donerunninglabel);
+                php_report_schedule_set_progress(responsedata[0]);
+
+                // update errors in the UI
+                php_report_schedule_append_error(responsedata[1]);
+            }
         });
-
-        php_report_schedule_update_progress_bar(index + 1, scheduleids.length);
-
-        if ((index + 1) < scheduleids.length) {
-            // chain on to the next job
-            php_report_schedule_run_jobs(wwwroot, scheduleids, schedulenames, index + 1, runninglabel, donerunninglabel, response_data[0]);
-        } else {
-            php_report_schedule_set_current_job(donerunninglabel);
-            php_report_schedule_set_progress(response_data[0]);
-
-            // update errors in the UI
-            php_report_schedule_append_error(response_data[1]);
-        }
     }
 
     // failure handler
