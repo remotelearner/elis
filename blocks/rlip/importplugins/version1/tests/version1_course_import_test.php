@@ -939,6 +939,52 @@ class version1courseimport_testcase extends rlip_test {
     }
 
     /**
+     * Validate that the import does not create courses with duplicate id numbers on creation.
+     * @uses $DB
+     */
+    public function test_version1importpreventsduplicatecourseidnumberoncreation() {
+        global $DB;
+
+        $initialcount = $DB->count_records('course');
+
+        // Set up our data.
+        $this->run_core_course_import(array('shortname' => 'shortname1', 'idnumber' => 'preventduplicateidnumber'));
+        $count = $DB->count_records('course');
+        $this->assertEquals($initialcount + 1, $count);
+
+        // Test duplicate idnumber.
+        $this->run_core_course_import(array('shortname' => 'shortname2', 'idnumber' => 'preventduplicateidnumber'));
+        $count = $DB->count_records('course');
+        $this->assertEquals($initialcount + 1, $count);
+    }
+
+    /**
+     * Validate that the import does not create courses with duplicate id numbers on update.
+     * @uses $DB
+     */
+    public function test_version1importpreventsduplicatecourseidnumberonupdate() {
+        global $DB;
+
+        $initialcount = $DB->count_records('course');
+
+        // Set up our data.
+        $this->run_core_course_import(array('shortname' => 'shortname1', 'idnumber' => 'preventduplicateidnumber1'));
+        $count = $DB->count_records('course');
+        $this->assertEquals($initialcount + 1, $count);
+
+        $this->run_core_course_import(array('shortname' => 'shortname2', 'idnumber' => 'preventduplicateidnumber2'));
+        $count = $DB->count_records('course');
+        $this->assertEquals($initialcount + 2, $count);
+
+        // Test duplicate idnumber on update.
+        $this->run_core_course_import(array('action' => 'update', 'shortname' => 'shortname2', 'idnumber' => 'preventduplicateidnumber1'));
+        $count = $DB->count_records('course');
+        $this->assertEquals($initialcount + 2, $count);
+        $count = $DB->count_records('course', array('idnumber' => 'preventduplicateidnumber1'));
+        $this->assertEquals(1, $count);
+    }
+
+    /**
      * Validate that the import can create a course in a category whose name
      * is unique
      */
