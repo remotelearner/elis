@@ -225,7 +225,6 @@ $functions = array(
 $services = array(
     'RLDH Webservices' => array(
         'functions' => array(
-                'block_rldh_elis_class_delete',
                 'block_rldh_elis_user_create',
                 'block_rldh_elis_user_update',
                 'block_rldh_elis_user_update_identifiers',
@@ -239,10 +238,12 @@ $services = array(
                 'block_rldh_elis_class_enrolment_delete',
                 'block_rldh_elis_userset_enrolment_create',
                 'block_rldh_elis_userset_enrolment_delete',
+                'block_rldh_elis_course_create',
                 'block_rldh_elis_course_update',
                 'block_rldh_elis_course_delete',
                 'block_rldh_elis_class_create',
                 'block_rldh_elis_class_update',
+                'block_rldh_elis_class_delete',
                 'block_rldh_elis_program_create',
                 'block_rldh_elis_program_update',
                 'block_rldh_elis_program_delete',
