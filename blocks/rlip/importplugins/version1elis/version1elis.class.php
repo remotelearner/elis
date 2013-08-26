@@ -4569,7 +4569,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      *                comma-separated string
      * [field1] "value1", ...
      */
-    function get_user_descriptor($record, $value_syntax = false, $prefix = '') {
+    public static function get_user_descriptor($record, $value_syntax = false, $prefix = '') {
         $fragments = array();
 
         //the fields we care to check
