@@ -53,6 +53,7 @@ $string['grouping_state'] = 'State/Province: ';
 $string['instructor'] = 'Instructor';
 $string['na'] = 'N/A';
 $string['noncurriculumcourse'] = 'Non-Program Course';
+$string['pluginname'] = 'User Class Completion Details Report';
 $string['status_failed'] = 'Failed';
 $string['status_notcomplete'] = 'In Progress';
 $string['status_notstarted'] = 'Not Started';
