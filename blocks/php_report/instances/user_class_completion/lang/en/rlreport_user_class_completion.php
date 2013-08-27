@@ -81,6 +81,7 @@ $string['na'] = 'N/A';
 $string['noncurriculumcourses'] = 'Non-Program Courses';
 $string['otherfields'] = 'Other Fields';
 $string['past'] = 'Past';
+$string['pluginname'] = 'User Class Completion Report';
 $string['present'] = 'Present';
 $string['report_field_completion'] = 'Completion';
 $string['report_field_curriculum'] = 'Program';
