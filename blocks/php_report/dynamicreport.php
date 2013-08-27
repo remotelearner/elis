@@ -41,5 +41,5 @@ $sort = optional_param('sort', '', PARAM_CLEAN);
 $dir  = optional_param('dir', '', PARAM_CLEAN); // TBD: 'ASC' ?
 
 $instance = php_report::get_default_instance($report_shortname);
-$instance->main($sort, $dir, $page, 20, '', $report_shortname);
+$instance->main($sort, $dir, $page, 25, '', $report_shortname);
 
