@@ -93,16 +93,16 @@ class repository_elis_files_utility_methods_testcase extends elis_database_test 
      * This methods does the initial work initializing the repository
      */
     public function init_repo() {
-        if (!self::$repo) {
-            $repo = @new repository_elis_files('elis_files', SYSCONTEXTID,
-                    array('ajax' => false, 'name' => 'bogus', 'type' => 'elis_files'));
-            $filename = self::generate_temp_file(1);
+        global $DB;
+        $repoid = $DB->get_field('repository_instances', 'id', array('name' => 'elis files phpunit test'));
+        $repo = new repository_elis_files($repoid, SYSCONTEXTID, array('ajax' => false, 'name' => 'bogus', 'type' => 'elis_files'));
 
-            $uploadresponse = elis_files_upload_file('', $filename, $repo->elis_files->uuuid);
-            unlink($filename);
-            self::$fileuuid = ($uploadresponse && !empty($uploadresponse->uuid)) ? $uploadresponse->uuid : '';
-            self::$repo = $repo;
-        }
+        $filename = self::generate_temp_file(1);
+
+        $uploadresponse = elis_files_upload_file('', $filename, $repo->elis_files->uuuid);
+        unlink($filename);
+        self::$fileuuid = ($uploadresponse && !empty($uploadresponse->uuid)) ? $uploadresponse->uuid : '';
+        self::$repo = $repo;
     }
 
     /**
@@ -167,7 +167,7 @@ class repository_elis_files_utility_methods_testcase extends elis_database_test 
         global $USER;
 
         $dataset = $this->get_parent_data_provider();
-
+        $i = 0;
         foreach ($dataset as $data) {
 
             $childuuid = $data[0];
@@ -176,18 +176,20 @@ class repository_elis_files_utility_methods_testcase extends elis_database_test 
             // This condition was added to test if the uuid was false, assert for a false value and then report on the error
             // The idea is to mimic a data provider method where by the test will continue if there is one false assertion
             if (empty($childuuid)) {
-                $this->assertFalse($childuuid, $data[2].' in parent '.$data[1].' is false ');
+                $this->assertFalse($childuuid, 'Data set#'.$i.': '.$data[2].' in parent '.$data[1].' is false ');
+                $i++;
                 continue;
             }
 
             $uuid = self::$repo->elis_files->suuid;
             $node = self::$repo->elis_files->get_parent($childuuid);
 
-            $this->assertTrue(!empty($node->uuid));
+            $this->assertTrue(!empty($node->uuid), 'Data set#'.$i.' childuuid = '.$childuuid);
             if ($parentname == USERS_HOME) {
                 $parentname = elis_files_transform_username($USER->username);
             }
-            $this->assertEquals($parentname, $node->title);
+            $this->assertEquals($parentname, $node->title, 'Data set#'.$i);
+            $i++;
         }
     }
 
@@ -203,7 +205,7 @@ class repository_elis_files_utility_methods_testcase extends elis_database_test 
         global $USER;
 
         $dataset = $this->get_parent_data_provider();
-
+        $i = 0;
         foreach ($dataset as $data) {
 
             $childuuid = $data[0];
@@ -212,7 +214,8 @@ class repository_elis_files_utility_methods_testcase extends elis_database_test 
             // This condition was added to test if the uuid was false, assert for a false value and then report on the error
             // The idea is to mimic a data provider method where by the test will continue if there is one false assertion
             if (empty($childuuid)) {
-                $this->assertFalse($childuuid, $data[2].' in parent '.$data[1].' is false ');
+                $this->assertFalse($childuuid, 'Data set#'.$i.': '.$data[2].' in parent '.$data[1].' is false ');
+                $i++;
                 continue;
             }
 
@@ -221,14 +224,82 @@ class repository_elis_files_utility_methods_testcase extends elis_database_test 
             self::$repo->get_parent_path_from_tree($childuuid, $foldertree, $resultpath, 0, 0, false, 0);
 
             if ($parentname != 'Company Home') {
-                $this->assertTrue(!empty($resultpath));
+                $this->assertTrue(!empty($resultpath), 'Data set#'.$i.' childuuid = '.$childuuid);
                 if ($parentname == USERS_HOME) {
                     $parentname = elis_files_transform_username($USER->username);
                 }
-                $this->assertEquals($parentname, $resultpath[count($resultpath) -1]['name']);
+                $this->assertEquals($parentname, $resultpath[count($resultpath) -1]['name'], 'Data set#'.$i);
             } else {
-                $this->assertTrue(empty($resultpath));
+                $this->assertTrue(empty($resultpath), 'Data set#'.$i);
             }
+            $i++;
         }
+    }
+
+    /**
+     * Dataprovider for test_get_referer()
+     */
+    public function get_referer_data() {
+        return array(
+                array('/foobar'),
+                array('/foobar.ext'),
+                array('/foo?bar=1'),
+                array('/bar.none?foo=2&bogus=abc'),
+                array('http://www.my.domain/pluginfile.php/2/mod_resource/content/2/file.ext?id=1001&arg=val'),
+                array('https://ssl.my.domain/pluginfile.php/2/mod_resource/content/2/file.ext?course=222&arg=val'),
+        );
+    }
+
+    /**
+     * Test get_referer() method
+     * @param string $in the input referer string
+     * @dataProvider get_referer_data
+     */
+    public function test_get_referer($in) {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+        $this->init_repo();
+
+        $_SERVER['HTTP_REFERER'] = $in;
+        $this->assertEquals($in, self::$repo->elis_files->get_referer());
+        $_SERVER['HTTP_REFERER'] = '';
+        $_GET['referer'] = urlencode($in);
+        $this->assertEquals($in, self::$repo->elis_files->get_referer());
+    }
+
+    /**
+     * Dataprovider for test_get_openfile_link()
+     * Note: these values do not have to be real alfresco uuids
+     */
+    public function get_openfile_link_data() {
+        return array(
+                array('foo'),
+                array('bar'),
+                array('480b8480-f669-4e88-b2d5-b032ddb996c6'),
+                array('800b8480-f669-4e88-b2d5-b032ddb996c6'),
+                array('160b8480-f669-4e88-b2d5-b032ddb996c6'),
+        );
+    }
+
+    /**
+     * Test get_openfile_link() method
+     * @param string $in the input alfresco uuid
+     * @dataProvider get_openfile_link_data
+     */
+    public function test_get_openfile_link($in) {
+        $this->resetAfterTest(true);
+        $this->setup_test_data_xml();
+        $this->init_repo();
+
+        $referer = '/bogus/referer/path.ext?id=1001&arg=val';
+        $_SERVER['HTTP_REFERER'] = urlencode($referer);
+        $openfileurl = self::$repo->elis_files->get_openfile_link($in);
+        $results = parse_url($openfileurl);
+        $this->assertTrue(!empty($results['query']));
+        $output = array();
+        parse_str($results['query'], $output);
+        $this->assertEquals($in, $output['uuid']);
+        $this->assertEquals(sesskey(), $output['sesskey']);
+        $this->assertEquals($_SERVER['HTTP_REFERER'], $output['referer']);
     }
 }
