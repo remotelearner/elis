@@ -48,7 +48,7 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
         )
     );
 
-    // This maps fields to their data types.
+    /** @var array This maps fields to their data types. */
     public $fieldtofiltermap = array(
         'up' => array(
             'fullname' => self::filtertypetext,
@@ -75,7 +75,7 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
         )
     );
 
-    // This maps fields to the language strings that define their labels.
+    /** @var array This maps fields to the language strings that define their labels. */
     public $labels = array(
         'up' => array(
             'fullname' => 'fld_fullname',
@@ -325,14 +325,14 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
         }
     }
 
-    /*
+    /**
      * Get Date Filter Values
-     * Retrieves start and end settings from active filter (if exists)
-     * and return: startdate and enddate
+     * Retrieves start and end settings from active filter (if exists) and return: startdate and enddate.
      *
-     * @uses none
-     * @param none
-     * @return none
+     * @param string $reportshortname Shortname of the report.
+     * @param object $filter The filter object.
+     * @param string $uniqueid The unqiue filter name
+     * @return string|bool Either the start/end date string value, or false if dates are empty.
      */
     public function get_date_filter_values($reportshortname, $filter, $uniqueid) {
 
