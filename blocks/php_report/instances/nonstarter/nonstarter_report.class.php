@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage pm-blocks-phpreport-nonstarter
+ * @package    block-php_report
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/blocks/php_report/type/table_report.class.php');
+require_once(elispm::lib('filtering/elisuserprofile.php'));
 
 define('NSR_DATE_FORMAT', get_string('date_format', 'rlreport_nonstarter'));
 
@@ -58,27 +58,32 @@ class nonstarter_report extends table_report {
      * Required user profile fields (keys)
      * Note: can override default labels with values (leave empty for default)
      * Eg. 'lastname' =>  'Surname', ...
+     *
+     * @var array
      */
-    var $_fields = array(
+    public $_fields = array(
         'up' => array(
             'fullname',
             'lastname',
             'firstname',
+            'mi',
             'idnumber',
             'email',
-            'city',
-            'country',
+            'email2',
             'username',
-            'lang',
-            'confirmed',
-            //'courserole',
-            //'coursecat',
-            //'systemrole',
-            'firstaccess',
-            'lastaccess',
-            'lastlogin',
+            'address',
+            'address2',
+            'city',
+            'state',
+            'country',
+            'postalcode',
+            'phone',
+            'phone2',
+            'fax',
+            'language',
+            'timecreated',
             'timemodified',
-            'auth'
+            'inactive',
         )
     );
 
@@ -286,23 +291,27 @@ class nonstarter_report extends table_report {
      * Specifies available report filters
      * (empty by default but can be implemented by child class)
      *
-     * @param   boolean  $init_data  If true, signal the report to load the
-     *                               actual content of the filter objects
-     *
-     * @return  array                The list of available filters
+     * @param boolean $initdata If true, signal the report to load the actual content of the filter objects.
+     * @uses $DB
+     * @return array The list of available filters
      */
-    function get_filters($init_data = true) {
-        // Create all requested User Profile field filters
-        $upfilter =
-            new generalized_filter_userprofilematch(
+    public function get_filters($initdata = true) {
+
+        // Create all requested User Profile field filters.
+        $upfilter = new generalized_filter_elisuserprofile(
                 'nsu',
                 get_string('filter_user_match', 'rlreport_nonstarter'),
                 array(
                     'choices'     => $this->_fields,
                     'notadvanced' => array('fullname'),
-                    'extra'       => true // include all extra profile fields
+                    'extra'       => true, // Include all extra profile fields.
+                    'tables' => array(
+                        'up' => array(
+                            'crlm_user' => 'crlmusr'
+                        )
+                    )
                 )
-            );
+        );
 
         // Save the user profile filter for later use in header entries
         $this->upfilter = $upfilter;
