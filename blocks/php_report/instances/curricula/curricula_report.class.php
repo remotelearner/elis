@@ -27,6 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/blocks/php_report/type/table_report.class.php');
+require_once(elispm::lib('filtering/elisuserprofile.php'));
 
 class curricula_report extends table_report {
 
@@ -44,27 +45,32 @@ class curricula_report extends table_report {
      * Required user profile fields (keys)
      * Note: can override default labels with values (leave empty for default)
      * Eg. 'lastname' =>  'Surname', ...
+     *
+     * @var array
      */
-    var $_fields = array(
+    public $_fields = array(
         'up' => array(
             'fullname',
             'lastname',
             'firstname',
+            'mi',
             'idnumber',
             'email',
-            'city',
-            'country',
+            'email2',
             'username',
-            'lang',
-            'confirmed',
-            //'courserole',
-            //'coursecat',
-            //'systemrole',
-            'firstaccess',
-            'lastaccess',
-            'lastlogin',
+            'address',
+            'address2',
+            'city',
+            'state',
+            'country',
+            'postalcode',
+            'phone',
+            'phone2',
+            'fax',
+            'language',
+            'timecreated',
             'timemodified',
-            'auth'
+            'inactive',
         )
     );
 
@@ -129,12 +135,11 @@ class curricula_report extends table_report {
      * Specifies available report filters
      * (empty by default but can be implemented by child class)
      *
-     * @param   boolean  $init_data  If true, signal the report to load the
-     *                               actual content of the filter objects
-     *
-     * @return  array                The list of available filters
+     * @param boolean $initdata If true, signal the report to load the actual content of the filter objects.
+     * @uses $DB
+     * @return array The list of available filters
      */
-    function get_filters($init_data = true) {
+    public function get_filters($initdata = true) {
         $cms = array();
         $contexts = get_contexts_by_capability_for_user('curriculum', $this->access_capability, $this->userid);
         $cms_objects = curriculum_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
@@ -144,17 +149,21 @@ class curricula_report extends table_report {
             }
         }
 
-        // Create all requested User Profile field filters
-        $upfilter =
-            new generalized_filter_userprofilematch(
+        // Create all requested User Profile field filters.
+        $upfilter = new generalized_filter_elisuserprofile(
                 'cu',
                 get_string('filter_user_match', 'rlreport_curricula'),
                 array(
                     'choices'     => $this->_fields,
                     'notadvanced' => array('fullname'),
-                    'extra'       => true // include all extra profile fields
+                    'extra'       => true, // Include all extra profile fields.
+                    'tables' => array(
+                        'up' => array(
+                            'crlm_user' => 'crlmu'
+                        )
+                    )
                 )
-            );
+        );
 
         $filters = $upfilter->get_filters();
 
