@@ -318,8 +318,14 @@ abstract class deepsight_action_standard implements deepsight_action {
                 echo safe_json_encode($result);
             }
         } catch (Exception $e) {
+            $output = ob_get_contents();
+            ob_end_clean();
+            $msg = $e->getMessage();
+            if (!empty($output)) {
+                $msg .= ' '.$output;
+            }
             // Format exceptions as readable failure responses.
-            echo safe_json_encode(array('result' => 'fail', 'msg' => $e->getMessage()));
+            echo safe_json_encode(array('result' => 'fail', 'msg' => $msg));
         }
     }
 
