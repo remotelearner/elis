@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Hierarchical folder listing</shortname>
+  <description>Get a hierarchical list of all folders in the repository</description>
+  <url>/moodle/folders</url>
+  <format default="xml">extension</format>
+  <authentication>user</authentication>
+</webscript>
