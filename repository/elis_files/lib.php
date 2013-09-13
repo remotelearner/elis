@@ -56,7 +56,15 @@ class repository_elis_files extends repository {
 
 
     public function __construct($repositoryid, $context = SYSCONTEXTID, $options = array()) {
-        global $SESSION, $CFG, $PAGE;
+        global $SESSION, $CFG, $DB, $PAGE;
+        if (!is_numeric($repositoryid)) {
+            // ELIS-8550: were constructing these with repositoryid = 'elis_files'
+            $sql = 'SELECT MIN(ri.id)
+                      FROM {repository} r
+                      JOIN {repository_instances} ri ON r.id = ri.typeid
+                     WHERE r.type = ?';
+            $repositoryid = $DB->get_field_sql($sql, array($repositoryid));
+        }
         parent::__construct($repositoryid, $context, $options);
 
         require_once dirname(__FILE__). '/ELIS_files_factory.class.php';
