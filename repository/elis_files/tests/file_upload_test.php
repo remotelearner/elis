@@ -274,7 +274,7 @@ class repository_elis_files_file_upload_testcase extends elis_database_test {
 
             if ($repository) {
                 try {
-                    $repo = @new repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                    $repo = new repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
                             array('ajax' => false,
                                   'name' => $repository->name,
                                   'type' => 'elis_files'
