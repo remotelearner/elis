@@ -18,11 +18,11 @@ class alfreso_test_form extends moodleform {
         $repository = $DB->get_record_sql($sql, array('elis_files'));
         if ($repository) {
             try {
-                $repo = @new repository_elis_files('elis_files',
-                                 get_context_instance(CONTEXT_USER, $USER->id),
-                                 array('ajax' => false,
-                                       'name' => $repository->name,
-                                       'type' => 'elis_files'));
+                $repo = new repository_elis_files('elis_files', get_context_instance(CONTEXT_USER, $USER->id), array(
+                    'ajax' => false,
+                    'name' => $repository->name,
+                    'type' => 'elis_files')
+                );
                 if (!empty($repo)) {
                     $ret = $repo->get_listing();
                 }

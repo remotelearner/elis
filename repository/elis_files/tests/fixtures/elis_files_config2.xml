@@ -17,7 +17,7 @@
         <row>
             <value>elis_files</value>
             <value>server_host</value>
-            <value>http://elisdev.remote-learner.net</value>
+            <value>http://localhost</value>
         </row>
         <row>
             <value>elis_files</value>
@@ -32,7 +32,7 @@
         <row>deleteuserdir
             <value>elis_files</value>
             <value>server_password</value>
-            <value>rladmin</value>
+            <value>admin</value>
         </row>
         <row>
             <value>elis_files</value>

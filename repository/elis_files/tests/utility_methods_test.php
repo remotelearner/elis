@@ -93,16 +93,14 @@ class repository_elis_files_utility_methods_testcase extends elis_database_test 
      * This methods does the initial work initializing the repository
      */
     public function init_repo() {
-        if (!self::$repo) {
-            $repo = @new repository_elis_files('elis_files', SYSCONTEXTID,
-                    array('ajax' => false, 'name' => 'bogus', 'type' => 'elis_files'));
-            $filename = self::generate_temp_file(1);
+        $repo = new repository_elis_files('elis_files', SYSCONTEXTID,
+                array('ajax' => false, 'name' => 'bogus', 'type' => 'elis_files'));
+        $filename = self::generate_temp_file(1);
 
-            $uploadresponse = elis_files_upload_file('', $filename, $repo->elis_files->uuuid);
-            unlink($filename);
-            self::$fileuuid = ($uploadresponse && !empty($uploadresponse->uuid)) ? $uploadresponse->uuid : '';
-            self::$repo = $repo;
-        }
+        $uploadresponse = elis_files_upload_file('', $filename, $repo->elis_files->uuuid);
+        unlink($filename);
+        self::$fileuuid = ($uploadresponse && !empty($uploadresponse->uuid)) ? $uploadresponse->uuid : '';
+        self::$repo = $repo;
     }
 
     /**
