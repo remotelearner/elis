@@ -486,13 +486,14 @@ class etl_user_activity {
 /**
  * Run the ETL user activity cron.
  *
- * @param int $duration The length of time in seconds the cron is to run for
+ * @param string $taskname The task name
+ * @param int    $duration The length of time in seconds the cron is to run for
  * @param object $etlobj The ETL user activity object
  */
-function user_activity_etl_cron($duration = 0, &$etlobj = null) {
+function user_activity_etl_cron($taskname = '', $duration = 0, &$etlobj = null) {
     if ($etlobj === null) {
         $etlobj = new etl_user_activity($duration);
     }
-
+    // error_log("user_activity_etl_cron('{$taskname}', {$duration}, etlobj)");
     $etlobj->cron();
 }
