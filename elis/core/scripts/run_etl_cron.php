@@ -109,7 +109,7 @@ if (function_exists('pcntl_signal')) {
 }
 
 // Begin to process ETL cron.
-user_activity_etl_cron($durationinseconds, $etlobj);
+user_activity_etl_cron('CLI', $durationinseconds, $etlobj);
 
 // 0 means success.
 exit(0);
