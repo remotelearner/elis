@@ -1112,13 +1112,11 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
                   FROM {repository} r, {repository_instances} i
                  WHERE r.type = ? AND i.typeid = r.id';
         $repository = $DB->get_record_sql($sql, array('elis_files'));
-        $repo = @new repository_elis_files('elis_files', context_user::instance($USER->id),
-                array(
-                   'ajax' => false,
-                   'name' => $repository->name,
-                   'type' => 'elis_files'
-               )
-        );
+        $repo = new repository_elis_files('elis_files', context_user::instance($USER->id), array(
+            'ajax' => false,
+            'name' => $repository->name,
+            'type' => 'elis_files'
+        ));
         $haspermission = $repo->check_editing_permissions($id, $shared, $oid, $uuid, $userid);
 
         // Validation
@@ -1187,12 +1185,11 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
             $repository = $DB->get_record_sql($sql, array('elis_files'));
             if ($repository) {
                 try {
-                    $repo = @new repository_elis_files('elis_files',
-                                context_system::instance(),
-                                array(
-                                    'ajax' => false,
-                                    'name' => $repository->name,
-                                    'type' => 'elis_files'));
+                    $repo = new repository_elis_files('elis_files', context_system::instance(), array(
+                        'ajax' => false,
+                        'name' => $repository->name,
+                        'type' => 'elis_files'
+                    ));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
                 }
@@ -1276,7 +1273,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
             $repository = $DB->get_record_sql($sql, array('elis_files'));
             if ($repository) {
                 try {
-                    $repo = @new repository_elis_files('elis_files', context_system::instance(),
+                    $repo = new repository_elis_files('elis_files', context_system::instance(),
                             array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
                 } catch (Exception $e) {
                     $this->markTestSkipped();

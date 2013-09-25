@@ -100,7 +100,7 @@ class repository_elis_files_search_testcase extends elis_database_test {
             $repository = $DB->get_record_sql($sql, array('elis_files'));
             if ($repository) {
                 try {
-                    $repo = @new repository_elis_files('elis_files', context_system::instance(),
+                    $repo = new repository_elis_files('elis_files', context_system::instance(),
                             array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
