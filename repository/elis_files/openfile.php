@@ -34,6 +34,8 @@ global $USER;
 $uuid = required_param('uuid', PARAM_CLEAN);
 $filename = optional_param('filename', '', PARAM_PATH);
 
+require_sesskey();
+
 if (!$repo = repository_factory::factory()) {
     print_error('couldnotcreaterepositoryobject', 'repository');
 }

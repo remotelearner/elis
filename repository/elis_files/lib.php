@@ -91,7 +91,7 @@ class repository_elis_files extends repository {
         if (isset($node->type) && $node->type == ELIS_FILES_TYPE_DOCUMENT) {
             $result = $node->fileurl;
         } else {
-            $result = $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='.$node->uuid;
+            $result = $this->get_link($node->uuid);
         }
         return $result;
     }
@@ -220,8 +220,8 @@ class repository_elis_files extends repository {
         if ($encodedpath === true || empty($encodedpath)) {
 
             // Check referer to set proper cid and uid defaults
-            $referer = get_referer(false);
-            if ($referer !== false) {
+            $referer = $this->elis_files->get_referer();
+            if (!empty($referer)) {
                 $fromelisfilescoursepage  = stristr($referer, $CFG->wwwroot . '/repository/filemanager.php') !== false;
                 $fromcoursepage = (
                     stristr($referer, $CFG->wwwroot .'/course/modedit.php') !== false || stristr($referer, $CFG->wwwroot .'/course/view.php') !== false);
@@ -508,14 +508,12 @@ class repository_elis_files extends repository {
     /**
      * Return file URL
      *
-     * @uses $CFG
-     * @param string $url the url of file
-     * @return string
+     * @param string $uuid the uuid of file
+     * @return string the html link to the file
      */
     public function get_link($uuid) {
-        global $CFG;
-        //error_log("get_link($uuid);");
-        return $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='.$uuid;
+        // error_log("get_link({$uuid});");
+        return $this->elis_files->get_openfile_link($uuid);
     }
 
     /**
@@ -554,7 +552,7 @@ class repository_elis_files extends repository {
         error_log("send_file(storedfile = {$tmp});");
       */
         $uuid = $storedfile->get_reference();
-        $ref = $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='.$uuid;
+        $ref = $this->get_link($uuid);
         // Let Alfresco serve the file.
         // TBD: this should probably open in a new window/tab???
         header('Location: ' . $ref);
@@ -1381,7 +1379,7 @@ class repository_elis_files extends repository {
                 $file['fullname'] = $filename;
             }
             if (isset($file['source'])) {
-                $file['url'] = $CFG->wwwroot.'/repository/elis_files/openfile.php?uuid='. $file['source'];
+                $file['url'] = $this->get_link($file['source']);
             }
             //error_log("/repository/elis_files/lib.php::prepare_listing(): filepath = {$textpath}");
             $file['textpath'] = $textpath; // TBD

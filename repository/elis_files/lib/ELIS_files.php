@@ -985,8 +985,7 @@ class ELIS_files {
 
             /// Attempt to get the UUID value for the node based on it's full path.
                 if (($uuid = $this->get_uuid_from_path($npath)) !== false) {
-                    $changes[$osrc] = $CFG->wwwroot . '/repository/elis_files/' .
-                                      'openfile.php?uuid=' . $uuid;
+                    $changes[$osrc] = $this->get_openfile_link($uuid);
                 }
             }
         }
@@ -2170,9 +2169,9 @@ class ELIS_files {
     /// Attempt to determine where the file open request came from to determine if the current user
     /// has permission to access that file in Moodle (this overrides the current user's Alfresco
     /// permissions.
-        $referer = get_referer(false);
-
+        $referer = $this->get_referer();
         if ($useurl && !empty($referer)) {
+            $fromplugin  = strpos($referer, $CFG->wwwroot.'/pluginfile.php') !== false;
             $frommodule  = strpos($referer, $CFG->wwwroot . '/mod/') !== false;
             $fromblock   = strpos($referer, $CFG->wwwroot . '/blocks/') !== false;
             $frommodedit = strpos($referer, '/course/modedit.php') !== false;
@@ -2181,12 +2180,15 @@ class ELIS_files {
             $fromsite    = ($referer == $CFG->wwwroot . '/' || $referer == $CFG->wwwroot ||
                             $referer == $CFG->wwwroot . '/index.php');
 
+            // error_log("ELIS_files::permissions_check(): fromplugin={$fromplugin}, frommodule={$frommodule}, fromblock={$fromblock}"
+            //         .", frommodedit={$frommodedit}, fromeditor={$fromeditor}, fromcourse={$fromcourse}, fromsite={$fromsite}");
+
         /// If this access is coming from something inside of the mod or blocks directory, then allow access.
             if ($frommodule || $fromblock || $fromeditor) {
                 return true;
             }
 
-            if (!empty($referer) && ($frommodedit || $fromcourse || $fromsite)) {
+            if (!empty($referer) && ($frommodedit || $fromcourse || $fromsite || $fromplugin)) {
                 if ($fromsite) {
                     return true;
                 } else if ($frommodedit) {
@@ -2203,13 +2205,26 @@ class ELIS_files {
                             require_login($cm->course, false, $cm, false);
                         }
                     }
-
                 } else if ($fromcourse) {
                 /// Look for the course ID.
                     preg_match('/.+?id=([0-9]+)/', $referer, $matches);
 
                     if (count($matches) == 2) {
                         require_login($matches[1], false, false, false);
+                    }
+
+                } else if ($fromplugin) {
+                    // Look for module contextid
+                    preg_match('/pluginfile.php\/([0-9]+)\/mod/', $referer, $matches);
+                    if (count($matches) != 2 && !$CFG->slasharguments) {
+                        // Look for 'file' url parameter in referer
+                        preg_match('/file=\/([0-9]+)\/mod/', $referer, $matches);
+                    }
+
+                    if (count($matches) == 2 && ($instanceid = $DB->get_field('context', 'instanceid', array('id' => $matches[1]))) !== false
+                            && ($cm = $DB->get_record('course_modules', array('id' => $instanceid)))) {
+                        // error_log("ELIS_files::permissions_check(): pluginfile instanceid = {$instanceid}");
+                        require_login($cm->course, false, $cm, false);
                     }
                 }
             }
@@ -2486,8 +2501,8 @@ class ELIS_files {
         $opts = array();
 
         if (empty($cid) || $cid == SITEID) {
-            // In Moodle 2.5 $COURSE is no longer set correctly
-            $referer = get_referer(false);
+            // $COURSE is no longer set correctly
+            $referer = $this->get_referer();
             if (!empty($referer) && ($crspos = strpos($referer, 'course=')) !== false) {
                 $crs = substr($referer, $crspos + strlen('course='));
                 // error_log("file_browse_options(): crs = {$crs}");
@@ -3758,5 +3773,34 @@ class ELIS_files {
 
     function get_alfresco_username_fix() {
         return $this->alfresco_username_fix;
+    }
+
+    /**
+     * Specialized get_referer method to check for url parameter 'referer' if referer not set
+     * @see ELIS-8527
+     * @return bool|string the referer or false if none found
+     */
+    public function get_referer() {
+        $referer = get_referer(false);
+        if (empty($referer)) {
+            if ($referer = optional_param('referer', false, PARAM_CLEAN)) {
+                $referer = htmlspecialchars_decode(urldecode($referer));
+            }
+            // error_log("repository/elis_files::get_referer(): optional_param('referer') = {$referer}");
+        }
+        return $referer;
+    }
+
+    /**
+     * Method to return a link to an ELIS Files file
+     * @param string $uuid the uuid of the requested file
+     * @return string the html link to the repository file
+     */
+    public function get_openfile_link($uuid) {
+        global $CFG, $ME;
+        $referer = $this->get_referer();
+        $link = new moodle_url('/repository/elis_files/openfile.php', array('uuid' => $uuid, 'sesskey' => sesskey(), 'referer' => empty($referer) ? $ME : $referer));
+        // error_log("get_openfile_link({$uuid}) => {$link}");
+        return $link->out(false);
     }
 }
