@@ -93,10 +93,8 @@ class repository_elis_files_utility_methods_testcase extends elis_database_test 
      * This methods does the initial work initializing the repository
      */
     public function init_repo() {
-        global $DB;
-        $repoid = $DB->get_field('repository_instances', 'id', array('name' => 'elis files phpunit test'));
-        $repo = new repository_elis_files($repoid, SYSCONTEXTID, array('ajax' => false, 'name' => 'bogus', 'type' => 'elis_files'));
-
+        $repo = new repository_elis_files('elis_files', SYSCONTEXTID,
+                array('ajax' => false, 'name' => 'bogus', 'type' => 'elis_files'));
         $filename = self::generate_temp_file(1);
 
         $uploadresponse = elis_files_upload_file('', $filename, $repo->elis_files->uuuid);
