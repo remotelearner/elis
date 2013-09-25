@@ -1386,14 +1386,7 @@ function elis_files_process_folder_structure($sxml, $check_permissions = false, 
 
     // Create the repository object
     if ($repo == NULL) {
-        $sql = "SELECT MIN(ri.id)
-                FROM {repository} r
-                JOIN {repository_instances} ri
-                  ON r.id = ri.typeid
-                WHERE r.type = ?";
-        $instanceid = $DB->get_field_sql($sql, array('elis_files'));
-
-        $repo = new repository_elis_files($instanceid, SYSCONTEXTID, $params);
+        $repo = new repository_elis_files('elis_files', SYSCONTEXTID, $params);
     }
 
     if (!empty($sxml->folder)) {
@@ -2992,7 +2985,7 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
                 'name' => $repository->name,
                 'type' => 'elis_files'
             );
-            $repo = @new repository_elis_files('elis_files', $ctx, $options);
+            $repo = new repository_elis_files('elis_files', $ctx, $options);
 
             if (!empty($repo->elis_files)) {
                 // TBD: Is the following required???
