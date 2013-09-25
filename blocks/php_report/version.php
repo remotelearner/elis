@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$plugin->version = 2013032801;
-$plugin->release = '2.4.3.1 (Build: 20130909)';
+$plugin->version = 2013032802;
+$plugin->release = '2.4.3.2 (Build: 20130925)';
 $plugin->dependencies = array(
-    'elis_core' => 2013051401
+    'elis_core' => 2013051402
 );
