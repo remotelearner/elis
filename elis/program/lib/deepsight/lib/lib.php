@@ -140,6 +140,7 @@ function ds_process_displaytime($time, $showtime = false) {
  * @param string $class The class name that's being used.
  */
 function deepsight_autoloader($class) {
+    global $CFG;
     $dsbase = dirname(__FILE__);
     $parts = explode('_', $class);
 
