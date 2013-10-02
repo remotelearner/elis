@@ -18,13 +18,14 @@
 /**
  * Strings for component 'repository_alfresco', language 'en', branch 'MOODLE_20_STABLE'
  *
- * @package   repository_alfresco
- * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @package   repository_elis_files
+ * @copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
 
-//ELIS language strings - just copied straight over
+// ELIS language strings - just copied straight over
 $string['actions'] = 'Actions';
 $string['adminusername'] = 'Admin username override';
 $string['advanced'] = 'Advanced';
@@ -93,6 +94,9 @@ $string['configpasswordlessusersync'] = 'Your site contains users with an authen
 $string['configuserquota'] = 'Set the default value for how much storage space all Moodle users on Alfresco can use.  ' .
                              '<b>Select Unlimited for unlimited storage space.</b>';
 $string['configurecategoryfilter'] = 'Configure category filter';
+$string['connecttimeout'] = 'Connection timeout';
+$string['connecttimeoutdefault'] = 'Default: {$a}';
+$string['connecttimeoutdesc'] = 'The time in seconds for to wait for cURL web service connection to be established.';
 $string['couldnotaccessserviceat'] = 'Could not access Alfresco service at: {$a}';
 $string['couldnotdeletefile'] = '<br />Error: Could not delete: {$a}';
 $string['couldnoteditdir'] = 'Could not edit directory.';
@@ -228,6 +232,9 @@ $string['repositorysitefiles'] = 'ELIS Site Files';
 $string['repositoryuserfiles'] = 'ELIS User Files';
 $string['resetcategories'] = 'Reset categories';
 $string['resetcategoriesdesc'] = 'This will force an update of all the categories from the repository (note: this will probably take about 30-60 seconds to complete)';
+$string['responsetimeout'] = 'Response timeout';
+$string['responsetimeoutdefault'] = 'Default: {$a}';
+$string['responsetimeoutdesc'] = 'The time in seconds for to wait for a cURL web service response to be returned.  0 signifies to wait indefinitely.';
 $string['rootfolder'] = 'Root folder';
 $string['searchforfilesinrepository'] = 'Search for files in the repository';
 $string['selectfiles'] = 'Select files';
