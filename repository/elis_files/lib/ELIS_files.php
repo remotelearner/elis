@@ -21,11 +21,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository
- * @subpackage elis files
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -194,7 +193,8 @@ class ELIS_files {
 
         // Initialize the cURL session
         $session = curl_init($repourl);
-        curl_setopt($session, CURLOPT_CONNECTTIMEOUT, 3);
+
+        elis_files_set_curl_timeouts($session);
 
         // Execute the cURL call
         curl_exec($session);
