@@ -288,7 +288,7 @@ function manual_field_save_form_data($form, $field, $data) {
  * Check whether a field has view or edit capability on either Moodle or ELIS context(s).
  *
  * @param object $field the custom field we are viewing / editing
- * @param object $context (No longer used.  Remnant parameter from calls to has_capability ELIS-8561)
+ * @param object $context Moodle context
  * @param string $contexteditcap The edit capability to check if the field owner
  *                                 is set up to use the "edit this context" option for editing
  * @param string $contextviewcap The view capability to check if the field owner
@@ -338,8 +338,8 @@ function manual_field_is_view_or_editable($field, $context, $contexteditcap = NU
         $canview = $contextset->context_allowed($entityid, $entity);
     }
 
-    if ($editcap == 'disabled' || !$canedit) {
-        if (!$canview) {
+    if ($editcap == 'disabled' || (!$canedit && !has_capability($editcap, $context))) {
+        if (!$canview && !has_capability($viewcap, $context)) {
             // Do not have view or edit permissions
             return MANUAL_FIELD_NO_VIEW_OR_EDIT;
         }
@@ -354,7 +354,7 @@ function manual_field_is_view_or_editable($field, $context, $contexteditcap = NU
  *
  * @param object $form the moodle form object we are adding the element to
  * @param object $mform the moodle quick form object belonging to the moodle form
- * @param mixed $context (No longer used.  Remnant parameter from calls to has_capability ELIS-8561)
+ * @param mixed $context Moodle context
  * @param array $customdata any additional information to pass along to the element
  * @param object $field the custom field we are viewing / editing
  * @param boolean $checkrequired if true, add a required rule for this field
