@@ -101,6 +101,42 @@ class deepsight_datatable_programuser_assigned extends deepsight_datatable_progr
         $initialfilters[] = 'timecreated';
         return $initialfilters;
     }
+
+    /**
+     * Gets filter sql for permissions.
+     * @return array An array consisting of additional WHERE conditions, and parameters.
+     */
+    protected function get_filter_sql_permissions() {
+        $elementtype = 'program';
+        $elementid = $this->programid;
+        $elementid2clusterscallable = 'clustercurriculum::get_clusters';
+        return $this->get_filter_sql_permissions_elementuser_available($elementtype, $elementid, $elementid2clusterscallable);
+    }
+
+    /**
+     * Limits results according to permissions.
+     * @param array $filters An array of requested filter data. Formatted like [filtername]=>[data].
+     * @return array An array consisting of the SQL WHERE clause, and the parameters for the SQL.
+     */
+    protected function get_filter_sql(array $filters) {
+        global $USER;
+
+        list($filtersql, $filterparams) = parent::get_filter_sql($filters);
+
+        $additionalfilters = array();
+
+        // Permissions.
+        list($permadditionalfilters, $permadditionalparams) = $this->get_filter_sql_permissions();
+        $additionalfilters = array_merge($additionalfilters, $permadditionalfilters);
+        $filterparams = array_merge($filterparams, $permadditionalparams);
+
+        // Add our additional filters.
+        $filtersql = (!empty($filtersql))
+                ? $filtersql.' AND '.implode(' AND ', $additionalfilters)
+                : 'WHERE '.implode(' AND ', $additionalfilters);
+
+        return array($filtersql, $filterparams);
+    }
 }
 
 /**
