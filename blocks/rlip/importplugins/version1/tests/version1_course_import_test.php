@@ -2299,7 +2299,8 @@ class version1courseimport_testcase extends rlip_test {
         $record->fullname = 'rollovertemplatefullname';
         $record->id = $DB->insert_record('course', $record);
         // Make sure we have a section to work with.
-        $section = get_course_section(1, $record->id);
+        course_create_sections_if_missing($record, 1);
+        $section = get_fast_modinfo($record)->get_section_info(1);
 
         // Create a test forum instance.
         $forum = new stdClass;
