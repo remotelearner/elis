@@ -507,10 +507,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //make sure password satisfies the site password policy
+        // Make sure password satisfies the site password policy (but allow "changeme" which will trigger forced password change).
         if (isset($record->password)) {
             $errmsg = '';
-            if (!check_password_policy($record->password, $errmsg)) {
+            if ($record->password != 'changeme' && !check_password_policy($record->password, $errmsg)) {
                 $identifier = $this->mappings['password'];
                 $this->fslogger->log_failure("{$identifier} value of \"{$record->password}\" does not conform to your site's password policy.", 0, $filename, $this->linenumber, $record, "user");
                 return false;
@@ -748,6 +748,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $record->lang = $CFG->lang;
         }
 
+        // See if we should force password change.
+        $requireforcepasswordchange = (isset($record->password) && $record->password == 'changeme') ? true : false;
+
         //write to the database
         $record->descriptionformat = FORMAT_HTML;
         $record->mnethostid = $CFG->mnet_localhost_id;
@@ -767,6 +770,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //string to describe the user
         $user_descriptor = $this->get_user_descriptor($record);
+
+        // Set force password change if required.
+        if ($requireforcepasswordchange) {
+            set_user_preference('auth_forcepasswordchange', true, $record->id);
+        }
 
         //log success
         $this->fslogger->log_success("User with {$user_descriptor} successfully created.", 0, $filename, $this->linenumber);
@@ -889,6 +897,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
+        // See if we should force password change.
+        $requireforcepasswordchange = (isset($record->password) && $record->password == 'changeme') ? true : false;
+
+        // If we require force password change, do not actually change users existing password to "changeme".
+        if ($requireforcepasswordchange) {
+            unset($record->password);
+        }
+
         //write to the database
 
         //taken from user_update_user
@@ -908,6 +924,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         //string to describe the user
         $user_descriptor = $this->get_user_descriptor($record);
+
+        // Set force password change if required.
+        if ($requireforcepasswordchange) {
+            set_user_preference('auth_forcepasswordchange', true, $record->id);
+        }
 
         //log success
         $this->fslogger->log_success("User with {$user_descriptor} successfully updated.", 0, $filename, $this->linenumber);

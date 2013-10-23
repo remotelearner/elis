@@ -2611,4 +2611,42 @@ class version1userimport_testcase extends rlip_test {
         $this->run_core_user_import($usertoimport);
 
     }
+
+   /**
+     * Validate that force password flag is set when password "changeme" is used on user creation.
+     */
+    public function test_version1importforcepasswordchangeoncreate() {
+        global $DB;
+
+        $this->set_password_policy_for_tests();
+        $this->run_core_user_import(array('password' => 'changeme'));
+
+        $record = $DB->get_record('user', array('username' => 'rlipusername'));
+        $id = isset($record->id) ? $record->id : 0;
+        $this->assertGreaterThan(0, $id);
+
+        $record = $DB->get_record('user_preferences', array('userid' => $id));
+        $name = isset($record->name) ? $record->name : '';
+        $this->assertEquals('auth_forcepasswordchange', $name);
+    }
+
+    /**
+     * Validate that force password flag is set when password "changeme" is used on user update.
+     */
+    public function test_version1importforcepasswordchangeonupdate() {
+        global $DB;
+
+        $this->set_password_policy_for_tests();
+        $this->run_core_user_import(array());
+
+        $record = $DB->get_record('user', array('username' => 'rlipusername'));
+        $id = isset($record->id) ? $record->id : 0;
+        $this->assertGreaterThan(0, $id);
+
+        $this->run_core_user_import(array('action' => 'update', 'password' => 'changeme'));
+
+        $record = $DB->get_record('user_preferences', array('userid' => $id));
+        $name = isset($record->name) ? $record->name : '';
+        $this->assertEquals('auth_forcepasswordchange', $name);
+    }
 }
