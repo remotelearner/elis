@@ -261,6 +261,10 @@ class deepsight_datatable_programuser_testcase extends deepsight_datatable_searc
         $table = new deepsight_datatable_programuser_assigned_mock($DB, 'test', 'http://localhost', 'testuniqid');
         $table->set_programid($tableprogramid);
 
+        foreach ($expectedresults as &$result) {
+            $result['canunassign'] = '0';
+        }
+
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
         $this->assert_search_results($expectedresults, $expectedtotal, $actualresults);
     }
