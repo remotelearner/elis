@@ -24,6 +24,8 @@
  *
  */
 
+require_once(elispm::file('curriculumpage.class.php'));
+
 /**
  * A base class for managing program - user associations. (one program, multiple users)
  */
@@ -75,8 +77,47 @@ class deepsight_datatable_programuser_assigned extends deepsight_datatable_progr
         $unassignaction = new deepsight_action_programuser_unassign($this->DB, 'programuserunassign');
         $unassignaction->endpoint = (strpos($this->endpoint, '?') !== false)
                 ? $this->endpoint.'&m=action' : $this->endpoint.'?m=action';
+        $unassignaction->condition = 'function(rowdata) { return (rowdata.canunassign == \'1\') ? true : false; }';
         array_unshift($actions, $unassignaction);
         return $actions;
+    }
+
+    /**
+     * Transforms each result.
+     * @param array $row An array for a single result.
+     * @return array The transformed result.
+     */
+    protected function results_row_transform(array $row) {
+        $row = parent::results_row_transform($row);
+
+        // Whether the user can unassign from the program at all.
+        static $canunassignany = null;
+        // Whether the user can unassin any user from the program.
+        static $canunassignall = null;
+
+        // If not already set, determine whether the user can do any unassigning.
+        if ($canunassignany === null) {
+            $canunassignany = curriculumpage::can_enrol_into_curriculum($this->programid);
+        }
+
+        // If not already set, determine whether the user can unassign anyone - but only if $canunassignany is true.
+        if ($canunassignany === true && $canunassignall === null) {
+            $cpage = new curriculumpage();
+            if ($cpage->_has_capability('elis/program:program_enrol', $this->programid)) {
+                $canunassignall = true;
+            }
+        }
+
+        // Set the 'canunassign' parameter for use in javascript.
+        if ($canunassignall === true) {
+            $row['canunassign'] = '1';
+        } else if ($canunassignany === true) {
+            $row['canunassign'] = (curriculumstudent::can_manage_assoc($row['element_id'], $this->programid) === true) ? '1' : '0';
+        } else {
+            $row['canunassign'] = '0';
+        }
+
+        return $row;
     }
 
     /**
