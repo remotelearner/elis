@@ -18,11 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -2483,6 +2482,8 @@ function elis_files_install_web_script($files, $uuid) {
         curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($session, CURLOPT_POST, true);
 
+        elis_files_set_curl_timeouts($session);
+
     /// Make the call
         $return_data = curl_exec($session);
 
@@ -2628,6 +2629,8 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
         // Don't return HTTP headers. Do return the contents of the call
         curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($session, CURLOPT_USERPWD, "$user:$pass");
+
+        elis_files_set_curl_timeouts($session);
 
         // Make the call
         $return_data = curl_exec($session);
@@ -2835,8 +2838,7 @@ function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers =
         //curl_setopt($session, CURLOPT_ERRORBUFFER, 1);
     }
 
-    // Only wait 10 seconds before considering the connection to have timed out.
-    curl_setopt($session, CURLOPT_CONNECTTIMEOUT, 10);
+    elis_files_set_curl_timeouts($session);
 
 /// Make the call
     $return_data = curl_exec($session);
@@ -3107,4 +3109,19 @@ function elis_files_ISO_9075_map($categorytitle) {
 
     $cattitle = str_replace($search, $replace, $categorytitle);
     return $cattitle;
+}
+
+/**
+ * Set the timeout values for a cURL session.
+ *
+ * @param resource $session A cURL session
+ */
+function elis_files_set_curl_timeouts(&$session) {
+    $connecttimeout = get_config('elis_files', 'connect_timeout');
+    $connecttimeout = !empty($connecttimeout) ? (int)$connecttimeout : ELIS_FILES_CURL_CONNECT_TIMEOUT;
+    curl_setopt($session, CURLOPT_CONNECTTIMEOUT, $connecttimeout);
+
+    $responsetimeout = get_config('elis_files', 'response_timeout');
+    $responsetimeout = !empty($responsetimeout) ? (int)$responsetimeout : ELIS_FILES_CURL_RESPONSE_TIMEOUT;
+    curl_setopt($session, CURLOPT_TIMEOUT, $responsetimeout);
 }

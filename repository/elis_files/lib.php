@@ -20,11 +20,10 @@
  * This is a class used to browse files from alfresco
  *
  * @since      2.0
- * @package    repository
- * @subpackage elis_files
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -46,6 +45,9 @@ defined('ELIS_FILES_ALFRESCO_34') or define('ELIS_FILES_ALFRESCO_34',   '3.4');
 // Setup options for the method to transfer files into Alfresco from Moodle
 defined('ELIS_FILES_XFER_WS') || define('ELIS_FILES_XFER_WS', 'webservices');
 defined('ELIS_FILES_XFER_FTP') || define('ELIS_FILES_XFER_FTP', 'ftp');
+
+defined('ELIS_FILES_CURL_CONNECT_TIMEOUT') || define('ELIS_FILES_CURL_CONNECT_TIMEOUT', '3');
+defined('ELIS_FILES_CURL_RESPONSE_TIMEOUT') || define('ELIS_FILES_CURL_RESPONSE_TIMEOUT', '0');
 
 class repository_elis_files extends repository {
     private $ticket = null;
@@ -922,21 +924,24 @@ class repository_elis_files extends repository {
     /**
      * Return names of general options for this plugin
      * They can then be accessed in the construct with $this->
+     * @return array List of setting option names
      */
     public static function get_type_option_names() {
         $option_names = array(
-            'pluginname',           // This is for an optional plugin name change
-            'server_host',          // URL for Alfresco server
-            'server_port',          // Alfresco server port
-            'server_username',      // Alfresco server username
-            'server_password',      // Alfresco server password
-            'file_transfer_method', // Defines how we are sending files to Alfresco
-            'ftp_port',             // Defines the port used for sending files via FTP
-            'root_folder',          // Moodle root folder
-            'user_quota',           // User quota N.B. cache is now pulled from general Repository options
-            'deleteuserdir',        // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
-            'default_browse',       // Where to start the file browsing session
-            'admin_username'        // The override for a Moodle account using the 'admin' username
+                'pluginname',           // This is for an optional plugin name change
+                'server_host',          // URL for Alfresco server
+                'server_port',          // Alfresco server port
+                'server_username',      // Alfresco server username
+                'server_password',      // Alfresco server password
+                'file_transfer_method', // Defines how we are sending files to Alfresco
+                'ftp_port',             // Defines the port used for sending files via FTP
+                'root_folder',          // Moodle root folder
+                'user_quota',           // User quota N.B. cache is now pulled from general Repository options
+                'deleteuserdir',        // Whether or not to delete an Alfresco's user's folder when they are deleted in Moodle <= hmmmm
+                'default_browse',       // Where to start the file browsing session
+                'admin_username',       // The override for a Moodle account using the 'admin' username
+                'connect_timeout',      // The timeout value in seconds for establising a CURL connection
+                'response_timeout'      // The timeout value in seconds for getting a response from a CURL call
         );
 
         return $option_names;
@@ -990,6 +995,18 @@ class repository_elis_files extends repository {
         $mform->setDefault('ftp_port', '21');
         $mform->addElement('static', 'ftp_port_default', '', $ftp_indicator.'&nbsp'.get_string('ftpportdefault', 'repository_elis_files'));
         $mform->addElement('static', 'ftp_port_desc', '', get_string('ftpportdesc', 'repository_elis_files'));
+
+        $mform->addElement('text', 'connect_timeout', get_string('connecttimeout', 'repository_elis_files'), array('size' => '10'));
+        $mform->setType('connect_timeout', PARAM_INT);
+        $mform->setDefault('connect_timeout', ELIS_FILES_CURL_CONNECT_TIMEOUT);
+        $mform->addElement('static', 'connect_timeout_default', '', get_string('connecttimeoutdefault', 'repository_elis_files', ELIS_FILES_CURL_CONNECT_TIMEOUT));
+        $mform->addElement('static', 'connect_timeout_desc', '', get_string('connecttimeoutdesc', 'repository_elis_files'));
+
+        $mform->addElement('text', 'response_timeout', get_string('responsetimeout', 'repository_elis_files'), array('size' => '10'));
+        $mform->setType('response_timeout', PARAM_INT);
+        $mform->setDefault('response_timeout', ELIS_FILES_CURL_RESPONSE_TIMEOUT);
+        $mform->addElement('static', 'response_timeout_default', '', get_string('responsetimeoutdefault', 'repository_elis_files', ELIS_FILES_CURL_RESPONSE_TIMEOUT));
+        $mform->addElement('static', 'response_timeout_desc', '', get_string('responsetimeoutdesc', 'repository_elis_files'));
 
         // Check for installed categories table or display 'plugin not yet installed'
         if ($DB->get_manager()->table_exists('elis_files_categories')) {
