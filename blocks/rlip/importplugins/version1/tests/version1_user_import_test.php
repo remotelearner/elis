@@ -2578,4 +2578,44 @@ class version1userimport_testcase extends rlip_test {
         // Data validation.
         $this->assert_record_exists('user', $data);
     }
+
+    /**
+     * Validate version1 import detects duplicate users under a specific condition.
+     *
+     * This verifies that duplicate users are detected when:
+     *     - The user being imported has the email of an existing user, the username of another existing user, and the
+     *     allowduplicateemails setting is on.
+     */
+    public function test_version1importdetectsduplicateswhenmultipleexist() {
+        global $DB, $CFG;
+        $userone = array(
+            'username' => 'three',
+            'mnethostid' => $CFG->mnet_localhost_id,
+            'idnumber' => 'one',
+            'email' => 'email@example.com',
+            'firstname' => 'Test',
+            'lastname' => 'User'
+        );
+
+        $usertwo = array(
+            'username' => 'two',
+            'mnethostid' => $CFG->mnet_localhost_id,
+            'idnumber' => 'two',
+            'email' => 'email2@example.com',
+            'firstname' => 'Test',
+            'lastname' => 'User'
+        );
+        $DB->insert_record('user', $userone);
+        $DB->insert_record('user', $usertwo);
+        set_config('allowduplicateemails', 1, 'rlipimport_version1');
+        $usertoimport = array(
+            'username' => 'two',
+            'mnethostid' => $CFG->mnet_localhost_id,
+            'idnumber' => 'two',
+            'email' => 'email@example.com'
+        );
+        // Run the import.
+        $this->run_core_user_import($usertoimport);
+
+    }
 }
