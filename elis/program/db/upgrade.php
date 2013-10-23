@@ -772,5 +772,13 @@ function xmldb_elis_program_upgrade($oldversion=0) {
         upgrade_plugin_savepoint($result, 2013082101, 'elis', 'program');
     }
 
+    if ($result && $oldversion < 2013082103) {
+        require_once(dirname(__FILE__).'/../lib/lib.php');
+        pm_set_config('notify_addedtowaitlist_user', 1);
+        pm_set_config('notify_enroledfromwaitlist_user', 1);
+        pm_set_config('notify_incompletecourse_user', 1);
+        upgrade_plugin_savepoint($result, 2013082103, 'elis', 'program');
+    }
+
     return $result;
 }
