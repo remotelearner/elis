@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    rlipimport_version1
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -2576,9 +2575,16 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
         }
 
-        //convert the header into a data record
+        // Convert the header into a data record.
         $record = new stdClass;
         foreach ($header as $value) {
+            if (empty($value)) {
+                $message = "Import file {$filename} was not processed because one of the header columns is ".
+                        "empty. Please fix the import file and re-upload it.";
+                $this->fslogger->log_failure($message, 0, $filename, $this->linenumber);
+                $this->dblogger->signal_missing_columns($message);
+                return false;
+            }
             $record->$value = $value;
         }
 

@@ -19,7 +19,7 @@
  * @package    rlipimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -6936,6 +6936,30 @@ class version1filesystemlogging_testcase extends rlip_test {
         $params = array('statusmessage' => $message);
         $exists = $DB->record_exists_select(RLIP_LOG_TABLE, $select, $params);
         $this->assertTrue($exists);
+    }
+
+    /**
+     * Validate that the verison 1 import plugin logs the exact message required to the
+     * file system when the user import file has an empty header field
+     */
+    public function test_version1userimportlogsemptyheadercolumn() {
+        $data = array(
+            'action'    => 'create',
+            'idnumber'  => 'testuser',
+            'username'  => 'testuser',
+            'email'     => 'testuser@example.com',
+            'firstname' => 'testfirstname',
+            'lastname'  => 'testlastname',
+            'password'  => 'Testpassword!0',
+            'city'      => 'Waterloo',
+            'country'   => 'CA',
+            ''          => ''
+        );
+
+        $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the header columns is empty. ";
+        $expectederror .= "Please fix the import file and re-upload it.\n";
+
+        $this->assert_data_produces_error($data, $expectederror, 'user');
     }
 
     /**
