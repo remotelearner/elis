@@ -2609,6 +2609,133 @@ class version1userimport_testcase extends rlip_test {
         );
         // Run the import.
         $this->run_core_user_import($usertoimport);
+    }
 
+    /**
+     * Test main newusermail() function.
+     */
+    public function test_version1importnewuseremail() {
+        global $CFG; // This is needed by the required files.
+        require_once(dirname(__FILE__).'/other/rlip_importplugin_version1_fakeemail.php');
+        $importplugin = new rlip_importplugin_version1_fakeemail();
+
+        $testuser = new stdClass;
+        $testuser->username = 'testusername';
+        $testuser->idnumber = 'testidnumber';
+        $testuser->firstname = 'testfirstname';
+        $testuser->lastname = 'testlastname';
+        $testuser->email = 'testemail@example.com';
+
+        // Test false return when not enabled.
+        set_config('newuseremailenabled', '0', 'rlipimport_version1');
+        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1');
+        set_config('newuseremailtemplate', 'Test Body', 'rlipimport_version1');
+        $result = $importplugin->newuseremail($testuser);
+        $this->assertFalse($result);
+
+        // Test false return when enabled but empty template.
+        set_config('newuseremailenabled', '1', 'rlipimport_version1');
+        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1');
+        set_config('newuseremailtemplate', '', 'rlipimport_version1');
+        $result = $importplugin->newuseremail($testuser);
+        $this->assertFalse($result);
+
+        // Test false return when enabled and has template, but user has empty email.
+        set_config('newuseremailenabled', '1', 'rlipimport_version1');
+        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1');
+        set_config('newuseremailtemplate', 'Test Body', 'rlipimport_version1');
+        $testuser->email = '';
+        $result = $importplugin->newuseremail($testuser);
+        $this->assertFalse($result);
+        $testuser->email = 'test@example.com';
+
+        // Test success when enabled, has template text, and user has email.
+        $testsubject = 'Test Subject';
+        $testbody = 'Test Body';
+        set_config('newuseremailenabled', '1', 'rlipimport_version1');
+        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1');
+        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1');
+        $result = $importplugin->newuseremail($testuser);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($testuser, $result['user']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals($testsubject, $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($testbody, $result['body']);
+
+        // Test that subject is replaced by empty string when not present.
+        $testsubject = null;
+        $testbody = 'Test Body';
+        set_config('newuseremailenabled', '1', 'rlipimport_version1');
+        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1');
+        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1');
+        $result = $importplugin->newuseremail($testuser);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($testuser, $result['user']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals('', $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($testbody, $result['body']);
+
+        // Full testing of replacement is done below, but just test that it's being done at all from the main function.
+        $testsubject = 'Test Subject';
+        $testbody = 'Test Body %%username%%';
+        $expectedtestbody = 'Test Body '.$testuser->username;
+        set_config('newuseremailenabled', '1', 'rlipimport_version1');
+        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1');
+        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1');
+        $result = $importplugin->newuseremail($testuser);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($testuser, $result['user']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals($testsubject, $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($expectedtestbody, $result['body']);
+    }
+
+    /**
+     * Test new user email notifications.
+     */
+    public function test_version1importnewuseremailgenerate() {
+        global $CFG; // This is needed by the required files.
+        require_once(dirname(__FILE__).'/other/rlip_importplugin_version1_fakeemail.php');
+        $importplugin = new rlip_importplugin_version1_fakeemail();
+
+        $templatetext = '<p>Hi %%fullname%%, your account has been created! It has the following information
+            Sitename: %%sitename%%
+            Login Link: %%loginlink%%
+            Username: %%username%%
+            Password: %%password%%
+            Idnumber: %%idnumber%%
+            First Name: %%firstname%%
+            Last Name: %%lastname%%
+            Full Name: %%fullname%%
+            Email Address: %%email%%</p>';
+        $user = new stdClass;
+        $user->username = 'testusername';
+        $user->cleartextpassword = 'cleartextpassword';
+        $user->idnumber = 'testidnumber';
+        $user->firstname = 'testfirstname';
+        $user->lastname = 'testlastname';
+        $user->email = 'testemail@example.com';
+        $actualtext = $importplugin->newuseremail_generate($templatetext, $user);
+
+        $expectedtext = '<p>Hi testfirstname testlastname, your account has been created! It has the following information
+            Sitename: PHPUnit test site
+            Login Link: http://www.example.com/moodle/login/index.php
+            Username: testusername
+            Password: cleartextpassword
+            Idnumber: testidnumber
+            First Name: testfirstname
+            Last Name: testlastname
+            Full Name: testfirstname testlastname
+            Email Address: testemail@example.com</p>';
+        $this->assertEquals($expectedtext, $actualtext);
     }
 }
