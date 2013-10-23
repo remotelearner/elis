@@ -19,7 +19,7 @@
  * @package    rlipimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -639,7 +639,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
     }
 
     /**
-     * Validate that the verison 1 import plugin logs the exact message required to the
+     * Validate that the verison 1 ELIS import plugin logs the exact message required to the
      * file system when the user import file is missing required fields
      */
     public function test_version1elisuserimportlogsmissingcolumns() {
@@ -688,6 +688,30 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is ";
         $expectederror .= "required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload ";
         $expectederror .= "it.\n";
+
+        $this->assert_data_produces_error($data, $expectederror, 'user');
+    }
+
+    /**
+     * Validate that the verison 1 import plugin logs the exact message required to the
+     * file system when the user import file has an empty header field
+     */
+    public function test_version1elisuserimportlogsemptyheadercolumn() {
+        $data = array(
+            'action'    => 'create',
+            'idnumber'  => 'testuser',
+            'username'  => 'testuser',
+            'email'     => 'testuser@example.com',
+            'firstname' => 'testfirstname',
+            'lastname'  => 'testlastname',
+            'password'  => 'Testpassword!0',
+            'city'      => 'Waterloo',
+            'country'   => 'CA',
+            ''          => ''
+        );
+
+        $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the header columns is empty. ";
+        $expectederror .= "Please fix the import file and re-upload it.\n";
 
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
