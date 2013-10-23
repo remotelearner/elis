@@ -104,45 +104,35 @@ class individual_course_progress_report extends table_report {
         require_once($CFG->dirroot.'/elis/program/lib/deprecatedlib.php');
     }
 
-    function get_header_entries($export_format) {
-        return array(); // moved to transform_grouping_header_label()
-    }
-
     /**
-     * Transforms a heading element displayed above the columns into a listing of such heading elements
+     * Get header entries for report
      *
-     * @param   string array           $grouping_current  Mapping of field names to current values in the grouping
-     * @param   table_report_grouping  $grouping          Object containing all info about the current level of grouping
-     *                                                    being handled
-     * @param   stdClass               $datum             The most recent record encountered
-     * @param   string    $export_format  The format being used to render the report
-     * @uses    $DB
-     * @return  string array                              Set of text entries to display
+     * @param string $exportformat The format being used to render the report
+     * @return string array Set of text entries to display
      */
-    function transform_grouping_header_label($grouping_current, $grouping, $datum, $export_format) {
+    public function get_header_entries($exportformat) {
         global $DB;
 
-      /* *** Debug ***
-        ob_start();
-        echo "Grouping Current = ";
-        var_dump($grouping_current);
-        echo "\n Grouping = ";
-        var_dump($grouping);
-        $tmp = ob_get_contents();
-        ob_end_clean();
-        error_log("ICPR::transform_grouping_header_label(): {$tmp}");
-      */
-
         $headers = array();
-        if ($grouping->id != 'user' || empty($datum->userid)) {
+        if ($this->nopermission) {
             return $headers;
         }
+        $userobj = null;
+        $clusternames = array();
 
-        $userid = $datum->userid;
-        $cluster_names = array();
-        $user_obj = new user($userid);
-        if (!empty($user_obj)) {
-            $user_obj->load();
+        $cmuserfilter = php_report_filtering_get_active_filter_values($this->get_report_shortname(), 'filterautoc', $this->filter);
+      /* *** Debug ***
+        ob_start();
+        var_dump($cmuserfilter);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("get_header_entries({$exportformat}): cmuserfilter = {$tmp}");
+      */
+
+        if (!empty($cmuserfilter[0]['value'])) {
+            $cmuserid = $cmuserfilter[0]['value'];
+            $userobj = new user($cmuserid);
+            $userobj->load();
 
             // Find all the clusters this user is in
             $sql = "SELECT DISTINCT clst.name
@@ -151,39 +141,50 @@ class individual_course_progress_report extends table_report {
                       ON clst.id = usrclst.clusterid
                     WHERE usrclst.userid = ?
                     ORDER BY clst.name";
-            $params = array($userid);
+            $params = array($cmuserid);
             if ($clusters = $DB->get_recordset_sql($sql, $params)) {
                 foreach ($clusters as $cluster) {
-                    $cluster_names[] = $cluster->name;
+                    $clusternames[] = $cluster->name;
                 }
             }
+        }
+        if (!empty($userobj)) {
+            $headerobj = new stdClass;
+            $headerobj->label = get_string('header_student', $this->lang_file).':';
+            $headerobj->value = fullname($userobj->to_object());
+            $headerobj->css_identifier = '';
+            $headers[] = $headerobj;
 
-            $headers[] = $this->add_grouping_header($grouping->label,
-                           get_string('header_student', $this->lang_file).': '.
-                           fullname($user_obj->to_object()), $export_format);
+            $headerobj = new stdClass;
+            $headerobj->label = get_string('header_id', $this->lang_file).':';
+            $headerobj->value = $userobj->idnumber;
+            $headerobj->css_identifier = '';
+            $headers[] = $headerobj;
 
-            $headers[] = $this->add_grouping_header($grouping->label,
-                           get_string('header_id', $this->lang_file).': '.
-                           $user_obj->idnumber, $export_format);
+            $headerobj = new stdClass;
+            $headerobj->label = get_string('header_email', $this->lang_file).':';
+            $headerobj->value = $userobj->email;
+            $headerobj->css_identifier = '';
+            $headers[] = $headerobj;
 
-            $headers[] = $this->add_grouping_header($grouping->label,
-                           get_string('header_email', $this->lang_file).': '.
-                           $user_obj->email, $export_format);
+            $headerobj = new stdClass;
+            $headerobj->label = get_string('header_reg_date', $this->lang_file).':';
+            $headerobj->value = $this->userdate($userobj->timecreated);
+            $headerobj->css_identifier = '';
+            $headers[] = $headerobj;
 
-            $headers[] = $this->add_grouping_header($grouping->label,
-                           get_string('header_reg_date', $this->lang_file).': '.
-                           $this->userdate($user_obj->timecreated), $export_format);
+            $headerobj = new stdClass;
+            $headerobj->label = get_string('header_cluster', $this->lang_file).':';
+            $headerobj->value = (count($clusternames) > 0) ? implode(', ', $clusternames)
+                    : get_string('not_available', $this->lang_file);
+            $headerobj->css_identifier = '';
+            $headers[] = $headerobj;
 
-            $headers[] = $this->add_grouping_header($grouping->label,
-                           get_string('header_cluster', $this->lang_file).': '.
-                           (count($cluster_names) > 0
-                               ? implode(', ', $cluster_names)
-                               : get_string('not_available', $this->lang_file)),
-                           $export_format);
-
-            $headers[] = $this->add_grouping_header($grouping->label,
-                           get_string('header_date', $this->lang_file).': '.
-                           $this->userdate(time()), $export_format);
+            $headerobj = new stdClass;
+            $headerobj->label = get_string('header_date', $this->lang_file).':';
+            $headerobj->value = $this->userdate(time());
+            $headerobj->css_identifier = '';
+            $headers[] = $headerobj;
         }
 
         return $headers;
@@ -606,10 +607,8 @@ class individual_course_progress_report extends table_report {
      *
      * @return  array List of objects containing grouping id, field names, display labels and sort order
      */
-     function get_grouping_fields() {
-         return array(
-                    new table_report_grouping('user', 'crlmuser.id', '', 'ASC', array(), 'above', '1')
-                );
+     public function get_grouping_fields() {
+         return array();
      }
 
     /**
