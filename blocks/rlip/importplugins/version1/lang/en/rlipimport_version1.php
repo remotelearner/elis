@@ -48,6 +48,7 @@ $string['coursetab'] = 'Course fields';
 $string['creategroupsandgroupings'] = 'Create groups and groupings';
 $string['createorupdate'] = 'Create or update';
 $string['datahandling'] = 'Data handling';
+$string['emails'] = 'Emails';
 $string['emailnotification'] = 'Email notification';
 $string['enrolment_schedule_file'] = 'Enrolment import filename';
 $string['enrolmentfile'] = 'Enrolment file';
@@ -60,6 +61,25 @@ $string['logging'] = 'Logging';
 $string['mappingscancelled'] = 'Previously saved field mappings successfully restored';
 $string['mappingsreset'] = 'Default field mappings successfully restored';
 $string['mappingssaved'] = 'Field mappings successfully saved';
+$string['newuseremailenabledname'] = 'Send New User Email Notifications';
+$string['newuseremailenableddesc'] = 'When a new user is created with this import plugin, send them an email using the template below';
+$string['newuseremailsubjectname'] = 'New User Email Notifications Subject';
+$string['newuseremailsubjectdesc'] = 'This is the text to use for the subject line of the email.';
+$string['newuseremailtemplatename'] = 'New User Email Notifications Template';
+$string['newuseremailtemplatedesc'] = 'If enabled, send new users created with this plugin the above text. Note that if the above text is empty, no email will be sent.<br />
+<b>The following placeholders are available:</b>
+<ul>
+<li><b>%%sitename%%</b>: The site\'s name.</li>
+<li><b>%%loginlink%%</b>: A URL to the site\'s login page</li>
+<li><b>%%username%%</b>: The user\'s username.</li>
+<li><b>%%idnumber%%</b>: The user\'s idnumber.</li>
+<li><b>%%password%%</b>: The user\'s password.</li>
+<li><b>%%firstname%%</b>: The user\'s first name.</li>
+<li><b>%%lastname%%</b>: The user\'s last name.</li>
+<li><b>%%fullname%%</b>: The user\'s full name.</li>
+<li><b>%%email%%</b>: The user\'s email address.</li>
+</ul>
+';
 $string['pluginname'] = 'Version 1 import';
 $string['scheduling'] = 'Scheduling';
 $string['import_files_path'] = 'Import files path';
