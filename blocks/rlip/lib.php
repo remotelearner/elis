@@ -651,11 +651,16 @@ function run_ipjob($taskname, $maxruntime = 0) {
         // Check if a job is already in progress.
         try {
             $like = $DB->sql_like('config', '?');
-            $inprogress = $DB->get_field_select(RLIP_SCHEDULE_TABLE, 'id', 'plugin = ? AND '.$like, array($plugin, '%s:5:\"state\";%'));
+            $inprogress = $DB->get_field_select(RLIP_SCHEDULE_TABLE, 'id', 'plugin = ? AND '.$like, array($plugin, '%s:5:"state";%'));
         } catch (dml_multiple_records_exception $e) {
             $inprogress = 0; // Multiple in progress so set to != $id and !== false
         }
         if ($inprogress !== false && $inprogress != $id) {
+            // Put times back to pre-run state.
+            $task->nextruntime = $ipjob->nextruntime;
+            $task->lastruntime = $ipjob->lastruntime;
+            $DB->update_record('elis_scheduled_tasks', $task);
+            mtrace("{$fcnname}: Similiar task has not completed yet!");
             return false;
         } else if (empty($disabledincron)) {
             //record last runtime
