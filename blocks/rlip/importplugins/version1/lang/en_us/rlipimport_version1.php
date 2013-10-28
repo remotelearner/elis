@@ -33,4 +33,24 @@ $string['configcreategroupsandgroupings'] = 'If enabled, groups and groupings ca
 $string['enrolment_schedule_file'] = 'Enrollment import filename';
 $string['enrolmentfile'] = 'Enrollment file';
 $string['enrolmenttab'] = 'Enrollment fields';
-
+$string['newenrolmentemailenabledname'] = 'Send New Enrollment Email Notifications';
+$string['newenrolmentemailenableddesc'] = 'When a user is enrolled into a course with this import plugin, send them an email using the template below.';
+$string['newenrolmentemailfromname'] = 'Send Enrollment Email from';
+$string['newenrolmentemailsubjectname'] = 'New Enrollment Email Notifications Subject';
+$string['newenrolmentemailtemplatename'] = 'New Enrollment Email Notifications Template';
+$string['newenrolmentemailtemplatedesc'] = 'If enabled, send users enrolled with this plugin the above text. Note that if the above text is empty, no email will be sent.<br />
+<b>The following placeholders are available:</b>
+<ul>
+<li><b>%%sitename%%</b>: The site\'s name.</li>
+<li><b>%%user_username%%</b>: The user\'s username.</li>
+<li><b>%%user_idnumber%%</b>: The user\'s idnumber.</li>
+<li><b>%%user_firstname%%</b>: The user\'s first name.</li>
+<li><b>%%user_lastname%%</b>: The user\'s last name.</li>
+<li><b>%%user_fullname%%</b>: The user\'s full name.</li>
+<li><b>%%user_email%%</b>: The user\'s email address.</li>
+<li><b>%%course_fullname%%</b>: The full name of the course..</li>
+<li><b>%%course_shortname%%</b>: The shortname of the course.</li>
+<li><b>%%course_idnumber%%</b>: The idnumber of the course.</li>
+<li><b>%%course_summary%%</b>: The course\'s summary.</li>
+</ul>
+';
