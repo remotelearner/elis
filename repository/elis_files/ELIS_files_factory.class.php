@@ -6,7 +6,7 @@
  * Note: shamelessly "borrowed" from /enrol/enrol.class.php
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository
- * @subpackage elis_files
+ * @package    repository_elis_files
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -58,6 +57,11 @@
 
 class repository_factory {
 
+    /**
+     * Factory method for the ELIS Files repository
+     *
+     * @return object|bool The repository object or false upon failure
+     */
     public static function factory() {
         global $SESSION, $USER;
 
@@ -65,11 +69,6 @@ class repository_factory {
             require_once(dirname(__FILE__).'/lib/ELIS_files.php');
 
             $class = "ELIS_files";
-            if (isset($SESSION->repo) && is_siteadmin($USER->id) &&
-                !get_config(ELIS_files::$plugin_name, 'initialized')) {
-//                 error_log("repository_factory::factory(): unsetting SESSION->repo");
-                unset($SESSION->repo);
-            }
 
             if (!(isset($SESSION->repo))) {
                 $SESSION->repo = new $class;
