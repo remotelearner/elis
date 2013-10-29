@@ -153,7 +153,7 @@ function rlipimport_version1elis_save_mapping($entitytype, $options, $formdata) 
  */
 function rlipimport_version1elis_reset_mappings($entitytype) {
     global $CFG, $DB;
-    $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+    $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
     require_once($file);
 
     $sql = "UPDATE {".RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE."}

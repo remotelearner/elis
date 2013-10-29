@@ -82,7 +82,7 @@ class version1elisfilesystemsuccesslogging_testcase extends rlip_elis_test {
 
         // Get logfile name.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1';
+        $plugin = 'rlipimport_version1elis';
         $format = get_string('logfile_timestamp', 'block_rlip');
         $testfilename = $filepath.'/'.$plugintype.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         // Get most recent logfile.
