@@ -52,3 +52,31 @@ $settings->add(new admin_setting_configtext('rlipimport_version1elis/emailnotifi
 $settings->add(new admin_setting_configcheckbox('rlipimport_version1elis/allowduplicateemails',
                                             get_string('allowduplicateemails','rlipimport_version1elis'),
                                             get_string('configallowduplicateemails','rlipimport_version1elis'), ''));
+
+// Start of "emails" section.
+$settings->add(new admin_setting_heading('rlipimport_version1elis/emails', get_string('emails', 'rlipimport_version1elis'), ''));
+
+// Toggle new enrolment email notifications.
+$settingkey = 'rlipimport_version1elis/newenrolmentemailenabled';
+$settingname = get_string('newenrolmentemailenabledname', 'rlipimport_version1elis');
+$settingdesc = get_string('newenrolmentemailenableddesc', 'rlipimport_version1elis');
+$settings->add(new admin_setting_configcheckbox($settingkey, $settingname, $settingdesc, '0'));
+
+$settingkey = 'rlipimport_version1elis/newenrolmentemailfrom';
+$settingname = get_string('newenrolmentemailfromname', 'rlipimport_version1elis');
+$settingdesc = get_string('newenrolmentemailfromdesc', 'rlipimport_version1elis');
+$choices = array(
+    'admin' => get_string('admin', 'rlipimport_version1elis'),
+    'teacher' => get_string('teacher', 'rlipimport_version1elis')
+);
+$settings->add(new admin_setting_configselect($settingkey, $settingname, $settingdesc, 'admin', $choices));
+
+$settingkey = 'rlipimport_version1elis/newenrolmentemailsubject';
+$settingname = get_string('newenrolmentemailsubjectname', 'rlipimport_version1elis');
+$settingdesc = get_string('newenrolmentemailsubjectdesc', 'rlipimport_version1elis');
+$settings->add(new admin_setting_configtext($settingkey, $settingname, $settingdesc, ''));
+
+$settingkey = 'rlipimport_version1elis/newenrolmentemailtemplate';
+$settingname = get_string('newenrolmentemailtemplatename', 'rlipimport_version1elis');
+$settingdesc = get_string('newenrolmentemailtemplatedesc', 'rlipimport_version1elis');
+$settings->add(new admin_setting_confightmleditor($settingkey, $settingname, $settingdesc, '', PARAM_RAW, '60', '20'));
