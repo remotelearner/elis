@@ -754,6 +754,19 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Send the email.
+     *
+     * @param object $user The user the email is to.
+     * @param object $from The user the email is from.
+     * @param string $subject The subject of the email.
+     * @param string $body The body of the email.
+     * @return bool Success/Failure.
+     */
+    public function sendemail($user, $from, $subject, $body) {
+        return email_to_user($user, $from, $subject, strip_tags($body), $body);
+    }
+
+    /**
      * Validates that core user fields are set to valid values, if they are set
      * on the import record
      *
@@ -3864,6 +3877,8 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $student->save();
 
+        $this->newenrolmentemail($student);
+
         //TODO: consider refactoring once ELIS-6546 is resolved
         if (isset($student->completestatusid) && $student->completestatusid == STUSTATUS_PASSED) {
             $student->complete();
@@ -3876,6 +3891,107 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
         return true;
+    }
+
+    /**
+     * Send an email to the user when they are enroled.
+     *
+     * @param student $student The student object of for the enrolment.
+     * @return bool Success/Failure.
+     */
+    public function newenrolmentemail(student $student) {
+        global $DB;
+
+        if (!empty($student->no_moodle_enrol)) {
+            return false;
+        }
+
+        // Look for attached Moodle course, and get the course info.
+        $moodlecourseid = moodle_get_course($student->classid);
+        if (empty($moodlecourseid)) {
+            return false;
+        }
+        $course = $DB->get_record('course', array('id' => $moodlecourseid));
+        if (empty($course)) {
+            return false;
+        }
+
+        // Get the elis user and the moodle user.
+        $user = new user($student->userid);
+        $muser = $user->get_moodleuser();
+        if (empty($muser)) {
+            return false;
+        }
+
+        // Check whether emails are enabled.
+        $enabled = get_config('rlipimport_version1elis', 'newenrolmentemailenabled');
+        if (empty($enabled)) {
+            return false;
+        }
+
+        // Check whether email text has been set.
+        $template = get_config('rlipimport_version1elis', 'newenrolmentemailtemplate');
+        if (empty($template)) {
+            return false;
+        }
+
+        // Ensure Moodle user has an email address.
+        if (empty($muser->email)) {
+            return false;
+        }
+
+        // Get the email subject line, set an empty string if necessary.
+        $subject = get_config('rlipimport_version1elis', 'newenrolmentemailsubject');
+        if (empty($subject) || !is_string($subject)) {
+            $subject = '';
+        }
+
+        // Get the user the email will be from.
+        $from = get_config('rlipimport_version1elis', 'newenrolmentemailfrom');
+        if ($from === 'teacher') {
+            $context = context_course::instance($course->id);
+            $cap = 'moodle/course:update';
+            if ($users = get_users_by_capability($context, $cap, 'u.*', 'u.id ASC', '', '', '', '', false, true)) {
+                $users = sort_by_roleassignment_authority($users, $context);
+                $from = current($users);
+            } else {
+                $from = get_admin();
+            }
+        } else {
+            $from = get_admin();
+        }
+
+        // Generate email.
+        $body = $this->newenrolmentemail_generate($template, $muser, $course);
+
+        // Send!
+        return $this->sendemail($muser, $from, $subject, $body);
+    }
+
+    /**
+     * Generate a new enrolment email based on an email template, a user, and a course.
+     *
+     * @param string $templatetext The template for the message.
+     * @param object $user The user object to use for placeholder substitutions.
+     * @param object $course The course object to use for placeholder substitutions.
+     * @return string The generated email.
+     */
+    public function newenrolmentemail_generate($templatetext, $user, $course) {
+        global $SITE;
+        $placeholders = array(
+            '%%sitename%%' => $SITE->fullname,
+            '%%user_username%%' => (isset($user->username)) ?  $user->username : '',
+            '%%user_idnumber%%' => (isset($user->idnumber)) ?  $user->idnumber : '',
+            '%%user_firstname%%' => (isset($user->firstname)) ?  $user->firstname : '',
+            '%%user_lastname%%' => (isset($user->lastname)) ?  $user->lastname : '',
+            '%%user_fullname%%' => fullname($user),
+            '%%user_email%%' => (isset($user->email)) ? $user->email : '',
+            '%%course_fullname%%' => (isset($course->fullname)) ? $course->fullname : '',
+            '%%course_shortname%%' => (isset($course->shortname)) ? $course->shortname : '',
+            '%%course_idnumber%%' => (isset($course->idnumber)) ? $course->idnumber : '',
+            '%%course_summary%%' => (isset($course->summary)) ? $course->summary : '',
+        );
+        return str_replace(array_keys($placeholders), array_values($placeholders), $templatetext);
     }
 
     /**
