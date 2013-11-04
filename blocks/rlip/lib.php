@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -649,8 +648,21 @@ function run_ipjob($taskname, $maxruntime = 0) {
     // Set the next run time & lastruntime
     if ($task = $DB->get_record('elis_scheduled_tasks',
                                 array('taskname' => $taskname))) {
-
-        if (empty($disabledincron)) {
+        // Check if a job is already in progress.
+        try {
+            $like = $DB->sql_like('config', '?');
+            $inprogress = $DB->get_field_select(RLIP_SCHEDULE_TABLE, 'id', 'plugin = ? AND '.$like, array($plugin, '%s:5:"state";%'));
+        } catch (dml_multiple_records_exception $e) {
+            $inprogress = 0; // Multiple in progress so set to != $id and !== false
+        }
+        if ($inprogress !== false && $inprogress != $id) {
+            // Put times back to pre-run state.
+            $task->nextruntime = $ipjob->nextruntime;
+            $task->lastruntime = $ipjob->lastruntime;
+            $DB->update_record('elis_scheduled_tasks', $task);
+            mtrace("{$fcnname}: Similiar task has not completed yet!");
+            return false;
+        } else if (empty($disabledincron)) {
             //record last runtime
             $lastruntime = (int)($ipjob->lastruntime);
             $nextruntime = rlip_calc_next_runtime($targetstarttime, $data['period']);
