@@ -60,3 +60,23 @@ $settings->add(new admin_setting_configtext('rlipimport_version1/emailnotificati
 $settings->add(new admin_setting_configcheckbox('rlipimport_version1/allowduplicateemails',
                                             get_string('allowduplicateemails','rlipimport_version1elis'),
                                             get_string('configallowduplicateemails','rlipimport_version1elis'), ''));
+
+// Start of "emails" section.
+$settings->add(new admin_setting_heading('rlipimport_version1/emails', get_string('emails', 'rlipimport_version1'), ''));
+
+// Toggle new user email notifications.
+$newuseremailenabled = 'rlipimport_version1/newuseremailenabled';
+$newuseremailenabledname = get_string('newuseremailenabledname', 'rlipimport_version1');
+$newuseremailenableddesc = get_string('newuseremailenableddesc', 'rlipimport_version1');
+$settings->add(new admin_setting_configcheckbox($newuseremailenabled, $newuseremailenabledname, $newuseremailenableddesc, '0'));
+
+$newuseremailsubject = 'rlipimport_version1/newuseremailsubject';
+$newuseremailsubjectname = get_string('newuseremailsubjectname', 'rlipimport_version1');
+$newuseremailsubjectdesc = get_string('newuseremailsubjectdesc', 'rlipimport_version1');
+$settings->add(new admin_setting_configtext($newuseremailsubject, $newuseremailsubjectname, $newuseremailsubjectdesc, ''));
+
+$newuseremailtemplate = 'rlipimport_version1/newuseremailtemplate';
+$newuseremailtemplatename = get_string('newuseremailtemplatename', 'rlipimport_version1');
+$newuseremailtemplatedesc = get_string('newuseremailtemplatedesc', 'rlipimport_version1');
+$settings->add(new admin_setting_confightmleditor($newuseremailtemplate, $newuseremailtemplatename, $newuseremailtemplatedesc, '',
+        PARAM_RAW, '60', '20'));
