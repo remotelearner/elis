@@ -2064,6 +2064,93 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Send an email to the user when they are enroled.
+     *
+     * @param int $user The user id being enroled.
+     * @param int $course The course id they're being enroled into.
+     * @return bool Success/Failure.
+     */
+    public function newenrolmentemail($userid, $courseid) {
+        global $DB;
+
+        if (empty($userid) || empty($courseid)) {
+            return false;
+        }
+
+        $user = $DB->get_record('user', array('id' => $userid));
+        $course = $DB->get_record('course', array('id' => $courseid));
+
+        if (empty($user) || empty($course)) {
+            return false;
+        }
+
+        $enabled = get_config('rlipimport_version1', 'newenrolmentemailenabled');
+        if (empty($enabled)) {
+            // Emails disabled.
+            return false;
+        }
+
+        $template = get_config('rlipimport_version1', 'newenrolmentemailtemplate');
+        if (empty($template)) {
+            // No text set.
+            return false;
+        }
+
+        if (empty($user->email)) {
+            // User has no email.
+            return false;
+        }
+
+        $subject = get_config('rlipimport_version1', 'newenrolmentemailsubject');
+        if (empty($subject) || !is_string($subject)) {
+            $subject = '';
+        }
+
+        $from = get_config('rlipimport_version1', 'newenrolmentemailfrom');
+        if ($from === 'teacher') {
+            $context = context_course::instance($courseid);
+            if ($users = get_users_by_capability($context, 'moodle/course:update', 'u.*', 'u.id ASC', '', '', '', '', false, true)) {
+                $users = sort_by_roleassignment_authority($users, $context);
+                $from = current($users);
+            } else {
+                $from = get_admin();
+            }
+        } else {
+            $from = get_admin();
+        }
+
+
+        $body = $this->newenrolmentemail_generate($template, $user, $course);
+        return $this->sendemail($user, $from, $subject, $body);
+    }
+
+    /**
+     * Generate a new enrolment email based on an email template, a user, and a course.
+     *
+     * @param string $templatetext The template for the message.
+     * @param object $user The user object to use for placeholder substitutions.
+     * @param object $course The course object to use for placeholder substitutions.
+     * @return string The generated email.
+     */
+    public function newenrolmentemail_generate($templatetext, $user, $course) {
+        global $SITE;
+        $placeholders = array(
+            '%%sitename%%' => $SITE->fullname,
+            '%%user_username%%' => (isset($user->username)) ?  $user->username : '',
+            '%%user_idnumber%%' => (isset($user->idnumber)) ?  $user->idnumber : '',
+            '%%user_firstname%%' => (isset($user->firstname)) ?  $user->firstname : '',
+            '%%user_lastname%%' => (isset($user->lastname)) ?  $user->lastname : '',
+            '%%user_fullname%%' => fullname($user),
+            '%%user_email%%' => (isset($user->email)) ? $user->email : '',
+            '%%course_fullname%%' => (isset($course->fullname)) ? $course->fullname : '',
+            '%%course_shortname%%' => (isset($course->shortname)) ? $course->shortname : '',
+            '%%course_idnumber%%' => (isset($course->idnumber)) ? $course->idnumber : '',
+            '%%course_summary%%' => (isset($course->summary)) ? $course->summary : '',
+        );
+        return str_replace(array_keys($placeholders), array_values($placeholders), $templatetext);
+    }
+
+    /**
      * Create an enrolment
      *
      * @param object $record One record of import data
@@ -2252,6 +2339,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             //collect success message for logging at end of action
             if (!$enrolment_exists) {
                 $logmessages[] = "User with {$user_descriptor} enrolled in course with shortname \"{$record->instance}\".";
+                if (!empty($context->instanceid) && !empty($userid)) {
+                    $this->newenrolmentemail($userid, $context->instanceid);
+                }
             }
         } else {
 
