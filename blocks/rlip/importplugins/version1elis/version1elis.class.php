@@ -722,7 +722,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $record = $this->initialize_user_fields($record);
 
+        $cleartextpassword = '';
         if (isset($record->password)) {
+            $cleartextpassword = $record->password;
             //trigger password hashing
             $record->newpassword = $record->password;
             unset($record->password);
@@ -750,7 +752,79 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $success_message = "User with {$user_descriptor} successfully created.";
         $this->fslogger->log_success($success_message, 0, $filename, $this->linenumber);
 
+        $record->cleartextpassword = $cleartextpassword;
+        $this->newuseremail($record);
+
         return true;
+    }
+
+    /**
+     * If enabled, sends a new user email notification to a user.
+     *
+     * @param object $user The user to send the email to.
+     * @return bool Success/Failure.
+     */
+    public function newuseremail($user) {
+        $enabled = get_config('rlipimport_version1elis', 'newuseremailenabled');
+        if (empty($enabled)) {
+            // Emails disabled.
+            return false;
+        }
+
+        $template = get_config('rlipimport_version1elis', 'newuseremailtemplate');
+        if (empty($template)) {
+            // No text set.
+            return false;
+        }
+
+        if (empty($user->email)) {
+            // User has no email.
+            return false;
+        }
+
+        $subject = get_config('rlipimport_version1elis', 'newuseremailsubject');
+        if (empty($subject) || !is_string($subject)) {
+            $subject = '';
+        }
+        $from = get_admin();
+        $body = $this->newuseremail_generate($template, $user);
+        return $this->sendemail($user, $from, $subject, $body);
+    }
+
+    /**
+     * Generates the new user email text.
+     *
+     * @param string $templatetext The template email text.
+     * @param object $user The user object to generate the email for.
+     * @return string The final email text.
+     */
+    public function newuseremail_generate($templatetext, $user) {
+        global $SITE;
+        $placeholders = array(
+            '%%sitename%%' => $SITE->fullname,
+            '%%loginlink%%' => get_login_url(),
+            '%%username%%' => (isset($user->username)) ? $user->username : '',
+            '%%idnumber%%' => (isset($user->idnumber)) ? $user->idnumber : '',
+            '%%password%%' => (isset($user->cleartextpassword)) ? $user->cleartextpassword : '',
+            '%%firstname%%' => (isset($user->firstname)) ? $user->firstname : '',
+            '%%lastname%%' => (isset($user->lastname)) ? $user->lastname : '',
+            '%%fullname%%' => fullname($user),
+            '%%email%%' => (isset($user->email)) ? $user->email : '',
+        );
+        return str_replace(array_keys($placeholders), array_values($placeholders), $templatetext);
+    }
+
+    /**
+     * Send the email.
+     *
+     * @param object $user The user the email is to.
+     * @param object $from The user the email is from.
+     * @param string $subject The subject of the email.
+     * @param string $body The body of the email.
+     * @return bool Success/Failure.
+     */
+    public function sendemail($user, $from, $subject, $body) {
+        return email_to_user($user, $from, $subject, strip_tags($body), $body);
     }
 
     /**

@@ -79,7 +79,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
 
         // Get logfile name.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1';
+        $plugin = 'rlipimport_version1elis';
         $format = get_string('logfile_timestamp', 'block_rlip');
         $testfilename = $filepath.'/'.$plugintype.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         // Get most recent logfile.
@@ -207,7 +207,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
     private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
         global $DB;
 
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $record = new stdClass;
