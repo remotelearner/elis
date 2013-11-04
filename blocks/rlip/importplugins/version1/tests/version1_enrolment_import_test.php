@@ -2429,4 +2429,170 @@ class version1enrolmentimport_testcase extends rlip_test {
         $numgroupingsgroups = $DB->count_records('groupings_groups');
         $this->assertEquals($numgroupingsgroups, 1);
     }
+
+    /**
+     * Test main newenrolmentemail() function.
+     */
+    public function test_version1importnewenrolmentemail() {
+        global $CFG, $DB; // This is needed by the required files.
+        require_once(dirname(__FILE__).'/other/rlip_importplugin_version1_fakeemail.php');
+        $importplugin = new rlip_importplugin_version1_fakeemail();
+
+        $course = $this->getDataGenerator()->create_course();
+        $user = $this->getDataGenerator()->create_user();
+
+        // Enrol some students.
+        $user2 = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
+        $user3 = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user3->id, $course->id);
+
+        // Enrol teachers.
+        $teacherrole = $DB->get_record('role', array('shortname' => 'editingteacher'));
+        $teacher = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $teacherrole->id);
+        $teacher2 = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher2->id, $course->id, $teacherrole->id);
+
+        // Test false return when empty user id or course id.
+        $result = $importplugin->newenrolmentemail(null, $course->id);
+        $this->assertFalse($result);
+        $result = $importplugin->newenrolmentemail($user->id, null);
+        $this->assertFalse($result);
+
+        // Test false return when not enabled.
+        set_config('newenrolmentemailenabled', '0', 'rlipimport_version1');
+        set_config('newenrolmentemailsubject', 'Test Subject', 'rlipimport_version1');
+        set_config('newenrolmentemailtemplate', 'Test Body', 'rlipimport_version1');
+        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1');
+        $result = $importplugin->newenrolmentemail($user->id, $course->id);
+        $this->assertFalse($result);
+
+        // Test false return when enabled but empty template.
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
+        set_config('newenrolmentemailsubject', 'Test Subject', 'rlipimport_version1');
+        set_config('newenrolmentemailtemplate', '', 'rlipimport_version1');
+        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1');
+        $result = $importplugin->newenrolmentemail($user->id, $course->id);
+        $this->assertFalse($result);
+
+        // Test success when enabled, has template text, and user has email.
+        $testsubject = 'Test Subject';
+        $testbody = 'Test Body';
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
+        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1');
+        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1');
+        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1');
+        $result = $importplugin->newenrolmentemail($user->id, $course->id);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($user, $result['user']);
+        $this->assertArrayHasKey('from', $result);
+        $this->assertEquals(get_admin(), $result['from']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals($testsubject, $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($testbody, $result['body']);
+
+        // Test success and from is set to teacher when selected.
+        $testsubject = 'Test Subject';
+        $testbody = 'Test Body';
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
+        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1');
+        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1');
+        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1');
+        $result = $importplugin->newenrolmentemail($user->id, $course->id);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($user, $result['user']);
+        $this->assertArrayHasKey('from', $result);
+        $this->assertEquals($teacher, $result['from']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals($testsubject, $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($testbody, $result['body']);
+
+        // Test that subject is replaced by empty string when not present.
+        $testsubject = null;
+        $testbody = 'Test Body';
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
+        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1');
+        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1');
+        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1');
+        $result = $importplugin->newenrolmentemail($user->id, $course->id);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($user, $result['user']);
+        $this->assertArrayHasKey('from', $result);
+        $this->assertEquals(get_admin(), $result['from']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals('', $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($testbody, $result['body']);
+
+        // Full testing of replacement is done below, but just test that it's being done at all from the main function.
+        $testsubject = 'Test Subject';
+        $testbody = 'Test Body %%user_username%%';
+        $expectedtestbody = 'Test Body '.$user->username;
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
+        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1');
+        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1');
+        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1');
+        $result = $importplugin->newenrolmentemail($user->id, $course->id);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($user, $result['user']);
+        $this->assertArrayHasKey('from', $result);
+        $this->assertEquals(get_admin(), $result['from']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals($testsubject, $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($expectedtestbody, $result['body']);
+    }
+
+    /**
+     * Test new user email notifications.
+     */
+    public function test_version1importnewenrolmentemailgenerate() {
+        global $CFG; // This is needed by the required files.
+        require_once(dirname(__FILE__).'/other/rlip_importplugin_version1_fakeemail.php');
+        $importplugin = new rlip_importplugin_version1_fakeemail();
+
+        $course = $this->getDataGenerator()->create_course();
+        $user = $this->getDataGenerator()->create_user();
+
+        $templatetext = '<p>Hi %%user_fullname%%, you have been enroled in %%course_shortname%%
+            Sitename: %%sitename%%
+            User Username: %%user_username%%
+            User Idnumber: %%user_idnumber%%
+            User First Name: %%user_firstname%%
+            User Last Name: %%user_lastname%%
+            User Full Name: %%user_fullname%%
+            User Email Address: %%user_email%%
+            Course Fullname: %%course_fullname%%
+            Course Shortname: %%course_shortname%%
+            Course Idnumber: %%course_idnumber%%
+            Course Summary: %%course_summary%%
+            </p>';
+        $actualtext = $importplugin->newenrolmentemail_generate($templatetext, $user, $course);
+
+        $expectedtext = '<p>Hi '.fullname($user).', you have been enroled in '.$course->shortname.'
+            Sitename: PHPUnit test site
+            User Username: '.$user->username.'
+            User Idnumber: '.$user->idnumber.'
+            User First Name: '.$user->firstname.'
+            User Last Name: '.$user->lastname.'
+            User Full Name: '.fullname($user).'
+            User Email Address: '.$user->email.'
+            Course Fullname: '.$course->fullname.'
+            Course Shortname: '.$course->shortname.'
+            Course Idnumber: '.$course->idnumber.'
+            Course Summary: '.$course->summary.'
+            </p>';
+        $this->assertEquals($expectedtext, $actualtext);
+    }
 }
