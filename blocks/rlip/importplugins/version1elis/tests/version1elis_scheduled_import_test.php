@@ -135,4 +135,74 @@ class version1elisscheduledimport_testcase extends rlip_elis_test {
         $exists = $DB->record_exists(user::TABLE, array('idnumber' => 'idnumber3'));
         $this->assertTrue($exists);
     }
+
+    /**
+     * Validate that scheduled import is prevented if existing incomplete run exists.
+     */
+    public function test_importpreventmultipleimports() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/elis/core/lib/tasklib.php');
+
+        $DB->delete_records('elis_scheduled_tasks');
+        $DB->delete_records(RLIP_SCHEDULE_TABLE);
+
+        $filepath = '/block_rlip_phpunit/';
+        $filename = 'userfile2.csv';
+        set_config('schedule_files_path', $filepath, 'rlipimport_version1elis');
+        set_config('user_schedule_file', $filename, 'rlipimport_version1elis');
+
+        // Set up the test directory.
+        $testdir = $CFG->dataroot.$filepath;
+        mkdir($testdir, 0777, true);
+        copy(dirname(__FILE__)."/fixtures/{$filename}", $testdir.$filename);
+
+        // Create the job.
+        $data = array(
+            'plugin' => 'rlipimport_version1elis',
+            'period' => '5m',
+            'type' => 'rlipimport'
+        );
+        $taskid1 = rlip_schedule_add_job($data);
+
+        // Run the import with a time in the past so it stops immediately.
+        $taskname1 = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid1));
+        $result1 = run_ipjob($taskname1, -1);
+
+        // Validate the first import run was started.
+        $this->assertEquals(true, $result1);
+
+        // Validate the state was saved.
+        $config = $DB->get_field(RLIP_SCHEDULE_TABLE, 'config', array('id' => 1));
+        $this->assertRegExp('/s:5:"state";/', $config);
+
+        // Create a duplicate job.
+        $taskid2 = rlip_schedule_add_job($data);
+
+        // Get the initial duplicate job lastruntime and nextruntime values.
+        $initlastruntime = $DB->get_field('elis_scheduled_tasks', 'lastruntime', array('id' => $taskid2));
+        $initnextruntime = $DB->get_field('elis_scheduled_tasks', 'nextruntime', array('id' => $taskid2));
+
+        // Emulate the ELIS cron adjusting the job run times.
+        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid2));
+        $task->lastruntime = time();
+        $nextruntime = cron_next_run_time($task->lastruntime, (array)$task);
+        $task->nextruntime = $nextruntime;
+        $DB->update_record('elis_scheduled_tasks', $task);
+
+        // Attempt to do another import run.
+        $taskname2 = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid2));
+        $result2 = run_ipjob($taskname2);
+
+        // Validate that the second import run attempt fails.
+        $this->assertEquals(false, $result2);
+
+        // Get the later lastruntime and nextruntime values.
+        $lastruntime = $DB->get_field('elis_scheduled_tasks', 'lastruntime', array('id' => $taskid2));
+        $nextruntime = $DB->get_field('elis_scheduled_tasks', 'nextruntime', array('id' => $taskid2));
+
+        // Validate that the job run time values are back to initial values.
+        $this->assertEquals($initlastruntime, $lastruntime);
+        $this->assertEquals($initnextruntime, $nextruntime);
+    }
 }
