@@ -370,4 +370,224 @@ class elis_notifications_testcase extends rlip_elis_test {
             'message' => "{$expectedmessage}%"
         )));
     }
+
+    /**
+     * Test main newenrolmentemail() function.
+     */
+    public function test_version1importnewenrolmentemail() {
+        global $CFG, $DB; // This is needed by the required files.
+        require_once(dirname(__FILE__).'/other/rlip_importplugin_version1elis_fakeemail.php');
+
+        $importplugin = new rlip_importplugin_version1elis_fakeemail();
+
+
+        // Create Moodle course.
+        $course = $this->getDataGenerator()->create_course();
+
+        // Enrol some students into Moodle course.
+        $user2 = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user2->id, $course->id);
+        $user3 = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($user3->id, $course->id);
+
+        // Enrol teachers into Moodle course.
+        $teacherrole = $DB->get_record('role', array('shortname' => 'editingteacher'));
+        $teacher = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher->id, $course->id, $teacherrole->id);
+        $teacher2 = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->enrol_user($teacher2->id, $course->id, $teacherrole->id);
+
+        // Create ELIS class and ELIS user.
+        $ecourse = new course(array(
+            'name' => 'Test Course',
+            'idnumber' => 'CRS100',
+            'syllabus' => '',
+        ));
+        $ecourse->save();
+        $eclass = new pmclass(array(
+            'idnumber' => 'CLS100',
+            'courseid' => $ecourse->id,
+        ));
+        $eclass->save();
+        $euser = new user(array(
+            'username' => 'testuser',
+            'idnumber' => 'testuser',
+            'firstname' => 'Test',
+            'lastname' => 'User',
+            'email' => 'testuser@example.com',
+            'city' => 'Waterloo',
+            'country' => 'CA'
+        ));
+        $euser->save();
+        $muser = $euser->get_moodleuser();
+
+        // Create student object for elis user/elis class.
+        $student = new student(array(
+            'userid' => $euser->id,
+            'classid' => $eclass->id,
+        ));
+
+        // Test false return when student "no_moodle_enrol" is set.
+        $student->no_moodle_enrol = true;
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertFalse($result);
+        $student->no_moodle_enrol = false;
+
+        // Test false return when ELIS class is not linked to Moodle course.
+         $DB->delete_records(classmoodlecourse::TABLE, array('classid' => $eclass->id, 'moodlecourseid' => $course->id));
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertFalse($result);
+
+        // Test false return when ELIS class is linked to a Moodle course, but Moodle course does not exist.
+        $cmcid = $DB->insert_record(classmoodlecourse::TABLE, array('classid' => $eclass->id, 'moodlecourseid' => 999999999));
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertFalse($result);
+        $DB->update_record(classmoodlecourse::TABLE, array('id' => $cmcid, 'moodlecourseid' => $course->id));
+
+        // Test false return when ELIS user is not linked to Moodle user.
+        $DB->delete_records(usermoodle::TABLE, array('cuserid' => $euser->id, 'muserid' => $muser->id));
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertFalse($result);
+
+        // Test false return when ELIS user is linked to Moodle user, but Moodle user does not exist.
+        $usermoodleid = $DB->insert_record(usermoodle::TABLE, array('cuserid' => $euser->id, 'muserid' => 99999999));
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertFalse($result);
+        $DB->update_record(usermoodle::TABLE, array('id' => $usermoodleid, 'muserid' => $muser->id));
+
+        // Test false return when not enabled.
+        set_config('newenrolmentemailenabled', '0', 'rlipimport_version1elis');
+        set_config('newenrolmentemailsubject', 'Test Subject', 'rlipimport_version1elis');
+        set_config('newenrolmentemailtemplate', 'Test Body', 'rlipimport_version1elis');
+        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1elis');
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertFalse($result);
+
+        // Test false return when enabled but empty template.
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
+        set_config('newenrolmentemailsubject', 'Test Subject', 'rlipimport_version1elis');
+        set_config('newenrolmentemailtemplate', '', 'rlipimport_version1elis');
+        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1elis');
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertFalse($result);
+
+        // Test success when enabled, has template text, and user has email.
+        $testsubject = 'Test Subject';
+        $testbody = 'Test Body';
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
+        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1elis');
+        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1elis');
+        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1elis');
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($muser, $result['user']);
+        $this->assertArrayHasKey('from', $result);
+        $this->assertEquals(get_admin(), $result['from']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals($testsubject, $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($testbody, $result['body']);
+
+        // Test success and from is set to teacher when selected.
+        $testsubject = 'Test Subject';
+        $testbody = 'Test Body';
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
+        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1elis');
+        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1elis');
+        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1elis');
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($muser, $result['user']);
+        $this->assertArrayHasKey('from', $result);
+        $this->assertEquals($teacher, $result['from']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals($testsubject, $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($testbody, $result['body']);
+
+        // Test that subject is replaced by empty string when not present.
+        $testsubject = null;
+        $testbody = 'Test Body';
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
+        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1elis');
+        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1elis');
+        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1elis');
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($muser, $result['user']);
+        $this->assertArrayHasKey('from', $result);
+        $this->assertEquals(get_admin(), $result['from']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals('', $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($testbody, $result['body']);
+
+        // Full testing of replacement is done below, but just test that it's being done at all from the main function.
+        $testsubject = 'Test Subject';
+        $testbody = 'Test Body %%user_username%%';
+        $expectedtestbody = 'Test Body '.$muser->username;
+        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
+        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1elis');
+        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1elis');
+        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1elis');
+        $result = $importplugin->newenrolmentemail($student);
+        $this->assertNotEmpty($result);
+        $this->assertInternalType('array', $result);
+        $this->assertArrayHasKey('user', $result);
+        $this->assertEquals($muser, $result['user']);
+        $this->assertArrayHasKey('from', $result);
+        $this->assertEquals(get_admin(), $result['from']);
+        $this->assertArrayHasKey('subject', $result);
+        $this->assertEquals($testsubject, $result['subject']);
+        $this->assertArrayHasKey('body', $result);
+        $this->assertEquals($expectedtestbody, $result['body']);
+    }
+
+    /**
+     * Test new user email notifications.
+     */
+    public function test_version1importnewenrolmentemailgenerate() {
+        global $CFG; // This is needed by the required files.
+        require_once(dirname(__FILE__).'/other/rlip_importplugin_version1elis_fakeemail.php');
+        $importplugin = new rlip_importplugin_version1elis_fakeemail();
+
+        $course = $this->getDataGenerator()->create_course();
+        $user = $this->getDataGenerator()->create_user();
+
+        $templatetext = '<p>Hi %%user_fullname%%, you have been enroled in %%course_shortname%%
+            Sitename: %%sitename%%
+            User Username: %%user_username%%
+            User Idnumber: %%user_idnumber%%
+            User First Name: %%user_firstname%%
+            User Last Name: %%user_lastname%%
+            User Full Name: %%user_fullname%%
+            User Email Address: %%user_email%%
+            Course Fullname: %%course_fullname%%
+            Course Shortname: %%course_shortname%%
+            Course Idnumber: %%course_idnumber%%
+            Course Summary: %%course_summary%%
+            </p>';
+        $actualtext = $importplugin->newenrolmentemail_generate($templatetext, $user, $course);
+
+        $expectedtext = '<p>Hi '.fullname($user).', you have been enroled in '.$course->shortname.'
+            Sitename: PHPUnit test site
+            User Username: '.$user->username.'
+            User Idnumber: '.$user->idnumber.'
+            User First Name: '.$user->firstname.'
+            User Last Name: '.$user->lastname.'
+            User Full Name: '.fullname($user).'
+            User Email Address: '.$user->email.'
+            Course Fullname: '.$course->fullname.'
+            Course Shortname: '.$course->shortname.'
+            Course Idnumber: '.$course->idnumber.'
+            Course Summary: '.$course->summary.'
+            </p>';
+        $this->assertEquals($expectedtext, $actualtext);
+    }
 }
