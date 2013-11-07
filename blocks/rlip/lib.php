@@ -617,7 +617,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     global $CFG, $DB;
 
     $fcnname = "run_ipjob({$taskname}, {$maxruntime})";
-    $disabledincron = get_config('block_rlip', 'disableincron');
+    $disabledincron = !empty($CFG->forcedatahubcron) || get_config('block_rlip', 'disableincron');
     $rlipshortname = 'DH';
 
     if (empty($maxruntime)) {
