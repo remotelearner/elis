@@ -100,6 +100,7 @@ $string['rlipimportplugins'] = 'Import Plugins';
 $string['rlipmanageplugins'] = 'Manage plugins';
 $string['runnow'] = 'Run Now';
 $string['runmanually'] = 'Run manually';
+$string['cronforcedinconfig'] = '"Disable in Moodle cron" has been forced on in config.php: $CFG->forcedatahubcron';
 $string['scheduled'] = 'scheduled';
 $string['schedulepagetitle'] = 'Schedule DH';
 $string['schedulingtime'] = "*Scheduled jobs may not run exactly at the specified time.";

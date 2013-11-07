@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage blocks_rlip
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
@@ -37,7 +36,8 @@ require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_importprovider_csv.class.php'
 define('TASK_BLOCKED_TIME', 4 * HOURSECS); // block running task for x hours max
 
 $filename = basename(__FILE__);
-$disabledincron = get_config('block_rlip', 'disableincron');
+$disabledincron = !empty($CFG->forcedatahubcron) || get_config('block_rlip', 'disableincron');
+
 if (empty($disabledincron)) {
     exit(0);
 }
