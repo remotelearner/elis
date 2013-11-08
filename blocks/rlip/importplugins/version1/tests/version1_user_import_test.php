@@ -31,6 +31,7 @@ require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/elis/core/lib/lib.php');
 
 /**
  * Class for version 1 user import correctness.
@@ -1463,6 +1464,7 @@ class version1userimport_testcase extends rlip_test {
         // Fetch the user and their profile field data.
         $user = $DB->get_record('user', array('username' => 'rlipusername', 'mnethostid' => $CFG->mnet_localhost_id));
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
 
         // Validate data.
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), true);
@@ -1517,6 +1519,7 @@ class version1userimport_testcase extends rlip_test {
         // Fetch the user and their profile field data.
         $user = $DB->get_record('user', array('username' => 'rlipusername', 'mnethostid' => $CFG->mnet_localhost_id));
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
 
         // Validate data.
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), true);
@@ -1583,6 +1586,7 @@ class version1userimport_testcase extends rlip_test {
         $user = new stdClass;
         $user->id = $userid;
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), false);
 
         // Try to insert bogus datetime data.
@@ -1596,6 +1600,7 @@ class version1userimport_testcase extends rlip_test {
         $user = new stdClass;
         $user->id = $userid;
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), false);
 
         // Try to insert bogus menu data.
@@ -1609,6 +1614,7 @@ class version1userimport_testcase extends rlip_test {
         $user = new stdClass;
         $user->id = $userid;
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), false);
     }
 
