@@ -31,6 +31,7 @@ require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/elis/core/lib/lib.php');
 
 /**
  * Class for version 1 user import correctness.
@@ -1461,6 +1462,7 @@ class version1userimport_testcase extends rlip_test {
         // Fetch the user and their profile field data.
         $user = $DB->get_record('user', array('username' => 'rlipusername', 'mnethostid' => $CFG->mnet_localhost_id));
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
 
         // Validate data.
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), true);
@@ -1515,6 +1517,7 @@ class version1userimport_testcase extends rlip_test {
         // Fetch the user and their profile field data.
         $user = $DB->get_record('user', array('username' => 'rlipusername', 'mnethostid' => $CFG->mnet_localhost_id));
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
 
         // Validate data.
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), true);
@@ -1581,6 +1584,7 @@ class version1userimport_testcase extends rlip_test {
         $user = new stdClass;
         $user->id = $userid;
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), false);
 
         // Try to insert bogus datetime data.
@@ -1594,6 +1598,7 @@ class version1userimport_testcase extends rlip_test {
         $user = new stdClass;
         $user->id = $userid;
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), false);
 
         // Try to insert bogus menu data.
@@ -1607,6 +1612,7 @@ class version1userimport_testcase extends rlip_test {
         $user = new stdClass;
         $user->id = $userid;
         profile_load_data($user);
+        fix_moodle_profile_fields($user);
         $this->assertEquals(isset($user->profile_field_rlipcheckbox), false);
     }
 
@@ -2481,7 +2487,6 @@ class version1userimport_testcase extends rlip_test {
                    maildigest = :maildigest AND
                    autosubscribe = :autosubscribe AND
                    trackforums = :trackforums AND
-                   screenreader = :screenreader AND
                    city = :city AND
                    country = :country AND
                    theme = :theme AND
@@ -2500,10 +2505,8 @@ class version1userimport_testcase extends rlip_test {
                         'maildigest' => 2,
                         'autosubscribe' => 1,
                         'trackforums' => 1,
-                        'screenreader' => 1,
                         'city' => 'rlipcity',
                         'country' => 'CA',
-                        'timezone' => -5.0,
                         'theme' => 'standard',
                         'lang' => 'en',
                         'description' => 'rlipdescription',
@@ -2511,6 +2514,27 @@ class version1userimport_testcase extends rlip_test {
                         'institution' => 'rlipinstitution',
                         'department' => 'rlipdepartment'
                         );
+
+      /*
+        ob_start();
+        $testu = $DB->get_record('user', array('username' => 'rlipusername'));
+        var_dump($testu);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("Existing user record: $tmp");
+        ob_start();
+        var_dump($params);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("Expected user record: $tmp");
+        foreach ($params as $key => $val) {
+            if (!isset($testu->$key)) {
+                mtrace("DB user missing property '{$key}'");
+            } else if ($val != $testu->$key) {
+                mtrace("DB user '{$key}' value: {$testu->$key} != $val (expected)");
+            }
+        }
+      */
         $exists = $DB->record_exists_select('user', $select, $params);
         $this->assertEquals($exists, true);
     }

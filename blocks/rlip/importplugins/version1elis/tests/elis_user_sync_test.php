@@ -103,6 +103,15 @@ class elis_user_sync_testcase extends rlip_elis_test {
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
 
+        // The associated Moodle user profile field.
+        $profiledefinecheckbox = new profile_define_checkbox();
+        $data = new stdClass;
+        $data->datatype = 'checkbox';
+        $data->categoryid = 99999;
+        $data->shortname = 'testfieldshortname';
+        $data->name = 'testfieldname';
+        $profiledefinecheckbox->define_save($data);
+
         // Reset cached custom fields.
         $user = new user();
         $user->reset_custom_field_list();
@@ -120,22 +129,20 @@ class elis_user_sync_testcase extends rlip_elis_test {
         ));
         $field->save();
 
-        // Field owner.
+        // Field owners
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
         $DB->execute("UPDATE {".field_owner::TABLE."} SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
+        $manualowneroptions = array(
+            'required' => 0,
+            'edit_capability' => '',
+            'view_capability' => '',
+            'control' => 'checkbox',
+        );
+        field_owner::ensure_field_owner_exists($field, 'manual', $manualowneroptions);
 
         // Field context level assocation.
         $fieldcontextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USER));
         $fieldcontextlevel->save();
-
-        // The associated Moodle user profile field.
-        $profiledefinecheckbox = new profile_define_checkbox();
-        $data = new stdClass;
-        $data->datatype = 'checkbox';
-        $data->categoryid = 99999;
-        $data->shortname = 'testfieldshortname';
-        $data->name = 'testfieldname';
-        $profiledefinecheckbox->define_save($data);
 
         // Run the user create action.
         $record = new stdClass;
@@ -236,6 +243,15 @@ class elis_user_sync_testcase extends rlip_elis_test {
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once($CFG->dirroot.'/user/profile/field/checkbox/define.class.php');
 
+        // The associated Moodle user profile field.
+        $profiledefinecheckbox = new profile_define_checkbox();
+        $data = new stdClass;
+        $data->datatype = 'checkbox';
+        $data->categoryid = 99999;
+        $data->shortname = 'testfieldshortname';
+        $data->name = 'testfieldname';
+        $profiledefinecheckbox->define_save($data);
+
         // Set up the user.
         $user = new user(array(
             'idnumber' => 'testuseridnumber',
@@ -260,22 +276,20 @@ class elis_user_sync_testcase extends rlip_elis_test {
         ));
         $field->save();
 
-        // Field owner.
+        // Field owners
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
         $DB->execute("UPDATE {".field_owner::TABLE."} SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
+        $manualowneroptions = array(
+            'required' => 0,
+            'edit_capability' => '',
+            'view_capability' => '',
+            'control' => 'checkbox',
+        );
+        field_owner::ensure_field_owner_exists($field, 'manual', $manualowneroptions);
 
         // Field context level assocation.
         $fieldcontextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USER));
         $fieldcontextlevel->save();
-
-        // The associated Moodle user profile field.
-        $profiledefinecheckbox = new profile_define_checkbox();
-        $data = new stdClass;
-        $data->datatype = 'checkbox';
-        $data->categoryid = 99999;
-        $data->shortname = 'testfieldshortname';
-        $data->name = 'testfieldname';
-        $profiledefinecheckbox->define_save($data);
 
         // Reset cached custom fields.
         $user = new user();
@@ -295,9 +309,133 @@ class elis_user_sync_testcase extends rlip_elis_test {
 
         // Validation.
         $user = new stdClass;
-        $user->id = 1;
+        $user->id = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
         profile_load_data($user);
 
         $this->assertEquals(1, $user->profile_field_testfieldshortname);
+    }
+
+    /**
+     * Validate that custom user fields are synched over to Moodle when PM user is created
+     * during an import
+     */
+    public function test_user_multi_custom_field_on_user_create() {
+        global $CFG, $DB, $USER;
+        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once(elis::lib('data/customfield.class.php'));
+        require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+        require_once(elispm::file('accesslib.php'));
+        require_once(elispm::lib('data/user.class.php'));
+        require_once($CFG->dirroot.'/user/profile/lib.php');
+        require_once($CFG->dirroot.'/user/profile/definelib.php');
+        require_once($CFG->dirroot.'/user/profile/field/menu/define.class.php');
+
+        $CFG->filterall = true;
+        $USER = get_admin();
+        $context = context_user::instance($USER->id);
+      /*
+        $filternames = filter_get_all_installed();
+        ob_start();
+        var_dump($filternames);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("test_user_multi_custom_field_on_user_create: all-filters => {$tmp}");
+      */
+        filter_set_global_state('filter/multilang', 1);
+        filter_set_applies_to_strings('filter/multilang', true);
+
+        $multilangoption1 = '<span class="multilang" lang="en">Male</span><span class="multilang" lang="pt_br">Masculino</span>'.
+                '<span class="multilang" lang="es">Masculino</span>';
+
+        $multilangoption2 = '<span class="multilang" lang="en">Female</span><span class="multilang" lang="pt_br">Feminino</span>'.
+                '<span class="multilang" lang="es">Femenino</span>';
+
+        // The associated Moodle user profile field.
+        $profiledefinemenu = new profile_define_menu();
+        $data = new stdClass;
+        $data->datatype = 'menu';
+        $data->categoryid = 99999;
+        $data->shortname = 'testfieldgender';
+        $data->name = 'testfieldgender';
+        $data->param1 = "{$multilangoption1}\n{$multilangoption2}";
+        $data->defaultdata = $multilangoption2;
+        $profiledefinemenu->define_save($data);
+
+        // Reset cached custom fields.
+        $user = new user();
+        $user->reset_custom_field_list();
+
+        // Field category.
+        $fieldcategory = new field_category(array('name' => 'testcategoryname'));
+        $fieldcategory->save();
+
+        // Custom field.
+        $field = new field(array(
+            'categoryid' => $fieldcategory->id,
+            'shortname' => 'testfieldgender',
+            'name' => 'testfieldgender',
+            'datatype' => 'text',
+            'multivalued' => 1,
+        ));
+        $field->save();
+
+        // Field owners
+        field_owner::ensure_field_owner_exists($field, 'moodle_profile');
+        $manualowneroptions = array(
+            'required' => 0,
+            'edit_capability' => '',
+            'view_capability' => '',
+            'control' => 'menu',
+            'options' => "{$multilangoption1}\n{$multilangoption2}",
+        );
+        field_owner::ensure_field_owner_exists($field, 'manual', $manualowneroptions);
+
+        // Field context level assocation.
+        $fieldcontextlevel = new field_contextlevel(array('fieldid' => $field->id, 'contextlevel' => CONTEXT_ELIS_USER));
+        $fieldcontextlevel->save();
+
+        // Run the user create action.
+        $record = new stdClass;
+        $record->action = 'create';
+        $record->idnumber = 'testuseridnumber';
+        $record->username = 'testuserusername';
+        $record->firstname = 'testuserfirstname';
+        $record->lastname = 'testuserlastname';
+        $record->email = 'testuser@email.com';
+        $record->address = 'testuseraddress';
+        $record->city = 'testusercity';
+        $record->country = 'CA';
+        $record->language = 'en';
+        $record->testfieldgender = 'Male/Female';
+
+        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(null);
+        $importplugin->process_record('user', $record, 'bogus');
+
+        // Validation.
+        $userid = $DB->get_field('crlm_user', 'id', array('username' => 'testuserusername'));
+        $user = new user($userid);
+        $user->load();
+        $user = $user->to_object();
+
+      /*
+        $datars = field_data::get_for_context_and_field(context_elis_user::instance($user->id), 'testfieldgender');
+        foreach ($datars as $data) {
+            ob_start();
+            var_dump($data);
+            $tmp = ob_get_contents();
+            ob_end_clean();
+            error_log("test_user_multi_custom_field_on_user_create: data => {$tmp}");
+        }
+      */
+
+      /*
+        ob_start();
+        var_dump($user);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("test_user_multi_custom_field_on_user_create: user => {$tmp}");
+      */
+        $this->assertEquals(array($multilangoption1, $multilangoption2), $user->field_testfieldgender);
     }
 }
