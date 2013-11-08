@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage blocks_rlip
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
@@ -33,8 +32,6 @@ require_once($CFG->dirroot .'/blocks/rlip/lib.php');
 require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_dataplugin.class.php');
 require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
-
-define('TASK_BLOCKED_TIME', 4 * HOURSECS); // block running task for x hours max
 
 $filename = basename(__FILE__);
 $disabledincron = get_config('block_rlip', 'disableincron');
@@ -94,13 +91,6 @@ if ($tasks && $tasks->valid()) {
             continue;
         }
 
-        if (!empty($task->blocked) && $timenow < $task->blocked) {
-            // task is still running - do not start another instance of it
-            mtrace("{$filename}: Previous RL{$rlipshortname} process has not yet completed - aborting!");
-            continue;
-        }
-        $task->blocked = $timenow + TASK_BLOCKED_TIME;
-
         mtrace("{$filename}: Processing external cron function for: {$plugin}, taskname: {$task->taskname} ...");
 
         //determine the "ideal" target start time
@@ -132,10 +122,6 @@ if ($tasks && $tasks->valid()) {
 
         $instance->run($targetstarttime, $lastruntime, 0, $state);
         //^TBD: since this should run 'til complete, no state should be returned
-
-        // Clear tasked blocked time
-        $task->blocked = 0;
-        $DB->update_record('elis_scheduled_tasks', $task);
     }
 }
 
