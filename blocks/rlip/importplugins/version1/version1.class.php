@@ -627,10 +627,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * data transformation in-place
      *
      * @param object $record The import record
+     * @param string $filename The import file name, used for logging
      *
      * @return boolean true if the record validates, otherwise false
      */
-    function validate_user_profile_data($record, $filename) {
+    protected function validate_user_profile_data(&$record, $filename) {
+        global $CFG, $DB, $USER;
         //go through each profile field in the header
 
         foreach ($this->fields as $shortname => $field) {
@@ -644,8 +646,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                     return false;
                 }
             } else if ($field->datatype == 'menu') {
-                $options = explode("\n", $field->param1);
-                if (!in_array($data, $options)) {
+                // ELIS-8306: Must support multi-lang options
+                require_once($CFG->dirroot.'/user/profile/field/menu/field.class.php');
+                $menufield = new profile_field_menu($field->id, $USER->id);
+                if ($menufield->convert_external_data($data) === null) {
                     $this->fslogger->log_failure("\"{$data}\" is not one of the available options for a menu of choices profile field {$shortname}.", 0, $filename, $this->linenumber, $record, "user");
                     return false;
                 }
@@ -678,6 +682,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/user/profile/lib.php');
+        require_once($CFG->dirroot.'/admin/tool/uploaduser/locallib.php');
 
         //remove invalid fields
         $record = $this->remove_invalid_user_fields($record);
@@ -762,7 +767,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $record->confirmed = 1;
 
         $record->id = $DB->insert_record('user', $record);
-
+        $record = uu_pre_process_custom_profile_data($record);
         profile_save_data($record);
 
         //sync to PM is necessary
@@ -903,6 +908,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/user/profile/lib.php');
+        require_once($CFG->dirroot.'/admin/tool/uploaduser/locallib.php');
 
         //remove invalid fields
         $record = $this->remove_invalid_user_fields($record);
@@ -988,7 +994,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
         $record->timemodified = time();
         $DB->update_record('user', $record);
-
+        $record = uu_pre_process_custom_profile_data($record);
         profile_save_data($record);
 
         // trigger user_updated event on the full database user row

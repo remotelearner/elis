@@ -488,12 +488,13 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * on the import record
      *
      * @param string $action One of 'create' or 'update'
-     * @param object $record The import record
+     * @param object $record The import record (passed by reference & maybe modified)
      * @param string $filename The import file name, used for logging
+     * @param string $type The import entity type
      *
      * @return boolean true if the record validates correctly, otherwise false
      */
-    function validate_custom_field_data($action, $record, $filename, $type) {
+    protected function validate_custom_field_data($action, &$record, $filename, $type) {
         global $CFG;
         require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
         //needed for "trim_cr" method
@@ -520,7 +521,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
             // apply custom field mapping to shortname
             $identifier = $this->get_field_mapping($field->shortname);
-
+            $firstval = true;
             foreach ($values as $value) {
                 switch ($control) {
                     case 'checkbox':
@@ -550,12 +551,32 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                         $options = explode("\n", $f->owners['manual']->param_options);
                         //remove carriage return characters
                         array_walk($options, 'trim_cr');
-
-                        if (!in_array($value, $options)) {
+                        // ELIS-8306: Must also check for single language string in multi-lang options
+                        $formatoptions = $options;
+                        array_walk($formatoptions, function(&$item, $key) {
+                                $item = format_string($item);
+                            }
+                        );
+                        if (($key = array_search($value, $formatoptions)) !== false) {
+                            if ($field->multivalued) {
+                                if ($firstval) {
+                                    $record->{'field_'.$field->shortname} = array();
+                                }
+                                $record->{'field_'.$field->shortname}[] = $options[$key];
+                            } else {
+                                $record->{'field_'.$field->shortname} = $options[$key];
+                            }
+                        } else if (!in_array($value, $options)) {
                             //not a valid option
                             $message = '"'.$value.'" is not one of the available options for menu of choices custom field "'.$identifier.'".';
                             $this->fslogger->log_failure($message, 0, $filename, $this->linenumber, $record, $type);
                             return false;
+                        } else if ($field->multivalued) {
+                            // We have to rewrite these in case multi-lang format options
+                            if ($firstval) {
+                                $record->{'field_'.$field->shortname} = array();
+                            }
+                            $record->{'field_'.$field->shortname}[] = $value;
                         }
                         break;
                     case 'text':
@@ -610,6 +631,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                     default:
                         break;
                 }
+                $firstval = false;
             }
         }
 
