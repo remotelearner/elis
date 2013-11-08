@@ -335,6 +335,9 @@ function manual_field_is_view_or_editable($field, $context, $contexteditcap = NU
     if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
         if (empty($entityid)) {
             if ($entity !== 'system') {
+                // Validate entity.
+                context_elis_helper::get_level_from_name($entity);
+
                 $contextset = pm_context_set::for_user_with_capability($entity, $editcap, $USER->id);
                 $canedit = !$contextset->is_empty();
 
