@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -41,10 +40,12 @@ class rlip_importfield_form extends moodleform {
         $fields = $this->_customdata;
         foreach ($fields as $field) {
             $mform->addElement('text', $field, $field);
+            $mform->setType($field, PARAM_TEXT);
         }
 
         //add hidden element for storing the tab
         $mform->addElement('hidden', 'tab');
+        $mform->setType('tab', PARAM_TEXT);
 
         //add custom action buttons, as defined in the function below
         $this->add_action_buttons();
