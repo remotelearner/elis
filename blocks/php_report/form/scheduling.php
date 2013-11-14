@@ -46,12 +46,16 @@ class scheduling_form_step_label extends moodleform {
 
         if (isset($workflow->id)) {
             $mform->addElement('hidden', '_wfid', $workflow->id);
+            $mform->setType('_wfid', PARAM_INT);
         } else {
             $mform->addElement('hidden', 'report', $page->required_param('report', PARAM_FILE));
+            $mform->setType('report', PARAM_FILE);
         }
 
         $mform->addElement('hidden', '_step', scheduling_workflow::STEP_LABEL);
+        $mform->setType('_step', PARAM_TEXT);
         $mform->addElement('hidden', 'action', 'save');
+        $mform->setType('action', PARAM_TEXT);
 
         $mform->addElement('html', '<h2>'.htmlspecialchars(get_string('label_description', 'block_php_report')).'</h2>');
 
@@ -62,6 +66,7 @@ class scheduling_form_step_label extends moodleform {
 
         $options=array('cols'=>'30');
         $mform->addElement('textarea', 'description', get_string('description'),$options);
+        $mform->setType('description', PARAM_TEXT);
 
         workflowpage::add_navigation_buttons($mform);
     }
@@ -136,9 +141,12 @@ class scheduling_form_step_schedule extends moodleform {
         </script>');
 
         $mform->addElement('hidden', '_wfid', $workflow->id);
+        $mform->setType('_wfid', PARAM_INT);
 
         $mform->addElement('hidden', '_step', scheduling_workflow::STEP_SCHEDULE);
+        $mform->setType('_step', PARAM_TEXT);
         $mform->addElement('hidden', 'action', 'save');
+        $mform->setType('action', PARAM_TEXT);
 
         $mform->addElement('html', '<h2>'.htmlspecialchars(get_string('recurrence_description', 'block_php_report')).'</h2>');
 
@@ -237,6 +245,7 @@ class scheduling_form_step_schedule extends moodleform {
         $mform->disabledIf('dayofweek[6]', 'caldaystype', 'neq', 1);
         $mform->disabledIf('dayofweek[7]', 'caldaystype', 'neq', 1);
         $mform->disabledIf('monthdays', 'caldaystype', 'neq', 2);
+        $mform->setType('monthdays', PARAM_TEXT);
 
         $group = array();
         $group[] = $mform->createElement('advcheckbox', 'allmonths', '', get_string('all'), 1);
@@ -289,9 +298,12 @@ class scheduling_form_step_parameters extends parameter_form {
         }
 
         $mform->addElement('hidden', '_wfid', $workflow->id);
+        $mform->setType('_wfid', PARAM_INT);
 
         $mform->addElement('hidden', '_step', scheduling_workflow::STEP_PARAMETERS);
+        $mform->setType('_step', PARAM_TEXT);
         $mform->addElement('hidden', 'action', 'save');
+        $mform->setType('action', PARAM_TEXT);
 
         $mform->addElement('html', '<h2>'.htmlspecialchars(get_string('parameters_description', 'block_php_report')).'</h2>');
 
@@ -386,9 +398,12 @@ class scheduling_form_step_format extends moodleform {
         $workflow = $page->workflow;
 
         $mform->addElement('hidden', '_wfid', $workflow->id);
+        $mform->setType('_wfid', PARAM_INT);
 
         $mform->addElement('hidden', '_step', scheduling_workflow::STEP_FORMAT);
+        $mform->setType('_step', PARAM_TEXT);
         $mform->addElement('hidden', 'action', 'save');
+        $mform->setType('action', PARAM_TEXT);
 
         $mform->addElement('html', '<h2>'.htmlspecialchars(get_string('format_description', 'block_php_report')).'</h2>');
 
@@ -443,14 +458,17 @@ class scheduling_form_step_recipients extends moodleform {
         $workflow = $page->workflow;
 
         $mform->addElement('hidden', '_wfid', $workflow->id);
-
+        $mform->setType('_wfid', PARAM_INT);
         $mform->addElement('hidden', '_step', scheduling_workflow::STEP_RECIPIENTS);
+        $mform->setType('_step', PARAM_TEXT);
         $mform->addElement('hidden', 'action', 'save');
+        $mform->setType('action', PARAM_TEXT);
 
         $mform->addElement('html', '<h2>'. htmlspecialchars(get_string('recipients_description', 'block_php_report')). '</h2>');
         $mform->addElement('html', '<label for="recipients"><b>'. htmlspecialchars(get_string('enter_emails', 'block_php_report')) .'</b><br/><i>'. htmlspecialchars(get_string('email_instructions', 'block_php_report')) .'</i></label>');
 
         $mform->addElement('text', 'recipients', get_string('recipientslist'), array('size' => 60));
+        $mform->setType('recipients', PARAM_TEXT);
         $mform->addRule('recipients', get_string('required_field', 'block_php_report', get_string('recipientslist')), 'required', null, 'server');
         // ^ELIS-3316: server validation so cancel/submit will work
 
@@ -693,6 +711,7 @@ class scheduling_form_step_confirm extends moodleform {
         }
 
         $mform->addElement('hidden', '_wfid', $workflow->id);
+        $mform->setType('_wfid', PARAM_INT);
 
         $mform->addElement('static', 'label', get_string('label', 'block_php_report').':', htmlspecialchars($data['label']));
         $mform->addElement('static', 'description', get_string('description').':', htmlspecialchars($data['description']));

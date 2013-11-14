@@ -44,6 +44,7 @@ class parameter_form extends moodleform {
 
         //just define the id field - UI fields added in definition_after_data
         $mform->addElement('hidden', 'id');
+        $mform->setType('id', PARAM_INT);
     }
 
     /**
@@ -56,6 +57,7 @@ class parameter_form extends moodleform {
 
         //used to persist the display of the cancel button when re-displaying
         $mform->addElement('hidden', 'showcancel');
+        $mform->setType('showcancel', PARAM_INT);
 
         $reset_js = '';
         if (isset($this->_customdata['filterobject'])) {
