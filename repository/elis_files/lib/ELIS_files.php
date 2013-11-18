@@ -3797,7 +3797,7 @@ class ELIS_files {
     public function get_openfile_link($uuid) {
         global $CFG, $ME;
         $referer = $this->get_referer();
-        $link = new moodle_url('/repository/elis_files/openfile.php', array('uuid' => $uuid, 'sesskey' => sesskey(), 'referer' => empty($referer) ? $ME : $referer));
+        $link = new moodle_url('/repository/elis_files/openfile.php', array('uuid' => $uuid, 'referer' => empty($referer) ? $ME : $referer));
         // error_log("get_openfile_link({$uuid}) => {$link}");
         return $link->out(false);
     }
