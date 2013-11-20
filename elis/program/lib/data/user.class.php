@@ -1163,7 +1163,7 @@ class user extends data_object_with_custom_fields {
                             array(
                                     array(
                                         'addbefore' => 'curriculum'.$curricula['id'].'script',
-                                        'divid' => 'curriculum'.$curricula['id'].'completedbutton',
+                                        'nameattr' => 'curriculum-'.$curricula['id'].'completedbutton',
                                         'buttonlabel' => get_string('showcompletedcourses', 'elis_program'),
                                         'hidetext' => get_string('hidecompletedcourses', 'elis_program'),
                                         'showtext' => get_string('showcompletedcourses', 'elis_program'),
