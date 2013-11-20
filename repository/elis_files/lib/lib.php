@@ -1083,11 +1083,10 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
 
     $dir = elis_files_read_dir($uuid, $useadmin);
 
-    if (!empty($dir->files)) {
+    if (!empty($dir->files) && ($username = elis_files_transform_username($USER->username))) {
         foreach ($dir->files as $file) {
             if ($file->title == $filename) {
-                if (!empty($file->uuid) &&
-                    ($username = elis_files_transform_username($USER->username))) {
+                if (!empty($file->uuid)) {
                     // We're not going to check the response for this right now.
                     elis_files_request('/moodle/nodeowner/' . $file->uuid . '?username=' . $username);
                 }
@@ -1864,16 +1863,6 @@ function elis_files_process_node($dom, $node, &$type) {
         }
     }
 
-    // ELIS-5750: the following requires the updated webscript: nodeowner.get.js
-    if (!empty($contentNode->uuid) &&
-        (empty($contentNode->owner) || $contentNode->owner == 'moodle') &&
-        ($response = elis_files_request('/moodle/nodeowner/'. $contentNode->uuid))
-        && ($sxml = RLsimpleXMLelement($response)) && !empty($sxml->owner)) {
-        foreach ((array)$sxml->owner AS $val) {
-            $contentNode->owner = $val;
-            break;
-        }
-    }
     return $contentNode;
 }
 
