@@ -97,30 +97,32 @@ class scheduling_form_step_schedule extends moodleform {
         $mform->addElement('html', '<script type="text/javascript">
             function switchCalendar() {
                 var showHide = document.getElementsByName("recurrencetype");
-                var simple = document.getElementById("simplerecurrencegroup");
-                var calendar = document.getElementById("calendarrecurrencegroup");
+                var simple = document.getElementById("id_simplerecurrencegroup");
+                var calendar = document.getElementById("id_calendarrecurrencegroup");
+                var simplestate = simple.className.indexOf("collapsed") >= 0 ? "collapsed" : "";
+                var calendarstate = calendar.className.indexOf("collapsed") >= 0 ? "collapsed" : "";
                 if (showHide["0"].checked) {
                     if(showHide["0"].value == \'calendar\')
                     {
-                        simple.className = "accesshide scheduling_action_schedule_fieldset";
-                        calendar.className = "clearfix scheduling_action_schedule_fieldset";
+                        simple.className = "accesshide collapsible "+simplestate;
+                        calendar.className = "clearfix collapsible "+calendarstate;
                     }
                     else
                     {
-                        simple.className = "clearfix scheduling_action_schedule_fieldset";
-                        calendar.className = "accesshide scheduling_action_schedule_fieldset";
+                        simple.className = "clearfix collapsible "+simplestate;
+                        calendar.className = "accesshide collapsible "+calendarstate;
                     }
                 }
                 else
                     if(showHide["0"].value == \'simple\')
                     {
-                        simple.className = "accesshide scheduling_action_schedule_fieldset";
-                        calendar.className = "clearfix scheduling_action_schedule_fieldset";
+                        simple.className = "accesshide collapsible "+simplestate;
+                        calendar.className = "clearfix collapsible "+calendarstate;
                     }
                     else
                     {
-                        simple.className = "clearfix scheduling_action_schedule_fieldset";
-                        calendar.className = "accesshide scheduling_action_schedule_fieldset";
+                        simple.className = "clearfix collapsible "+simplestate;
+                        calendar.className = "accesshide collapsible "+calendarstate;
                     }
             }
         function initCalendar() {
