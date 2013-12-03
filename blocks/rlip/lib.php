@@ -557,15 +557,15 @@ function rlip_get_run_instance($prefix, $plugin, $type, $userid, $state) {
                     $entity_filename = $entity .'.csv';
                 }
                 //echo "\n get_config('{$plugin}', '{$entity}_schedule_file') => {$entity_filename}";
-                $files[$entity] = $temppath . $entity_filename;
                 if ($state == null && $path !== $temppath &&
                     file_exists($path . $entity_filename) &&
                     !@rename($path . $entity_filename,
                              $temppath . $entity_filename)) {
-                    mtrace("{$prefix}: Error moving '".
-                           $path . $entity_filename . "' to '".
-                           $temppath . $entity_filename . "'");
+                    $message = "{$prefix}: Error moving '".$path.$entity_filename."' to '".$temppath.$entity_filename."'";
+                    mtrace($message);
+                    continue; // Let's skip any unmovable files.
                 }
+                $files[$entity] = $temppath.$entity_filename;
             }
             $importprovider = new rlip_importprovider_csv($entity_types, $files);
             $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
