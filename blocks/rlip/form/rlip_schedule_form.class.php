@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage blocks_rlip
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -37,18 +36,23 @@ class rlip_base_schedule_form extends moodleform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'name');
+        $mform->setType('name', PARAM_TEXT);
         $mform->addElement('hidden', 'plugin');
+        $mform->setType('plugin', PARAM_TEXT);
         $mform->addElement('hidden', 'type');
+        $mform->setType('type', PARAM_TEXT);
 
         $elem = $mform->createElement('text', 'label',
                            get_string('rlip_form_label', 'block_rlip'));
         $mform->addElement($elem);
+        $mform->setType('label', PARAM_TEXT);
         $mform->addRule('label', get_string('required'), 'required');
         $mform->addHelpButton('label', 'rlip_form_label', 'block_rlip');
 
         $elem = $mform->createElement('text', 'period', 
                            get_string('rlip_form_period', 'block_rlip'));
         $mform->addElement($elem);
+        $mform->setType('period', PARAM_TEXT);
         $mform->addRule('period', get_string('required'), 'required');
         $mform->addHelpButton('period', 'rlip_form_period', 'block_rlip');
 

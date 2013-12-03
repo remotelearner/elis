@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    block_rlip
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -36,6 +35,7 @@ class rlip_manualexport_form extends moodleform {
 
         //used to store the plugin between form submits
         $mform->addElement('hidden', 'plugin');
+        $mform->setType('plugin', PARAM_TEXT);
 
         //add submit button (can't use add_action_buttons due to javascript usage)
         //note that the manualrun script includes lib.js for us right now
