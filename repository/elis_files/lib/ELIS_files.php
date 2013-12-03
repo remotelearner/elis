@@ -521,12 +521,12 @@ class ELIS_files {
         return true;
     }
 
-
-/**
- * Get info about a specific node reference.
- *
- * @param string $uuid A node UUID value.
- */
+    /**
+     * Get info about a specific node reference.
+     *
+     * @param string $uuid A node UUID value.
+     * @return object|bool A node object or false on error.
+     */
     function get_info($uuid) {
         if (ELIS_FILES_DEBUG_TRACE) mtrace('get_info(' . $uuid . ')');
 
@@ -535,7 +535,7 @@ class ELIS_files {
         }
 
         if (self::is_version('3.2')) {
-            return elis_files_node_properties($uuid);
+            $node = elis_files_node_properties($uuid);
         } else if (self::is_version('3.4')) {
             //Check that the uuid is valid before trying to get the object
             if (!elis_files_request(elis_files_get_uri($uuid, 'self'))) {
@@ -548,11 +548,19 @@ class ELIS_files {
             $type = '';
             $node = elis_files_process_node_new($node, $type);
             $node->type = $type;
-
-            return $node;
         }
-    }
 
+        // ELIS-5750: the following requires the updated webscript: nodeowner.get.js
+        if (!empty($node->uuid) && strpos($node->type, 'document') !== false && ($response = elis_files_request('/moodle/nodeowner/'.$node->uuid))
+                && ($sxml = RLsimpleXMLelement($response)) && !empty($sxml->owner)) {
+            foreach ((array)$sxml->owner AS $val) {
+                // error_log("nodeOwner: {$val}");
+                $node->owner = $val; // ($val != 'admin') ? $val : $this->config->admin_username;
+                break;
+            }
+        }
+        return $node;
+    }
 
 /**
  * Is a given node a directory?
@@ -1257,7 +1265,7 @@ class ELIS_files {
             }
 
             $type       = '';
-            $properties = elis_files_process_node_old($dom, $nodes->item(0), $type);
+            $properties = elis_files_process_node($dom, $nodes->item(0), $type);
 
             // Ensure that we set the current user to be the owner of the newly created directory.
             if (!empty($properties->uuid)) {
