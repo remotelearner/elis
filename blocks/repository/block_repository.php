@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    blocks
- * @subpackage repository
+ * @package    block_repository
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -63,13 +62,13 @@ class block_repository extends block_base {
         }
 
         // Get the ELIS Files plugin configuration values
-        $pcfg = get_config('ELIS_files');
+        $pcfg = get_config('elis_files');
 
         $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
         $username = $repo->alfresco_username_fix($username);
         $repo->set_alfresco_username($username);
 
-        if ($repo->elis_files_userdir($repo->get_alfresco_username_fix()) !== false) {
+        if ($repo->elis_files_userdir($username) !== false) {
             // So that we don't conflict with the default Alfresco admin account.
 //            $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
 
