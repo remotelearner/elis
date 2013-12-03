@@ -355,7 +355,8 @@ class no_moodle_user_filter extends user_filter_type {
      * @return string the filtering condition or null if the filter is disabled
      */
     function get_sql_filter($data) {
-        $sql = "(NOT EXISTS (SELECT _u.id FROM {user} _u WHERE _u.idnumber = {$this->_field}))";
+        $sql = "(NOT EXISTS (SELECT _u.id FROM {user} _u WHERE _u.idnumber = {crlm_user}.{$this->_field})
+              OR NOT EXISTS (SELECT _um.id FROM {crlm_user_moodle} _um WHERE _um.cuserid = {crlm_user}.id))";
         return array($sql, array());
     }
 
