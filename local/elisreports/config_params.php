@@ -71,11 +71,11 @@ if (!empty($filters)) {
                              $dynamic_report_filter_url, null, $report_shortname, $report_shortname, $secondary_filterings);
     $params = array('filterobject' => $filter_object,
                     'showcancel' => $showcancel);
-    $parameter_form = new parameter_form($action, $params);
+    $parameter_form = new parameter_form($action, $params, 'post', '', array('id' => 'php_report_filter_form'));
 } else {
     //report does not have filters
     $params = array('showcancel' => $showcancel);
-    $parameter_form = new parameter_form($action, $params);
+    $parameter_form = new parameter_form($action, $params, 'post', '', array('id' => 'php_report_filter_form'));
 }
 
 //send report id to the form

@@ -23,13 +23,15 @@
  *
  */
 
-require_once $CFG->dirroot.'/elis/core/lib/setup.php';
+require_once $CFG->dirroot.'/local/eliscore/lib/setup.php';
 require_once $CFG->dirroot.'/elis/core/lib/tasklib.php';
 require_once $CFG->dirroot.'/elis/core/lib/workflow.class.php';
 require_once $CFG->dirroot.'/elis/core/lib/workflowpage.class.php';
 require_once $CFG->dirroot.'/local/elisreports/php_report_base.php';
 require_once $CFG->dirroot.'/local/elisreports/form/scheduling.php';
 require_once $CFG->dirroot.'/local/elisreports/sharedlib.php';
+
+define('PHPREPORT_SCHEDULING_PARAMS', 'phpreport_scheduling_params_form');
 
 /**
  * Report scheduling workflow data.  Data is an array with the following keys:
@@ -206,7 +208,7 @@ class scheduling_workflow extends workflow {
         } else {
             $report_filter = null;
         }
-        $form = new scheduling_form_step_parameters(null, array('workflow' => $this, 'filterobject' => $report_filter));
+        $form = new scheduling_form_step_parameters(null, array('workflow' => $this, 'filterobject' => $report_filter), 'post', '', array('id' => PHPREPORT_SCHEDULING_PARAMS));
 
         $form->set_data($values);
         $form->definition_after_data();
@@ -1307,7 +1309,7 @@ class scheduling_page extends workflowpage {
         } else {
             $report_filter = null;
         }
-        $form = new scheduling_form_step_parameters(null, array('page' => $this, 'filterobject' => $report_filter));
+        $form = new scheduling_form_step_parameters(null, array('page' => $this, 'filterobject' => $report_filter), 'post', '', array('id' => PHPREPORT_SCHEDULING_PARAMS));
         if ($errors) {
             foreach ($errors as $element=>$msg) {
                 $form->setElementError($element, $msg);
@@ -1342,7 +1344,7 @@ class scheduling_page extends workflowpage {
         } else {
             $report_filter = null;
         }
-        $form = new scheduling_form_step_parameters(null, array('page' => $this, 'filterobject' => $report_filter));
+        $form = new scheduling_form_step_parameters(null, array('page' => $this, 'filterobject' => $report_filter), 'post', '', array('id' => PHPREPORT_SCHEDULING_PARAMS));
 
         $data = $form->get_data(false);
         // get rid of irrelevant data
