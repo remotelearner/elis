@@ -320,17 +320,6 @@ function php_report_filtering_set_user_preferences($preferences, $temporary, $re
         //obtain the filter's main form;
         if (isset($report_container->inner_report->filter->_addform)) {
             $filter_form = $report_container->inner_report->filter->_addform;
-
-            //grab the list required fields
-            $dependencies = $filter_form->get_dependencies();
-
-            foreach ($dependencies as $dependency => $data) {
-                $check_pref = 'php_report_' . $report_name . '/' . $dependency;
-                // If there is no related preference, it is probably because it's an unchecked checkbox so let's set it to 0
-                if (!isset($preferences[$check_pref])) {
-                    $preferences[$check_pref] = 0;
-                }
-            }
         }
     }
     // End ugly form dependency check and preference modification
