@@ -159,8 +159,8 @@ class sitewide_time_summary_report extends table_report {
     function is_available() {
         global $CFG, $DB;
 
-        // TBD: we need the /elis/program/ directories
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        // TBD: we need the /local/elisprogram/ directories
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -183,18 +183,25 @@ class sitewide_time_summary_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
 
         //needed for options filters
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/date.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/radiobuttons.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/simpleselect.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofilematch.php');
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/clusterselect.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/lib.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/date.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/radiobuttons.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/simpleselect.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/userprofilematch.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/clusterselect.php');
 
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
+
+        require_once($CFG->dirroot.'/local/eliscore/plugins/etl/etl.php');
     }
 
     /**
@@ -349,7 +356,7 @@ class sitewide_time_summary_report extends table_report {
                     'extra'       => true, // Include all extra profile fields.
                     'tables' => array(
                         'up' => array(
-                            'crlm_user' => 'crlmu'
+                            user::TABLE => 'crlmu'
                         )
                     )
                 )
@@ -358,7 +365,7 @@ class sitewide_time_summary_report extends table_report {
         $filters = $upfilter->get_filters();
 
         //  Cluster filter options
-        $clusters = $DB->get_records('crlm_cluster', null, 'name ASC', 'id,name');
+        $clusters = $DB->get_records(userset::TABLE, null, 'name ASC', 'id,name');
         if (!empty($clusters)) {
             // Merge cluster filter IFF values exist
             $filters = array_merge($filters,
@@ -493,16 +500,15 @@ class sitewide_time_summary_report extends table_report {
                                 ? "\xc2\xa0\xc2\xa0\xc2\xa0\xc2\xa0\xc2\xa0\xc2\xa0\xc2\xa0" : '';
             $totaltime = 0;
             if (!empty($record->mcourse_id)) {
-                $sql = "SELECT SUM(duration) as sum
-                          FROM {etl_user_activity}
+                $sql = 'SELECT SUM(duration) as sum
+                          FROM {'.ETL_TABLE.'}
                          WHERE courseid = ?
-                           AND userid = ?
-                           AND hour >= ?";
+                           AND userid = ? AND hour >= ?';
                 $params = array($record->mcourse_id,
                                 $record->user_id,
                                 $this->startdate);
                 if (!empty($this->enddate)) {
-                    $sql .= " AND hour <= ?";
+                    $sql .= ' AND hour <= ?';
                     $params[] = $this->enddate;
                 }
                 //print_object($sql);
@@ -522,10 +528,9 @@ class sitewide_time_summary_report extends table_report {
                 $startdate = make_timestamp($record->year);
                 foreach($this->months as $month) {
                     $enddate = $this->add_month($startdate); // TBD: $this->next_month($startdate);
-                    $sql = "SELECT SUM(duration) as sum
-                              FROM {etl_user_activity}
-                             WHERE courseid = ? AND userid = ?
-                               AND hour >= ? AND hour < ?";
+                    $sql = 'SELECT SUM(duration) as sum
+                              FROM {'.ETL_TABLE.'}
+                             WHERE courseid = ? AND userid = ? AND hour >= ? AND hour < ?';
                     //print_object($sql);
                     $trecs = $DB->get_records_sql($sql,
                                  array($record->mcourse_id,
@@ -556,10 +561,9 @@ class sitewide_time_summary_report extends table_report {
                 foreach($this->weeks as $wk) {
                     $enddate = ($wk == 'week4') ? $nextmonth // extra days in month
                                                 : $this->add_week($startdate);
-                    $sql = "SELECT SUM(duration) as sum
-                              FROM {etl_user_activity}
-                             WHERE courseid = ? AND userid = ?
-                               AND hour >= ? AND hour < ?";
+                    $sql = 'SELECT SUM(duration) as sum
+                              FROM {'.ETL_TABLE.'}
+                             WHERE courseid = ? AND userid = ? AND hour >= ? AND hour < ?';
                     //print_object($sql);
                     $trecs = $DB->get_records_sql($sql,
                                   array($record->mcourse_id,
@@ -603,10 +607,9 @@ class sitewide_time_summary_report extends table_report {
                 }
                 foreach($this->wkdays as $day) {
                     $enddate = $this->add_day($startdate); // TBD: $this->next_day($startdate);
-                    $sql = "SELECT SUM(duration) as sum
-                              FROM {etl_user_activity}
-                             WHERE courseid = ? AND userid = ?
-                               AND hour >= ? AND hour < ?";
+                    $sql = 'SELECT SUM(duration) as sum
+                              FROM {'.ETL_TABLE.'}
+                             WHERE courseid = ? AND userid = ? AND hour >= ? AND hour < ?';
                     //print_object($sql);
                     $trecs = $DB->get_records_sql($sql,
                                       array($record->mcourse_id,
@@ -778,9 +781,9 @@ class sitewide_time_summary_report extends table_report {
 
         $sql = "SELECT $columns, u.firstname as firstname, u.lastname as lastname, clsm.moodlecourseid AS mcourse_id
             FROM {user} u
-            JOIN {crlm_user} crlmu ON u.idnumber = crlmu.idnumber
-            JOIN {crlm_class_enrolment} clsenr ON crlmu.id = clsenr.userid
-            JOIN {crlm_class} cls ON cls.id = clsenr.classid";
+            JOIN {".user::TABLE.'} crlmu ON u.idnumber = crlmu.idnumber
+            JOIN {'.student::TABLE.'} clsenr ON crlmu.id = clsenr.userid
+            JOIN {'.pmclass::TABLE.'} cls ON cls.id = clsenr.classid';
 
         // Check that the class is open during report dates
         if (!empty($this->startdate)) {
@@ -790,14 +793,14 @@ class sitewide_time_summary_report extends table_report {
             $sql .= " AND (cls.startdate = 0 OR {$this->enddate} >= cls.startdate)";
         }
 
-        $sql .= "
-                 JOIN {crlm_course} crs ON cls.courseid = crs.id
-            LEFT JOIN {crlm_class_moodle} clsm ON cls.id = clsm.classid";
+        $sql .= '
+                 JOIN {'.course::TABLE.'} crs ON cls.courseid = crs.id
+            LEFT JOIN {'.classmoodlecourse::TABLE.'} clsm ON cls.id = clsm.classid';
 
         if ($this->segment != 'noseg') {
-            $sql .= "
-            LEFT JOIN {etl_user_activity} etlua
-              ON etlua.courseid = clsm.moodlecourseid AND etlua.userid = u.id ";
+            $sql .= '
+            LEFT JOIN {'.ETL_TABLE.'} etlua
+              ON etlua.courseid = clsm.moodlecourseid AND etlua.userid = u.id ';
             if (!empty($this->startdate)) {
                 $sql .= "AND etlua.hour >= {$this->startdate} ";
             }

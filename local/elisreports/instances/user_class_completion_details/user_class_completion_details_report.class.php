@@ -154,23 +154,25 @@ class user_class_completion_details_report extends user_class_completion_report 
         global $CFG;
 
         // Needed to reference curriculum entities
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/contexts.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/data/customfield.class.php');
 
         // Needed for constants that define db tables
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/instructor.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/instructor.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumstudent.class.php');
 
         // ELIS pages required for links
-        require_once($CFG->dirroot .'/elis/program/coursepage.class.php');
-        require_once($CFG->dirroot .'/elis/program/curriculumpage.class.php');
-        require_once($CFG->dirroot .'/elis/program/pmclasspage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/coursepage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/curriculumpage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/pmclasspage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/coursecatalogpage.class.php'); // ENVTABLE
 
         parent::require_dependencies();
     }
@@ -359,9 +361,9 @@ class user_class_completion_details_report extends user_class_completion_report 
                     ON u.id = stu.userid
                   JOIN {'. pmclass::TABLE .'} cls
                     ON stu.classid = cls.id
-                  JOIN {'. course::TABLE ."} crs
+                  JOIN {'.course::TABLE.'} crs
                     ON cls.courseid = crs.id
-             LEFT JOIN {crlm_environment} env
+             LEFT JOIN {'.ENVTABLE."} env
                     ON crs.environmentid = env.id
                  {$curriculum_join}
                  {$student_curriculum_join}
@@ -398,7 +400,7 @@ class user_class_completion_details_report extends user_class_completion_report 
                     ON inst.classid = cls.id
                   JOIN {'.course::TABLE.'} crs
                     ON cls.courseid = crs.id
-             LEFT JOIN {crlm_environment} env
+             LEFT JOIN {'.ENVTABLE.'} env
                     ON crs.environmentid = env.id
              LEFT JOIN {'.student::TABLE."} stu ON stu.userid = u.id
                  {$curriculum_join}
@@ -842,7 +844,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         //configured user custom fields
         if (!empty($this->_userfieldids)) {
             //only need to obtain the user information once
-            $user = context_elis_user::instance($datum->userid);
+            $user = local_elisprogram_context_user::instance($datum->userid);
 
             //add a row for each field
             foreach ($this->_userfieldids as $userfieldid) {
@@ -1158,9 +1160,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         $levels = array();
         $no_custom_fields = true;
         foreach (array('curriculum', 'course', 'class') as $entity) {
-            //$level = context_level_base::get_custom_context_level($entity, 'elis_program');
-            // ELIS-4089: Moodle 2.2 custom contexts
-            $level = context_elis_helper::get_level_from_name($entity);
+            $level = local_eliscore_context_helper::get_level_from_name($entity);
             if ($level) {
                 $levels[] = $level;
                 $no_custom_fields = false;
@@ -1185,8 +1185,8 @@ class user_class_completion_details_report extends user_class_completion_report 
                             $custom_field_id = substr($field_alias, $pos + 1);
 
                             //TBD: Check the custom field
-                            if ($DB->record_exists_select('elis_field_contextlevels',
-                                       "fieldid = {$custom_field_id} AND contextlevel IN (". implode(', ', $levels) .')')) {
+                            if ($DB->record_exists_select(field_contextlevel::TABLE,
+                                    "fieldid = {$custom_field_id} AND contextlevel IN (".implode(', ', $levels).')')) {
                                 //error_log("UCCDR::custom_fields_included(): fieldid {$custom_field_id} exists for an ELIS contextlevel!");
                                 return true;
                             }

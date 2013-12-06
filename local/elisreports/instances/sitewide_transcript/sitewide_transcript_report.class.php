@@ -94,8 +94,8 @@ class sitewide_transcript_report extends table_report {
     function is_available() {
         global $CFG, $DB;
 
-        // TBD: we need the /elis/program/ directories
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        // TBD: we need the /local/elisprogram/ directories
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -118,16 +118,18 @@ class sitewide_transcript_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
 
         //needed for options filters
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofilematch.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/lib.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/userprofilematch.php');
 
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
 
-        require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/deprecatedlib.php');
     }
 
     /**
@@ -217,7 +219,7 @@ class sitewide_transcript_report extends table_report {
                     'extra'       => true, // Include all extra profile fields.
                     'tables' => array(
                         'up' => array(
-                            'crlm_user' => 'crlmu'
+                            user::TABLE => 'crlmu'
                         )
                     )
                 )
@@ -299,12 +301,12 @@ class sitewide_transcript_report extends table_report {
         // Also require Moodle-Only query w/o CM tables!
         $sql = "SELECT DISTINCT {$columns}, u.firstname as firstname, u.lastname as lastname, crlmclass.enddate AS enddate
            FROM {user} u
-           JOIN {crlm_user} crlmu ON u.idnumber = crlmu.idnumber
-           JOIN {crlm_class_enrolment} clsenr ON crlmu.id = clsenr.userid
-           JOIN {crlm_class} crlmclass ON crlmclass.id = clsenr.classid
-           JOIN {crlm_course} crs ON crlmclass.courseid = crs.id
-          "
-      //." LEFT JOIN {crlm_class_graded} ccg ON crlmu.id = ccg.userid"
+           JOIN {".user::TABLE.'} crlmu ON u.idnumber = crlmu.idnumber
+           JOIN {'.student::TABLE.'} clsenr ON crlmu.id = clsenr.userid
+           JOIN {'.pmclass::TABLE.'} crlmclass ON crlmclass.id = clsenr.classid
+           JOIN {'.course::TABLE.'} crs ON crlmclass.courseid = crs.id
+          '
+        // .' LEFT JOIN {'.student_grade::TABLE.'} ccg ON crlmu.id = ccg.userid'
         ;
 
         if (!empty($where)) {

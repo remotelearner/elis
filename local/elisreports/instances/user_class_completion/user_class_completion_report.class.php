@@ -101,8 +101,8 @@ class user_class_completion_report extends table_report {
     function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -126,36 +126,34 @@ class user_class_completion_report extends table_report {
         global $CFG;
 
         // Needed to reference curriculum entities
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
 
         // Needed for constants that define db tables
-        require_once($CFG->dirroot .'/elis/program/lib/data/classmoodlecourse.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumstudent.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
-
-        // Make sure we have access to the context library
-        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/classmoodlecourse.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
 
         // Make sure we have access to the filters
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/elisuserprofile.php');
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/curriculumclass.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/elisuserprofile.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/curriculumclass.php');
 
         // Reference the "child" report
         require_once($CFG->dirroot .'/local/elisreports/instances/user_class_completion_details/user_class_completion_details_report.class.php');
 
         // Needed to instantiate links
-        require_once($CFG->dirroot .'/elis/program/curriculumpage.class.php');
-        require_once($CFG->dirroot .'/elis/program/coursepage.class.php');
-        require_once($CFG->dirroot .'/elis/program/pmclasspage.class.php');
-        require_once($CFG->dirroot .'/elis/program/userpage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/curriculumpage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/coursepage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/pmclasspage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/userpage.class.php');
 
         // Needed for custom field handling
-        require_once($CFG->dirroot .'/elis/core/lib/data/customfield.class.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/data/customfield.class.php');
     }
 
     function get_langfile() {
@@ -185,7 +183,7 @@ class user_class_completion_report extends table_report {
      */
     function get_filters($init_data = true) {
         global $CFG, $USER;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         //cluster tree
         $enable_tree_label     = $this->get_string('enable_tree');
@@ -333,9 +331,9 @@ class user_class_completion_report extends table_report {
                     ),
                     'wrapper'     => array(
                         'curriculum' => '',
-                        'course'     => ' INNER JOIN {crlm_class_enrolment} clse
+                        'course'     => ' INNER JOIN {'.student::TABLE.'} clse
                                                   ON clse.classid = cls.id',
-                        'class'      => ' INNER JOIN {crlm_class_enrolment} clse
+                        'class'      => ' INNER JOIN {'.student::TABLE.'} clse
                                                   ON clse.classid = cls.id',
                      ),
                     'innerfield'  => array(
@@ -498,18 +496,16 @@ class user_class_completion_report extends table_report {
                 if ($active && (substr($field, 0, 7) == 'custom_')) {
                     $fieldid = substr($field, 7);
                     //store the context level that's represented by this field
-                    //$level = context_level_base::get_custom_context_level($type, 'elis_program');
-                    // ELIS-4089: Moodle 2.2 custom contexts
-                    $level = context_elis_helper::get_level_from_name($type);
-                    if (!$DB->record_exists('elis_field_contextlevels',
-                                 array('fieldid'      => $fieldid,
-                                       'contextlevel' => $level))) {
+                    $level = local_eliscore_context_helper::get_level_from_name($type);
+                    if (!$DB->record_exists(field_contextlevel::TABLE, array(
+                        'fieldid'      => $fieldid,
+                        'contextlevel' => $level))) {
                         continue;
                     }
 
                     $this->_fielddatacontexts[$fieldid] = $type;
                     $this->_customfieldids[] = $fieldid;
-                    $name = $DB->get_field('elis_field', 'name', array('id' => $fieldid));
+                    $name = $DB->get_field(field::TABLE, 'name', array('id' => $fieldid));
                     $column = new table_report_column('customfielddata_'.$fieldid.'.data AS customfielddata_'.$fieldid, $name, 'field_'.$fieldid);
                     $columns[] = $column;
 
@@ -644,7 +640,7 @@ class user_class_completion_report extends table_report {
      * Returns an SQL fragment needed to join the class table (if needed)
      *
      * @param  string  $on_or_where  Either string 'ON' or 'WHERE' depending
-     * @param  boolean $include_stu  Whether or not to JOIN on the crlm_class_enrolment table or not.
+     * @param  boolean $include_stu  Whether or not to JOIN on the student class table or not.
      * @return string The appropriate SQL fragment
      */
     function get_class_join_sql($on_or_where = 'ON', $include_stu = true) {
@@ -696,7 +692,7 @@ class user_class_completion_report extends table_report {
      */
 
         // Get the legacy context names mapped to the context level values
-        $contextlevelnames = array_flip(context_elis_helper::get_legacy_levels());
+        $contextlevelnames = array_flip(local_eliscore_context_helper::get_legacy_levels());
 
         $contextlevel = '';
         $contextname  = '';
@@ -1226,8 +1222,7 @@ class user_class_completion_report extends table_report {
         if ($this->_show_curricula === null) {
             $level = CONTEXT_ELIS_PROGRAM;
             // Check for custom fields to display
-            $curriculumfields = $DB->get_records('elis_field_contextlevels',
-                                         array('contextlevel' => $level));
+            $curriculumfields = $DB->get_records(field_contextlevel::TABLE, array('contextlevel' => $level));
             foreach ($curriculumfields as $field) {
                 if (array_key_exists($field->fieldid, $customfields)) {
                     $this->_show_curricula = true;

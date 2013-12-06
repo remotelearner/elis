@@ -86,7 +86,7 @@ $page = new scheduling_page();
 
 foreach ($test_scheduleids as $scheduleid) {
     //retrieve the schedule name
-    $config = $DB->get_field('php_report_schedule', 'config', array('id' => $scheduleid));
+    $config = $DB->get_field('local_elisreports_schedule', 'config', array('id' => $scheduleid));
     $config = unserialize($config);
 
     //check permissions

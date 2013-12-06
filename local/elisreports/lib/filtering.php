@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
 
 //need access to report base class for execution mode constants
 require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
@@ -36,7 +36,7 @@ require_once($CFG->libdir .'/formslib.php');
 require_once($CFG->dirroot .'/user/filters/user_filter_forms.php');
 
 //needed for filters
-require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
+require_once($CFG->dirroot .'/local/eliscore/lib/filtering/lib.php');
 
 /**
  * Includes the necessary filtering classes required for all reports to work
@@ -44,27 +44,27 @@ require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
 function php_report_filtering_require_dependencies() {
     global $CFG;
 
-    //go through the files in the /elis/core/ filtering directory
-    if (file_exists($CFG->dirroot .'/elis/core/lib/filtering') &&
-        $handle = opendir($CFG->dirroot .'/elis/core/lib//filtering')) {
+    //go through the files in the /local/eliscore/ filtering directory
+    if (file_exists($CFG->dirroot .'/local/eliscore/lib/filtering') &&
+        $handle = opendir($CFG->dirroot .'/local/eliscore/lib//filtering')) {
         while (false !== ($file = readdir($handle))) {
             //load filter definition if it's a PHP file
             if(strrpos($file, '.php') == strlen($file) - strlen('.php')) {
-                require_once($CFG->dirroot .'/elis/core/lib/filtering/'. $file);
+                require_once($CFG->dirroot .'/local/eliscore/lib/filtering/'. $file);
             }
         }
     }
 
-    //go through the files in the /elis/program/ filtering directory
-    if (file_exists($CFG->dirroot .'/elis/program/lib//filtering') &&
-        $handle = opendir($CFG->dirroot .'/elis/program/lib//filtering')) {
+    //go through the files in the /local/elisprogram/ filtering directory
+    if (file_exists($CFG->dirroot .'/local/elisprogram/lib//filtering') &&
+        $handle = opendir($CFG->dirroot .'/local/elisprogram/lib//filtering')) {
         while (false !== ($file = readdir($handle))) {
             if ($file == 'clustertree_load_menu.php') {
                 continue;
             }
             //load filter definition if it's a PHP file
             if(strrpos($file, '.php') == strlen($file) - strlen('.php')) {
-                require_once($CFG->dirroot .'/elis/program/lib/filtering/'. $file);
+                require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/'. $file);
             }
         }
     }
@@ -310,7 +310,7 @@ function php_report_filtering_set_user_preferences($preferences, $temporary, $re
     global $SESSION, $_SESSION;
 
     // Ugly form dependency check and preference modification code
-    // Note: this can be removed once MDL-27045 is resolved and 'checkbox' in elis/core/lib/filtering/date.php can be changed to 'advcheckbox'
+    // Note: this can be removed once MDL-27045 is resolved and 'checkbox' in local/eliscore/lib/filtering/date.php can be changed to 'advcheckbox'
     //       (or until someone can implement a cleaner way to handle this)
 
     //see if the current report is cached

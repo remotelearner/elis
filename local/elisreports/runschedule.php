@@ -113,7 +113,7 @@ function php_report_schedule_decrement_remaining_runs($report_schedule) {
 
     // Serialize the config before saving
     $upreport_schedule->config = serialize($data);
-    $DB->update_record('php_report_schedule', $upreport_schedule);
+    $DB->update_record('local_elisreports_schedule', $upreport_schedule);
 }
 
 /**
@@ -134,12 +134,12 @@ function php_report_schedule_set_next_runtime($taskname, $report_schedule) {
 
     // If this is a simple report, we need to update the schedule record
     if ($data['recurrencetype'] == 'simple') {
-        // Update nextruntime in 'elis_scheduled_tasks' to properly reflect
+        // Update nextruntime in 'local_eliscore_sched_tasks' to properly reflect
         // the frequency and frequency type
         $frequency = $data['schedule']['frequency'];
         $freq_type = $data['schedule']['frequencytype'];
         // Get the elis scheduled task last runtime for this taskname
-        $schedule = $DB->get_record('elis_scheduled_tasks', array('taskname' => $taskname));
+        $schedule = $DB->get_record('local_eliscore_sched_tasks', array('taskname' => $taskname));
 
         if (!$schedule) {
             //last run, and elis scheduled task has already been deleted
@@ -166,7 +166,7 @@ function php_report_schedule_set_next_runtime($taskname, $report_schedule) {
         // Assuming 1 (Monday) => 7 (Sunday)
         $upschedule->dayofweek = strftime('%u',$upschedule->nextruntime);
 
-        $DB->update_record('elis_scheduled_tasks', $upschedule);
+        $DB->update_record('local_eliscore_sched_tasks', $upschedule);
     }
 }
 
@@ -180,19 +180,19 @@ function php_report_schedule_delete_unmatching_records() {
     global $DB;
 
     //need this concatenation to connect ELIS and PHP scheduling info
-    $concat = block_php_report_get_taskname_from_column('php_sched.id');
+    $concat = local_elisreports_get_taskname_from_column('php_sched.id');
 
     //query to find the appropriate PHP report task ids
     $sql = "SELECT php_sched.id as id
             FROM {php_report_schedule} php_sched
-            LEFT JOIN {elis_scheduled_tasks} elis_sched
+            LEFT JOIN {local_eliscore_sched_tasks} elis_sched
                    ON (elis_sched.taskname = {$concat})
                 WHERE elis_sched.taskname IS NULL";
 
     //iterate and delete
     $rs = $DB->get_recordset_sql($sql);
     foreach ($rs as $res) {
-        $DB->delete_records('php_report_schedule', array('id' => $res->id));
+        $DB->delete_records('local_elisreports_schedule', array('id' => $res->id));
     }
 }
 
@@ -256,6 +256,6 @@ function php_report_schedule_get_instance($taskname) {
     // Get the associated php_report schedules
     $taskname_array = explode('_',$taskname);
     $schedule_id = $taskname_array[1];
-    $php_report_schedule = $DB->get_record('php_report_schedule', array('id' => $schedule_id));
+    $php_report_schedule = $DB->get_record('local_elisreports_schedule', array('id' => $schedule_id));
     return $php_report_schedule;
 }

@@ -75,8 +75,8 @@ class course_completion_by_cluster_report extends table_report {
     function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -96,24 +96,24 @@ class course_completion_by_cluster_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
 
         //needed for constants that define db tables
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumstudent.class.php');
 
         //needed for options filters
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/checkboxes.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/simpleselect.php');
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/clustertree.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/checkboxes.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/simpleselect.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/clustertree.php');
 
         //make sure we have access to the context library
-        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/contexts.php');
     }
 
     /**

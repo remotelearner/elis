@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/local/elisreports/type/table_report.class.php');
-require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/deprecatedlib.php');
 
 class individual_course_progress_report extends table_report {
     var $custom_joins = array();
@@ -60,8 +60,8 @@ class individual_course_progress_report extends table_report {
     function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -81,26 +81,27 @@ class individual_course_progress_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
         //needs the contexts code
-        require_once($CFG->dirroot.'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/contexts.php');
 
         //needed for constants that define db tables
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/classmoodlecourse.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
 
         //needed to get the filtering libraries
-        require_once($CFG->dirroot.'/elis/program/lib/filtering/autocomplete_eliswithcustomfields.php');
-        require_once($CFG->dirroot.'/elis/core/lib/filtering/simpleselect.php');
-        require_once($CFG->dirroot.'/elis/program/lib/filtering/custom_field_multiselect_values.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/filtering/autocomplete_eliswithcustomfields.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/filtering/simpleselect.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/filtering/custom_field_multiselect_values.php');
 
         //needed for the permissions-checking logic on custom fields
         require_once($CFG->dirroot.'/local/elisreports/sharedlib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/deprecatedlib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/deprecatedlib.php');
     }
 
     /**
@@ -250,7 +251,7 @@ class individual_course_progress_report extends table_report {
      */
     function get_filters($init_data = true) {
         global $CFG, $USER;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $filters = array();
 
@@ -734,7 +735,7 @@ class individual_course_progress_report extends table_report {
     function get_max_test_score_sql($field_shortname) {
         global $DB;
 
-        if ($field_id = $DB->get_field('elis_field', 'id', array('shortname' => $field_shortname))) {
+        if ($field_id = $DB->get_field(field::TABLE, 'id', array('shortname' => $field_shortname))) {
             $field = new field($field_id);
             $data_table = $field->data_table();
 

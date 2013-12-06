@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 //parent class
-require_once($CFG->dirroot . '/elis/core/lib/page.class.php');
+require_once($CFG->dirroot . '/local/eliscore/lib/page.class.php');
 //report base class
 require_once($CFG->dirroot . '/local/elisreports/php_report_base.php');
 

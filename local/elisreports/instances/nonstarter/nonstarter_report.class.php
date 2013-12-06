@@ -98,8 +98,8 @@ class nonstarter_report extends table_report {
     function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -122,13 +122,22 @@ class nonstarter_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculumcourse.class.php');
 
         //needed for options filters
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/date.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofilematch.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/lib.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/date.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/userprofilematch.php');
+
+        // required for ETL table constants
+        require_once($CFG->dirroot.'/local/eliscore/plugins/etl/etl.php');
     }
 
     /**
@@ -307,7 +316,7 @@ class nonstarter_report extends table_report {
                     'extra'       => true, // Include all extra profile fields.
                     'tables' => array(
                         'up' => array(
-                            'crlm_user' => 'crlmusr'
+                            user::TABLE => 'crlmusr'
                         )
                     )
                 )
@@ -394,12 +403,11 @@ class nonstarter_report extends table_report {
         }
         // Also require Moodle-Only query w/o CM tables!
         $sql = "SELECT {$columns}
-           FROM {crlm_curriculum} cur
-           JOIN {crlm_curriculum_course} curcrs ON curcrs.curriculumid = cur.id
-           JOIN {crlm_course} crs ON crs.id = curcrs.courseid
-           JOIN {crlm_class} cls
-                ON cls.courseid = crs.id
-          ";
+           FROM {".curriculum::TABLE.'} cur
+           JOIN {'.curriculumcourse::TABLE.'} curcrs ON curcrs.curriculumid = cur.id
+           JOIN {'.course::TABLE.'} crs ON crs.id = curcrs.courseid
+           JOIN {'.pmclass::TABLE.'} cls ON cls.courseid = crs.id
+          ';
       // ELIS-4009: remove dependency on class times!
       /*
         // Check that the class is open during report dates
@@ -413,19 +421,16 @@ class nonstarter_report extends table_report {
         }
       */
 
-        $sql .= " LEFT JOIN {crlm_class_moodle} clsm ON cls.id = clsm.classid
-           JOIN {crlm_class_enrolment} clsenr
-                ON clsenr.classid = cls.id
-                AND clsenr.completestatusid = {$stustatus}
-           JOIN {crlm_user} crlmusr ON clsenr.userid = crlmusr.id
+        $sql .= ' LEFT JOIN {'.classmoodlecourse::TABLE.'} clsm ON cls.id = clsm.classid
+           JOIN {'.student::TABLE.'} clsenr ON clsenr.classid = cls.id
+            AND clsenr.completestatusid = {$stustatus}
+           JOIN {'.user::TABLE'.} crlmusr ON clsenr.userid = crlmusr.id
            JOIN {user} u ON u.idnumber = crlmusr.idnumber
-           AND NOT EXISTS
-               (SELECT * FROM {crlm_class_graded} ccg
-                  JOIN {crlm_course_completion} ccc
-                    ON ccc.id = ccg.completionid
-                       AND ccg.grade >= ccc.completion_grade
-                 WHERE ccg.userid = crlmusr.id AND ccg.classid = cls.id
-                       AND ccg.locked = 1 ";
+            AND NOT EXISTS
+               (SELECT * FROM {'.student_grade::TABLE.'} ccg
+                  JOIN {'.coursecompletion::TABLE.'} ccc ON ccc.id = ccg.completionid
+                   AND ccg.grade >= ccc.completion_grade
+                 WHERE ccg.userid = crlmusr.id AND ccg.classid = cls.id AND ccg.locked = 1 ';
         if (!empty($this->startdate)) {
             $sql .= "AND ccg.timegraded >= {$this->startdate} ";
         }
@@ -439,11 +444,11 @@ class nonstarter_report extends table_report {
             since it should be based on the mdl_log table data;
             but, results were different with multiple sets of data !?!?!?
         ** ******/
-        // Exclude users with etl_user_activity for course
-        $sql .= "
+        // Exclude users with etl user activity for course
+        $sql .= '
            AND NOT EXISTS
-               (SELECT * FROM {etl_user_activity}
-                 WHERE courseid = clsm.moodlecourseid AND userid = u.id ";
+               (SELECT * FROM {'.ETL_TABLE.'}
+                 WHERE courseid = clsm.moodlecourseid AND userid = u.id ';
         if (!empty($this->startdate)) {
             $sql .= "AND hour >= {$this->startdate} ";
         }

@@ -26,7 +26,7 @@
 require_once ($CFG->libdir.'/formslib.php');
 require_once ($CFG->dirroot.'/local/elisreports/sharedlib.php');
 require_once ($CFG->dirroot.'/local/elisreports/parameter_form.class.php');
-require_once ($CFG->dirroot.'/elis/core/lib/form/timeselector.php');
+require_once ($CFG->dirroot.'/local/eliscore/lib/form/timeselector.php');
 
 // Javascript files required to convert enter from form cancel to next step
 function require_js_files() {

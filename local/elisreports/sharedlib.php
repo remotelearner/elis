@@ -31,7 +31,7 @@ defined('MOODLE_INTERNAL') || die();
  * @return  array  Mapping of tree category shortnames to display names,
  *                 in the order they should appear
  */
-function block_php_report_get_category_mapping() {
+function local_elisreports_get_category_mapping() {
     //categories, in a pre-determined order
     return array(php_report::CATEGORY_CURRICULUM    => get_string('curriculum_reports',    'local_elisreports'),
                  php_report::CATEGORY_COURSE        => get_string('course_reports',        'local_elisreports'),
@@ -51,7 +51,7 @@ function block_php_report_get_category_mapping() {
  * @return  string               A taskname that would identify any associated
  *                               ELIS scheduled tasks
  */
-function block_php_report_get_taskname_from_id($scheduleid) {
+function local_elisreports_get_taskname_from_id($scheduleid) {
     return 'scheduled_' . $scheduleid;
 }
 
@@ -67,7 +67,7 @@ function block_php_report_get_taskname_from_id($scheduleid) {
  *
  * @uses    $DB
  */
-function block_php_report_get_taskname_from_column($sql_column) {
+function local_elisreports_get_taskname_from_column($sql_column) {
     global $DB;
 
     return $DB->sql_concat("'scheduled_'", $sql_column);
@@ -88,14 +88,14 @@ function block_php_report_get_taskname_from_column($sql_column) {
  * @uses    $USER
  * @uses    $DB
  */
-function block_php_report_get_report_jobs_recordset($report_shortname, $fields = NULL) {
+function local_elisreports_get_report_jobs_recordset($report_shortname, $fields = NULL) {
     global $CFG, $USER, $DB;
 
     //query parameters
     $params = array('shortname' => $report_shortname);
 
     //need this concatenation to connect ELIS and PHP scheduling info
-    $concat = block_php_report_get_taskname_from_column('schedule.id');
+    $concat = local_elisreports_get_taskname_from_column('schedule.id');
 
     if ($fields === NULL) {
         //default set of database fields to select
@@ -109,15 +109,14 @@ function block_php_report_get_report_jobs_recordset($report_shortname, $fields =
 
     //main query, involving ELIS and PHP schedling info
     $sql = "SELECT {$fields}
-            FROM
-            {$CFG->prefix}elis_scheduled_tasks task
-            JOIN {$CFG->prefix}php_report_schedule schedule
+            FROM {local_eliscore_sched_tasks} task
+            JOIN {local_elisreports_schedule} schedule
               ON task.taskname = {$concat}
             JOIN {$CFG->prefix}user user
               ON schedule.userid = user.id
             WHERE schedule.report = :shortname";
 
-    if (!has_capability('block/php_report:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+    if (!has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
         //user does not have the necessary capability for viewing all scheduled instances,
         //so limit to their own
         $sql .= ' AND user.id = :userid';
@@ -137,7 +136,7 @@ function block_php_report_get_report_jobs_recordset($report_shortname, $fields =
  *
  * @uses    $DB
  */
-function block_php_report_get_copy_label($parent_label) {
+function local_elisreports_get_copy_label($parent_label) {
     global $DB;
 
     //first guess at to our copy number
@@ -154,7 +153,7 @@ function block_php_report_get_copy_label($parent_label) {
         //look for records containing the proposed namy anywhere in their config data
         //(may include false-positives but very unlikely)
         $like = $DB->sql_like('config', ':label');
-        if ($records = $DB->get_recordset_select('php_report_schedule', $like, array('label' => "%$label%"))) {
+        if ($records = $DB->get_recordset_select('local_elisreports_schedule', $like, array('label' => "%$label%"))) {
             //track whether an exact match was found
             $found = false;
 
@@ -194,28 +193,28 @@ function block_php_report_get_copy_label($parent_label) {
  *
  * @uses    $DB
  */
-function block_php_report_copy_schedule_instance($id) {
+function local_elisreports_copy_schedule_instance($id) {
     global $DB;
 
-    if ($php_report_record = $DB->get_record('php_report_schedule', array('id' => $id))) {
+    if ($php_report_record = $DB->get_record('local_elisreports_schedule', array('id' => $id))) {
 
         $config = unserialize($php_report_record->config);
         //update modified time to right now
         $config['timemodified'] = time();
         //modify the label to prevent duplicates
-        $config['label'] = block_php_report_get_copy_label($config['label']);
+        $config['label'] = local_elisreports_get_copy_label($config['label']);
         $php_report_record->config = serialize($config);
-        $php_report_record->id = $DB->insert_record('php_report_schedule', $php_report_record);
+        $php_report_record->id = $DB->insert_record('local_elisreports_schedule', $php_report_record);
 
         //handle associated ELIS schedule records
-        $taskname = block_php_report_get_taskname_from_id($id);
-        if ($elis_records = $DB->get_recordset('elis_scheduled_tasks', array('taskname' => $taskname))) {
+        $taskname = local_elisreports_get_taskname_from_id($id);
+        if ($elis_records = $DB->get_recordset('local_eliscore_sched_tasks', array('taskname' => $taskname))) {
             foreach ($elis_records as $elis_record) {
                 //make sure this points back to the new PHP report schedule instance
-                $elis_record->taskname = block_php_report_get_taskname_from_id($php_report_record->id);
+                $elis_record->taskname = local_elisreports_get_taskname_from_id($php_report_record->id);
                 //new instance, so it's never run before
                 $elis_record->lastruntime = 0;
-                $DB->insert_record('elis_scheduled_tasks', $elis_record);
+                $DB->insert_record('local_eliscore_sched_tasks', $elis_record);
             }
             return true;
         }
@@ -235,16 +234,16 @@ function block_php_report_copy_schedule_instance($id) {
  *
  * @uses    $DB
  */
-function block_php_report_delete_schedule_instance($id) {
+function local_elisreports_delete_schedule_instance($id) {
     global $DB;
 
     //make sure the record is valid
-    if ($DB->record_exists('php_report_schedule', array('id' => $id))) {
+    if ($DB->record_exists('local_elisreports_schedule', array('id' => $id))) {
         //delete all associated ELIS scheduled tasks
-        $taskname = block_php_report_get_taskname_from_id($id);
-        $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
+        $taskname = local_elisreports_get_taskname_from_id($id);
+        $DB->delete_records('local_eliscore_sched_tasks', array('taskname' => $taskname));
         //delete the task itself
-        $DB->delete_records('php_report_schedule', array('id' => $id));
+        $DB->delete_records('local_elisreports_schedule', array('id' => $id));
         return true;
     }
 
@@ -265,13 +264,13 @@ function block_php_report_delete_schedule_instance($id) {
  *                                             report shortnames to display names (category entries
  *                                             will exist but be empty if no reports are in that category)
  */
-function block_php_report_get_names_by_category($require_exportable = false, $userid = NULL, $execution_mode = php_report::EXECUTION_MODE_INTERACTIVE) {
+function local_elisreports_get_names_by_category($require_exportable = false, $userid = NULL, $execution_mode = php_report::EXECUTION_MODE_INTERACTIVE) {
     global $CFG;
 
     $category_members = array();
 
     //get a listing of the different categories
-    $categories = block_php_report_get_category_mapping();
+    $categories = local_elisreports_get_category_mapping();
 
     //initialize a bucket to store a category's reports where applicable
     foreach ($categories as $category_key => $category_display) {

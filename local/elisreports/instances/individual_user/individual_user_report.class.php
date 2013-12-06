@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/local/elisreports/type/table_report.class.php');
-require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/deprecatedlib.php');
 
 class individual_user_report extends table_report {
     var $lang_file    = 'rlreport_individual_user';
@@ -52,8 +52,8 @@ class individual_user_report extends table_report {
     function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -73,22 +73,22 @@ class individual_user_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
         //needed for constants that define db tables
-        require_once($CFG->dirroot.'/elis/program/lib/lib.php'); // usermanagement
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculumstudent.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php'); // usermanagement
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
         //needed to include for filters
-        require_once($CFG->dirroot.'/elis/program/lib/filtering/autocomplete_eliswithcustomfields.php');
-        require_once($CFG->dirroot.'/elis/core/lib/filtering/simpleselect.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/filtering/autocomplete_eliswithcustomfields.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/filtering/simpleselect.php');
 
     }
 
@@ -205,7 +205,7 @@ class individual_user_report extends table_report {
      */
     function get_filters($init_data = true) {
         global $CFG, $USER;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $filters = array();
 

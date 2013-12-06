@@ -723,10 +723,10 @@ abstract class php_report {
     function get_access_capability() {
        if ($this->execution_mode == php_report::EXECUTION_MODE_INTERACTIVE) {
            //running for the UI
-           return 'block/php_report:view';
+           return 'local/elisreports:view';
        } else {
            //running a scheduled report
-           return 'block/php_report:schedule';
+           return 'local/elisreports:schedule';
        }
     }
 

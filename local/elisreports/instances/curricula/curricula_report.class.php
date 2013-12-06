@@ -83,8 +83,8 @@ class curricula_report extends table_report {
    function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -104,19 +104,19 @@ class curricula_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
 
         //needed for constants that define db tables
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumstudent.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
 
         //needed to include for filters
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/userprofilematch.php');
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/clusterselect.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/userprofilematch.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/clusterselect.php');
     }
 /**
      * Specifies the particular export formats that are supported by this report
@@ -158,7 +158,7 @@ class curricula_report extends table_report {
                     'extra'       => true, // Include all extra profile fields.
                     'tables' => array(
                         'up' => array(
-                            'crlm_user' => 'crlmu'
+                            user::TABLE => 'crlmu'
                         )
                     )
                 )
@@ -384,7 +384,7 @@ class curricula_report extends table_report {
         /**
          * Correct formatting for certain fields
          **/
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
         $incomplete_status = STUSTATUS_NOTCOMPLETE;
 
         if ($record->completed == $incomplete_status) {
@@ -431,7 +431,7 @@ class curricula_report extends table_report {
         /**
          * Correct formatting for certain fields
          **/
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
 
         /**
          * Set up link to individual user report

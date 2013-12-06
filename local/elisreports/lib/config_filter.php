@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
+require_once($CFG->dirroot .'/local/eliscore/lib/filtering/lib.php');
 require_once($CFG->dirroot .'/local/elisreports/lib/filtering.php');
 
 /**

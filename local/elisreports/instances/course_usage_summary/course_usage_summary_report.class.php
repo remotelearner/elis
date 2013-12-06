@@ -51,8 +51,8 @@ class course_usage_summary_report extends icon_config_report {
    function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -72,21 +72,22 @@ class course_usage_summary_report extends icon_config_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
 
         //needed for constants that define db tables
-        require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumstudent.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/classmoodlecourse.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/classmoodlecourse.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
 
         //needed for options filters
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/checkboxes.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/date.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/selectany.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/checkboxes.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/date.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/selectany.php');
 
     }
 
@@ -543,7 +544,7 @@ class course_usage_summary_report extends icon_config_report {
         $avg_crs_grd = 0;
 
         //Get the field id of the field shortname to use in the data table
-        if ($field_id = $DB->get_field('elis_field', 'id', array('shortname' => $field_shortname))) {
+        if ($field_id = $DB->get_field(field::TABLE, 'id', array('shortname' => $field_shortname))) {
 
             $field = new field($field_id);
             $data_table = $field->data_table();

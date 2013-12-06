@@ -24,9 +24,9 @@
  */
 
 require_once $CFG->dirroot.'/local/eliscore/lib/setup.php';
-require_once $CFG->dirroot.'/elis/core/lib/tasklib.php';
-require_once $CFG->dirroot.'/elis/core/lib/workflow.class.php';
-require_once $CFG->dirroot.'/elis/core/lib/workflowpage.class.php';
+require_once $CFG->dirroot.'/local/eliscore/lib/tasklib.php';
+require_once $CFG->dirroot.'/local/eliscore/lib/workflow.class.php';
+require_once $CFG->dirroot.'/local/eliscore/lib/workflowpage.class.php';
 require_once $CFG->dirroot.'/local/elisreports/php_report_base.php';
 require_once $CFG->dirroot.'/local/elisreports/form/scheduling.php';
 require_once $CFG->dirroot.'/local/elisreports/sharedlib.php';
@@ -283,16 +283,16 @@ class scheduling_workflow extends workflow {
         $schedule->config   = $serialized_data;
         if (isset($data['schedule_id'])) {
             $schedule->id = $data['schedule_id'];
-            $DB->update_record('php_report_schedule', $schedule);
+            $DB->update_record('local_elisreports_schedule', $schedule);
             // Also find and remove any existing task record(s) for the old schedule
             $taskname     = 'scheduled_'.$schedule->id;
-            $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
+            $DB->delete_records('local_eliscore_sched_tasks', array('taskname' => $taskname));
         } else {
-            $schedule->id = $DB->insert_record('php_report_schedule', $schedule);
+            $schedule->id = $DB->insert_record('local_elisreports_schedule', $schedule);
         }
 
         // Save to scheduled_tasks
-        $component = 'block/php_report';
+        $component = 'local_elisreports';
         $callfile = '/local/elisreports/runschedule.php';
         $callfunction = serialize('run_schedule');
 
@@ -370,7 +370,7 @@ class scheduling_workflow extends workflow {
         }
         $task->runsremaining = $runsremaining;
 
-        $DB->insert_record('elis_scheduled_tasks', $task);
+        $DB->insert_record('local_eliscore_sched_tasks', $task);
     }
 }
 
@@ -386,7 +386,7 @@ class scheduling_page extends workflowpage {
 
         // If a schedule id was in the url, then attempt to retrieve it from the php_scheduled_tasks table
         if ($schedule_id != null) {
-            $schedule = $DB->get_record('php_report_schedule', array('id' => $schedule_id));
+            $schedule = $DB->get_record('local_elisreports_schedule', array('id' => $schedule_id));
             if (empty($schedule)) {
                 // TBD: better error handling
                 return '';
@@ -489,7 +489,7 @@ class scheduling_page extends workflowpage {
      * @return  boolean  true if allowed, otherwise false
      */
     function can_do_listinstancejobs() {
-        if (has_capability('block/php_report:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
             //user can manage schedules globally, so allow access
             return true;
         }
@@ -514,7 +514,7 @@ class scheduling_page extends workflowpage {
     function can_do_edit() {
         global $USER, $DB;
 
-        if (has_capability('block/php_report:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
             //user can manage schedules globally, so allow access
             return true;
         }
@@ -525,7 +525,7 @@ class scheduling_page extends workflowpage {
         //(applies only during first step of wizard interface)
         $id = $this->optional_param('id', 0, PARAM_INT);
         if ($id !== 0) {
-            if ($record = $DB->get_record('php_report_schedule', array('id' => $id))) {
+            if ($record = $DB->get_record('local_elisreports_schedule', array('id' => $id))) {
                 if ($record->userid != $USER->id) {
                     //disallow access to another user's schedule
                     return false;
@@ -623,7 +623,7 @@ class scheduling_page extends workflowpage {
     public function can_do_list() {
         global $CFG, $USER;
 
-        if (has_capability('block/php_report:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
             //user can manage schedules globally, so allow access
             return true;
         }
@@ -675,7 +675,7 @@ class scheduling_page extends workflowpage {
     function can_do_schedule_action($scheduleid, $report_shortname = '') {
         global $USER, $DB;
 
-        if (has_capability('block/php_report:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
             //permitted, since allowed globally
             return true;
         }
@@ -684,7 +684,7 @@ class scheduling_page extends workflowpage {
         //check for report / schedule-specific permissions
 
         //make sure the schedule is owned by the current user
-        if ($userid = $DB->get_field('php_report_schedule', 'userid', array('id' => $scheduleid))) {
+        if ($userid = $DB->get_field('local_elisreports_schedule', 'userid', array('id' => $scheduleid))) {
             if ($userid == $USER->id) {
 
                 if ($report_shortname == '') {
@@ -711,7 +711,7 @@ class scheduling_page extends workflowpage {
         global $CFG;
         require_once($CFG->dirroot . '/local/elisreports/sharedlib.php');
 
-        $category_members = block_php_report_get_names_by_category(true, NULL, php_report::EXECUTION_MODE_SCHEDULED);
+        $category_members = local_elisreports_get_names_by_category(true, NULL, php_report::EXECUTION_MODE_SCHEDULED);
 
         //set up the basics of our table
         $table = new html_table();
@@ -722,7 +722,7 @@ class scheduling_page extends workflowpage {
         $table->rowclasses = array();
         $table->data = array();
 
-        $categories = block_php_report_get_category_mapping();
+        $categories = local_elisreports_get_category_mapping();
 
         //go through categories and append items
         foreach ($categories as $category_key => $category_display) {
@@ -816,7 +816,7 @@ class scheduling_page extends workflowpage {
                 if (strpos($key, 'schedule_') === 0) {
                     $scheduleid = (int)substr($key, strlen('schedule_'));
                     if ($this->can_do_schedule_action($scheduleid)) {
-                        block_php_report_delete_schedule_instance($scheduleid);
+                        local_elisreports_delete_schedule_instance($scheduleid);
                     }
                 }
             }
@@ -838,7 +838,7 @@ class scheduling_page extends workflowpage {
                 if (strpos($key, 'schedule_') === 0) {
                     $scheduleid = (int)substr($key, strlen('schedule_'));
                     if ($this->can_do_schedule_action($scheduleid)) {
-                        block_php_report_copy_schedule_instance($scheduleid);
+                        local_elisreports_copy_schedule_instance($scheduleid);
                     }
                 }
             }
@@ -961,7 +961,7 @@ class scheduling_page extends workflowpage {
         $report = $this->required_param('report', PARAM_ALPHAEXT);
 
         //get the necessary data
-        $recordset = block_php_report_get_report_jobs_recordset($report);
+        $recordset = local_elisreports_get_report_jobs_recordset($report);
 
         //set up a job if none exist and a special parameter
         //is passed in to signal this functinality
@@ -976,7 +976,7 @@ class scheduling_page extends workflowpage {
             }
         }
 
-        if ($recordset = block_php_report_get_report_jobs_recordset($report) and
+        if ($recordset = local_elisreports_get_report_jobs_recordset($report) and
             $recordset->valid()) {
             //we actually have scheduled instances for this report
 

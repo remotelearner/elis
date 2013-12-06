@@ -39,7 +39,7 @@ $current = required_param('current', PARAM_INT);
 $total = required_param('total', PARAM_INT);
 
 //determine the ELIS scheduled task name from the PHP report schedule id
-$taskname = block_php_report_get_taskname_from_id($scheduleid);
+$taskname = local_elisreports_get_taskname_from_id($scheduleid);
 
 //used to update the UI with errors that have taken place
 $error_string = '';

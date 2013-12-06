@@ -34,10 +34,10 @@ require_once($CFG->dirroot .'/local/elisreports/instances/'. $report_name .'/'.
              $report_name .'_report.class.php');
 require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
 require_once($CFG->dirroot .'/local/elisreports/lib/filtering.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
-require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect.php');
-require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_data.php');
-require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_values.php');
+require_once($CFG->dirroot .'/local/eliscore/lib/filtering/lib.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/custom_field_multiselect.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/custom_field_multiselect_data.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/custom_field_multiselect_values.php');
 
 $block_id      = required_param('block_id', PARAM_TEXT);
 $action        = required_param('action', PARAM_TEXT);

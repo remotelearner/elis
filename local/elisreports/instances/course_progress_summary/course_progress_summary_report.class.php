@@ -49,8 +49,8 @@ class course_progress_summary_report extends table_report {
    function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -70,22 +70,22 @@ class course_progress_summary_report extends table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
 
         //needed for constants that define db tables
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumstudent.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
 
         //needed to get the filtering libraries
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/date.php');
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/selectany.php');
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/clusterselect.php');
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect_values.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/date.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/selectany.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/clusterselect.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/custom_field_multiselect_values.php');
 
         //needed for the permissions-checking logic on custom fields
         require_once($CFG->dirroot .'/local/elisreports/sharedlib.php');
@@ -416,7 +416,7 @@ class course_progress_summary_report extends table_report {
             foreach ($filter_params as $custom_course_id) {
                 $custom_course_field = new field($custom_course_id);
                 if ($custom_course_field->multivalued) {
-                    $context = context_elis_course::instance($record->courseid);
+                    $context = local_elisprogram_context_course::instance($record->courseid);
                     $field_data = "custom_data_{$custom_course_id}";
                     $record->$field_data = '';
                     $datarecs = field_data::get_for_context_and_field($context, $custom_course_field, false);

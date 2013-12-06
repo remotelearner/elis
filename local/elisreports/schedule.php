@@ -28,7 +28,7 @@ require_once $CFG->dirroot . '/local/elisreports/lib/schedulelib.php';
 
 $PAGE = new scheduling_page();
 //load necessary css classes
-$PAGE->requires->css('/elis/core/styles.css');
+$PAGE->requires->css('/local/eliscore/styles.css');
 $PAGE->requires->css('/local/elisreports/styles.css');
 
 $PAGE->run();

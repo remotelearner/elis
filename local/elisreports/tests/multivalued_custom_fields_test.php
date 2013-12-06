@@ -23,9 +23,9 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
@@ -35,7 +35,7 @@ require_once('PHPUnit/Extensions/Database/DataSet/CsvDataSet.php');
 
 /**
  * Class to test PHP report multivalued custom fields.
- * @group block_php_report
+ * @group local_elisreports
  */
 class multivalued_custom_field_testcase extends elis_database_test {
     /**

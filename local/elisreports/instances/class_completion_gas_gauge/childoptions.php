@@ -28,9 +28,8 @@
  */
 
 require_once(dirname(__FILE__) .'/../../../../config.php');
-require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
-require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
 
 if (!isloggedin() || isguestuser()) {
     mtrace("ERROR: must be logged in!");
@@ -55,7 +54,7 @@ if (array_key_exists('id', $_REQUEST)) {
 $choices_array = array(array('', get_string('anyvalue', 'filters')));
 
 if (!empty($ids)) {
-    $contexts = get_contexts_by_capability_for_user('class', 'block/php_report:view', $USER->id);
+    $contexts = get_contexts_by_capability_for_user('class', 'local/elisreports:view', $USER->id);
 
     $records = pmclass_get_listing('idnumber', 'ASC', 0, 0, '', '', $ids, false, $contexts);
     foreach ($records as $record) {

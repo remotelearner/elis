@@ -26,7 +26,6 @@
 $capabilities = array(
 
     'local/elisreports:view' => array(
-
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -37,7 +36,6 @@ $capabilities = array(
     ),
 
     'local/elisreports:schedule' => array(
-
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -48,7 +46,6 @@ $capabilities = array(
     ),
 
     'local/elisreports:manageschedules' => array(
-
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,

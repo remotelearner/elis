@@ -50,8 +50,8 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
     function is_available() {
         global $CFG, $DB;
 
-        //we need the /elis/program/ directory
-        if (!file_exists($CFG->dirroot .'/elis/program/lib/setup.php')) {
+        //we need the /local/elisprogram/ directory
+        if (!file_exists($CFG->dirroot .'/local/elisprogram/lib/setup.php')) {
             return false;
         }
 
@@ -71,19 +71,19 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
     function require_dependencies() {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
 
         //needed for constants that define db tables
-        require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/student.class.php'); // status id values
-        require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot .'/elis/program/lib/data/classmoodlecourse.class.php');
-        require_once($CFG->dirroot .'/elis/program/userpage.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/student.class.php'); // status id values
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/data/classmoodlecourse.class.php');
+        require_once($CFG->dirroot .'/local/elisprogram/userpage.class.php');
 
         //needed to include for filters
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/setselect.php');
-        require_once($CFG->dirroot .'/elis/program/lib/filtering/courseclassselect.php');
+        require_once($CFG->dirroot .'/local/eliscore/lib/filtering/setselect.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/courseclassselect.php');
     }
 
     /**
