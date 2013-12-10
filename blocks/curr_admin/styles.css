@@ -39,15 +39,15 @@
 }
 
 .block_curr_admin .curr_integrationpoint {
-    background: transparent url([[pix:elis_program|integrationpoint]]) no-repeat;
+    background: transparent url([[pix:local_elisprogram|integrationpoint]]) no-repeat;
 }
 
 .block_curr_admin .curr_managetags {
-    background: transparent url([[pix:elis_program|tag]]) no-repeat;
+    background: transparent url([[pix:local_elisprogram|tag]]) no-repeat;
 }
 
 .block_curr_admin .curr_manageenvironments {
-    background: transparent url([[pix:elis_program|environment]]) no-repeat;
+    background: transparent url([[pix:local_elisprogram|environment]]) no-repeat;
 }
 
 

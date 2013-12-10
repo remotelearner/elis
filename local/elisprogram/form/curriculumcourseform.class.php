@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -52,26 +51,26 @@ class coursecurriculumbaseform extends cmform {
 
         $this->body_definition();
 
-        $mform->addElement('advcheckbox', 'required', get_string('required', 'elis_program'), null, null, array('0', '1'));
-        $mform->addHelpButton('required', 'curriculumcourseform:required', 'elis_program');
+        $mform->addElement('advcheckbox', 'required', get_string('required', 'local_elisprogram'), null, null, array('0', '1'));
+        $mform->addHelpButton('required', 'curriculumcourseform:required', 'local_elisprogram');
 
-        $mform->addElement('text', 'frequency', get_string('frequency', 'elis_program') . ':');
+        $mform->addElement('text', 'frequency', get_string('frequency', 'local_elisprogram') . ':');
         $mform->setType('frequency', PARAM_INT);
         $mform->addRule('frequency', null, 'maxlength', 64, 'client');
-        $mform->addHelpButton('frequency', 'curriculumcourseform:frequency', 'elis_program');
+        $mform->addHelpButton('frequency', 'curriculumcourseform:frequency', 'local_elisprogram');
 
         foreach ($this->timeperiod_values as $key => $val) {
             if (get_string_manager()->string_exists("time_period_{$key}",
-                                                    'elis_program')) {
-                $this->timeperiod_values[$key] = get_string("time_period_{$key}", 'elis_program');
+                                                    'local_elisprogram')) {
+                $this->timeperiod_values[$key] = get_string("time_period_{$key}", 'local_elisprogram');
             }
         }
-        $mform->addElement('select', 'timeperiod', get_string('time_period', 'elis_program') . ':', $this->timeperiod_values);
-        $mform->addHelpButton('timeperiod', 'curriculumcourseform:time_period', 'elis_program');
+        $mform->addElement('select', 'timeperiod', get_string('time_period', 'local_elisprogram') . ':', $this->timeperiod_values);
+        $mform->addHelpButton('timeperiod', 'curriculumcourseform:time_period', 'local_elisprogram');
 
-        $mform->addElement('text', 'position', get_string('curriculumcourse_position', 'elis_program') . ':');
+        $mform->addElement('text', 'position', get_string('curriculumcourse_position', 'local_elisprogram') . ':');
         $mform->setType('position', PARAM_INT);
-        $mform->addHelpButton('position', 'curriculumcourseform:position', 'elis_program');
+        $mform->addHelpButton('position', 'curriculumcourseform:position', 'local_elisprogram');
 
         $this->add_action_buttons();
     }
@@ -98,7 +97,7 @@ class coursecurriculumform extends coursecurriculumbaseform {
             $curriculum = $coursecurriculum->curriculum;
             $curriculas[$curriculum->id] = $curriculum->name;
         } else {
-            $contexts = curriculumpage::get_contexts('elis/program:associate');
+            $contexts = curriculumpage::get_contexts('local/elisprogram:associate');
             $curricula_avail = $coursecurriculum->get_curricula_avail(array('contexts' => $contexts));
             $curriculas = array();
 
@@ -111,16 +110,16 @@ class coursecurriculumform extends coursecurriculumbaseform {
             }
         }
 
-        $mform->addElement('select', 'curriculumid', get_string('curriculum', 'elis_program') . ':', $curriculas);
+        $mform->addElement('select', 'curriculumid', get_string('curriculum', 'local_elisprogram') . ':', $curriculas);
         $mform->addRule('curriculumid', null, 'required', null, 'client');
-        $mform->addHelpButton('curriculumid', 'curriculumcourseform:curriculum', 'elis_program');
+        $mform->addHelpButton('curriculumid', 'curriculumcourseform:curriculum', 'local_elisprogram');
 
         $mform->addElement('hidden', 'courseid', $parent_obj->id);
         $mform->setType('courseid', PARAM_INT);
 
-        $mform->addElement('text', 'coursename', get_string('course', 'elis_program') . ':', 'readonly="readonly"');
+        $mform->addElement('text', 'coursename', get_string('course', 'local_elisprogram') . ':', 'readonly="readonly"');
         $mform->setType('coursename', PARAM_TEXT);
-        $mform->addHelpButton('coursename', 'curriculumcourseform:course', 'elis_program');
+        $mform->addHelpButton('coursename', 'curriculumcourseform:course', 'local_elisprogram');
 
         $this->set_data(array('coursename' => $parent_obj->name));
     }
@@ -143,11 +142,11 @@ class curriculumcourseform extends coursecurriculumbaseform {
         $mform->addElement('hidden', 'curriculumid', $curriculumid);
         $mform->setType('curriculumid', PARAM_INT);
 
-        $mform->addElement('text', 'curriculumname', get_string('curriculum', 'elis_program') . ':', 'readonly="readonly"');
+        $mform->addElement('text', 'curriculumname', get_string('curriculum', 'local_elisprogram') . ':', 'readonly="readonly"');
         $mform->setType('curriculumname', PARAM_TEXT);
-        $mform->addHelpButton('curriculumname', 'curriculumcourseform:curriculum', 'elis_program');
+        $mform->addHelpButton('curriculumname', 'curriculumcourseform:curriculum', 'local_elisprogram');
 
-        $contexts = coursepage::get_contexts('elis/program:associate');
+        $contexts = coursepage::get_contexts('local/elisprogram:associate');
         $courses_avail = $coursecurriculum->get_courses_avail(array('contexts' => $contexts));
         $courses = array();
 
@@ -165,9 +164,9 @@ class curriculumcourseform extends coursecurriculumbaseform {
             natcasesort($courses);
         }
 
-        $mform->addElement('select', 'courseid', get_string('course', 'elis_program') . ':', $courses);
+        $mform->addElement('select', 'courseid', get_string('course', 'local_elisprogram') . ':', $courses);
         $mform->addRule('courseid', null, 'required', null, 'client');
-        $mform->addHelpButton('courseid', 'curriculumcourseform:course', 'elis_program');
+        $mform->addHelpButton('courseid', 'curriculumcourseform:course', 'local_elisprogram');
 
         $this->set_data(array('curriculumname' => $parent_obj->name));
     }
@@ -200,24 +199,24 @@ class prerequisiteform extends cmform {
         $mform->addElement('hidden', 'association_id', $data->association_id);
         $mform->setType('association_id', PARAM_INT);
 
-        $mform->addElement('header', 'curriculumcourseeditform', get_string('edit_course_prerequisites', 'elis_program'));
+        $mform->addElement('header', 'curriculumcourseeditform', get_string('edit_course_prerequisites', 'local_elisprogram'));
         $mform->closeHeaderBefore('prerequisiteSave');
 
-        $select =& $mform->addElement('select', 'prereqs', get_string('available_course_prerequisites', 'elis_program'), $data->availablePrerequisites);
+        $select =& $mform->addElement('select', 'prereqs', get_string('available_course_prerequisites', 'local_elisprogram'), $data->availablePrerequisites);
         $select->setMultiple(true);
 
-        $select =& $mform->addElement('select', 'sprereqs', get_string('existing_course_prerequisites', 'elis_program'), $data->existingPrerequisites);
+        $select =& $mform->addElement('select', 'sprereqs', get_string('existing_course_prerequisites', 'local_elisprogram'), $data->existingPrerequisites);
         $select->setMultiple(true);
 
-        $mform->addElement('checkbox', 'add_to_curriculum', get_string('add_prereq_to_curriculum', 'elis_program'));
+        $mform->addElement('checkbox', 'add_to_curriculum', get_string('add_prereq_to_curriculum', 'local_elisprogram'));
 
         $group = array();
-        $group[] =& $mform->createElement('submit', 'add', get_string('add_prereq', 'elis_program'));
-        $group[] =& $mform->createElement('submit', 'remove', get_string('remove_prereq', 'elis_program'));
+        $group[] =& $mform->createElement('submit', 'add', get_string('add_prereq', 'local_elisprogram'));
+        $group[] =& $mform->createElement('submit', 'remove', get_string('remove_prereq', 'local_elisprogram'));
 
         $mform->addGroup($group, 'submitbuttons', '', '', false);
 
-        $mform->addElement('cancel', 'exit', get_string('exit', 'elis_program'));
+        $mform->addElement('cancel', 'exit', get_string('exit', 'local_elisprogram'));
     }
 }
 
@@ -249,22 +248,22 @@ class corequisiteform extends cmform {
         $mform->addElement('hidden', 'association_id', $data->association_id);
         $mform->setType('association_id', PARAM_INT);
 
-        $mform->addElement('header', 'curriculumcourseeditform', get_string('edit_course_corequisites', 'elis_program'));
+        $mform->addElement('header', 'curriculumcourseeditform', get_string('edit_course_corequisites', 'local_elisprogram'));
 
-        $select =& $mform->addElement('select', 'coreqs', get_string('available_course_corequisites', 'elis_program'), $data->availableCorequisites);
+        $select =& $mform->addElement('select', 'coreqs', get_string('available_course_corequisites', 'local_elisprogram'), $data->availableCorequisites);
         $select->setMultiple(true);
 
-        $select =& $mform->addElement('select', 'scoreqs', get_string('existing_course_corequisites', 'elis_program'), $data->existingCorequisites);
+        $select =& $mform->addElement('select', 'scoreqs', get_string('existing_course_corequisites', 'local_elisprogram'), $data->existingCorequisites);
         $select->setMultiple(true);
 
-        $mform->addElement('checkbox', 'add_to_curriculum', get_string('add_coreq_to_curriculum', 'elis_program'));
+        $mform->addElement('checkbox', 'add_to_curriculum', get_string('add_coreq_to_curriculum', 'local_elisprogram'));
 
         $group = array();
-        $group[] =& $mform->createElement('submit', 'add', get_string('add_coreq', 'elis_program'));
-        $group[] =& $mform->createElement('submit', 'remove', get_string('remove_coreq', 'elis_program'));
+        $group[] =& $mform->createElement('submit', 'add', get_string('add_coreq', 'local_elisprogram'));
+        $group[] =& $mform->createElement('submit', 'remove', get_string('remove_coreq', 'local_elisprogram'));
 
         $mform->addGroup($group, 'submitbuttons', '', '', false);
 
-        $mform->addElement('cancel', 'exit', get_string('exit', 'elis_program'));
+        $mform->addElement('cancel', 'exit', get_string('exit', 'local_elisprogram'));
     }
 }

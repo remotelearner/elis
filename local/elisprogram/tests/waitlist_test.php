@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/pmclass.class.php'));
@@ -52,7 +52,7 @@ class coursecatalogpage_nodisplay extends coursecatalogpage {
 
 /**
  * Test waitlist functions.
- * @group elis_program
+ * @group local_elisprogram
  */
 class waitlist_testcase extends elis_database_test {
 
@@ -61,8 +61,8 @@ class waitlist_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            waitlist::TABLE => elis::component_file('program', 'tests/fixtures/waitlist.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            waitlist::TABLE => elispm::file('tests/fixtures/waitlist.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -72,8 +72,8 @@ class waitlist_testcase extends elis_database_test {
      */
     protected function load_csv_data_course_class() {
         $dataset = $this->createCsvDataSet(array(
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -170,11 +170,11 @@ class waitlist_testcase extends elis_database_test {
      */
     public function test_check_autoenrol_after_course_completion() {
         $dataset = $this->createCsvDataSet(array(
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            student::TABLE => elis::component_file('program', 'tests/fixtures/student.csv'),
-            waitlist::TABLE => elis::component_file('program', 'tests/fixtures/waitlist2.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            student::TABLE => elispm::file('tests/fixtures/student.csv'),
+            waitlist::TABLE => elispm::file('tests/fixtures/waitlist2.csv'),
         ));
         $this->loadDataSet($dataset);
 

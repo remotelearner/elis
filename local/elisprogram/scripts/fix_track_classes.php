@@ -1,7 +1,7 @@
-<?php // $Id: fix_track_classes.php,v 1.0 2011/01/03 11:00:00 mvidberg Exp $
+<?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement-scripts
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+
 if (!isset($_SERVER['REMOTE_ADDR'])) {
     define('CLI_SCRIPT', true);
 }
@@ -37,7 +37,7 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
     $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
     $PAGE->set_pagelayout('standard');
     $PAGE->set_url($FULLME);
-    $PAGE->set_title(get_string('health_trackcheck', 'elis_program'));
+    $PAGE->set_title(get_string('health_trackcheck', 'local_elisprogram'));
     echo $OUTPUT->header();
     $br = '<br/>';
 } else {
@@ -73,7 +73,7 @@ if ($track_classes_fixed_cnt > 0) {
 }
 
 if ($br != '') {
-    echo '<p><a href="'. $CFG->wwwroot .'/elis/program/index.php?s=health">Go back to health check page</a></p>';
+    echo '<p><a href="'. $CFG->wwwroot .'/local/elisprogram/index.php?s=health">Go back to health check page</a></p>';
     echo $OUTPUT->footer();
 }
 

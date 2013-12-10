@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    usetenrol_moodleprofile
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -28,10 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('data/user.class.php'));
-require_once(elis::plugin_file('usersetenrol_moodle_profile', 'userset_profile.class.php'));
+require_once(elis::plugin_file('usetenrol_moodleprofile', 'userset_profile.class.php'));
 
 function cluster_moodle_profile_delete_for_cluster($id) {
     userset_profile::delete_records(new field_filter('clusterid', $id));
@@ -54,7 +53,7 @@ function cluster_moodle_profile_edit_form($form, $mform, $clusterid) {
         $prof_fields = userset_profile::find(new field_filter('clusterid', $clusterid), array(), 0, 2);
     }
 
-    $PAGE->requires->js('/elis/program/enrol/userset/moodle_profile/profile_value.js');
+    $PAGE->requires->js('/local/elisprogram/enrol/userset/moodleprofile/profile_value.js');
 
     for ($i = 1; $i <= 2; $i++) {
         if ($prof_fields && $prof_fields->valid()) {
@@ -69,7 +68,7 @@ function cluster_moodle_profile_edit_form($form, $mform, $clusterid) {
                 OR datatype = 'text'";
 
         $profile_field_options = $DB->get_records_select_menu('user_info_field', $select, null, 'id, name');
-        $profile_field_options = array(0 => get_string('dont_auto', 'usersetenrol_moodle_profile', '')) + $profile_field_options;
+        $profile_field_options = array(0 => get_string('dont_auto', 'usetenrol_moodleprofile', '')) + $profile_field_options;
 
         /// Retrieve the profile value, if set
         $value = null;
@@ -94,17 +93,17 @@ function cluster_moodle_profile_edit_form($form, $mform, $clusterid) {
         /// Add field selector to form
 
         $js_function_call = "update_profile_value_list('{$i}', 'profile_value{$i}', $value_js, $originallyText)";
-        $mform->addElement('select', "profile_field{$i}", get_string('auto_associate', 'usersetenrol_moodle_profile'),
+        $mform->addElement('select', "profile_field{$i}", get_string('auto_associate', 'usetenrol_moodleprofile'),
                            $profile_field_options, array('onchange'=>$js_function_call));
         if ($i == 1) {
-            $mform->addHelpButton('profile_field1', 'auto_associate', 'usersetenrol_moodle_profile');
+            $mform->addHelpButton('profile_field1', 'auto_associate', 'usetenrol_moodleprofile');
         }
 
         /// Add field options to form
         // TBD: hack below is because $mform->isFrozen() ... didn't work!
         $isfrozen = optional_param('action', '', PARAM_CLEAN) == 'view';
 
-        $mform->addElement('static', '', get_string('set_to', 'usersetenrol_moodle_profile'), html_writer::start_tag('div', array('id' => "cluster_profile_div{$i}")) . get_moodle_profile_field_options($prof_field, "profile_value{$i}", $value, $isfrozen) . html_writer::end_tag('div'));
+        $mform->addElement('static', '', get_string('set_to', 'usetenrol_moodleprofile'), html_writer::start_tag('div', array('id' => "cluster_profile_div{$i}")) . get_moodle_profile_field_options($prof_field, "profile_value{$i}", $value, $isfrozen) . html_writer::end_tag('div'));
     }
 }
 
@@ -122,14 +121,14 @@ function get_moodle_profile_field_options($prof_field, $elementid, $existing_val
 
     //error_log("get_moodle_profile_field_options(prof_field(obj), elementid = {$elementid}, existing_value = {$existing_value}, frozen = {$frozen});");
     if (empty($prof_field->fieldid)) {
-        return get_string('option_profile_field', 'usersetenrol_moodle_profile');
+        return get_string('option_profile_field', 'usetenrol_moodleprofile');
     }
 
     $fieldid = $prof_field->fieldid;
     $fields = $DB->get_record('user_info_field', array('id' => $fieldid));
 
     if (empty($fields)) {
-        return get_string('option_profile_field', 'usersetenrol_moodle_profile');
+        return get_string('option_profile_field', 'usetenrol_moodleprofile');
     }
 
     switch ($fields->datatype) {
@@ -250,7 +249,7 @@ function userset_moodle_profile_update($cluster) {
         // re-assign users:
         // remove previous cluster assignments
         clusterassignment::delete_records(array(new field_filter('clusterid', $cluster->id),
-                                                new field_filter('plugin', 'moodle_profile')));
+                                                new field_filter('plugin', 'moodleprofile')));
 
         // create new cluster assignments
         $join  = '';
@@ -286,7 +285,7 @@ function userset_moodle_profile_update($cluster) {
         if (!empty($join) && !empty($where)) {
             $sql = "INSERT INTO {" . clusterassignment::TABLE . "}
                     (clusterid, userid, plugin)
-                    SELECT ?, cu.id, 'moodle_profile'
+                    SELECT ?, cu.id, 'moodleprofile'
                     FROM {" . user::TABLE . "} cu
                     INNER JOIN {user} mu ON mu.idnumber = cu.idnumber
                     $join
@@ -343,20 +342,20 @@ function cluster_profile_update_handler($userdata) {
                        SELECT id FROM {" . clusterassignment::TABLE . "} a
                        LEFT OUTER JOIN $new_assignments b ON a.clusterid = b.clusterid AND a.userid = b.userid
                        WHERE a.userid = ? AND b.clusterid IS NULL
-                   ) AND plugin='moodle_profile'";
+                   ) AND plugin='moodleprofile'";
     } else {
         $delete = "DELETE a FROM {" . clusterassignment::TABLE . "} a
                    LEFT OUTER JOIN $new_assignments b ON a.clusterid = b.clusterid AND a.userid = b.userid
-                   WHERE a.userid = ? AND b.clusterid IS NULL AND a.plugin='moodle_profile'";
+                   WHERE a.userid = ? AND b.clusterid IS NULL AND a.plugin='moodleprofile'";
     }
     $DB->execute($delete, array_merge($new_assignments_params, array($cuid)));
 
     // add new assignments
     $insert = "INSERT INTO {" . clusterassignment::TABLE . "}
                (clusterid, userid, plugin)
-               SELECT a.clusterid, a.userid, 'moodle_profile'
+               SELECT a.clusterid, a.userid, 'moodleprofile'
                FROM $new_assignments a
-               LEFT OUTER JOIN {" . clusterassignment::TABLE . "} b ON a.clusterid = b.clusterid AND a.userid = b.userid AND b.plugin='moodle_profile'
+               LEFT OUTER JOIN {" . clusterassignment::TABLE . "} b ON a.clusterid = b.clusterid AND a.userid = b.userid AND b.plugin='moodleprofile'
                WHERE a.userid = ? AND b.clusterid IS NULL";
 
     $DB->execute($insert, array_merge($new_assignments_params, array($cuid)));

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elispm::lib('data/user.class.php'));
@@ -39,7 +39,7 @@ require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
  * Test instructor functions.
- * @group elis_program
+ * @group local_elisprogram
  */
 class instructor_testcase extends elis_database_test {
 
@@ -48,14 +48,14 @@ class instructor_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
-            'course' => elis::component_file('program', 'tests/fixtures/mdlcourse.csv'),
-            usermoodle::TABLE => elis::component_file('program', 'tests/fixtures/user_moodle.csv'),
-            classmoodlecourse::TABLE => elis::component_file('program', 'tests/fixtures/class_moodle_course.csv'),
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            instructor::TABLE => elis::component_file('program', 'tests/fixtures/instructor.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
+            'course' => elispm::file('tests/fixtures/mdlcourse.csv'),
+            usermoodle::TABLE => elispm::file('tests/fixtures/user_moodle.csv'),
+            classmoodlecourse::TABLE => elispm::file('tests/fixtures/class_moodle_course.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            instructor::TABLE => elispm::file('tests/fixtures/instructor.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -66,7 +66,7 @@ class instructor_testcase extends elis_database_test {
     protected function set_config_instructor_role() {
         global $DB;
         $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
-        set_config('default_instructor_role', $role->id, 'elis_program');
+        set_config('default_instructor_role', $role->id, 'local_elisprogram');
     }
 
     /**
@@ -182,7 +182,7 @@ class instructor_testcase extends elis_database_test {
         $plugin = enrol_get_plugin('elis');
         $enrolinstance = $plugin->get_or_create_instance($course);
 
-        $roleid = get_config('elis_program', 'default_instructor_role');
+        $roleid = get_config('local_elisprogram', 'default_instructor_role');
 
         $params = array(
                 'roleid' => $roleid,
@@ -224,7 +224,7 @@ class instructor_testcase extends elis_database_test {
         $plugin = enrol_get_plugin('elis');
         $enrolinstance = $plugin->get_or_create_instance($course);
 
-        $roleid = get_config('elis_program', 'default_instructor_role');
+        $roleid = get_config('local_elisprogram', 'default_instructor_role');
 
         $params = array(
                 'roleid' => $roleid,
@@ -255,7 +255,7 @@ class instructor_testcase extends elis_database_test {
         $instructor->save();
 
         // Get the configured teache role id
-        $teacherroleid = get_config('elis_program', 'default_instructor_role');
+        $teacherroleid = get_config('local_elisprogram', 'default_instructor_role');
 
         // Define user and course objects
         $user = new stdClass();
@@ -318,7 +318,7 @@ class instructor_testcase extends elis_database_test {
         $enrolinstance = $plugin->get_or_create_instance($course);
 
         // Get the configured teache role id
-        $teacherroleid = get_config('elis_program', 'default_instructor_role');
+        $teacherroleid = get_config('local_elisprogram', 'default_instructor_role');
 
         // Unassign the teacher role from the user
         role_unassign($teacherroleid, $user->id, $context->id, 'enrol_elis', $enrolinstance->id);

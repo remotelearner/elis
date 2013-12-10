@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,19 +25,19 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
-require_once($CFG->dirroot.'/elis/program/accesslib.php');
+require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 require_once(elispm::lib('data/student.class.php'));
 require_once(elispm::lib('associationpage.class.php'));
 require_once(elispm::lib('lib.php'));
 require_once(elispm::file('tests/other/datagenerator.php'));
-require_once($CFG->dirroot.'/elis/program/studentpage.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/studentpage.class.php');
 
 /**
  * Test bulkedit
- * @group elis_program
+ * @group local_elisprogram
  */
 class bulkedit_testcase extends elis_database_test {
 

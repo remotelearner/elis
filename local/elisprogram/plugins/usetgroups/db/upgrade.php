@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elisprogram_usetgroups
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -28,10 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot . '/elis/program/lib/setup.php');
+require_once($CFG->dirroot . '/local/elisprogram/lib/setup.php');
 require_once(elis::lib('data/customfield.class.php'));
 
-function xmldb_pmplugins_userset_groups_upgrade($oldversion = 0) {
+function xmldb_elisprogram_usetgroups_upgrade($oldversion = 0) {
     global $CFG, $THEME, $DB;
     $dbman = $DB->get_manager();
 
@@ -49,21 +48,21 @@ function xmldb_pmplugins_userset_groups_upgrade($oldversion = 0) {
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011072600, 'pmplugins', 'userset_groups');
+        upgrade_plugin_savepoint($result, 2011072600, 'elisprogram', 'usetgroups');
     }
 
     if ($result && $oldversion < 2011101300) {
         // rename field help
         $fieldmap = array('userset_group'
-                          => 'pmplugins_userset_groups/userset_group',
+                          => 'elisprogram_usetgroups/userset_group',
                           'userset_groupings'
-                          => 'pmplugins_userset_groups/autoenrol_groupings');
+                          => 'elisprogram_usetgroups/autoenrol_groupings');
         foreach ($fieldmap as $key => $val) {
             $field = field::find(new field_filter('shortname', $key));
             if ($field->valid()) {
                 $field = $field->current();
                 if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
-                    //error_log("pmplugins_userset_groups::upgrading help_file for '{$key}' to '{$val}'");
+                    //error_log("elisprogram_usetgroups::upgrading help_file for '{$key}' to '{$val}'");
                     $owner->fieldid = $field->id;
                     $owner->plugin = 'manual';
                     //$owner->exclude = 0; // TBD
@@ -80,7 +79,7 @@ function xmldb_pmplugins_userset_groups_upgrade($oldversion = 0) {
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011101300, 'pmplugins', 'userset_groups');
+        upgrade_plugin_savepoint($result, 2011101300, 'elisprogram', 'usetgroups');
     }
 
     return $result;

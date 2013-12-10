@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -42,9 +42,9 @@ class deepsight_filter_enrolmentstatus extends deepsight_filter_switch {
      * Sets the available choices - not enrolled, enrolled, or all.
      */
     protected function postconstruct() {
-        $this->choices['notenrolled'] = get_string('ds_notenrolled', 'elis_program');
-        $this->choices['enrolled'] = get_string('ds_enrolled', 'elis_program');
-        $this->choices['all'] = get_string('ds_allusers', 'elis_program');
+        $this->choices['notenrolled'] = get_string('ds_notenrolled', 'local_elisprogram');
+        $this->choices['enrolled'] = get_string('ds_enrolled', 'local_elisprogram');
+        $this->choices['all'] = get_string('ds_allusers', 'local_elisprogram');
     }
 
     /**

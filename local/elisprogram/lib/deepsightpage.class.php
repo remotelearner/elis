@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @author     James McQuillan <james.mcquillan@remote-learner.net>
  *
  */
 
@@ -35,7 +35,7 @@ require_once(dirname(__FILE__).'/deepsight/lib/lib.php');
  * Base page class for a deepsight association page.
  */
 abstract class deepsightpage extends pm_page {
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
     /**
      * The name of the class used for data objects
      */
@@ -119,7 +119,7 @@ abstract class deepsightpage extends pm_page {
      */
     public function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:manage', $context);
+        return has_capability('local/elisprogram:manage', $context);
     }
 
     /**
@@ -202,7 +202,7 @@ abstract class deepsightpage extends pm_page {
      * @return array An array consisting of the assigned header, and the unassigned header - in that order.
      */
     protected function get_assigned_strings() {
-        return array(get_string('ds_assigned', 'elis_program'), get_string('ds_unassigned', 'elis_program'));
+        return array(get_string('ds_assigned', 'local_elisprogram'), get_string('ds_unassigned', 'local_elisprogram'));
     }
 
     protected function is_assigning() {
@@ -262,7 +262,7 @@ abstract class deepsightpage extends pm_page {
         $assignedauthorized = ($tabletype === 'assigned' && $this->can_do_default() === true) ? true : false;
         $unassignedauthorized = ($tabletype === 'unassigned' && $this->can_do_add() === true) ? true : false;
         if ($assignedauthorized !== true && $unassignedauthorized !== true) {
-            echo safe_json_encode(array('result' => 'fail', 'msg' => get_string('not_permitted', 'elis_program')));
+            echo safe_json_encode(array('result' => 'fail', 'msg' => get_string('not_permitted', 'local_elisprogram')));
         }
 
         // Build the table.
@@ -278,7 +278,7 @@ abstract class deepsightpage extends pm_page {
             if (method_exists($this, $candoactionmethod) && $this->$candoactionmethod() === true) {
                 $table->respond($mode);
             } else {
-                echo safe_json_encode(array('result' => 'fail', 'msg' => get_string('not_permitted', 'elis_program')));
+                echo safe_json_encode(array('result' => 'fail', 'msg' => get_string('not_permitted', 'local_elisprogram')));
             }
         } else {
             $table->respond($mode);
@@ -294,7 +294,7 @@ abstract class deepsightpage extends pm_page {
         $table = $this->construct_unassigned_table();
 
         // Assemble bulk action panel.
-        $bulktitle = get_string('ds_bulkassignment', 'elis_program');
+        $bulktitle = get_string('ds_bulkassignment', 'local_elisprogram');
         $bulkactionpanel = new deepsight_bulkactionpanel_standard('bulkenrol', $bulktitle, $table, $table->get_actions());
 
         // HTML.
@@ -302,7 +302,7 @@ abstract class deepsightpage extends pm_page {
         echo $bulkactionpanel->get_html();
 
         // JS.
-        echo '<script src="'.$CFG->wwwroot.'/elis/program/lib/deepsight/js/jquery-1.9.1.min.js"></script>';
+        echo '<script src="'.$CFG->wwwroot.'/local/elisprogram/lib/deepsight/js/jquery-1.9.1.min.js"></script>';
         $jsdeps = $table->get_js_dependencies();
         foreach ($jsdeps as $jsfile) {
             $PAGE->requires->js($jsfile);
@@ -325,7 +325,7 @@ abstract class deepsightpage extends pm_page {
         $table = $this->construct_assigned_table();
 
         // Assemble bulk action panel.
-        $bulktitle = get_string('ds_bulkedits', 'elis_program');
+        $bulktitle = get_string('ds_bulkedits', 'local_elisprogram');
         $bulkactionpanel = new deepsight_bulkactionpanel_standard('bulkenrol', $bulktitle, $table, $table->get_actions());
 
         // HTML.
@@ -333,7 +333,7 @@ abstract class deepsightpage extends pm_page {
         echo $bulkactionpanel->get_html();
 
         // JS.
-        echo '<script src="'.$CFG->wwwroot.'/elis/program/lib/deepsight/js/jquery-1.9.1.min.js"></script>';
+        echo '<script src="'.$CFG->wwwroot.'/local/elisprogram/lib/deepsight/js/jquery-1.9.1.min.js"></script>';
         $jsdeps = $table->get_js_dependencies();
         foreach ($jsdeps as $jsfile) {
             $PAGE->requires->js($jsfile);

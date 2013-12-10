@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,23 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elis::lib('data/data_object_with_custom_fields.class.php'));
 require_once(elispm::lib('contexts.php'));
 require_once(elispm::lib('data/clusterassignment.class.php'));
 require_once(elispm::lib('data/clustercurriculum.class.php'));
-require_once(elis::plugin_file('usersetenrol_moodle_profile', 'userset_profile.class.php'));
+require_once(elis::plugin_file('usetenrol_moodleprofile', 'userset_profile.class.php'));
 
 class userset extends data_object_with_custom_fields {
     const TABLE = 'crlm_cluster';
@@ -63,7 +62,7 @@ class userset extends data_object_with_custom_fields {
         )
     );
 
-    const ENROL_PLUGIN_TYPE = 'usersetenrol';
+    const ENROL_PLUGIN_TYPE = 'usetenrol';
 
     protected function get_field_context_level() {
         return CONTEXT_ELIS_USERSET;
@@ -358,7 +357,7 @@ class userset extends data_object_with_custom_fields {
         );
 
         // filter out the records that the user can't see
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_enrol_userset_user', $USER->id);
         $filtersql = $context->get_filter('id')->get_sql(true, 'clst', SQL_PARAMS_NAMED);
 
         if (isset($filtersql['join'])) {
@@ -390,8 +389,8 @@ class userset extends data_object_with_custom_fields {
         global $USER;
 
         //retrieve the context at which the current user has the sufficient capability
-        $viewable_contexts = get_contexts_by_capability_for_user('cluster', 'elis/program:userset_view', $USER->id);
-        $editable_contexts = get_contexts_by_capability_for_user('cluster', 'elis/program:userset_edit', $USER->id);
+        $viewable_contexts = get_contexts_by_capability_for_user('cluster', 'local/elisprogram:userset_view', $USER->id);
+        $editable_contexts = get_contexts_by_capability_for_user('cluster', 'local/elisprogram:userset_edit', $USER->id);
 
         //allow global access if either capability set allows access at the system context
         if (!empty($viewable_contexts->contexts['system'])) {
@@ -413,7 +412,7 @@ class userset extends data_object_with_custom_fields {
         global $USER;
 
         if ($capabilities === null ) {
-            $capabilities = array('elis/program:userset_view', 'elis/program:userset_edit');
+            $capabilities = array('local/elisprogram:userset_view', 'local/elisprogram:userset_edit');
         }
         if (!is_array($capabilities)) {
             $capabilities = array($capabilities);
@@ -524,10 +523,10 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     global $USER, $DB;
 
     //require plugin code if enabled
-    $plugins = get_plugin_list('pmplugins');
-    $display_priority_enabled = isset($plugins['userset_display_priority']);
+    $plugins = get_plugin_list('elisprogram');
+    $display_priority_enabled = isset($plugins['usetdisppriority']);
     if ($display_priority_enabled) {
-        require_once(elis::plugin_file('pmplugins_userset_display_priority', 'lib.php'));
+        require_once(elis::plugin_file('elisprogram_usetdisppriority', 'lib.php'));
         $priority_field = field::get_for_context_level_with_name(CONTEXT_ELIS_USERSET, USERSET_DISPLAY_PRIORITY_FIELD);
         if (empty($priority_field->id)) {
             $display_priority_enabled = false;
@@ -600,7 +599,7 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
     }
 
     if (isset($extrafilters['classification'])) {
-        require_once(elispm::file('plugins/userset_classification/lib.php'));
+        require_once(elispm::file('plugins/usetclassify/lib.php'));
         $field = new field(field::get_for_context_level_with_name(CONTEXT_ELIS_USERSET, USERSET_CLASSIFICATION_FIELD));
 
         $filters[] = new elis_field_filter($field, 'id', CONTEXT_ELIS_USERSET, $extrafilters['classification']);
@@ -608,12 +607,12 @@ function cluster_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, 
 
     if(!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_enrol_userset_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_enrol', $USER->id);
         $curriculum_filter = $curriculum_context->get_filter('id');
 
         if(empty($allowed_clusters)) {
@@ -757,7 +756,7 @@ function cluster_count_records($namesearch = '', $alpha = '', $extrafilters = ar
     }
 
     if (isset($extrafilters['classification'])) {
-        require_once(elispm::file('plugins/userset_classification/lib.php'));
+        require_once(elispm::file('plugins/usetclassify/lib.php'));
 
         $field = new field(field::get_for_context_level_with_name(CONTEXT_ELIS_USERSET, USERSET_CLASSIFICATION_FIELD));
 
@@ -848,7 +847,7 @@ function cluster_deassign_all_user($userid) {
  */
 function cluster_get_non_child_clusters($target_cluster_id, $contexts = null) {
     global $DB;
-    $return = array(0=>get_string('userset_top_level','elis_program'));
+    $return = array(0=>get_string('userset_top_level','local_elisprogram'));
 
     if (!empty($target_cluster_id)) {
         $cluster_context_instance = context_elis_userset::instance($target_cluster_id);
@@ -881,7 +880,7 @@ function cluster_get_non_child_clusters($target_cluster_id, $contexts = null) {
     }
 
     $clusters = $DB->get_records_sql_menu($sql, $params);
-    $clusters = array(0=>get_string('userset_top_level','elis_program')) + $clusters;
+    $clusters = array(0=>get_string('userset_top_level','local_elisprogram')) + $clusters;
 
     return $clusters;
 }

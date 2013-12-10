@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object.class.php');
 require_once elis::lib('table.class.php');
 require_once elispm::lib('lib.php');
@@ -40,7 +39,7 @@ define ('INSTABLE', 'crlm_class_instructor');
 
 class instructor extends elis_data_object {
     const TABLE = INSTABLE;
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     static $associations = array(
         'users'   => array('class' => 'user',
@@ -233,7 +232,7 @@ class instructor extends elis_data_object {
             $users = $this->get_users_avail($sort, $dir, $page * $perpage, $perpage, $namesearch, $alpha);
             $usercount = $this->count_users_avail($namesearch, $alpha);
 
-            pmalphabox(new moodle_url('/elis/program/index.php',
+            pmalphabox(new moodle_url('/local/elisprogram/index.php',
                                array('s' => 'ins', 'section' => 'curr',
                                      'action' => 'add', 'id' => $classid,
                                      'sort' => $sort, 'dir' => $dir,
@@ -342,7 +341,7 @@ class instructor extends elis_data_object {
 
         if (!empty($table) && !empty($newarr)) {
             if ($action == 'add') {
-                $PAGE->requires->js('/elis/program/js/classform.js');
+                $PAGE->requires->js('/local/elisprogram/js/classform.js');
                 echo '<input type="button" onclick="checkbox_select(true,\'[assign]\')" value="'.get_string('selectall').'" /> ';
                 echo '<input type="button" onclick="checkbox_select(false,\'[assign]\')" value="'.get_string('deselectall').'" /> ';
             }
@@ -380,7 +379,7 @@ class instructor extends elis_data_object {
     /**
      * Get a list of the existing instructors for the supplied (or current)
      * class.
-     * NOTE: called statically in /elis/program/coursecatalogpage.class.php
+     * NOTE: called statically in /local/elisprogram/coursecatalogpage.class.php
      *       with argument $cid set!
      *
      * @param int $cid A class ID (optional).
@@ -499,7 +498,7 @@ class instructor extends elis_data_object {
         // TODO: Ugly, this needs to be overhauled
         $cpage = new pmclasspage();
 
-        if (!$cpage->_has_capability('elis/program:assign_class_instructor', $this->classid)) {
+        if (!$cpage->_has_capability('local/elisprogram:assign_class_instructor', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = instructor::get_allowed_clusters($this->classid);
@@ -603,7 +602,7 @@ class instructor extends elis_data_object {
         // TODO: Ugly, this needs to be overhauled
         $cpage = new pmclasspage();
 
-        if (!$cpage->_has_capability('elis/program:assign_class_instructor', $this->classid)) {
+        if (!$cpage->_has_capability('local/elisprogram:assign_class_instructor', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = instructor::get_allowed_clusters($this->classid);
@@ -656,13 +655,13 @@ class instructor extends elis_data_object {
         if (!instructorpage::can_enrol_into_class($classid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if ($cpage->_has_capability('elis/program:assign_class_instructor', $classid)) {
+        } else if ($cpage->_has_capability('local/elisprogram:assign_class_instructor', $classid)) {
             //current user has the direct capability
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:assign_userset_user_class_instructor', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:assign_userset_user_class_instructor', $USER->id);
 
         $allowed_clusters = array();
         $allowed_clusters = instructor::get_allowed_clusters($classid);
@@ -694,14 +693,14 @@ class instructor extends elis_data_object {
     public static function get_allowed_clusters($clsid) {
         global $USER;
 
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:assign_userset_user_class_instructor', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:assign_userset_user_class_instructor', $USER->id);
 
         $allowed_clusters = array();
 
         // TODO: Ugly, this needs to be overhauled
         $cpage = new pmclasspage();
 
-        if ($cpage->_has_capability('elis/program:assign_userset_user_class_instructor', $clsid)) {
+        if ($cpage->_has_capability('local/elisprogram:assign_userset_user_class_instructor', $clsid)) {
             require_once elispm::lib('data/clusterassignment.class.php');
             $cmuserid = pm_get_crlmuserid($USER->id);
             $userclusters = clusterassignment::find(new field_filter('userid', $cmuserid));
@@ -765,7 +764,7 @@ function instructor_get_listing($classid, $sort = 'name', $dir = 'ASC', $startre
     $where   = 'ins.classid = :clsid ';
     $params['clsid'] = $classid;
 
-    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+    if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
         $where .= ' AND usr.inactive = 0 ';
     }
 
@@ -820,7 +819,7 @@ function instructor_count_records($classid, $namesearch = '', $alpha='') {
     $where   = 'ins.classid = :clsid ';
     $params['clsid'] = $classid;
 
-    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+    if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
         $where .= ' AND usr.inactive = 0 ';
     }
 

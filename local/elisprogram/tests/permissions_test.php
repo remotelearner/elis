@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,16 +25,16 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
-require_once($CFG->dirroot.'/elis/program/curriculumcoursepage.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/curriculumcoursepage.class.php');
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 
 /**
  * Test permissions.
- * @group elis_program
+ * @group local_elisprogram
  */
 class permissions_testcase extends elis_database_test {
 
@@ -70,11 +70,11 @@ class permissions_testcase extends elis_database_test {
         $this->setUser($usr);
         $USER = $usr;
 
-        assign_capability('elis/program:associate', CAP_ALLOW, $roleid, $syscontext->id);
-        assign_capability('elis/program:manage', CAP_ALLOW, $roleid, $syscontext->id);
-        assign_capability('elis/program:program_create', CAP_ALLOW, $roleid, $syscontext->id);
-        assign_capability('elis/program:program_enrol', CAP_ALLOW, $roleid, $syscontext->id);
-        assign_capability('elis/program:program_view', CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability('local/elisprogram:associate', CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability('local/elisprogram:manage', CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability('local/elisprogram:program_create', CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability('local/elisprogram:program_enrol', CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability('local/elisprogram:program_view', CAP_ALLOW, $roleid, $syscontext->id);
 
         role_assign($roleid, $usr->id, $syscontext->id);
 
@@ -86,18 +86,18 @@ class permissions_testcase extends elis_database_test {
     }
 
     public function has_associate_and_manage_capability() {
-        if (has_capability('elis/program:associate', context_system::instance()) ||
-                has_capability('elis/program:manage', context_system::instance())) {
+        if (has_capability('local/elisprogram:associate', context_system::instance()) ||
+                has_capability('local/elisprogram:manage', context_system::instance())) {
             return true;
         }
         return false;
     }
 
     public function has_program_view_capability() {
-        return has_capability('elis/program:program_view', context_system::instance());
+        return has_capability('local/elisprogram:program_view', context_system::instance());
     }
 
     public function has_program_create_capability() {
-        return has_capability('elis/program:program_create', context_system::instance());
+        return has_capability('local/elisprogram:program_create', context_system::instance());
     }
 }

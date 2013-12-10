@@ -24,15 +24,15 @@
  *
  */
 
-//require necessary dependencies 
+//require necessary dependencies
 require_once(dirname(__FILE__) .'/../../../../../config.php');
 
-require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
-require_once($CFG->dirroot .'/elis/program/lib/menuitem.class.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/menuitem.class.php');
 
 require_once($CFG->dirroot .'/elis/core/lib/filtering/lib.php');
-require_once($CFG->dirroot .'/elis/program/lib/filtering/clustertree.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/clustertree.php');
 
 //needed for execution mode constants
 require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');

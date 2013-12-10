@@ -16,20 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
-require_once($CFG->dirroot .'/elis/program/lib/menuitem.class.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/contexts.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/menuitem.class.php');
 
-require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
 
 //needed for execution mode constants
 require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
@@ -301,8 +301,8 @@ class generalized_filter_clustertree extends generalized_filter_type {
         if ($data != $this->data) {
             global $CFG, $DB;
             //dependencies for queries
-            require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-            require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
+            require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+            require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
             $this->data = $data;
             $this->ids = array();
 
@@ -344,7 +344,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
                 $param_pcpath = 'clustree_pcpath'. $counter;
                 $param_cpath2 = 'clustree_cpath_b'. $counter;
 
-                // ELIS-5861 -- Got named parameters working with sql_concat() -- tested in /elis/program/phpunit/testFilters
+                // ELIS-5861 -- Got named parameters working with sql_concat() -- tested in /local/elisprogram/phpunit/testFilters
                 $cpath_like = $DB->sql_like('context.path', $DB->sql_concat('parent_context.path', ':c_path'), false); // TBV: case insensitive?
                 $params['c_path'] = '/%';
 
@@ -636,7 +636,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
 
         //add filterhelp and label to this filter
         //import required css for the fieldset
-        $style = '<style>@import url("'. $CFG->wwwroot .'/elis/program/styles.css");</style>';
+        $style = '<style>@import url("'. $CFG->wwwroot .'/local/elisprogram/styles.css");</style>';
 
         $helplink = '';
         $nested_fieldset = '';
@@ -680,7 +680,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
             $this->options['dropdown_button_text'],
             $this->options['tree_button_text']
         );
-        $PAGE->requires->yui_module('moodle-elis_program-clustertree', 'M.elis_program.init_clustertree', $initclustertreeopts, null, true);
+        $PAGE->requires->yui_module('moodle-local_elisprogram-clustertree', 'M.local_elisprogram.init_clustertree', $initclustertreeopts, null, true);
 
         // cluster tree
         $clustertreehtml = '<div class="fitem"><div class="fitemtitle"></div>'.
@@ -770,7 +770,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
             //append results
             if ($recordset = $DB->get_recordset_sql($sql, $params)) {
                 foreach ($recordset as $record) {
-                    $results[] = $record->name .' '. get_string('and_all_children', 'elis_program');
+                    $results[] = $record->name .' '. get_string('and_all_children', 'local_elisprogram');
                 }
                 $recordset->close();
             }
@@ -804,7 +804,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
 
         //nothing selected
         if (count($results) == 0) {
-            return $this->_label .': '. get_string('cluster_tree_na', 'elis_program') .'<br/>';
+            return $this->_label .': '. get_string('cluster_tree_na', 'local_elisprogram') .'<br/>';
         }
 
         //return results as a comma-separated list

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -51,8 +51,8 @@ class deepsight_datatable_trackclass_base extends deepsight_datatable_class {
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_trackclass.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_trackclass.js';
         return $deps;
     }
 
@@ -78,7 +78,7 @@ class deepsight_datatable_trackclass_assigned extends deepsight_datatable_trackc
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langautoenrol = get_string('trackassignmentform:track_autoenrol', 'elis_program');
+        $langautoenrol = get_string('trackassignmentform:track_autoenrol', 'local_elisprogram');
         $filters = parent::get_filters();
         $fielddata = array('trkass.autoenrol' => $langautoenrol);
         $autoenrol = new deepsight_filter_menuofchoices($this->DB, 'autoenrol', $langautoenrol, $fielddata, $this->endpoint);
@@ -110,7 +110,7 @@ class deepsight_datatable_trackclass_assigned extends deepsight_datatable_trackc
         static $trackassociateallowed = null;
         $row = parent::results_row_transform($row);
         $row['canmanage'] = '0';
-        $perm = 'elis/program:associate';
+        $perm = 'local/elisprogram:associate';
 
         if ($trackassociateallowed === null) {
             $trkassocctx = pm_context_set::for_user_with_capability('track', $perm, $USER->id);
@@ -205,7 +205,7 @@ class deepsight_datatable_trackclass_available extends deepsight_datatable_track
     protected function get_filter_sql_permissions() {
         global $USER;
         $ctxlevel = 'class';
-        $perm = 'elis/program:associate';
+        $perm = 'local/elisprogram:associate';
         $additionalfilters = array();
         $additionalparams = array();
         $associatectxs = pm_context_set::for_user_with_capability($ctxlevel, $perm, $USER->id);

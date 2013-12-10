@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -50,7 +50,7 @@ class deepsight_action_courseprogram_assign extends deepsight_action_programcour
      */
     public function __construct(moodle_database &$DB, $name) {
         parent::__construct($DB, $name);
-        $this->label = ucwords(get_string('assign', 'elis_program'));
+        $this->label = ucwords(get_string('assign', 'local_elisprogram'));
     }
 
     /**
@@ -117,7 +117,7 @@ class deepsight_action_courseprogram_edit extends deepsight_action_programcourse
      */
     public function __construct(moodle_database &$DB, $name) {
         parent::__construct($DB, $name);
-        $this->label = ucwords(get_string('edit', 'elis_program'));
+        $this->label = ucwords(get_string('edit', 'local_elisprogram'));
     }
 
     /**
@@ -184,19 +184,19 @@ class deepsight_action_courseprogram_unassign extends deepsight_action_confirm {
      */
     public function __construct(moodle_database &$DB, $name, $descsingle='', $descmultiple='') {
         parent::__construct($DB, $name);
-        $this->label = ucwords(get_string('unassign', 'elis_program'));
+        $this->label = ucwords(get_string('unassign', 'local_elisprogram'));
 
         $langelements = new stdClass;
-        $langelements->baseelement = strtolower(get_string('course', 'elis_program'));
-        $langelements->actionelement = strtolower(get_string('curriculum', 'elis_program'));
+        $langelements->baseelement = strtolower(get_string('course', 'local_elisprogram'));
+        $langelements->actionelement = strtolower(get_string('curriculum', 'local_elisprogram'));
         $this->descsingle = (!empty($descsingle))
-                ? $descsingle : get_string('ds_action_unassign_confirm', 'elis_program', $langelements);
+                ? $descsingle : get_string('ds_action_unassign_confirm', 'local_elisprogram', $langelements);
 
         $langelements = new stdClass;
-        $langelements->baseelement = strtolower(get_string('course', 'elis_program'));
-        $langelements->actionelement = strtolower(get_string('curricula', 'elis_program'));
+        $langelements->baseelement = strtolower(get_string('course', 'local_elisprogram'));
+        $langelements->actionelement = strtolower(get_string('curricula', 'local_elisprogram'));
         $this->descmultiple = (!empty($descmultiple))
-                ? $descmultiple : get_string('ds_action_unassign_confirm_multi', 'elis_program', $langelements);
+                ? $descmultiple : get_string('ds_action_unassign_confirm_multi', 'local_elisprogram', $langelements);
     }
 
     /**
@@ -226,7 +226,7 @@ class deepsight_action_courseprogram_unassign extends deepsight_action_confirm {
      */
     protected function can_unassign($courseid, $programid) {
         global $USER;
-        $perm = 'elis/program:associate';
+        $perm = 'local/elisprogram:associate';
         $programassocctx = pm_context_set::for_user_with_capability('curriculum', $perm, $USER->id);
         $programassociateallowed = ($programassocctx->context_allowed($programid, 'curriculum') === true) ? true : false;
         $courseassocctx = pm_context_set::for_user_with_capability('course', $perm, $USER->id);

@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    usetenrol_manual
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -33,9 +33,9 @@ require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('data/clusterassignment.class.php'));
 require_once(elispm::file('userpage.class.php'));
 require_once(elispm::file('usersetpage.class.php'));
-require_once(elis::plugin_file('usersetenrol_manual', 'lib.php'));
-require_once(elis::plugin_file('usersetenrol_manual', 'usersetassignment_form.php'));
-require_once(elis::plugin_file('usersetenrol_manual', 'selectpage.class.php'));
+require_once(elis::plugin_file('usetenrol_manual', 'lib.php'));
+require_once(elis::plugin_file('usetenrol_manual', 'usersetassignment_form.php'));
+require_once(elis::plugin_file('usetenrol_manual', 'selectpage.class.php'));
 
 /**
  * A base user-userset association implementation for code shared between userclusterpage and clusteruserpage.
@@ -62,7 +62,7 @@ abstract class userclusterbase extends deepsightpage {
         if (!usersetpage::can_enrol_into_cluster($usersetid)) {
             // The users who satisfty this condition are a superset of those who can manage associations.
             return false;
-        } else if ($upage->_has_capability('elis/program:userset_enrol', $usersetid)) {
+        } else if ($upage->_has_capability('local/elisprogram:userset_enrol', $usersetid)) {
             // Current user has the direct capability.
             return true;
         }
@@ -155,7 +155,7 @@ class userclusterpage extends userclusterbase {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $userviewctx = pm_context_set::for_user_with_capability('user', 'elis/program:user_view', $USER->id);
+        $userviewctx = pm_context_set::for_user_with_capability('user', 'local/elisprogram:user_view', $USER->id);
         return ($userviewctx->context_allowed($id, 'user') === true) ? true : false;
     }
 
@@ -237,7 +237,7 @@ class clusteruserpage extends userclusterbase {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $usersetviewctx = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_view', $USER->id);
+        $usersetviewctx = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_view', $USER->id);
         return ($usersetviewctx->context_allowed($id, 'cluster') === true) ? true : false;
     }
 

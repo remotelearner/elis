@@ -34,7 +34,7 @@ define('CONTEXT_ELIS_CLASS',   1004);
 define('CONTEXT_ELIS_USER',    1005);
 define('CONTEXT_ELIS_USERSET', 1006);
 
-require_once($CFG->dirroot . '/elis/core/accesslib.php');
+require_once($CFG->dirroot . '/local/eliscore/accesslib.php');
 
 context_elis_helper::$alllevels = array(
         CONTEXT_ELIS_PROGRAM => 'context_elis_program',
@@ -61,7 +61,7 @@ context_elis_helper::$namelevelmap = array(
 
 context_elis::$alllevels = context_elis_helper::$alllevels;
 context_elis::$namelevelmap = context_elis_helper::$namelevelmap;
-context_elis::$component = 'elis_program';
+context_elis::$component = 'local_elisprogram';
 
 /**
  * ELIS program context
@@ -87,7 +87,7 @@ class context_elis_program extends context_elis {
      * @return string the human readable context level name.
      */
     public static function get_level_name() {
-        return get_string('curriculum', 'elis_program');
+        return get_string('curriculum', 'local_elisprogram');
     }
 
     /**
@@ -103,7 +103,7 @@ class context_elis_program extends context_elis {
         $name = '';
         if ($program = $DB->get_record(curriculum::TABLE, array('id'=>$this->_instanceid))) {
             if ($withprefix){
-                $name = get_string('curriculum', 'elis_program').': ';
+                $name = get_string('curriculum', 'local_elisprogram').': ';
             }
             $name .= format_string($program->name, true, array('context' => $this));
         }
@@ -121,7 +121,7 @@ class context_elis_program extends context_elis {
             'action' => 'view',
             'id'     => $this->_instanceid
         );
-        return new moodle_url('/elis/program/index.php', $params);
+        return new moodle_url('/local/elisprogram/index.php', $params);
     }
 
     /**
@@ -285,7 +285,7 @@ class context_elis_track extends context_elis {
      * @return string the human readable context level name.
      */
     public static function get_level_name() {
-        return get_string('track', 'elis_program');
+        return get_string('track', 'local_elisprogram');
     }
 
     /**
@@ -302,7 +302,7 @@ class context_elis_track extends context_elis {
         $track = $DB->get_record(track::TABLE, array('id'=>$this->_instanceid));
         if (!empty($track)) {
             if ($withprefix) {
-                $name = get_string('track', 'elis_program').': ';
+                $name = get_string('track', 'local_elisprogram').': ';
             }
             if ($short) {
                 $name .= format_string($track->idnumber, true, array('context' => $this));
@@ -324,7 +324,7 @@ class context_elis_track extends context_elis {
             'action' => 'view',
             'id'     => $this->_instanceid
         );
-        return new moodle_url('/elis/program/index.php', $params);
+        return new moodle_url('/local/elisprogram/index.php', $params);
     }
 
     /**
@@ -488,7 +488,7 @@ class context_elis_course extends context_elis {
      * @return string the human readable context level name.
      */
     public static function get_level_name() {
-        return get_string('course', 'elis_program');
+        return get_string('course', 'local_elisprogram');
     }
 
     /**
@@ -505,7 +505,7 @@ class context_elis_course extends context_elis {
         $course = $DB->get_record(course::TABLE, array('id'=>$this->_instanceid));
         if (!empty($course)) {
             if ($withprefix) {
-                $name = get_string('course', 'elis_program').': ';
+                $name = get_string('course', 'local_elisprogram').': ';
             }
             if ($short) {
                 $name .= format_string($course->idnumber, true, array('context' => $this));
@@ -527,7 +527,7 @@ class context_elis_course extends context_elis {
             'action' => 'view',
             'id'     => $this->_instanceid
         );
-        return new moodle_url('/elis/program/index.php', $params);
+        return new moodle_url('/local/elisprogram/index.php', $params);
     }
 
     /**
@@ -690,7 +690,7 @@ class context_elis_class extends context_elis {
      * @return string the human readable context level name.
      */
     public static function get_level_name() {
-        return get_string('class', 'elis_program');
+        return get_string('class', 'local_elisprogram');
     }
 
     /**
@@ -707,7 +707,7 @@ class context_elis_class extends context_elis {
         $class = $DB->get_record(pmclass::TABLE, array('id'=>$this->_instanceid));
         if (!empty($class)) {
             if ($withprefix) {
-                $name = get_string('class', 'elis_program').': ';
+                $name = get_string('class', 'local_elisprogram').': ';
             }
             $name .= format_string($class->idnumber, true, array('context' => $this));
         }
@@ -725,7 +725,7 @@ class context_elis_class extends context_elis {
             'action' => 'view',
             'id'     => $this->_instanceid
         );
-        return new moodle_url('/elis/program/index.php', $params);
+        return new moodle_url('/local/elisprogram/index.php', $params);
     }
 
     /**
@@ -889,7 +889,7 @@ class context_elis_user extends context_elis {
      * @return string the human readable context level name.
      */
     public static function get_level_name() {
-        return get_string('user', 'elis_program');
+        return get_string('user', 'local_elisprogram');
     }
 
     /**
@@ -905,7 +905,7 @@ class context_elis_user extends context_elis {
         $name = '';
         if ($user = $DB->get_record(user::TABLE, array('id'=>$this->_instanceid))) {
             if ($withprefix){
-                $name = get_string('user', 'elis_program').': ';
+                $name = get_string('user', 'local_elisprogram').': ';
             }
             $name .= fullname($user);
         }
@@ -923,7 +923,7 @@ class context_elis_user extends context_elis {
             'action' => 'view',
             'id'     => $this->_instanceid
         );
-        return new moodle_url('/elis/program/index.php', $params);
+        return new moodle_url('/local/elisprogram/index.php', $params);
     }
 
     /**
@@ -1048,7 +1048,7 @@ class context_elis_userset extends context_elis {
      * @return string the human readable context level name.
      */
     public static function get_level_name() {
-        return get_string('cluster', 'elis_program');
+        return get_string('cluster', 'local_elisprogram');
     }
 
     /**
@@ -1064,7 +1064,7 @@ class context_elis_userset extends context_elis {
         $name = '';
         if ($userset = $DB->get_record(userset::TABLE, array('id'=>$this->_instanceid))) {
             if ($withprefix){
-                $name = get_string('cluster', 'elis_program').': ';
+                $name = get_string('cluster', 'local_elisprogram').': ';
             }
             $name .= format_string($userset->name, true, array('context' => $this));
         }
@@ -1082,7 +1082,7 @@ class context_elis_userset extends context_elis {
             'action' => 'view',
             'id'     => $this->_instanceid
         );
-        return new moodle_url('/elis/program/index.php', $params);
+        return new moodle_url('/local/elisprogram/index.php', $params);
     }
 
     /**

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elispm::lib('data/curriculumcourse.class.php'));
@@ -38,7 +38,7 @@ require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
  * Test pmclass data object functions.
- * @group elis_program
+ * @group local_elisprogram
  */
 class pmclass_testcase extends elis_database_test {
 
@@ -48,8 +48,8 @@ class pmclass_testcase extends elis_database_test {
     public function test_get_completion_counts() {
         // Fixture.
         $dataset = $this->createCsvDataSet(array(
-            student::TABLE => elis::component_file('program', 'tests/fixtures/student.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
+            student::TABLE => elispm::file('tests/fixtures/student.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
         ));
         $this->loadDataSet($dataset);
 
@@ -75,7 +75,7 @@ class pmclass_testcase extends elis_database_test {
     public function test_format_course_listing() {
         // Fixture.
         $dataset = $this->createCsvDataSet(array(
-            curriculumcourse::TABLE => elis::component_file('program', 'tests/fixtures/curriculum_course.csv')
+            curriculumcourse::TABLE => elispm::file('tests/fixtures/curriculum_course.csv')
         ));
         $this->loadDataSet($dataset);
 

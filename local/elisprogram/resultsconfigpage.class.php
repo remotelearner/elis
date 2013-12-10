@@ -1,4 +1,28 @@
 <?php
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    local_elisprogram
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once elispm::lib('page.class.php');
@@ -14,19 +38,19 @@ class resultsconfigpage extends pm_page {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:config', $context);
+        return has_capability('local/elisprogram:config', $context);
     }
 
     function build_navbar_default($who = null) {
         global $CFG;
         parent::build_navbar_default($who);
         $page = $this->get_new_page(array('action' => 'default'), true);
-        //$this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
-        $this->navbar->add(get_string('results_engine_defaults_config','elis_program'), $page->url);
+        //$this->navbar->add(get_string('learningplan', 'local_elisprogram'), "{$CFG->wwwroot}/local/elisprogram/");
+        $this->navbar->add(get_string('results_engine_defaults_config','local_elisprogram'), $page->url);
     }
 
     function get_title_default() {
-        return get_string('results_engine_defaults_config','elis_program');
+        return get_string('results_engine_defaults_config','local_elisprogram');
     }
 
     function normalize_submitted_data($raw_submitted_data) {
@@ -53,7 +77,7 @@ class resultsconfigpage extends pm_page {
     function do_default() {
         global $CFG, $DB;
         //get saved defaults
-        $defaults=get_config('elis_program','results_engine_defaults');
+        $defaults=get_config('local_elisprogram','results_engine_defaults');
         $defaults=(!empty($defaults))?unserialize($defaults):array();
         $saved_row_count=(!empty($defaults))?sizeof($defaults):1;
 
@@ -81,10 +105,10 @@ class resultsconfigpage extends pm_page {
 
                     //check for empty values
                     if (empty($range['min'])) {
-                        $errs[$i][] = get_string('results_engine_defaults_err_no_min', 'elis_program');
+                        $errs[$i][] = get_string('results_engine_defaults_err_no_min', 'local_elisprogram');
                     }
                     if (empty($range['max'])) {
-                        $errs[$i][] = get_string('results_engine_defaults_err_no_max', 'elis_program');
+                        $errs[$i][] = get_string('results_engine_defaults_err_no_max', 'local_elisprogram');
                     }
                     if (!isset($range['name'])) {
                         $range['name'] = '';
@@ -98,15 +122,15 @@ class resultsconfigpage extends pm_page {
                             }
 
                             if ($range['min'] >= $ex_rng['min'] && $range['min'] <= $ex_rng['max']) {
-                                $errs[$i][] = get_string('results_engine_defaults_err_min_conflict', 'elis_program');
+                                $errs[$i][] = get_string('results_engine_defaults_err_min_conflict', 'local_elisprogram');
                                 break;
                             }
                             if ($range['max'] >= $ex_rng['min'] && $range['max'] <= $ex_rng['max']) {
-                                $errs[$i][] = get_string('results_engine_defaults_err_max_conflict', 'elis_program');
+                                $errs[$i][] = get_string('results_engine_defaults_err_max_conflict', 'local_elisprogram');
                                 break;
                             }
                             if ($ex_rng['min'] >= $range['min'] && $ex_rng['max'] <= $range['max']) {
-                                $errs[$i][] = get_string('results_engine_defaults_err_enveloped_range', 'elis_program');
+                                $errs[$i][] = get_string('results_engine_defaults_err_enveloped_range', 'local_elisprogram');
                                 break;
                             }
                         }
@@ -145,11 +169,11 @@ class resultsconfigpage extends pm_page {
 
             $results = '';
             if (!empty($errs) && is_array($errs)) {
-                $results .= get_string('results_engine_defaults_errs_encountered', 'elis_program');
+                $results .= get_string('results_engine_defaults_errs_encountered', 'local_elisprogram');
                 foreach ($errs as $i => $rowerrs) {
                     if (!empty($rowerrs) && is_array($rowerrs)) {
                         $results .= '<ul>';
-                        $results .= '<li>'.get_string('results_engine_defaults_err_row','elis_program',($i+1)).'</li>';
+                        $results .= '<li>'.get_string('results_engine_defaults_err_row','local_elisprogram',($i+1)).'</li>';
                         $results .= '<ul>';
                         foreach ($rowerrs as $err) {
                             $results .= '<li>'.$err.'</li>';
@@ -157,9 +181,9 @@ class resultsconfigpage extends pm_page {
                         $results .= '</ul></ul>';
                     }
                 }
-                $results .= get_string('results_engine_defaults_saved_with_errors','elis_program');
+                $results .= get_string('results_engine_defaults_saved_with_errors','local_elisprogram');
             } else {
-                $results .= get_string('results_engine_defaults_settings_saved','elis_program');
+                $results .= get_string('results_engine_defaults_settings_saved','local_elisprogram');
             }
             $results .= '<br /><br />';
         }

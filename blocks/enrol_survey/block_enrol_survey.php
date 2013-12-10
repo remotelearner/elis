@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
-require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php'); // cm_get_crlmuserid()
+require_once($CFG->dirroot.'/local/elisprogram/lib/deprecatedlib.php'); // cm_get_crlmuserid()
 
 class block_enrol_survey extends block_base {
     /**

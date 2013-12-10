@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -42,10 +42,10 @@ class deepsight_datatable_program extends deepsight_datatable_standard {
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langname = get_string('curriculum_name', 'elis_program');
-        $langidnumber = get_string('curriculum_idnumber', 'elis_program');
-        $langdesc = get_string('curriculum_description', 'elis_program');
-        $langrqcredits = get_string('curriculum_reqcredits', 'elis_program');
+        $langname = get_string('curriculum_name', 'local_elisprogram');
+        $langidnumber = get_string('curriculum_idnumber', 'local_elisprogram');
+        $langdesc = get_string('curriculum_description', 'local_elisprogram');
+        $langrqcredits = get_string('curriculum_reqcredits', 'local_elisprogram');
 
         $filters = array(
             new deepsight_filter_textsearch($this->DB, 'name', $langname, array('element.name' => $langname)),
@@ -74,8 +74,8 @@ class deepsight_datatable_program extends deepsight_datatable_standard {
      */
     protected function get_fixed_columns() {
         return array(
-            'element.name' => get_string('curriculum_name', 'elis_program'),
-            'element.idnumber' => get_string('curriculum_idnumber', 'elis_program')
+            'element.name' => get_string('curriculum_name', 'local_elisprogram'),
+            'element.idnumber' => get_string('curriculum_idnumber', 'local_elisprogram')
         );
     }
 

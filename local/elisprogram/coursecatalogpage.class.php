@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -107,16 +106,16 @@ class coursecatalogpage extends pm_page {
     }
 
     function can_do_default() {
-        if (!empty(elis::$config->elis_program->disablecoursecatalog)) {
+        if (!empty(elis::$config->local_elisprogram->disablecoursecatalog)) {
             return false;
         }
 
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:viewcoursecatalog', $context);
+        return has_capability('local/elisprogram:viewcoursecatalog', $context);
     }
 
     function get_title_default() {
-        return get_string('coursecatalog', 'elis_program');
+        return get_string('coursecatalog', 'local_elisprogram');
     }
 
     function build_navbar_default($who = null) { // get_navigation_default()
@@ -139,7 +138,7 @@ class coursecatalogpage extends pm_page {
         //$action = optional_param('action', 'default', PARAM_CLEAN);
         //$page = $this->get_new_page(array('action' => $action), true); //new coursecatalogpage(array());
         $page = $this->get_new_page(); //new coursecatalogpage(array());
-        $this->navbar->add(get_string('waitlistcourses', 'elis_program'),
+        $this->navbar->add(get_string('waitlistcourses', 'local_elisprogram'),
                            $page->url);
     }
 
@@ -147,7 +146,7 @@ class coursecatalogpage extends pm_page {
         //$action = optional_param('action', 'default', PARAM_CLEAN);
         //$page = $this->get_new_page(array('action' => $action), true); //new coursecatalogpage(array());
         $page = $this->get_new_page(); //new coursecatalogpage(array());
-        $this->navbar->add(get_string('currentcourses', 'elis_program'),
+        $this->navbar->add(get_string('currentcourses', 'local_elisprogram'),
                            $page->url);
     }
 
@@ -155,7 +154,7 @@ class coursecatalogpage extends pm_page {
         //$action = optional_param('action', 'default', PARAM_CLEAN);
         //$page = $this->get_new_page(array('action' => $action), true); //new coursecatalogpage(array());
         $page = $this->get_new_page(); //new coursecatalogpage(array());
-        $this->navbar->add(get_string('availablecourses', 'elis_program'),
+        $this->navbar->add(get_string('availablecourses', 'local_elisprogram'),
                            $page->url);
     }
 
@@ -163,8 +162,8 @@ class coursecatalogpage extends pm_page {
         $crsid = cm_get_param('crsid', 0);
         $crs   = new course($crsid);
         $page = new coursecatalogpage(array('action' => 'available'));
-        $this->navbar->add(get_string('availablecourses', 'elis_program'), $page->url);
-        $this->navbar->add(get_string('choose_class_course', 'elis_program', $crs->name), $this->get_new_page()->url);
+        $this->navbar->add(get_string('availablecourses', 'local_elisprogram'), $page->url);
+        $this->navbar->add(get_string('choose_class_course', 'local_elisprogram', $crs->name), $this->get_new_page()->url);
     }
 
     function display_add() { // action_add
@@ -184,7 +183,7 @@ class coursecatalogpage extends pm_page {
             $table = new addclasstable($classes, new moodle_url(htmlspecialchars_decode($this->url)));
             $table->print_yui_table('chooseclass');
         } else {
-            echo $OUTPUT->heading(get_string('no_classes_available', 'elis_program'));
+            echo $OUTPUT->heading(get_string('no_classes_available', 'local_elisprogram'));
         }
         unset($classes);
     }
@@ -196,7 +195,7 @@ class coursecatalogpage extends pm_page {
 
         $usercurs = curriculumstudent::get_curricula($cuserid);
 
-        if(count($usercurs) > elis::$config->elis_program->catalog_collapse_count) {
+        if(count($usercurs) > elis::$config->local_elisprogram->catalog_collapse_count) {
             $buttonLabel = get_string('show');
             $extraclass = ' hide';
         }
@@ -221,18 +220,18 @@ class coursecatalogpage extends pm_page {
                     $table = new waitlisttable($courses);
                     $table->print_yui_table('curriculum'.$usercur->curid);
                 } else {
-                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
+                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'local_elisprogram') . '</p>';
                 }
                 unset($courses);
 
                 echo '</div>';
             }
         } else {
-            echo $OUTPUT->heading(get_string('nocoursesinthiscurriculum', 'elis_program'));
+            echo $OUTPUT->heading(get_string('nocoursesinthiscurriculum', 'local_elisprogram'));
         }
 
         echo '<br/>';
-        echo $OUTPUT->box(get_string('lp_waitlist_instructions', 'elis_program'),
+        echo $OUTPUT->box(get_string('lp_waitlist_instructions', 'local_elisprogram'),
                           'generalbox lp_instructions');
 
     }
@@ -412,7 +411,7 @@ class coursecatalogpage extends pm_page {
         // Monkey patch - not required with YUI 2.6.0 apparently
         // require_js('js/yui_2527707_patch.js');
 
-        echo html_writer::tag('script', '', array('type' => 'text/javascript', 'src' => "{$CFG->wwwroot}/elis/program/js/util.js"));
+        echo html_writer::tag('script', '', array('type' => 'text/javascript', 'src' => "{$CFG->wwwroot}/local/elisprogram/js/util.js"));
     }
 
     /**
@@ -445,7 +444,7 @@ class coursecatalogpage extends pm_page {
         $noncurclasses = user::get_non_curriculum_classes($cuserid, $noncurcnt);
 
         $numtables = $usercnt + $instrcnt + $noncurcnt;
-        if ($numtables > elis::$config->elis_program->catalog_collapse_count) {
+        if ($numtables > elis::$config->local_elisprogram->catalog_collapse_count) {
             $buttonLabel = get_string('show');
             $extraclass = ' hide';
         } else {
@@ -478,20 +477,20 @@ class coursecatalogpage extends pm_page {
                     $extraclass2 = ($usercur->curid == $showcurid) ? '' : ' hide';
                     echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="curriculum'.$usercur->curid.'script" type="text/javascript">toggleVisibleInit("curriculum'.$usercur->curid.'script", "curriculum'.$usercur->curid.'button", "' . $buttonLabel2 . '", "Hide", "Show", "curriculum'.$usercur->curid.'");</script></div>'. $usercur->name . ' (' . $usercur->idnumber . ')');
                     echo '<div id="curriculum' . $usercur->curid ."\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass2 . '">';
-                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
+                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'local_elisprogram') . '</p>';
                 }
                 echo '</div>';
 
             }
         } else {
-            echo $OUTPUT->heading(get_string('notassignedtocurricula', 'elis_program'));
+            echo $OUTPUT->heading(get_string('notassignedtocurricula', 'local_elisprogram'));
         }
 
         // Print out a table for classes not belonging to any curriculum
         if ($noncurcnt) {
             $labelshow = get_string('show');
             $labelhide = get_string('hide');
-            echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="noncurrscript" type="text/javascript">toggleVisibleInit("noncurrscript", "noncurrbutton", "' . $buttonLabel . '", "'.$labelhide.'", "'.$labelshow.'", "noncurr");</script></div>'. get_string('othercourses', 'elis_program'));
+            echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="noncurrscript" type="text/javascript">toggleVisibleInit("noncurrscript", "noncurrbutton", "' . $buttonLabel . '", "'.$labelhide.'", "'.$labelshow.'", "noncurr");</script></div>'. get_string('othercourses', 'local_elisprogram'));
 
             echo "<div id=\"noncurr\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass . '">';
 
@@ -506,7 +505,7 @@ class coursecatalogpage extends pm_page {
 
         // Print out a table for classes we instruct
         if ($instrcnt) {
-            echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="instrscript" type="text/javascript">toggleVisibleInit("instrscript", "instrbutton", "' . $buttonLabel . '", "Hide", "Show", "instr");</script></div>'. get_string('instructedcourses', 'elis_program'));
+            echo $OUTPUT->heading('<div class="clearfix"></div><div class="headermenu"><script id="instrscript" type="text/javascript">toggleVisibleInit("instrscript", "instrbutton", "' . $buttonLabel . '", "Hide", "Show", "instr");</script></div>'. get_string('instructedcourses', 'local_elisprogram'));
 
             echo "<div id=\"instr\" {$this->div_attrs} class=\"yui-skin-sam" . $extraclass . '">';
 
@@ -522,7 +521,7 @@ class coursecatalogpage extends pm_page {
         }
 
         echo '<br/>';
-        echo $OUTPUT->box(get_string('lp_class_instructions', 'elis_program'),
+        echo $OUTPUT->box(get_string('lp_class_instructions', 'local_elisprogram'),
                           'generalbox lp_instructions');
 
     }
@@ -542,7 +541,7 @@ class coursecatalogpage extends pm_page {
 
         $usercurs = curriculumstudent::get_curricula($cuserid);
 
-        if(count($usercurs) > elis::$config->elis_program->catalog_collapse_count) {
+        if(count($usercurs) > elis::$config->local_elisprogram->catalog_collapse_count) {
             $buttonLabel = get_string('show');
             $extraclass = ' hide';
         }
@@ -567,17 +566,17 @@ class coursecatalogpage extends pm_page {
                     $table = new availablecoursetable($courses, $cuserid);
                     $table->print_yui_table('curriculum'.$usercur->curid);
                 } else {
-                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'elis_program') . '</p>';
+                    echo '<p>' . get_string('nocoursesinthiscurriculum', 'local_elisprogram') . '</p>';
                 }
 
                 echo '</div>';
             }
         } else {
-            echo $OUTPUT->heading(get_string('nocoursesinthiscurriculum', 'elis_program'));
+            echo $OUTPUT->heading(get_string('nocoursesinthiscurriculum', 'local_elisprogram'));
         }
 
         echo '<br/>';
-        echo $OUTPUT->box(get_string('lp_curriculum_instructions', 'elis_program'),
+        echo $OUTPUT->box(get_string('lp_curriculum_instructions', 'local_elisprogram'),
                           'generalbox lp_instructions');
 
     }
@@ -619,7 +618,7 @@ class coursecatalogpage extends pm_page {
         if (!empty($stuid) && ($stu = new student($stuid))) {
             $pmclass = new pmclass($stu->classid);
             $pmclass->load();
-            $prompt = get_string('unenrol_student', 'elis_program', $pmclass->to_object());
+            $prompt = get_string('unenrol_student', 'local_elisprogram', $pmclass->to_object());
             $buttoncontinue = new single_button(new moodle_url('index.php', array(
                                   's' => $this->pagename,
                                   'action' => 'unenrol',
@@ -628,7 +627,7 @@ class coursecatalogpage extends pm_page {
         } else if (!empty($wlid) && ($waitlist = new waitlist($wlid))) {
             $pmclass = new pmclass($waitlist->classid);
             $pmclass->load();
-            $prompt = get_string('unenrol_waitlist', 'elis_program', $pmclass->to_object());
+            $prompt = get_string('unenrol_waitlist', 'local_elisprogram', $pmclass->to_object());
             $buttoncontinue = new single_button(new moodle_url('index.php', array(
                                   's' => $this->pagename,
                                   'action' => 'unenrol',
@@ -663,7 +662,7 @@ class yui_table extends display_table {
 
     public function __construct($items, $columns, moodle_url $base_url=null) {
         parent::__construct($items, $columns, $base_url);
-        $this->display_date = new display_date_item(get_string('pm_date_format', 'elis_program'));
+        $this->display_date = new display_date_item(get_string('pm_date_format', 'local_elisprogram'));
     }
 
     /**
@@ -710,7 +709,7 @@ class yui_table extends display_table {
             $endampm = '';
 
             // perform the 24 to 12-hour conversion if necessary
-            if (elis::$config->elis_program->time_format_12h) {
+            if (elis::$config->local_elisprogram->time_format_12h) {
                 // calculate start hour and am/pm in 12-hour format
                 list($starthour, $startampm) = $this->format_hour($starthour);
 
@@ -753,7 +752,7 @@ class yui_table extends display_table {
                 if (is_array($val)) {
                     $json .= json_encode($val);
                 } else if (strpos($key, 'date') !== false) {
-                    $json .= '"'.($val ? '<!-- '.$val.' -->'.userdate($val, get_string('pm_date_format', 'elis_program')) : '<!-- 0 -->-').'"';
+                    $json .= '"'.($val ? '<!-- '.$val.' -->'.userdate($val, get_string('pm_date_format', 'local_elisprogram')) : '<!-- 0 -->-').'"';
                 } else {
                     $str = str_replace("\n", '', $val);
                     $json .= '"'.addslashes($str).'"';
@@ -851,16 +850,16 @@ class waitlisttable extends yui_table {
         $this->cuserid = cm_get_crlmuserid($USER->id);
 
         $columns = array(
-            'idnumber'    => array('header' => get_string('course_idnumber', 'elis_program')), // 'Course ID',
-            'name'        => array('header' => get_string('course',          'elis_program')),
-            'clsid'       => array('header' => get_string('class',           'elis_program')),
-            'startdate'   => array('header' => get_string('class_startdate', 'elis_program')),
-            'enddate'     => array('header' => get_string('class_enddate',   'elis_program')),
-//            'timeofday'   => array('header' => get_string('timeofday',     'elis_program')),
-            'instructor'  => array('header' => get_string('instructor',      'elis_program')),
-            // 'environment' => array('header' => get_string('environment',     'elis_program')),
-            'position'    => array('header' => get_string('position',        'elis_program')),
-            'maxstudents' => array('header' => get_string('class_limit',     'elis_program')),
+            'idnumber'    => array('header' => get_string('course_idnumber', 'local_elisprogram')), // 'Course ID',
+            'name'        => array('header' => get_string('course',          'local_elisprogram')),
+            'clsid'       => array('header' => get_string('class',           'local_elisprogram')),
+            'startdate'   => array('header' => get_string('class_startdate', 'local_elisprogram')),
+            'enddate'     => array('header' => get_string('class_enddate',   'local_elisprogram')),
+//            'timeofday'   => array('header' => get_string('timeofday',     'local_elisprogram')),
+            'instructor'  => array('header' => get_string('instructor',      'local_elisprogram')),
+            // 'environment' => array('header' => get_string('environment',     'local_elisprogram')),
+            'position'    => array('header' => get_string('position',        'local_elisprogram')),
+            'maxstudents' => array('header' => get_string('class_limit',     'local_elisprogram')),
             'management'  => array('header' => ' ', 'sortable' => false)
         );
 
@@ -879,7 +878,7 @@ class waitlisttable extends yui_table {
             // 'timeofday' => 'cmSortTimeRange',
         );
 
-        $pageurl = new moodle_url($CFG->wwwroot .'/elis/program/index.php', array('s' => 'crscat'));
+        $pageurl = new moodle_url($CFG->wwwroot .'/local/elisprogram/index.php', array('s' => 'crscat'));
         parent::__construct($items, $columns, $pageurl);
         //$this->table->width = '80%'; // TBD
     }
@@ -892,7 +891,7 @@ class waitlisttable extends yui_table {
         global $CFG, $OUTPUT;
 
         $retval = '<div align="center">';
-        $formaction = $CFG->wwwroot .'/elis/program/index.php?s=crscat';
+        $formaction = $CFG->wwwroot .'/local/elisprogram/index.php?s=crscat';
             // $formaction = new moodle_url(null, array('s' => 'crscat', 'action' => 'waitlist', 'id' => $item->wlid));
         $retval .= "<form action=\"{$formaction}\" method=\"post\">";
         $hidden = new moodle_url(null, array('s' => 'crscat', 'action' => 'delwaitlist', 'id' => $item->wlid));
@@ -900,9 +899,9 @@ class waitlisttable extends yui_table {
             $val = s($val);
             $retval .= "<input type=\"hidden\" name=\"{$key}\" value=\"{$val}\" />\n";
         }
-        $retval .= '<input type="image" alt="'. get_string('delete', 'elis_program') .
-                   '" title="'. get_string('delete', 'elis_program') .'" src="'.
-                   $OUTPUT->pix_url('delete', 'elis_program') .'" /> ';
+        $retval .= '<input type="image" alt="'. get_string('delete', 'local_elisprogram') .
+                   '" title="'. get_string('delete', 'local_elisprogram') .'" src="'.
+                   $OUTPUT->pix_url('delete', 'local_elisprogram') .'" /> ';
         $retval .= '</form>';
         $retval .= '</div>';
 
@@ -930,7 +929,7 @@ class waitlisttable extends yui_table {
                 return implode('<br />', $ins);
             }
         }
-        return get_string('course_catalog_time_na', 'elis_program');
+        return get_string('course_catalog_time_na', 'local_elisprogram');
     }
 
     function get_item_display_environment($column, $item) {
@@ -939,7 +938,7 @@ class waitlisttable extends yui_table {
         if (!empty($item->environmentid)) {
             return $DB->get_field(ENVTABLE, 'name', 'id', $item->environmentid);
         }
-        return get_string('course_catalog_time_na', 'elis_program');
+        return get_string('course_catalog_time_na', 'local_elisprogram');
     }
 }
 
@@ -949,15 +948,15 @@ class currentclasstable extends yui_table {
         $this->cuserid = cm_get_crlmuserid($USER->id);
 
         $columns = array(
-            'courseid'    => array('header' => get_string('course_idnumber', 'elis_program')), // 'Course ID',
-            'coursename'  => array('header' => get_string('course',          'elis_program')),
-            'classname'   => array('header' => get_string('class',           'elis_program')),
-            'startdate'   => array('header' => get_string('class_startdate', 'elis_program')),
-            'enddate'     => array('header' => get_string('class_enddate',   'elis_program')),
-            'timeofday'   => array('header' => get_string('timeofday',       'elis_program')),
-            'instructor'  => array('header' => get_string('instructor',      'elis_program'))
+            'courseid'    => array('header' => get_string('course_idnumber', 'local_elisprogram')), // 'Course ID',
+            'coursename'  => array('header' => get_string('course',          'local_elisprogram')),
+            'classname'   => array('header' => get_string('class',           'local_elisprogram')),
+            'startdate'   => array('header' => get_string('class_startdate', 'local_elisprogram')),
+            'enddate'     => array('header' => get_string('class_enddate',   'local_elisprogram')),
+            'timeofday'   => array('header' => get_string('timeofday',       'local_elisprogram')),
+            'instructor'  => array('header' => get_string('instructor',      'local_elisprogram'))
             // ,
-            // 'environment' => array('header' => get_string('environment',     'elis_program'))
+            // 'environment' => array('header' => get_string('environment',     'local_elisprogram'))
         );
 
         $this->yui_formatters = array(
@@ -1017,7 +1016,7 @@ class currentclasstable extends yui_table {
         $this->get_class($item);
         $classid = $this->current_class->idnumber;
         if ($mdlcrs = moodle_get_course($this->current_class->id)) {
-            $classid .= ' - <a href="'.$CFG->wwwroot.'/course/view.php?id='.$mdlcrs.'">'.get_string('moodlecourse', 'elis_program').'</a>';
+            $classid .= ' - <a href="'.$CFG->wwwroot.'/course/view.php?id='.$mdlcrs.'">'.get_string('moodlecourse', 'local_elisprogram').'</a>';
         }
         return $classid;
     }
@@ -1048,7 +1047,7 @@ class currentclasstable extends yui_table {
                 }
             }
         }
-        return get_string('course_catalog_time_na', 'elis_program');
+        return get_string('course_catalog_time_na', 'local_elisprogram');
     }
 
     function get_item_display_environment($column, $item) {
@@ -1058,7 +1057,7 @@ class currentclasstable extends yui_table {
                 return $DB->get_field(ENVTABLE, 'name', array('id' => $this->current_class->environmentid));
             }
         }
-        return get_string('course_catalog_time_na', 'elis_program');
+        return get_string('course_catalog_time_na', 'local_elisprogram');
     }
 }
 
@@ -1082,8 +1081,8 @@ class availablecoursetable extends yui_table {
         $this->cuserid = $cuserid;
 
         $columns = array(
-            'coursename'  => array('header' => get_string('course_name', 'elis_program')),
-            'courseid'    => array('header' => get_string('course_idnumber', 'elis_program')),
+            'coursename'  => array('header' => get_string('course_name', 'local_elisprogram')),
+            'courseid'    => array('header' => get_string('course_idnumber', 'local_elisprogram')),
             'classname'   => array('header' => ' ') // action/status info
         );
         parent::__construct($items, $columns);
@@ -1108,30 +1107,30 @@ class availablecoursetable extends yui_table {
         $waitrec = array();
         if (isset($item->completionid)) {
             if ($item->completionid == STUSTATUS_NOTCOMPLETE) {
-                return get_string('onenroledlist', 'elis_program').(coursecatalogpage::user_can_unenrol($item, $this->cuserid, $sturec, $waitrec)
-                        ? ' - '.html_writer::tag('a', get_string('unenrolfromclass', 'elis_program'), array(
+                return get_string('onenroledlist', 'local_elisprogram').(coursecatalogpage::user_can_unenrol($item, $this->cuserid, $sturec, $waitrec)
+                        ? ' - '.html_writer::tag('a', get_string('unenrolfromclass', 'local_elisprogram'), array(
                             'href' => 'index.php?s=crscat&section=curr&action=confirmunenrol'
                                     .(!empty($sturec) ? "&stuid={$sturec->id}" : '').(!empty($waitrec) ? "&wlid={$waitrec->id}" : '')))
                         : '');
             } else if ($item->completionid == STUSTATUS_PASSED) {
-                return get_string('onpassed', 'elis_program');
+                return get_string('onpassed', 'local_elisprogram');
             } else if ($item->completionid == STUSTATUS_FAILED) {
-                return get_string('onfailed', 'elis_program');
+                return get_string('onfailed', 'local_elisprogram');
             }
         } else if (!empty($item->prereqcount)) {
-            return get_string('unsatisfiedprereqs', 'elis_program');
+            return get_string('unsatisfiedprereqs', 'local_elisprogram');
         } else if (empty($item->classcount)) {
-            return get_string('noclassavail', 'elis_program');
+            return get_string('noclassavail', 'local_elisprogram');
         } else if (!empty($item->waiting)) {
-            return get_string('onwaitlist', 'elis_program').(coursecatalogpage::user_can_unenrol($item, $this->cuserid, $sturec, $waitrec)
-                    ? ' - '.html_writer::tag('a', get_string('unenrolfromclass', 'elis_program'), array(
+            return get_string('onwaitlist', 'local_elisprogram').(coursecatalogpage::user_can_unenrol($item, $this->cuserid, $sturec, $waitrec)
+                    ? ' - '.html_writer::tag('a', get_string('unenrolfromclass', 'local_elisprogram'), array(
                         'href' => 'index.php?s=crscat&section=curr&action=confirmunenrol'
                                 .(!empty($sturec) ? "&stuid={$sturec->id}" : '').(!empty($waitrec) ? "&wlid={$waitrec->id}" : '')))
                     : '');
         } else {
-            return get_string('noclassyet', 'elis_program') .' - <a href="'.
+            return get_string('noclassyet', 'local_elisprogram') .' - <a href="'.
                 "index.php?s=crscat&amp;section=curr&amp;crsid={$item->courseid}" .
-                '&amp;action=add">'. get_string('chooseclass', 'elis_program') .
+                '&amp;action=add">'. get_string('chooseclass', 'local_elisprogram') .
                 '</a>';
         }
     }
@@ -1141,14 +1140,14 @@ class addclasstable extends yui_table {
     function __construct(&$items, $url) {
         $columns = array(
             'options'      => array('header' => ' ', 'sortable' => false),
-            'idnumber'     => array('header' => get_string('class_idnumber', 'elis_program'), 'sortable' => true),
-            'startdate'    => array('header' => get_string('class_startdate', 'elis_program'), 'sortable' => true),
-            'enddate'      => array('header' => get_string('class_enddate', 'elis_program'), 'sortable' => true),
-            'timeofday'    => array('header' => get_string('timeofday', 'elis_program'), 'sortable' => true),
-            'instructor'   => array('header' => get_string('instructor', 'elis_program'), 'sortable' => true),
-            // 'environment'  => array('header' => get_string('environment', 'elis_program'), 'sortable' => false),
-            'waitlistsize' => array('header' => get_string('waitlist_size', 'elis_program'), 'sortable' => true),
-            'classsize'    => array('header' => get_string('class_size', 'elis_program'), 'sortable' => true)
+            'idnumber'     => array('header' => get_string('class_idnumber', 'local_elisprogram'), 'sortable' => true),
+            'startdate'    => array('header' => get_string('class_startdate', 'local_elisprogram'), 'sortable' => true),
+            'enddate'      => array('header' => get_string('class_enddate', 'local_elisprogram'), 'sortable' => true),
+            'timeofday'    => array('header' => get_string('timeofday', 'local_elisprogram'), 'sortable' => true),
+            'instructor'   => array('header' => get_string('instructor', 'local_elisprogram'), 'sortable' => true),
+            // 'environment'  => array('header' => get_string('environment', 'local_elisprogram'), 'sortable' => false),
+            'waitlistsize' => array('header' => get_string('waitlist_size', 'local_elisprogram'), 'sortable' => true),
+            'classsize'    => array('header' => get_string('class_size', 'local_elisprogram'), 'sortable' => true)
         );
 
         $this->yui_formatters = array(
@@ -1172,7 +1171,7 @@ class addclasstable extends yui_table {
 
     function print_table() {
         echo $this;
-        print('<div class="note">'. get_string('if_class_full', 'elis_program')
+        print('<div class="note">'. get_string('if_class_full', 'local_elisprogram')
               .'</div>');
     }
 
@@ -1186,7 +1185,7 @@ class addclasstable extends yui_table {
     }
 
     function get_item_display_classsize($column, $class) {
-        $retval = get_string('course_catalog_time_na', 'elis_program');
+        $retval = get_string('course_catalog_time_na', 'local_elisprogram');
 
         if(!empty($class->maxstudents)) {
             $students = student::count_enroled($class->id);
@@ -1232,13 +1231,13 @@ class addclasstable extends yui_table {
 
             return implode('<br />', $ins);
         }
-        return get_string('course_catalog_time_na', 'elis_program');
+        return get_string('course_catalog_time_na', 'local_elisprogram');
     }
 
     function get_item_display_environment($column, $class) {
         return !empty($class->envname)
                ? $class->envname
-               : get_string('course_catalog_time_na', 'elis_program');
+               : get_string('course_catalog_time_na', 'local_elisprogram');
     }
 }
 

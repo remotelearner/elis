@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-YUI.add('moodle-elis_program-menuitem', function(Y) {
+YUI.add('moodle-local_elisprogram-menuitem', function(Y) {
 
     /**
      * The menuitem module
@@ -41,7 +41,7 @@ YUI.add('moodle-elis_program-menuitem', function(Y) {
     }
 
     /**
-     * @class M.elis_program.menuitem
+     * @class M.local_elisprogram.menuitem
      */
     Y.extend(MODULEBASE, Y.Base, {
 
@@ -158,8 +158,8 @@ YUI.add('moodle-elis_program-menuitem', function(Y) {
     }
     );
 
-    // Ensure that M.elis_program exists and that modulebase is initialised correctly
-    M.elis_program = M.elis_program || {};
+    // Ensure that M.local_elisprogram exists and that modulebase is initialised correctly
+    M.local_elisprogram = M.local_elisprogram || {};
 
     /**
      * Entry point for menuitem module
@@ -167,7 +167,7 @@ YUI.add('moodle-elis_program-menuitem', function(Y) {
      * @param string wwwroot the site's wwwroot setting
      * @return object the menuitem object
      */
-    M.elis_program.init_menuitem = function(treeobj, wwwroot) {
+    M.local_elisprogram.init_menuitem = function(treeobj, wwwroot) {
         var args = { tree: treeobj, wwwroot: wwwroot};
         return new MODULEBASE(args);
     }

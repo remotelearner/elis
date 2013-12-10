@@ -26,9 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot .'/elis/core/lib/table.class.php');
-require_once($CFG->dirroot .'/elis/program/accesslib.php');
-require_once($CFG->dirroot .'/elis/program/lib/page.class.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/table.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/page.class.php');
 require_once('request_form.php');
 require_once('approvepage.class.php');
 
@@ -138,7 +138,7 @@ class RequestPage extends pm_page {
      */
     function add_custom_fields($requestid, $contextlevel_name, &$entity) {
         global $CFG, $DB;
-        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/contexts.php');
 
         $contextlevel = context_elis_helper::get_level_from_name($contextlevel_name);
 
@@ -172,7 +172,7 @@ class RequestPage extends pm_page {
             return;
         } else if ($data) {
             global $USER;
-            require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
+            require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
             $request = new stdClass;
             $request->userid = $USER->id;
             $request->firstname = $data->first;
@@ -222,7 +222,7 @@ class RequestPage extends pm_page {
                 }
             }
 
-            require_once($CFG->dirroot .'/elis/program/lib/notifications.php');
+            require_once($CFG->dirroot.'/local/elisprogram/lib/notifications.php');
             $syscontext = context_system::instance();
 
             if (has_capability('block/course_request:approve', $syscontext)) {
@@ -280,7 +280,7 @@ class RequestPage extends pm_page {
                 // Create the new class if we are using an existing course, or if
                 // create_class_with_course is on.
                 if (!empty($request->courseid) || !empty($CFG->block_course_request_create_class_with_course)) {
-                    require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
+                    require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
                     $clsdata = array(
                         'name'            => $request->title,
                         'courseid'        => $courseid,
@@ -325,7 +325,7 @@ class RequestPage extends pm_page {
 
                     // copy role over into Moodle course
                     if (isset($CFG->block_course_request_class_role) && $CFG->block_course_request_class_role) {
-                        require_once($CFG->dirroot .'/elis/program/lib/data/classmoodlecourse.class.php');
+                        require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
                         if ($class_moodle_record = $DB->get_record(classmoodlecourse::TABLE, array('classid' => $newclass->id))) {
                             $context = context_course::instance($class_moodle_record->moodlecourseid);
                             // TBD: role_assign() now throws exceptions!

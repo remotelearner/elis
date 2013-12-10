@@ -1,7 +1,5 @@
 <?php
 /**
- * Form used for editing / displaying a class record.
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
@@ -18,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -29,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once elispm::file('form/cmform.class.php');
 
-MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/elis/program/form/timeselector.php", 'pm_time_selector');
+MoodleQuickForm::registerElementType('time_selector', "{$CFG->dirroot}/local/elisprogram/form/timeselector.php", 'pm_time_selector');
 
 class pmclassform extends cmform {
     function definition() {
@@ -70,7 +68,7 @@ class pmclassform extends cmform {
             if (!empty($USER->id)) {
                 // This is necessary for creating a new class instance but will prevent a parent course from appearing
                 // when the user has class edit permissions but not class creation permission -- ELIS-5954
-                $contexts = get_contexts_by_capability_for_user('course', 'elis/program:class_create', $USER->id);
+                $contexts = get_contexts_by_capability_for_user('course', 'local/elisprogram:class_create', $USER->id);
                 // get listing of available ELIS courses
                 $courses = course_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
 
@@ -98,8 +96,8 @@ class pmclassform extends cmform {
                 }
             }
 
-            $mform->addElement('select', 'courseid', get_string('course', 'elis_program') . ':', $selections, $attributes);
-            $mform->addHelpButton('courseid', 'pmclassform:course', 'elis_program');
+            $mform->addElement('select', 'courseid', get_string('course', 'local_elisprogram') . ':', $selections, $attributes);
+            $mform->addHelpButton('courseid', 'pmclassform:course', 'local_elisprogram');
 
             $firstcourse = reset($courses);
             $this->firstcourse = $firstcourse;
@@ -111,7 +109,7 @@ class pmclassform extends cmform {
             }
         } else {
             $extra_params = array();
-            $mform->addElement('static', 'courseid', get_string('course', 'elis_program') . ':');
+            $mform->addElement('static', 'courseid', get_string('course', 'local_elisprogram') . ':');
 
             // Get current action and set param accordingly
             $current_action    = optional_param('action','view',PARAM_ALPHA);
@@ -122,7 +120,7 @@ class pmclassform extends cmform {
 
             $course_name = '(' . $this->_customdata['obj']->course->idnumber . ')'.'<a href="'.$course_url.'" >'.$this->_customdata['obj']->course->name.'</a>';
             $this->set_data(array('courseid' => $course_name));
-            $mform->addHelpButton('courseid', 'pmclassform:course', 'elis_program');
+            $mform->addHelpButton('courseid', 'pmclassform:course', 'local_elisprogram');
 
             $this->add_track_multi_select($this->_customdata['obj']->courseid);
         }
@@ -140,69 +138,69 @@ class pmclassform extends cmform {
             $this->_customdata['obj']->moodlecourseid = moodle_get_course($this->_customdata['obj']->id);
         }
 
-        $mform->addElement('text', 'idnumber', get_string('class_idnumber', 'elis_program') . ':');
+        $mform->addElement('text', 'idnumber', get_string('class_idnumber', 'local_elisprogram') . ':');
         $mform->setType('idnumber', PARAM_TEXT);
         $mform->addRule('idnumber', get_string('required'), 'required', NULL, 'client');
         $mform->addRule('idnumber', null, 'maxlength', 100, 'client');
-        $mform->addHelpButton('idnumber', 'pmclassform:class_idnumber', 'elis_program');
+        $mform->addHelpButton('idnumber', 'pmclassform:class_idnumber', 'local_elisprogram');
 
-        $mform->addElement('date_selector', 'startdate', get_string('class_startdate', 'elis_program') . ':', array('optional'=>true, 'disabled'=>'disabled'));
-        $mform->addHelpButton('startdate', 'pmclassform:class_startdate', 'elis_program');
+        $mform->addElement('date_selector', 'startdate', get_string('class_startdate', 'local_elisprogram') . ':', array('optional'=>true, 'disabled'=>'disabled'));
+        $mform->addHelpButton('startdate', 'pmclassform:class_startdate', 'local_elisprogram');
 
-        $mform->addElement('date_selector', 'enddate', get_string('class_enddate', 'elis_program') . ':', array('optional'=>true));
+        $mform->addElement('date_selector', 'enddate', get_string('class_enddate', 'local_elisprogram') . ':', array('optional'=>true));
 
         if (!isset($obj->starttimehour) || $obj->starttimehour >= 25 ||
             !isset($obj->starttimeminute) || $obj->starttimeminute >= 61) {
-            $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
-                               array('optional'=>true, 'checked'=>'checked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
+            $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'local_elisprogram') . ':',
+                               array('optional'=>true, 'checked'=>'checked', 'display_12h'=>elis::$config->local_elisprogram->time_format_12h));
         } else {
-            $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'elis_program') . ':',
-                               array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
+            $mform->addElement('time_selector', 'starttime', get_string('class_starttime', 'local_elisprogram') . ':',
+                               array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>elis::$config->local_elisprogram->time_format_12h));
         }
-        $mform->addHelpButton('starttime', 'pmclassform:class_starttime', 'elis_program');
+        $mform->addHelpButton('starttime', 'pmclassform:class_starttime', 'local_elisprogram');
 
         // Do the same thing for the endtime
         if (!isset($obj->endtimehour) || $obj->endtimehour >= 25 ||
             !isset($obj->endtimeminute) || $obj->endtimeminute >= 61) {
-            $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
-                               array('optional'=>true, 'checked'=>'checked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
+            $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'local_elisprogram') . ':',
+                               array('optional'=>true, 'checked'=>'checked', 'display_12h'=>elis::$config->local_elisprogram->time_format_12h));
         } else {
-            $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'elis_program') . ':',
-                               array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>elis::$config->elis_program->time_format_12h));
+            $mform->addElement('time_selector', 'endtime', get_string('class_endtime', 'local_elisprogram') . ':',
+                               array('optional'=>true, 'checked'=>'unchecked', 'display_12h'=>elis::$config->local_elisprogram->time_format_12h));
         }
 
-        $mform->addElement('text', 'maxstudents', get_string('class_maxstudents', 'elis_program') . ':');
+        $mform->addElement('text', 'maxstudents', get_string('class_maxstudents', 'local_elisprogram') . ':');
         $mform->setType('maxstudents', PARAM_INT);
-        $mform->addHelpButton('maxstudents', 'pmclassform:class_maxstudents', 'elis_program');
+        $mform->addHelpButton('maxstudents', 'pmclassform:class_maxstudents', 'local_elisprogram');
 
         // Course selector
         if (empty($this->_customdata['obj']->moodlecourseid)) {
             $this->add_moodle_course_select();
         } else {
-            $PAGE->requires->js('/elis/program/js/classform.js');
+            $PAGE->requires->js('/local/elisprogram/js/classform.js');
             $courseSelected = array();
             $coursename = $DB->get_field('course', 'fullname', array('id'=>$this->_customdata['obj']->moodlecourseid));
-            $courseSelected[] = $mform->createElement('static', 'class_attached_course', get_string('class_attached_course', 'elis_program') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
+            $courseSelected[] = $mform->createElement('static', 'class_attached_course', get_string('class_attached_course', 'local_elisprogram') . ':',  "<a href=\"$CFG->wwwroot/course/view.php?id={$this->_customdata['obj']->moodlecourseid}\">$coursename</a>");
             //only show checkbox if current action is edit
             $current_action    = optional_param('action','view',PARAM_ALPHA);
             if ($current_action == 'edit') {
                 $options = array();
                 //set group to null
                 $options['group']=null;
-                $options['onclick'] = "return class_confirm_unlink(this,'".get_string('class_unlink_confirm', 'elis_program')."')";
-                $courseSelected[] = $mform->createElement('advcheckbox', 'unlink_attached_course', get_string('class_unlink_attached_course', 'elis_program') . ':', get_string('class_unlink_attached_course', 'elis_program'), $options);
+                $options['onclick'] = "return class_confirm_unlink(this,'".get_string('class_unlink_confirm', 'local_elisprogram')."')";
+                $courseSelected[] = $mform->createElement('advcheckbox', 'unlink_attached_course', get_string('class_unlink_attached_course', 'local_elisprogram') . ':', get_string('class_unlink_attached_course', 'local_elisprogram'), $options);
             }
-            $mform->addGroup($courseSelected, 'courseSelected', get_string('class_attached_course', 'elis_program') . ':');
-            $mform->addHelpButton('courseSelected', 'pmclassform:moodlecourse', 'elis_program');
+            $mform->addGroup($courseSelected, 'courseSelected', get_string('class_attached_course', 'local_elisprogram') . ':');
+            $mform->addHelpButton('courseSelected', 'pmclassform:moodlecourse', 'local_elisprogram');
             $mform->addElement('hidden', 'moodlecourseid');
             $mform->setType('moodlecourseid', PARAM_INT);
         }
 
-        $mform->addElement('advcheckbox', 'enrol_from_waitlist', get_string('waitlistenrol', 'elis_program') . ':');
-        $mform->addHelpButton('enrol_from_waitlist', 'pmclassform:waitlistenrol', 'elis_program');
+        $mform->addElement('advcheckbox', 'enrol_from_waitlist', get_string('waitlistenrol', 'local_elisprogram') . ':');
+        $mform->addHelpButton('enrol_from_waitlist', 'pmclassform:waitlistenrol', 'local_elisprogram');
 
         // custom fields
-        $this->add_custom_fields('class','elis/program:class_edit', 'elis/program:class_view', 'course');
+        $this->add_custom_fields('class','local/elisprogram:class_edit', 'local/elisprogram:class_view', 'course');
 
         $this->add_action_buttons();
     }
@@ -279,17 +277,17 @@ class pmclassform extends cmform {
     function add_track_multi_select($courseid) {
         global $CFG, $PAGE;
 
-        $PAGE->requires->js('/elis/program/js/trkmultiselect.js');
+        $PAGE->requires->js('/local/elisprogram/js/trkmultiselect.js');
 
         $mform =& $this->_form;
 
-        $assignedSelection = &$mform->addElement('select', 'assignedtrack', get_string('class_assigntrackhead', 'elis_program') . ':', array());
+        $assignedSelection = &$mform->addElement('select', 'assignedtrack', get_string('class_assigntrackhead', 'local_elisprogram') . ':', array());
         $mform->freeze('assignedtrack');
         $assignedSelection->setMultiple(true);
 
-        $unassignedSelections = &$mform->addElement('select', 'track', get_string('class_unassigntrackhead', 'elis_program') . ':', array());
+        $unassignedSelections = &$mform->addElement('select', 'track', get_string('class_unassigntrackhead', 'local_elisprogram') . ':', array());
         $unassignedSelections->setMultiple(true);
-        $mform->addHelpButton('track', 'pmclassform:class_unassigntrackhead', 'elis_program');
+        $mform->addHelpButton('track', 'pmclassform:class_unassigntrackhead', 'local_elisprogram');
     }
 
     /**
@@ -345,7 +343,7 @@ class pmclassform extends cmform {
 
         $select = 'id != \'' . SITEID . '\' AND fullname NOT LIKE \'.%\'';
 
-        $cselect = array(get_string('none', 'elis_program'));
+        $cselect = array(get_string('none', 'local_elisprogram'));
         $crss = $DB->get_recordset_select('course', $select, null, 'fullname',
                                           'id, fullname');
         if (!empty($crss) && $crss->valid()) {
@@ -357,10 +355,10 @@ class pmclassform extends cmform {
 
         $moodleCourses = array();
         if (count($cselect) > 1) {
-            $moodleCourses[] = $mform->createElement('select', 'moodlecourseid', get_string('moodlecourse', 'elis_program'), $cselect);
+            $moodleCourses[] = $mform->createElement('select', 'moodlecourseid', get_string('moodlecourse', 'local_elisprogram'), $cselect);
         } else {
-            $mform->addElement('static', 'no_moodle_courses', get_string('moodlecourse', 'elis_program') . ':', get_string('no_moodlecourse', 'elis_program'));
-            $mform->addHelpButton('no_moodle_courses', 'pmclassform:moodlecourse', 'elis_program');
+            $mform->addElement('static', 'no_moodle_courses', get_string('moodlecourse', 'local_elisprogram') . ':', get_string('no_moodlecourse', 'local_elisprogram'));
+            $mform->addHelpButton('no_moodle_courses', 'pmclassform:moodlecourse', 'local_elisprogram');
         }
 
         // Add auto create checkbox if CM course uses a template
@@ -377,13 +375,13 @@ class pmclassform extends cmform {
         }
 
         if (empty($courseid) || !empty($template->location)) {
-            $moodleCourses[] = $mform->createElement('checkbox', 'autocreate', '', get_string('autocreate', 'elis_program'));
+            $moodleCourses[] = $mform->createElement('checkbox', 'autocreate', '', get_string('autocreate', 'local_elisprogram'));
         }
 
         if (count($cselect) > 1) {
-            $mform->addGroup($moodleCourses, 'moodleCourses', get_string('moodlecourse', 'elis_program') . ':');
+            $mform->addGroup($moodleCourses, 'moodleCourses', get_string('moodlecourse', 'local_elisprogram') . ':');
             $mform->disabledIf('moodleCourses', 'moodleCourses[autocreate]', 'checked');
-            $mform->addHelpButton('moodleCourses', 'pmclassform:moodlecourse', 'elis_program');
+            $mform->addHelpButton('moodleCourses', 'pmclassform:moodlecourse', 'local_elisprogram');
             if (!empty($template->location)) {
                 //error_log("pmclassform::add_moodle_course_select() course template = {$template->location}");
                 $mform->setDefault('moodleCourses[moodlecourseid]', $template->location);
@@ -408,17 +406,17 @@ class pmclassform extends cmform {
             $params[] = $data['id'];
         }
         if ($DB->record_exists_select(pmclass::TABLE, $sql, $params)) {
-            $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
+            $errors['idnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
         }
 
         if (isset($data['starttime']) && isset($data['endtime'])) {
             if($data['starttime'] > $data['endtime']) {
-                $errors['starttime'] = get_string('error_duration', 'elis_program');
+                $errors['starttime'] = get_string('error_duration', 'local_elisprogram');
             }
 
             if(!empty($data['startdate']) && !empty($data['enddate']) && !empty($data['disablestart']) && !empty($data['disableend'])) {
                 if($data['startdate'] > $data['enddate']) {
-                    $errors['start'] = get_string('error_date_range', 'elis_program');
+                    $errors['start'] = get_string('error_date_range', 'local_elisprogram');
                 }
             }
         }
@@ -426,8 +424,8 @@ class pmclassform extends cmform {
         if(!empty($this->_customdata['obj']) && !empty($this->_customdata['obj']->maxstudents)){
             if($data['maxstudents'] < $this->_customdata['obj']->maxstudents && $data['maxstudents'] < student::count_enroled($this->_customdata['obj']->id)) {
                 $context = get_context_instance(CONTEXT_SYSTEM);
-                if(!has_capability('elis/program:overrideclasslimit', $context)) {
-                    $errors['maxstudents'] = get_string('error_n_overenrol', 'elis_program');
+                if(!has_capability('local/elisprogram:overrideclasslimit', $context)) {
+                    $errors['maxstudents'] = get_string('error_n_overenrol', 'local_elisprogram');
                 }
             }
         }
@@ -447,7 +445,7 @@ class pmclassform extends cmform {
         global $CFG;
         $params = array();
 
-        $url = new moodle_url($CFG->wwwroot . '/elis/program/index.php', $params);
+        $url = new moodle_url($CFG->wwwroot . '/local/elisprogram/index.php', $params);
 
         foreach($extra as $name=>$value) {
             $url->param($name, $value);
@@ -498,7 +496,7 @@ class pmclassform extends cmform {
 
         $counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";
 
-        $this->_form->addElement('static', 'test', get_string('completion_status', 'elis_program'), $counttext);
+        $this->_form->addElement('static', 'test', get_string('completion_status', 'local_elisprogram'), $counttext);
 
         parent::freeze();
     }

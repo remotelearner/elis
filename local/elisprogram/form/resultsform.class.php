@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -36,7 +36,7 @@ require_once elispm::lib('data/resultsengine.class.php');
  * the form element for curriculum
  */
 class cmEngineForm extends cmform {
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     // Names used in lookup for language strings
     public $types = array(
@@ -80,14 +80,14 @@ class cmEngineForm extends cmform {
 
         $configData = array('title');
 
-        $PAGE->requires->css('/elis/program/js/results_engine/jquery-ui-1.8.16.custom.css', true);
-        $PAGE->requires->js('/elis/program/js/results_engine/jquery-1.6.2.min.js', true);
-        $PAGE->requires->js('/elis/program/js/results_engine/jquery-ui-1.8.16.custom.js', true);
-        $PAGE->requires->yui_module('moodle-elis_program-resultsengine', 'M.elis_program.init_resultsengineform',
+        $PAGE->requires->css('/local/elisprogram/js/results_engine/jquery-ui-1.8.16.custom.css', true);
+        $PAGE->requires->js('/local/elisprogram/js/results_engine/jquery-1.6.2.min.js', true);
+        $PAGE->requires->js('/local/elisprogram/js/results_engine/jquery-ui-1.8.16.custom.js', true);
+        $PAGE->requires->yui_module('moodle-local_elisprogram-resultsengine', 'M.local_elisprogram.init_resultsengineform',
                 array(array('wwwroot' => $CFG->wwwroot))
         );
 
-        $PAGE->requires->js('/elis/program/js/dhtmltable.js', true);
+        $PAGE->requires->js('/local/elisprogram/js/dhtmltable.js', true);
 
         $formid   = $this->_form->_attributes['id'];
         $settings = implode(',', $this->settings);
@@ -148,7 +148,7 @@ class cmEngineForm extends cmform {
 
         $this->_submitted_data = $this->get_submitted_data();
 
-        $reporturl = $CFG->wwwroot .'/elis/program/index.php?s='. $page .'&amp;id='. $this->_customdata['id'];
+        $reporturl = $CFG->wwwroot .'/local/elisprogram/index.php?s='. $page .'&amp;id='. $this->_customdata['id'];
 
         $activaterule    = get_string('results_activate_this_rule', self::LANG_FILE);
         $activationrules = get_string('results_activation_rules', self::LANG_FILE);
@@ -189,7 +189,7 @@ class cmEngineForm extends cmform {
         if ($exists && ($this->_customdata['eventtriggertype'] == RESULTS_ENGINE_MANUAL)) {
             $settings = 'height=200,width=500,top=0,left=0,menubar=0,location=0,scrollbars,'
                       . 'resizable,toolbar,status,directories=0,fullscreen=0,dependent';
-            $url = $CFG->wwwroot .'/elis/program/resultsprocesspopup.php?id='. $this->_customdata['contextid'];
+            $url = $CFG->wwwroot .'/local/elisprogram/resultsprocesspopup.php?id='. $this->_customdata['contextid'];
             $jsondata = array('url'=>$url,'name'=>'resultspopup','options'=>$settings);
             $jsondata = json_encode($jsondata);
             $options  = $attributes;
@@ -716,7 +716,7 @@ class cmEngineForm extends cmform {
                 if (! (array_key_exists('active', $this->_customdata) && $this->_customdata['active'])) {
                     $attributes = array('disabled' => 'disabled');
                 }
-                $url   = $CFG->wwwroot .'/elis/program/resultsprofileselect.php';
+                $url   = $CFG->wwwroot .'/local/elisprogram/resultsprofileselect.php';
                 $frame = "{$prefix}{$i}_frame";
                 $value = "{$prefix}{$i}_value";
                 $attributes['onchange'] = "replace_content(\"{$url}\",\"{$frame}\",this.value,\"{$value}\");";
@@ -804,7 +804,7 @@ class cmEngineForm extends cmform {
      * @return array the default categories
      */
     protected function get_default_data() {
-        $defaults=get_config('elis_program','results_engine_defaults');
+        $defaults=get_config('local_elisprogram','results_engine_defaults');
         $defaults=(!empty($defaults))?unserialize($defaults):array();
         foreach ($defaults as $i => $default) {
             if ($i === 'national_average') {

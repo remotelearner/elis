@@ -1,5 +1,29 @@
 <?php
 /**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    local_elisprogram
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
+
+/**
  * ELIS Notifications Class Definitions
  *
  * Contains all of the classes necessary to provide a notifications API for
@@ -20,32 +44,12 @@
  * The send_handler function, while public, is intended to be used by the events
  * system only. It is registered in the '/block/cur_admin/events.php' file.
  *
- * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @package    elis_program
- * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once ($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once ($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/instructor.class.php');
 
@@ -160,7 +164,7 @@ class notification extends message {
 
         //todo: determine if the modulename property is still needed
         $this->modulename = 'curriculum';
-        $this->component = 'elis_program';
+        $this->component = 'local_elisprogram';
 
         $this->defname    = "notify_pm";
         $site = get_site();
@@ -189,9 +193,9 @@ class notification extends message {
             $this->userto = $userto;
         } else if (empty($this->userto)) {
             if (in_cron()) {
-                mtrace(get_string('message_nodestinationuser', 'elis_program'));
+                mtrace(get_string('message_nodestinationuser', 'local_elisprogram'));
             } else {
-                print_error('message_nodestinationuser', 'elis_program');
+                print_error('message_nodestinationuser', 'local_elisprogram');
             }
             return false;
         }
@@ -225,9 +229,9 @@ class notification extends message {
 //            if (!($this->userfrom = cm_get_moodleuser($this->userfrom->id))) {
             if (!($this->userfrom = $this->userfrom->get_moodleuser())) {
                 if (in_cron()) {
-                    mtrace(get_string('nomoodleuser', 'elis_program'));
+                    mtrace(get_string('nomoodleuser', 'local_elisprogram'));
                 } else {
-                    debugging(get_string('nomoodleuser', 'elis_program'));
+                    debugging(get_string('nomoodleuser', 'local_elisprogram'));
                 }
             }
         }
@@ -555,12 +559,12 @@ function pm_notify_role_assign_handler($eventdata){
     pm_assign_student_from_mdl($eventdata);
 
     /// Does the user receive a notification?
-    $sendtouser = !empty(elis::$config->elis_program->notify_classenrol_user) ?
-                      elis::$config->elis_program->notify_classenrol_user : 0;
-    $sendtorole = !empty(elis::$config->elis_program->notify_classenrol_role) ?
-                      elis::$config->elis_program->notify_classenrol_role : 0;
-    $sendtosupervisor = !empty(elis::$config->elis_program->notify_classenrol_supervisor) ?
-                      elis::$config->elis_program->notify_classenrol_supervisor : 0;
+    $sendtouser = !empty(elis::$config->local_elisprogram->notify_classenrol_user) ?
+                      elis::$config->local_elisprogram->notify_classenrol_user : 0;
+    $sendtorole = !empty(elis::$config->local_elisprogram->notify_classenrol_role) ?
+                      elis::$config->local_elisprogram->notify_classenrol_role : 0;
+    $sendtosupervisor = !empty(elis::$config->local_elisprogram->notify_classenrol_supervisor) ?
+                      elis::$config->local_elisprogram->notify_classenrol_supervisor : 0;
 
     /// If nobody receives a notification, we're done.
     if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -593,9 +597,9 @@ function pm_notify_role_assign_handler($eventdata){
     /// Make sure this is a valid user.
     if (!($enroluser = $DB->get_record('user', array('id'=> $eventdata->userid)))) {
         if (in_cron()) {
-           mtrace(get_string('nomoodleuser', 'elis_program'));
+           mtrace(get_string('nomoodleuser', 'local_elisprogram'));
         } else {
-           debugging(get_string('nomoodleuser', 'elis_program'));
+           debugging(get_string('nomoodleuser', 'local_elisprogram'));
         }
         return true;
     }
@@ -612,7 +616,7 @@ function pm_notify_role_assign_handler($eventdata){
         return true;
     } else {
         if (empty($course) && $context->contextlevel != CONTEXT_ELIS_CLASS) { // TBD
-             //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(); eventdata->contextid != CONTEXT_ELIS_CLASS");
+             //error_log("/local/elisprogram/lib/notifications.php::pm_notify_role_assign_handler(); eventdata->contextid != CONTEXT_ELIS_CLASS");
             return true;
         }
         $name = !empty($course) ? $course->fullname
@@ -626,9 +630,9 @@ function pm_notify_role_assign_handler($eventdata){
     $message = new notification();
 
     /// Set up the text of the message
-    $text = empty(elis::$config->elis_program->notify_classenrol_message) ?
-                  get_string('notifyclassenrolmessagedef', 'elis_program') :
-                  elis::$config->elis_program->notify_classenrol_message;
+    $text = empty(elis::$config->local_elisprogram->notify_classenrol_message) ?
+                  get_string('notifyclassenrolmessagedef', 'local_elisprogram') :
+                  elis::$config->local_elisprogram->notify_classenrol_message;
     $search = array('%%userenrolname%%', '%%classname%%');
     $replace = array(fullname($enroluser), $name);
     $text = str_replace($search, $replace, $text);
@@ -641,10 +645,10 @@ function pm_notify_role_assign_handler($eventdata){
 
     if ($sendtorole) {
         // Get all users with the notify_classenrol capability.
-        if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classenrol')) {
+        if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_classenrol')) {
             $users = $users + $roleusers;
         }
-        if ($roleusers = get_users_by_capability(get_system_context(), 'elis/program:notify_classenrol')) {
+        if ($roleusers = get_users_by_capability(get_system_context(), 'local/elisprogram:notify_classenrol')) {
             $users = $users + $roleusers;
         }
     }
@@ -652,13 +656,13 @@ function pm_notify_role_assign_handler($eventdata){
     if ($sendtosupervisor) {
         $pmuserid = pm_get_crlmuserid($eventdata->userid);
         // Get all users with the notify_classenrol capability.
-        if ($supervisors = pm_get_users_by_capability('user', $pmuserid, 'elis/program:notify_classenrol')) {
+        if ($supervisors = pm_get_users_by_capability('user', $pmuserid, 'local/elisprogram:notify_classenrol')) {
             $users = $users + $supervisors;
         }
     }
 
     foreach ($users as $user) {
-        //error_log("/elis/program/lib/notifications.php::pm_notify_role_assign_handler(eventdata); Sending notification to user[{$user->id}]: {$user->email}");
+        //error_log("/local/elisprogram/lib/notifications.php::pm_notify_role_assign_handler(eventdata); Sending notification to user[{$user->id}]: {$user->email}");
         $message->send_notification($text, $user, $enroluser);
     }
 
@@ -740,9 +744,9 @@ function pm_notify_track_assign_handler($eventdata){
     global $CFG, $DB, $USER;
 
     /// Does the user receive a notification?
-    $sendtouser       = isset(elis::$config->elis_program->notify_trackenrol_user) ? elis::$config->elis_program->notify_trackenrol_user : '';
-    $sendtorole       = isset(elis::$config->elis_program->notify_trackenrol_role) ? elis::$config->elis_program->notify_trackenrol_role : '';
-    $sendtosupervisor = isset(elis::$config->elis_program->notify_trackenrol_supervisor) ? elis::$config->elis_program->notify_trackenrol_supervisor : '';
+    $sendtouser       = isset(elis::$config->local_elisprogram->notify_trackenrol_user) ? elis::$config->local_elisprogram->notify_trackenrol_user : '';
+    $sendtorole       = isset(elis::$config->local_elisprogram->notify_trackenrol_role) ? elis::$config->local_elisprogram->notify_trackenrol_role : '';
+    $sendtosupervisor = isset(elis::$config->local_elisprogram->notify_trackenrol_supervisor) ? elis::$config->local_elisprogram->notify_trackenrol_supervisor : '';
 
     /// If nobody receives a notification, we're done.
     if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -758,9 +762,9 @@ function pm_notify_track_assign_handler($eventdata){
     $enroluser->load();
     if (empty($enroluser->id)) {
         if (in_cron()) {
-            mtrace(getstring('nouser','elis_program'));
+            mtrace(getstring('nouser','local_elisprogram'));
         } else {
-            print_error('nouser','elis_program');
+            print_error('nouser','local_elisprogram');
         }
         return true;
     }
@@ -768,9 +772,9 @@ function pm_notify_track_assign_handler($eventdata){
     /// Get the track record from the track id.
     if (!($track = $DB->get_record('crlm_track', array('id'=> $eventdata->trackid)))) {
         if (in_cron()) {
-            mtrace(get_string('notrack', 'elis_program'));
+            mtrace(get_string('notrack', 'local_elisprogram'));
         } else {
-            print_error('notrack', 'elis_program');
+            print_error('notrack', 'local_elisprogram');
         }
         return true;
     }
@@ -778,9 +782,9 @@ function pm_notify_track_assign_handler($eventdata){
     $message = new notification();
 
     /// Set up the text of the message
-    $text = empty(elis::$config->elis_program->notify_trackenrol_message) ?
-                  get_string('notifytrackenrolmessagedef', 'elis_program') :
-                  elis::$config->elis_program->notify_trackenrol_message;
+    $text = empty(elis::$config->local_elisprogram->notify_trackenrol_message) ?
+                  get_string('notifytrackenrolmessagedef', 'local_elisprogram') :
+                  elis::$config->local_elisprogram->notify_trackenrol_message;
     $search = array('%%userenrolname%%', '%%trackname%%');
     $replace = array(fullname($enroluser->to_object()), $track->name);
     $text = str_replace($search, $replace, $text);
@@ -793,14 +797,14 @@ function pm_notify_track_assign_handler($eventdata){
 
     if ($sendtorole) {
         /// Get all users with the notify_trackenrol capability.
-        if ($roleusers = get_users_by_capability($context, 'elis/program:notify_trackenrol')) {
+        if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_trackenrol')) {
             $users = $users + $roleusers;
         }
     }
 
     if ($sendtosupervisor) {
         /// Get parent-context users.
-        if ($supervisors = pm_get_users_by_capability('user', $eventdata->userid, 'elis/program:notify_trackenrol')) {
+        if ($supervisors = pm_get_users_by_capability('user', $eventdata->userid, 'local/elisprogram:notify_trackenrol')) {
             $users = $users + $supervisors;
         }
     }
@@ -829,7 +833,7 @@ function pm_notify_instructor_assigned_handler($eventdata) {
 
     // ELIS-4684: RLIP can pass overriding role in $eventdata
     if (empty($eventdata->roleshortname) || !($roleid = $DB->get_field('role', 'id', array('shortname' => $eventdata->roleshortname)))) {
-        $roleid = elis::$config->elis_program->default_instructor_role;
+        $roleid = elis::$config->local_elisprogram->default_instructor_role;
     }
 
     // make sure we actually have an instructor role specified

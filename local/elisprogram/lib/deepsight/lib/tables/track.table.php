@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -43,11 +43,11 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langname = get_string('track_name', 'elis_program');
-        $langidnumber = get_string('track_idnumber', 'elis_program');
-        $langpgmname = get_string('track_curriculumid', 'elis_program');
-        $langstartdate = get_string('track_startdate', 'elis_program');
-        $langenddate = get_string('track_enddate', 'elis_program');
+        $langname = get_string('track_name', 'local_elisprogram');
+        $langidnumber = get_string('track_idnumber', 'local_elisprogram');
+        $langpgmname = get_string('track_curriculumid', 'local_elisprogram');
+        $langstartdate = get_string('track_startdate', 'local_elisprogram');
+        $langenddate = get_string('track_enddate', 'local_elisprogram');
 
         $filters = array(
             new deepsight_filter_textsearch($this->DB, 'name', $langname, array('element.name' => $langname)),
@@ -78,9 +78,9 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
      */
     protected function get_fixed_columns() {
         return array(
-            'element.name' => get_string('track_name', 'elis_program'),
-            'element.idnumber' => get_string('track_idnumber', 'elis_program'),
-            'pgm.name' => get_string('track_curriculumid', 'elis_program')
+            'element.name' => get_string('track_name', 'local_elisprogram'),
+            'element.idnumber' => get_string('track_idnumber', 'local_elisprogram'),
+            'pgm.name' => get_string('track_curriculumid', 'local_elisprogram')
         );
     }
 

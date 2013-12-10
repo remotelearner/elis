@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -24,7 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('page.class.php'));    // pm_page
 require_once(elispm::lib('deprecatedlib.php')); // cm_get_crlmuserid()
 require_once(elispm::lib('data/curriculumstudent.class.php'));
@@ -60,13 +60,13 @@ class certificatelistpage extends pm_page {
      */
     public function can_do_default() {
         // This is where we would check if all entity types are disabled.
-        if (!empty(elis::$config->elis_program->disablecertificates) &&
-                !empty(elis::$config->elis_program->disablecoursecertificates)) {
+        if (!empty(elis::$config->local_elisprogram->disablecertificates) &&
+                !empty(elis::$config->local_elisprogram->disablecoursecertificates)) {
             return false;
         }
 
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:viewownreports', $context);
+        return has_capability('local/elisprogram:viewownreports', $context);
     }
 
     /**
@@ -74,7 +74,7 @@ class certificatelistpage extends pm_page {
      * @return string The title.
      */
     public function get_title_default() {
-        return get_string('certificatelist', 'elis_program');
+        return get_string('certificatelist', 'local_elisprogram');
     }
 
     /**
@@ -101,17 +101,17 @@ class certificatelistpage extends pm_page {
         $text       = '';
 
         if (empty($cuserid)) {
-            print_error('notelisuser', 'elis_program');
+            print_error('notelisuser', 'local_elisprogram');
         }
 
-        if (empty(elis::$config->elis_program->disablecertificates)) {
+        if (empty(elis::$config->local_elisprogram->disablecertificates)) {
 
             $curasses = curriculumstudent::get_completed_for_user($cuserid);
             if (count($curasses) == 0) {
-                print_string('certificates_none_earned', 'elis_program');
+                print_string('certificates_none_earned', 'local_elisprogram');
             } else {
 
-                print_string('certificates_earned', 'elis_program');
+                print_string('certificates_earned', 'local_elisprogram');
 
                 echo html_writer::start_tag('ul');
                 foreach ($curasses as $curass) {
@@ -128,8 +128,8 @@ class certificatelistpage extends pm_page {
 
         }
 
-        if (isset(elis::$config->elis_program->disablecoursecertificates) &&
-                empty(elis::$config->elis_program->disablecoursecertificates)) {
+        if (isset(elis::$config->local_elisprogram->disablecoursecertificates) &&
+                empty(elis::$config->local_elisprogram->disablecoursecertificates)) {
 
             $records = get_user_certificates($cuserid);
 
@@ -154,7 +154,7 @@ class certificatelistpage extends pm_page {
         if (!empty($this->entitynamebuffer[CERTIFICATE_ENTITY_TYPE_COURSE])) {
             echo html_writer::empty_tag('br');
             echo html_writer::empty_tag('br');
-            echo get_string('cert_class_complete', 'elis_program');
+            echo get_string('cert_class_complete', 'local_elisprogram');
             echo html_writer::start_tag('ul');
 
             foreach ($this->entitynamebuffer[CERTIFICATE_ENTITY_TYPE_COURSE] as $entityname) {

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -30,12 +30,12 @@ require_once($CFG->dirroot.'/elis/core/lib/setup.php');
 
 // Libs.
 require_once(elis::lib('data/customfield.class.php'));
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('lib.php'));
 
 /**
  * Class for testing the storage and retrieval of custom field data
- * @group elis_program
+ * @group local_elisprogram
  */
 class orphanedcustomfields_testcase extends elis_database_test {
 
@@ -47,7 +47,7 @@ class orphanedcustomfields_testcase extends elis_database_test {
         global $CFG, $DB;
 
         $contextlevel = CONTEXT_ELIS_USERSET;
-        $misccat = get_string('misc_category', 'elis_program');
+        $misccat = get_string('misc_category', 'local_elisprogram');
 
         // Set up a custom field with an invalid category.
         $field = new field(array(

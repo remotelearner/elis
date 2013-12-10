@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('lib.php');
@@ -237,9 +236,9 @@ class curriculum extends data_object_with_custom_fields {
             $currstudent->complete($timenow, $numcredits, 1);
         }
 
-        $sendtouser       = elis::$config->elis_program->notify_curriculumnotcompleted_user;
-        $sendtorole       = elis::$config->elis_program->notify_curriculumnotcompleted_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_curriculumnotcompleted_supervisor;
+        $sendtouser       = elis::$config->local_elisprogram->notify_curriculumnotcompleted_user;
+        $sendtorole       = elis::$config->local_elisprogram->notify_curriculumnotcompleted_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_curriculumnotcompleted_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -282,7 +281,7 @@ class curriculum extends data_object_with_custom_fields {
                 }
 
                 $daysfrom = ($reqcompletetime - $timenow) / $secondsinaday;
-                if ($daysfrom <= elis::$config->elis_program->notify_curriculumnotcompleted_days) {
+                if ($daysfrom <= elis::$config->local_elisprogram->notify_curriculumnotcompleted_days) {
 //                    $curstudent = new curriculumstudent($rec);
                     mtrace("Triggering curriculum_notcompleted event.\n");
 //                    events_trigger('curriculum_notcompleted', $curstudent);
@@ -300,9 +299,9 @@ class curriculum extends data_object_with_custom_fields {
     public static function check_for_recurrence_nags() {
         global $CFG, $DB;
 
-        $sendtouser       = elis::$config->elis_program->notify_curriculumrecurrence_user;
-        $sendtorole       = elis::$config->elis_program->notify_curriculumrecurrence_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_curriculumrecurrence_supervisor;
+        $sendtouser       = elis::$config->local_elisprogram->notify_curriculumrecurrence_user;
+        $sendtorole       = elis::$config->local_elisprogram->notify_curriculumrecurrence_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_curriculumrecurrence_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -312,7 +311,7 @@ class curriculum extends data_object_with_custom_fields {
         $timenow = time();
 
         // Notification offset from expiry time, in seconds
-        $notification_offset = DAYSECS * elis::$config->elis_program->notify_curriculumrecurrence_days;
+        $notification_offset = DAYSECS * elis::$config->local_elisprogram->notify_curriculumrecurrence_days;
 
         $sql = 'SELECT cca.id AS enrolmentid, cc.name AS curriculumname, cc.id as curriculumid,
                        cu.id AS userid, cu.idnumber AS useridnumber, cu.firstname AS firstname, cu.lastname AS lastname,
@@ -361,9 +360,9 @@ class curriculum extends data_object_with_custom_fields {
         require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
-        $sendtouser       = elis::$config->elis_program->notify_curriculumrecurrence_user;
-        $sendtorole       = elis::$config->elis_program->notify_curriculumrecurrence_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_curriculumrecurrence_supervisor;
+        $sendtouser       = elis::$config->local_elisprogram->notify_curriculumrecurrence_user;
+        $sendtorole       = elis::$config->local_elisprogram->notify_curriculumrecurrence_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_curriculumrecurrence_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -375,9 +374,9 @@ class curriculum extends data_object_with_custom_fields {
         $message = new notification();
 
         /// Set up the text of the message
-        $text = empty(elis::$config->elis_program->notify_curriculumrecurrence_message) ?
-                    get_string('notifycurriculumrecurrencemessagedef', 'elis_program') :
-                    elis::$config->elis_program->notify_curriculumrecurrence_message;
+        $text = empty(elis::$config->local_elisprogram->notify_curriculumrecurrence_message) ?
+                    get_string('notifycurriculumrecurrencemessagedef', 'local_elisprogram') :
+                    elis::$config->local_elisprogram->notify_curriculumrecurrence_message;
         $search = array('%%userenrolname%%', '%%programname%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $user->userid));
         $student = new user($pmuser);
@@ -397,14 +396,14 @@ class curriculum extends data_object_with_custom_fields {
 
         if ($sendtorole) {
             /// Get all users with the notify_curriculumrecurrence capability.
-            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_programrecurrence')) {
+            if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_programrecurrence')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $pmuser->id, 'elis/program:notify_programrecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $pmuser->id, 'local/elisprogram:notify_programrecurrence')) {
                 $users = $users + $supervisors;
             }
         }
@@ -637,9 +636,9 @@ function curriculum_get_listing($sort = 'name', $dir = 'ASC', $startrec = 0,
                                 $perpage = 0, $namesearch = '', $alpha = '',
                                 $contexts = null, $userid = 0) {
     global $CFG, $DB, $USER;
-    require_once($CFG->dirroot .'/elis/program/lib/data/curriculum.class.php');
-    require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
-    require_once($CFG->dirroot .'/elis/program/lib/data/clustercurriculum.class.php');
+    require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculum.class.php');
+    require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumcourse.class.php');
+    require_once($CFG->dirroot .'/local/elisprogram/lib/data/clustercurriculum.class.php');
 
     $select = 'SELECT cur.*, (SELECT COUNT(*) FROM {'. curriculumcourse::TABLE .'}
                WHERE curriculumid = cur.id ) as courses ';
@@ -674,12 +673,12 @@ function curriculum_get_listing($sort = 'name', $dir = 'ASC', $startrec = 0,
 
     if (!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:program_enrol_userset_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'elis/program:program_enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'local/elisprogram:program_enrol', $USER->id);
         $filter_object = $curriculum_context->get_filter('id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
@@ -753,9 +752,9 @@ function curriculum_get_listing_recordset($sort = 'name', $dir = 'ASC',
                                           $namesearch = '', $alpha = '',
                                           $contexts = null, $userid = 0) {
     global $CFG, $DB, $USER;
-    require_once($CFG->dirroot .'/elis/program/lib/data/curriculum.class.php');
-    require_once($CFG->dirroot .'/elis/program/lib/data/curriculumcourse.class.php');
-    require_once($CFG->dirroot .'/elis/program/lib/data/clustercurriculum.class.php');
+    require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculum.class.php');
+    require_once($CFG->dirroot .'/local/elisprogram/lib/data/curriculumcourse.class.php');
+    require_once($CFG->dirroot .'/local/elisprogram/lib/data/clustercurriculum.class.php');
 
     $select = 'SELECT cur.*, (SELECT COUNT(*) FROM {'. curriculumcourse::TABLE .
               '} WHERE curriculumid = cur.id ) as courses ';
@@ -787,12 +786,12 @@ function curriculum_get_listing_recordset($sort = 'name', $dir = 'ASC',
 
     if (!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:program_enrol_userset_user', $USER->id);
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'elis/program:program_enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('curriculum', 'local/elisprogram:program_enrol', $USER->id);
         $filter_object = $curriculum_context->get_filter('id', 'curriculum');
         $filter_sql = $filter_object->get_sql(false, 'cur');
         if (isset($filter_sql['where'])) {
@@ -900,7 +899,7 @@ function curriculum_expiration_enabled_updatedcallback($name) {
     //expiry have been handled for the lifetime of the current script
     $SESSION->curriculum_expiration_toggled = true;
 
-    $enabled = get_config('elis_program', 'enable_curriculum_expiration');
+    $enabled = get_config('local_elisprogram', 'enable_curriculum_expiration');
 
     if ($enabled) {
         curriculumstudent::update_expiration_times();
@@ -922,7 +921,7 @@ function curriculum_expiration_start_updatedcallback($name) {
         return;
     }
 
-    $enabled = get_config('elis_program', 'enable_curriculum_expiration');
+    $enabled = get_config('local_elisprogram', 'enable_curriculum_expiration');
 
     if ($enabled) {
         curriculumstudent::update_expiration_times();

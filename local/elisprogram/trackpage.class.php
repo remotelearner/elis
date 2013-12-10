@@ -86,12 +86,12 @@ class trackpage extends managementpage {
         // TODO: Ugly, this needs to be overhauled
         $tpage = new trackpage();
 
-        if ($tpage->_has_capability('elis/program:track_enrol', $trackid)) {
+        if ($tpage->_has_capability('local/elisprogram:track_enrol', $trackid)) {
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:track_enrol_userset_user', $USER->id);
 
         //get the clusters and check the context against them
         $clusters = clustertrack::get_clusters($trackid);
@@ -126,27 +126,27 @@ class trackpage extends managementpage {
         $curid = $this->optional_param('parent', 0, PARAM_INT); // TBD: get_cm_id(empty($action));
         $curid_param = $curid ? array('parent' => $curid) : array();
         $this->tabs = array(
-        array('tab_id' => 'view', 'page' => 'trackpage', 'params' => array('action' => 'view') + $curid_param, 'name' => get_string('detail','elis_program'), 'showtab' => true),
-        array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit') + $curid_param, 'name' => get_string('edit','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
-        array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','elis_program'), 'params' => $curid_param, 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
-        array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'params' => $curid_param, 'name' => get_string('users','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
-        array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'params' => $curid_param, 'name' => get_string('track_classes','elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
+        array('tab_id' => 'view', 'page' => 'trackpage', 'params' => array('action' => 'view') + $curid_param, 'name' => get_string('detail','local_elisprogram'), 'showtab' => true),
+        array('tab_id' => 'edit', 'page' => 'trackpage', 'params' => array('action' => 'edit') + $curid_param, 'name' => get_string('edit','local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+        array('tab_id' => 'trackclusterpage', 'page' => 'trackclusterpage', 'name' => get_string('clusters','local_elisprogram'), 'params' => $curid_param, 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
+        array('tab_id' => 'trackuserpage', 'page' => 'trackuserpage', 'params' => $curid_param, 'name' => get_string('users','local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        array('tab_id' => 'trackassignmentpage', 'page' => 'trackassignmentpage', 'params' => $curid_param, 'name' => get_string('track_classes','local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'class'),
         array('tab_id' => 'track_rolepage', 'page' => 'track_rolepage', 'params' => $curid_param, 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
-        array('tab_id' => 'delete', 'page' => 'trackpage', 'params' => array('action' => 'delete') + $curid_param, 'name' => get_string('delete','elis_program'), 'showbutton' => true, 'image' => 'delete'),
+        array('tab_id' => 'delete', 'page' => 'trackpage', 'params' => array('action' => 'delete') + $curid_param, 'name' => get_string('delete','local_elisprogram'), 'showbutton' => true, 'image' => 'delete'),
         );
 
     }
 
     function can_do_view() {
-        return $this->_has_capability('elis/program:track_view');
+        return $this->_has_capability('local/elisprogram:track_view');
     }
 
     function can_do_edit() {
-        return $this->_has_capability('elis/program:track_edit');
+        return $this->_has_capability('local/elisprogram:track_edit');
     }
 
     function can_do_delete() {
-        return $this->_has_capability('elis/program:track_delete');
+        return $this->_has_capability('local/elisprogram:track_delete');
     }
 
     function can_do_confirm() {
@@ -157,15 +157,15 @@ class trackpage extends managementpage {
         global $USER;
         if (!empty($USER->id)) {
             $contexts = get_contexts_by_capability_for_user('curriculum',
-                            'elis/program:track_create', $USER->id);
+                            'local/elisprogram:track_create', $USER->id);
             if ($contexts->is_empty()) {
                 return false;
             }
         /* ***
-            // Now user MUST have 'elis/program:program_edit'
+            // Now user MUST have 'local/elisprogram:program_edit'
             // on at least one curricula
             $contexts = get_contexts_by_capability_for_user('curriculum',
-                            'elis/program:program_edit', $USER->id);
+                            'local/elisprogram:program_edit', $USER->id);
             return !$contexts->is_empty();
         *** */
             return true;
@@ -174,7 +174,7 @@ class trackpage extends managementpage {
     }
 
     function can_do_default() {
-        $contexts = trackpage::get_contexts('elis/program:track_view');
+        $contexts = trackpage::get_contexts('local/elisprogram:track_view');
         return !$contexts->is_empty();
     }
 
@@ -226,10 +226,10 @@ class trackpage extends managementpage {
 
         // Define columns
         $columns = array(
-            'name'          => array('header' => get_string('track_name', 'elis_program')),
-            'description'   => array('header' => get_string('track_description', 'elis_program')),
-            'parcur'        => array('header' => get_string('track_parcur', 'elis_program')),
-            'class'         => array('header' => get_string('track_classes', 'elis_program'))
+            'name'          => array('header' => get_string('track_name', 'local_elisprogram')),
+            'description'   => array('header' => get_string('track_description', 'local_elisprogram')),
+            'parcur'        => array('header' => get_string('track_parcur', 'local_elisprogram')),
+            'class'         => array('header' => get_string('track_classes', 'local_elisprogram'))
         );
 
         // TBD
@@ -242,11 +242,11 @@ class trackpage extends managementpage {
             $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
-        $items   = track_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('elis/program:track_view'));
-        $numitems = track_count_records($namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('elis/program:track_view'));
+        $items   = track_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('local/elisprogram:track_view'));
+        $numitems = track_count_records($namesearch, $alpha, $id, $parent_clusterid, trackpage::get_contexts('local/elisprogram:track_view'));
 
-        trackpage::get_contexts('elis/program:track_edit');
-        trackpage::get_contexts('elis/program:track_delete');
+        trackpage::get_contexts('local/elisprogram:track_edit');
+        trackpage::get_contexts('local/elisprogram:track_delete');
 
         if (!empty($id)) {
             //print curriculum tabs if viewing from the curriculum view
@@ -308,8 +308,8 @@ class trackpage extends managementpage {
             $options['parent'] = $parent;
         }
         // FIXME: change to language string
-        //echo print_single_button('index.php', $options, get_string('add','elis_program').' ' . get_string($obj->get_verbose_name(),'elis_program'), 'get', '_self', true, get_string('add','elis_program').' ' . get_string($obj->get_verbose_name(),'elis_program'));
-        $button = new single_button(new moodle_url('index.php', $options), get_string('add_track','elis_program'), 'get');
+        //echo print_single_button('index.php', $options, get_string('add','local_elisprogram').' ' . get_string($obj->get_verbose_name(),'local_elisprogram'), 'get', '_self', true, get_string('add','local_elisprogram').' ' . get_string($obj->get_verbose_name(),'local_elisprogram'));
+        $button = new single_button(new moodle_url('index.php', $options), get_string('add_track','local_elisprogram'), 'get');
         echo $OUTPUT->render($button);
 
         echo '</div>';
@@ -345,14 +345,14 @@ class trackpage extends managementpage {
         global $DB, $USER;
 
         //make sure a valid role is set
-        if(!empty(elis::$config->elis_program->default_track_role_id) && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_track_role_id))) {
+        if(!empty(elis::$config->local_elisprogram->default_track_role_id) && $DB->record_exists('role', array('id' => elis::$config->local_elisprogram->default_track_role_id))) {
 
             //get the context instance for capability checking
             $context_instance = context_elis_track::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if(!has_capability('elis/program:track_edit', $context_instance)) {
-                role_assign(elis::$config->elis_program->default_track_role_id, $USER->id, $context_instance->id);
+            if(!has_capability('local/elisprogram:track_edit', $context_instance)) {
+                role_assign(elis::$config->local_elisprogram->default_track_role_id, $USER->id, $context_instance->id);
             }
         }
     }

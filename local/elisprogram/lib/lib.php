@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -24,7 +24,7 @@
  */
 
 defined('MOODLE_INTERNAL') || die();
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once($CFG->libdir .'/gradelib.php');
 
 class elis_graded_users_iterator {
@@ -362,13 +362,13 @@ class elis_graded_users_iterator {
  */
 function cluster_groups_changed($name) {
     global $DB;
-    $shortname = substr($name, strpos($name, 'elis_program_') + strlen('elis_program_'));
+    $shortname = substr($name, strpos($name, 'local_elisprogram_') + strlen('local_elisprogram_'));
     // TBD: following didn't work?
-    //$value = elis::$config->elis_program->$shortname;
+    //$value = elis::$config->local_elisprogram->$shortname;
     $value = $DB->get_field('config_plugins', 'value',
-                            array('plugin' => 'elis_program',
+                            array('plugin' => 'local_elisprogram',
                                   'name'   => $shortname));
-    //error_log("/elis/program/lib/lib.php::cluster_groups_changed({$name}) {$shortname} = '{$value}'");
+    //error_log("/local/elisprogram/lib/lib.php::cluster_groups_changed({$name}) {$shortname} = '{$value}'");
     if (!empty($value)) {
         $event = 'crlm_'. $shortname .'_enabled';
         error_log("Triggering event: $event");
@@ -485,10 +485,10 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
 
     if ($search) {
         if (empty($showall)) {
-            $showall = get_string('showallitems', 'elis_program');
+            $showall = get_string('showallitems', 'local_elisprogram');
         }
         echo "<input type=\"button\" onclick=\"document.location='{$target}';\" value=\"{$showall}\" />";
-        //error_log("/elis/program/lib/lib.php::pmsearchbox() show_all_url = {$target}");
+        //error_log("/local/elisprogram/lib/lib.php::pmsearchbox() show_all_url = {$target}");
     }
 
     echo '</fieldset></form>';
@@ -501,9 +501,9 @@ function pmsearchbox($page_or_url = null, $searchname = 'search', $method = 'get
  * @param string $alpha         the current alpha/letter match
  * @param string $namesearch    the current string search
  * @param string $matchlabel    optional get_string identifier for label prefix of match settings
- *                              default get_string('name_lower_case', 'elis_program')
+ *                              default get_string('name_lower_case', 'local_elisprogram')
  * @param string $nomatchlabel  optional get_string identifier for label prefix of no matches
- *                              default get_string('no_users_matching', 'elis_program')
+ *                              default get_string('no_users_matching', 'local_elisprogram')
  */
 function pmshowmatches($alpha, $namesearch, $matchlabel = null, $nomatchlabel = null) {
     //error_log("pmshowmatches({$alpha}, {$namesearch}, {$matchlabel}, {$nomatchlabel})");
@@ -518,25 +518,25 @@ function pmshowmatches($alpha, $namesearch, $matchlabel = null, $nomatchlabel = 
         $match[] = '<b>'. s($namesearch) .'</b>';
     }
     if ($alpha) {
-        $match[] = get_string($matchlabel, 'elis_program') .": <b>{$alpha}___</b>";
+        $match[] = get_string($matchlabel, 'local_elisprogram') .": <b>{$alpha}___</b>";
     }
 
     $matchstring = implode(", ", $match);
     $sparam = new stdClass;
     $sparam->match = $matchstring;
-    echo get_string($nomatchlabel, 'elis_program', $sparam), '<br/>'; // TBD
+    echo get_string($nomatchlabel, 'local_elisprogram', $sparam), '<br/>'; // TBD
 }
 
 /** Function to return pm page url with required params
  *
  * @param   string|moodle_url  $baseurl  the pages base url
- *                             defaults to: '/elis/program/index.php'
+ *                             defaults to: '/local/elisprogram/index.php'
  * @param   array              $extras   extra parameters for url.
  * @return  moodle_url         the baseurl with required params
  */
 function get_pm_url($baseurl = null, $extras = array()) {
     if (empty($baseurl)) {
-        $baseurl = '/elis/program/index.php';
+        $baseurl = '/local/elisprogram/index.php';
     }
     $options = array('s', 'id', 'action', 'section', 'alpha', 'search', 'perpage', 'class', 'association_id', 'mode', '_assign'); // TBD: add more parameters as required: page, [sort, dir] ???
     $params = array();
@@ -570,7 +570,7 @@ function get_date_item_display($column, $item) {
     } else {
         $timestamp = $item->$column;
         return is_numeric($timestamp)
-               ? userdate($timestamp, get_string('pm_date_format', 'elis_program'))
+               ? userdate($timestamp, get_string('pm_date_format', 'local_elisprogram'))
                : '';
     }
 }
@@ -585,14 +585,14 @@ function get_yesno_item_display($column, $item) {
 
 /**
  *
- * Call Moodle's set_config with 3rd parm 'elis_program'
+ * Call Moodle's set_config with 3rd parm 'local_elisprogram'
  *
  * @param string $name the key to set
  * @param string $value the value to set (without magic quotes)
  * @return n/a
  */
 function pm_set_config($name, $value) {
-    set_config($name,$value, 'elis_program');
+    set_config($name,$value, 'local_elisprogram');
 }
 
 /**
@@ -963,10 +963,10 @@ function pm_update_student_enrolment($pmuserid = 0) {
         foreach ($students as $s) {
 
             // Send notification, if enabled.
-            $sendnotification = (!empty(elis::$config->elis_program->notify_incompletecourse_user)) ? true : false;
+            $sendnotification = (!empty(elis::$config->local_elisprogram->notify_incompletecourse_user)) ? true : false;
             if ($sendnotification === true) {
                 $a = $DB->get_field(pmclass::TABLE, 'idnumber', array('id' => $s->classid));
-                $message = get_string('incomplete_course_message', 'elis_program', $a);
+                $message = get_string('incomplete_course_message', 'local_elisprogram', $a);
                 $cuser = new user($s->userid);
                 $from = get_admin();
                 notification::notify($message, $cuser, $from);
@@ -991,7 +991,7 @@ function pm_update_student_enrolment($pmuserid = 0) {
 function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0, $mdluserid = 0) {
     global $CFG, $DB;
 
-    require_once ($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once ($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/user.class.php'));
 
     $timenow = time();
@@ -1008,7 +1008,7 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0, $mdluserid
     }
     $result = $result && $DB->execute($sql, $params);
 
-    if ($setidnumber || elis::$config->elis_program->auto_assign_user_idnumber) {
+    if ($setidnumber || elis::$config->local_elisprogram->auto_assign_user_idnumber) {
         // make sure we only set idnumbers if users' usernames don't point to
         // existing idnumbers
         $sql = "UPDATE {user}
@@ -1046,7 +1046,7 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0, $mdluserid
     }
     $rs = $DB->get_recordset_select('user', $select, $params);
     if ($rs && $rs->valid()) {
-        require_once elis::plugin_file('usersetenrol_moodle_profile', 'lib.php');
+        require_once elis::plugin_file('usetenrol_moodleprofile', 'lib.php');
         foreach ($rs as $user) {
             // FIXME: shouldn't depend on cluster functionality -- should
             // be more modular
@@ -1092,7 +1092,7 @@ function pm_moodle_user_to_pm($mu) {
         return true;
     }
 
-    if (empty($mu->idnumber) && elis::$config->elis_program->auto_assign_user_idnumber) {
+    if (empty($mu->idnumber) && elis::$config->local_elisprogram->auto_assign_user_idnumber) {
         //make sure the current user's username does not match up with some other user's
         //idnumber (necessary since usernames and idnumbers aren't bound to one another)
         if (!$DB->record_exists('user', array('idnumber' => $mu->username))) {
@@ -1223,7 +1223,7 @@ function pm_moodle_user_to_pm($mu) {
         $cu->save(false);
     } catch (Exception $ex) {
         if (in_cron()) {
-            mtrace(get_string('record_not_created_reason', 'elis_program',
+            mtrace(get_string('record_not_created_reason', 'local_elisprogram',
                         array('message' => $ex->getMessage() ." [{$mu->id}]")));
             return false;
         } else {
@@ -1538,7 +1538,7 @@ function usermanagement_get_users_recordset($sort = 'name', $dir = 'ASC',
                                             $startrec = 0, $perpage = 0,
                                             $extrasql = '', $contexts = null) {
     global $CFG, $DB;
-    require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
+    require_once($CFG->dirroot .'/local/elisprogram/lib/data/user.class.php');
 
     $FULLNAME = $DB->sql_concat('firstname', "' '", 'lastname');
     $select = 'SELECT id, idnumber as idnumber, country, language, timecreated, '.
@@ -1638,11 +1638,11 @@ function pm_migrate_tags() {
         if ($DB->record_exists('crlm_tag_instance', array('instancetype' => $instancetype))) {
 
             //used to reference the category name
-            $category = new field_category(array('name' => get_string('misc_category', 'elis_program')));
+            $category = new field_category(array('name' => get_string('misc_category', 'local_elisprogram')));
 
             //make sure our field for storing tags is created
             $field = new field(array('shortname'   => "_19upgrade_{$contextname}_tags",
-                                     'name'        => get_string('tags', 'elis_program'),
+                                     'name'        => get_string('tags', 'local_elisprogram'),
                                      'datatype'    => 'char',
                                      'multivalued' => 1));
             $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
@@ -1698,7 +1698,7 @@ function pm_migrate_tags() {
                 foreach ($records as $record) {
                     $tagname = $tag_lookup[$record->tagid];
                     $field = new field(array('shortname' => "_19upgrade_{$contextname}_tag_data_{$tagname}",
-                                             'name'      => get_string('tag_custom_data', 'elis_program', $tagname),
+                                             'name'      => get_string('tag_custom_data', 'local_elisprogram', $tagname),
                                              'datatype'  => 'char'));
                     $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
 
@@ -1771,11 +1771,11 @@ function pm_migrate_environments() {
         if ($DB->record_exists_select($instancetable, $select)) {
 
             //used to reference the category name
-            $category = new field_category(array('name' => get_string('misc_category', 'elis_program')));
+            $category = new field_category(array('name' => get_string('misc_category', 'local_elisprogram')));
 
             //make sure our field for storing environments is created
             $field = new field(array('shortname'   => "_19upgrade_{$contextname}_environment",
-                                     'name'        => get_string('environment', 'elis_program'),
+                                     'name'        => get_string('environment', 'local_elisprogram'),
                                      'datatype'    => 'char'));
             $field = field::ensure_field_exists_for_context_level($field, $contextlevel, $category);
 
@@ -1823,9 +1823,9 @@ function pm_ensure_role_assignable($role) {
     global $DB;
     if (!is_numeric($role)) {
         if (!($roleid = $DB->get_field('role', 'id', array('shortname' => $role)))
-            && !($roleid = create_role(get_string($role .'name', 'elis_program'), $role,
-                                       get_string($role .'description', 'elis_program'),
-                                       get_string($role .'archetype', 'elis_program')))) {
+            && !($roleid = create_role(get_string($role .'name', 'local_elisprogram'), $role,
+                                       get_string($role .'description', 'local_elisprogram'),
+                                       get_string($role .'archetype', 'local_elisprogram')))) {
 
             mtrace("\n pm_ensure_role_assignable(): Error creating role '{$role}'\n");
         }
@@ -1954,7 +1954,7 @@ function pm_fix_duplicate_moodle_users() {
     global $CFG, $DB;
 
     require_once($CFG->dirroot.'/lib/ddllib.php');
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('notifications.php'));
     require_once(elispm::lib('data/user.class.php'));
 
@@ -2073,7 +2073,7 @@ function pm_fix_duplicate_pm_users() {
     global $CFG, $DB;
 
     require_once($CFG->dirroot.'/lib/ddllib.php');
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('notifications.php'));
     require_once(elispm::lib('data/user.class.php'));
     require_once(elispm::file('userpage.class.php'));
@@ -2194,9 +2194,9 @@ function pm_migrate_certificate_files() {
     $result = true;
     // Migrate directories: olddir => newdir
     $dirs = array(
-        '1/curriculum/pix/certificate/borders'  => 'elis/program/pix/certificate/borders',
-        '1/curriculum/pix/certificate/seals'    => 'elis/program/pix/certificate/seals',
-        'curriculum/pix/certificates/templates' => 'elis/program/pix/certificates/templates'
+        '1/curriculum/pix/certificate/borders'  => 'local/elisprogram/pix/certificate/borders',
+        '1/curriculum/pix/certificate/seals'    => 'local/elisprogram/pix/certificate/seals',
+        'curriculum/pix/certificates/templates' => 'local/elisprogram/pix/certificates/templates'
     );
     foreach ($dirs as $olddir => $newdir) {
         $oldpath = $CFG->dataroot .'/'. $olddir;
@@ -2304,8 +2304,8 @@ function pm_mymoodle_redirect($editing = false) {
     }
 
     //check the setting
-    return (!empty(elis::$config->elis_program->mymoodle_redirect) &&
-            elis::$config->elis_program->mymoodle_redirect == 1);
+    return (!empty(elis::$config->local_elisprogram->mymoodle_redirect) &&
+            elis::$config->local_elisprogram->mymoodle_redirect == 1);
 }
 
 // Retrieve the selection record from a session
@@ -2454,7 +2454,7 @@ function session_selection_deletion($target) {
 function pm_fix_orphaned_fields() {
     global $DB;
 
-    $misc_cat = get_string('misc_category','elis_program');
+    $misc_cat = get_string('misc_category','local_elisprogram');
     //set up context array
     $context_array = context_elis_helper::get_all_levels();
     foreach ($context_array as $contextlevel=>$contextname) {
@@ -2694,8 +2694,8 @@ function pm_issue_certificates() {
     $enablecrsentity = false;
 
     // Check if we should process course description certificates.
-    if (isset(elis::$config->elis_program->disablecoursecertificates) &&
-            !empty(elis::$config->elis_program->disablecoursecertificates)) {
+    if (isset(elis::$config->local_elisprogram->disablecoursecertificates) &&
+            !empty(elis::$config->local_elisprogram->disablecoursecertificates)) {
         $enablecrsentity = false;
     } else {
         $enablecrsentity = true;
@@ -2778,7 +2778,7 @@ function pm_issue_user_certificate($certsettingid, $users, $dataclass) {
     if (empty($certsettingid)) {
 
         if (debugging('', DEBUG_ALL)) {
-            error_log('elis/program/lib/lib.php::pm_issue_user_certificate() - certificate setting is empty ');
+            error_log('local/elisprogram/lib/lib.php::pm_issue_user_certificate() - certificate setting is empty ');
         }
 
         return false;
@@ -2787,7 +2787,7 @@ function pm_issue_user_certificate($certsettingid, $users, $dataclass) {
     if (!$dataclass instanceof certificateissued) {
 
         if (debugging('', DEBUG_ALL)) {
-            error_log('elis/program/lib/lib.php::pm_issue_user_certificate() - data_class is not an instance of certificateissued');
+            error_log('local/elisprogram/lib/lib.php::pm_issue_user_certificate() - data_class is not an instance of certificateissued');
         }
 
         return false;

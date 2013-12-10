@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
@@ -35,7 +34,7 @@ require_once elispm::file('form/selectionform.class.php');
 //require_once "{$CFG->libdir}/pear/HTML/AJAX/JSON.php";
 
 abstract class selectionpage extends pm_page { // TBD
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     var $_basepage;
 
@@ -249,7 +248,7 @@ abstract class selectionpage extends pm_page { // TBD
                 $title = get_string('select');
             }
 
-            $PAGE->requires->yui_module('moodle-elis_program-checkboxselection', 'M.elis_program.init_checkboxselection', array($baseurl, 'list_display'),
+            $PAGE->requires->yui_module('moodle-local_elisprogram-checkboxselection', 'M.local_elisprogram.init_checkboxselection', array($baseurl, 'list_display'),
                     null, true);
 
             echo '<div class="mform" style="width: 100%"><fieldset><legend>'.
@@ -285,7 +284,7 @@ abstract class selectionpage extends pm_page { // TBD
         if (!empty($this->data_class)) {
             $label = 'num_'. $this->data_class .'_found';
             if (!get_string_manager()->string_exists($label, self::LANG_FILE)) {
-                error_log("/elis/program/lib/selectionpage.class.php:: string '{$label}' not found.");
+                error_log("/local/elisprogram/lib/selectionpage.class.php:: string '{$label}' not found.");
                 $label = null;
             }
         }

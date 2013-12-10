@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -126,7 +126,7 @@ class curriculumcoursepage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $requiredperms = array('elis/program:program_view', 'elis/program:associate');
+        $requiredperms = array('local/elisprogram:program_view', 'local/elisprogram:associate');
         foreach ($requiredperms as $perm) {
             $ctx = pm_context_set::for_user_with_capability('curriculum', $perm, $USER->id);
             if ($ctx->context_allowed($id, 'curriculum') !== true) {
@@ -204,7 +204,7 @@ class curriculumcoursepage extends deepsightpage {
             // TODO: Ugly, this needs to be overhauled.
             $cpage = new coursepage();
             foreach ($prereqs as $prereq) {
-                if ($cpage->_has_capability('elis/program:course_view', $prereq)
+                if ($cpage->_has_capability('local/elisprogram:course_view', $prereq)
                         && $curcrs->add_prerequisite($prereq, !empty($formdata->add_to_curriculum))) {
                     $added++;
                 }
@@ -212,11 +212,11 @@ class curriculumcoursepage extends deepsightpage {
 
             if ($deleted > 0) {
                 $delstring = ($deleted > 1) ? 'deleted_prerequisites' : 'deleted_prerequisite';
-                $output .= get_string($delstring, 'elis_program', $deleted);
+                $output .= get_string($delstring, 'local_elisprogram', $deleted);
             }
             if ($added > 0) {
                 $addstring = ($added > 1) ? 'added_prerequisites' : 'added_prerequisite';
-                $output .= (($deleted > 0) ? ' / ' : '').get_string($addstring, 'elis_program', $added);
+                $output .= (($deleted > 0) ? ' / ' : '').get_string($addstring, 'local_elisprogram', $added);
             }
             if ($deleted > 0 || $added > 0) {
                 $output .= "\n";
@@ -272,7 +272,7 @@ class curriculumcoursepage extends deepsightpage {
             // TODO: Ugly, this needs to be overhauled.
             $cpage = new coursepage();
             foreach ($coreqs as $coreq) {
-                if ($cpage->_has_capability('elis/program:course_view', $coreq)
+                if ($cpage->_has_capability('local/elisprogram:course_view', $coreq)
                         && $curcrs->add_corequisite($coreq, !empty($formdata->add_to_curriculum))) {
                     $added++;
                 }
@@ -280,11 +280,11 @@ class curriculumcoursepage extends deepsightpage {
 
             if ($deleted > 0) {
                 $delstring = ($deleted > 1) ? 'deleted_corequisites' : 'deleted_corequisite';
-                $output .= get_string($delstring, 'elis_program', $deleted);
+                $output .= get_string($delstring, 'local_elisprogram', $deleted);
             }
             if ($added > 0) {
                 $addstring = ($added > 1) ? 'added_corequisites' : 'added_corequisite';
-                $output .= (($deleted > 0) ? ' / ' : '').get_string($addstring, 'elis_program', $added);
+                $output .= (($deleted > 0) ? ' / ' : '').get_string($addstring, 'local_elisprogram', $added);
             }
             if ($deleted > 0 || $added > 0) {
                 $output .= "\n";
@@ -399,7 +399,7 @@ class coursecurriculumpage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $requiredperms = array('elis/program:course_view', 'elis/program:associate');
+        $requiredperms = array('local/elisprogram:course_view', 'local/elisprogram:associate');
         foreach ($requiredperms as $perm) {
             $ctx = pm_context_set::for_user_with_capability('course', $perm, $USER->id);
             if ($ctx->context_allowed($id, 'course') !== true) {
@@ -423,11 +423,11 @@ class coursecurriculumpage extends deepsightpage {
     public function display_default() {
         global $OUTPUT;
 
-        if (false && has_capability('elis/program:program_create', $this->_get_page_context())) {
+        if (false && has_capability('local/elisprogram:program_create', $this->_get_page_context())) {
             echo '<div align="center">';
             $options = array_merge(array('s' => 'cfc', 'id' => $id, 'cfccourseid' => $id));
-            $button = new single_button(new moodle_url('index.php', $options), get_string('makecurcourse', 'elis_program'), 'get',
-                    array('disabled'=>false, 'title'=>get_string('makecurcourse', 'elis_program'), 'id'=>''));
+            $button = new single_button(new moodle_url('index.php', $options), get_string('makecurcourse', 'local_elisprogram'), 'get',
+                    array('disabled'=>false, 'title'=>get_string('makecurcourse', 'local_elisprogram'), 'id'=>''));
             echo $OUTPUT->render($button);
             echo '</div>';
         }

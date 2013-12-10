@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/curriculum.class.php');
@@ -118,7 +117,7 @@ class curriculumstudent extends elis_data_object {
         }
 
         // Handle a curriculum with an expiry date defined (ELIS-1172):
-        if (!empty(elis::$config->elis_program->enable_curriculum_expiration) && !empty($this->curriculum->frequency)) {
+        if (!empty(elis::$config->local_elisprogram->enable_curriculum_expiration) && !empty($this->curriculum->frequency)) {
 
             $this->timeexpired = calculate_curriculum_expiry($this);
         }
@@ -145,9 +144,9 @@ class curriculumstudent extends elis_data_object {
         // Send notifications
 
         /// Does the user receive a notification?
-        $sendtouser = (!empty(elis::$config->elis_program->notify_curriculumcompleted_user)) ? true : false;
-        $sendtorole = (!empty(elis::$config->elis_program->notify_curriculumcompleted_role)) ? true : false;
-        $sendtosupervisor = (!empty(elis::$config->elis_program->notify_curriculumcompleted_supervisor)) ? true : false;
+        $sendtouser = (!empty(elis::$config->local_elisprogram->notify_curriculumcompleted_user)) ? true : false;
+        $sendtorole = (!empty(elis::$config->local_elisprogram->notify_curriculumcompleted_role)) ? true : false;
+        $sendtosupervisor = (!empty(elis::$config->local_elisprogram->notify_curriculumcompleted_supervisor)) ? true : false;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -161,16 +160,16 @@ class curriculumstudent extends elis_data_object {
         // Due to lazy loading, we need to pre-load this object
         $enroluser->load();
         if (empty($enroluser->id)) {
-            print_error('nouser', 'elis_program');
+            print_error('nouser', 'local_elisprogram');
             return true;
         }
 
         $message = new notification();
 
         /// Set up the text of the message
-        $text = empty(elis::$config->elis_program->notify_curriculumcompleted_message) ?
-                    get_string('notifycurriculumcompletedmessagedef', 'elis_program') :
-                    elis::$config->elis_program->notify_curriculumcompleted_message;
+        $text = empty(elis::$config->local_elisprogram->notify_curriculumcompleted_message) ?
+                    get_string('notifycurriculumcompletedmessagedef', 'local_elisprogram') :
+                    elis::$config->local_elisprogram->notify_curriculumcompleted_message;
         $search = array('%%userenrolname%%', '%%programname%%');
         $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
         $user = new user($pmuser);
@@ -192,14 +191,14 @@ class curriculumstudent extends elis_data_object {
 
         if ($sendtorole) {
             /// Get all users with the notify_classenrol capability.
-            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_programcomplete')) {
+            if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_programcomplete')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_programcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'local/elisprogram:notify_programcomplete')) {
                 $users = $users + $supervisors;
             }
         }
@@ -253,9 +252,9 @@ class curriculumstudent extends elis_data_object {
         require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
-        $sendtouser       = elis::$config->elis_program->notify_curriculumnotcompleted_user;
-        $sendtorole       = elis::$config->elis_program->notify_curriculumnotcompleted_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_curriculumnotcompleted_supervisor;
+        $sendtouser       = elis::$config->local_elisprogram->notify_curriculumnotcompleted_user;
+        $sendtorole       = elis::$config->local_elisprogram->notify_curriculumnotcompleted_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_curriculumnotcompleted_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -268,9 +267,9 @@ class curriculumstudent extends elis_data_object {
         $message = new notification();
 
         /// Set up the text of the message
-        $text = empty(elis::$config->elis_program->notify_curriculumnotcompleted_message) ?
-                get_string('notifycurriculumnotcompletedmessagedef', 'elis_program') :
-                elis::$config->elis_program->notify_curriculumnotcompleted_message;
+        $text = empty(elis::$config->local_elisprogram->notify_curriculumnotcompleted_message) ?
+                get_string('notifycurriculumnotcompletedmessagedef', 'local_elisprogram') :
+                elis::$config->local_elisprogram->notify_curriculumnotcompleted_message;
         $pmuser = $DB->get_record(user::TABLE, array('id' => $curstudent->userid));
         $user = new user($pmuser);
         // Get course info
@@ -292,14 +291,14 @@ class curriculumstudent extends elis_data_object {
 
         if ($sendtorole) {
             /// Get all users with the notify_curriculumnotcomplete capability.
-            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_programnotcomplete')) {
+            if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_programnotcomplete')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'elis/program:notify_programnotcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'local/elisprogram:notify_programnotcomplete')) {
                 $users = $users + $supervisors;
             }
         }
@@ -428,13 +427,13 @@ class curriculumstudent extends elis_data_object {
         if (!curriculumpage::can_enrol_into_curriculum($curid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if ($cpage->_has_capability('elis/program:program_enrol', $curid)) {
+        } else if ($cpage->_has_capability('local/elisprogram:program_enrol', $curid)) {
             //current user has the direct capability
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:program_enrol_userset_user', $USER->id);
 
         $allowedclusters = array();
 
@@ -491,8 +490,8 @@ class curriculumstudent extends elis_data_object {
 
         if ($isnew) {
             $this->timecreated = $now;
-            if (!empty(elis::$config->elis_program->enable_curriculum_expiration) &&
-                elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START &&
+            if (!empty(elis::$config->local_elisprogram->enable_curriculum_expiration) &&
+                elis::$config->local_elisprogram->curriculum_expiration_start == CURR_EXPIRE_ENROL_START &&
                 $this->_db->get_field(curriculum::TABLE, 'frequency', array('id'=>$this->curriculumid))) {
 
                 // We need to load this record from the DB fresh so we don't accidentally overwrite legitimate
@@ -664,8 +663,8 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
         return 0;
     }
 
-    if (!isset(elis::$config->elis_program->curriculum_expiration_start) ||
-        elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_COMPLETE) {
+    if (!isset(elis::$config->local_elisprogram->curriculum_expiration_start) ||
+        elis::$config->local_elisprogram->curriculum_expiration_start == CURR_EXPIRE_ENROL_COMPLETE) {
 
         if ($curass->timecompleted == 0) {
             // Fall back to basing the expiry date off the curriculum enrolment date.
@@ -674,7 +673,7 @@ function calculate_curriculum_expiry($curass, $curid = 0, $userid = 0) {
             // Base the expiry date off the curriculum completion date.
             $timenow = $curass->timecompleted;
         }
-    } else if (elis::$config->elis_program->curriculum_expiration_start == CURR_EXPIRE_ENROL_START) {
+    } else if (elis::$config->local_elisprogram->curriculum_expiration_start == CURR_EXPIRE_ENROL_START) {
         // Base the expiry date off the curriculum enrolment date.
         $timenow = $curass->timecreated;
     } else {

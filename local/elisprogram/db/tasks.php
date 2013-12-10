@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $tasks = array(
     array(
-        'callfile'     => '/elis/program/lib/lib.php',
+        'callfile'     => '/local/elisprogram/lib/lib.php',
         'callfunction' => 'pm_cron',
         'minute'       => '*/5',
         'hour'         => '*',
@@ -37,7 +37,7 @@ $tasks = array(
         'dayofweek'    => '*'
     ),
     array(
-        'callfile'     => '/elis/program/lib/resultsengine.php',
+        'callfile'     => '/local/elisprogram/lib/resultsengine.php',
         'callfunction' => 'results_engine_cron',
         'minute'       => '*/5',
         'hour'         => '*',

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object.class.php');
 require_once elispm::lib('lib.php');
 require_once elispm::lib('data/userset.class.php');
@@ -132,7 +132,7 @@ class clusterassignment extends elis_data_object {
     static function update_enrolments($userid = 0, $clusterid = 0) {
         global $DB;
         require_once(elispm::lib('data/usermoodle.class.php'));
-        // error_log("/elis/program/lib/data/clusterassignment.class.php::update_enrolments({$userid}, {$clusterid})");
+        // error_log("/local/elisprogram/lib/data/clusterassignment.class.php::update_enrolments({$userid}, {$clusterid})");
 
         // ELIS-7582
         @set_time_limit(0);
@@ -272,10 +272,10 @@ class clusterassignment extends elis_data_object {
                         $param = array('message' => $e->getMessage());
                         if (in_cron()) {
                             mtrace(get_string('record_not_created_reason',
-                                                     'elis_program', $param));
+                                                     'local_elisprogram', $param));
                         } else {
                             echo cm_error(get_string('record_not_created_reason',
-                                                     'elis_program', $param));
+                                                     'local_elisprogram', $param));
                         }
                     }
                 }
@@ -303,8 +303,8 @@ class clusterassignment extends elis_data_object {
         //update site-level "cluster groups"
         //TODO: make sure all "cluster groups" scenarios are handled here, and look at
         //performance in more detal
-        if (!empty($userid) && file_exists(elispm::file('plugins/userset_groups/lib.php'))) {
-            require_once(elispm::file('plugins/userset_groups/lib.php'));
+        if (!empty($userid) && file_exists(elispm::file('plugins/usetgroups/lib.php'))) {
+            require_once(elispm::file('plugins/usetgroups/lib.php'));
 
             //need the Moodle user id
             $mdluserid = $DB->get_field(usermoodle::TABLE, 'muserid', array('cuserid' => $userid));

@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
@@ -43,7 +42,7 @@ class certificatesettings extends elis_data_object {
     /**
      * The language file used within this class.
      */
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     /**
      * @var int The database id for this instance.

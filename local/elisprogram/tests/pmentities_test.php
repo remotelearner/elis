@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::file('curriculumpage.class.php'));
@@ -37,7 +37,7 @@ require_once(elispm::file('usersetpage.class.php'));
 
 /**
  * Tests for validating that creating a new entity from the UI works
- * @group elis_program
+ * @group local_elisprogram
  */
 class pmentities_testcase extends elis_database_test {
 
@@ -63,9 +63,9 @@ class pmentities_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
-            'crlm_course' => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
-            'crlm_curriculum' => elis::component_file('program', 'tests/fixtures/curriculum.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
+            'crlm_course' => elispm::file('tests/fixtures/pmcourse.csv'),
+            'crlm_curriculum' => elispm::file('tests/fixtures/curriculum.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -81,12 +81,12 @@ class pmentities_testcase extends elis_database_test {
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
 
         $role1 = create_role($entity.'_creator', $entity.'_creator', $entity.'_creator');
-        assign_capability('elis/program'.$entity.'_view', CAP_ALLOW, $role1, $syscontext->id);
-        assign_capability('elis/program'.$entity.'_create', CAP_ALLOW, $role1, $syscontext->id);
+        assign_capability('local/elisprogram:'.$entity.'_view', CAP_ALLOW, $role1, $syscontext->id);
+        assign_capability('local/elisprogram:'.$entity.'_create', CAP_ALLOW, $role1, $syscontext->id);
 
         $role2 = create_role($entity.'_editor', $entity.'_editor', $entity.'_editor');
-        assign_capability('elis/program'.$entity.'_view', CAP_ALLOW, $role2, $syscontext->id);
-        assign_capability('elis/program'.$entity.'_create', CAP_ALLOW, $role2, $syscontext->id);
+        assign_capability('local/elisprogram:'.$entity.'_view', CAP_ALLOW, $role2, $syscontext->id);
+        assign_capability('local/elisprogram:'.$entity.'_create', CAP_ALLOW, $role2, $syscontext->id);
 
         return array($role1, $role2);
     }
@@ -100,7 +100,7 @@ class pmentities_testcase extends elis_database_test {
         list($rcid, $reid) = $this->create_roles('program');
 
         // Setup the editor role to be the default role for the program context.
-        elis::$config->elis_program->default_curriculum_role_id = $reid;
+        elis::$config->local_elisprogram->default_curriculum_role_id = $reid;
 
         $sysctx = get_context_instance(CONTEXT_SYSTEM);
 
@@ -135,7 +135,7 @@ class pmentities_testcase extends elis_database_test {
         list($rcid, $reid) = $this->create_roles('track');
 
         // Setup the editor role to be the default role for the track context.
-        elis::$config->elis_program->default_track_role_id = $reid;
+        elis::$config->local_elisprogram->default_track_role_id = $reid;
 
         $sysctx = get_context_instance(CONTEXT_SYSTEM);
 
@@ -174,7 +174,7 @@ class pmentities_testcase extends elis_database_test {
         $USER = $DB->get_record('user', array('id' => 100));
 
         // Setup the editor role to be the default role for the course context.
-        elis::$config->elis_program->default_course_role_id = $reid;
+        elis::$config->local_elisprogram->default_course_role_id = $reid;
 
         $sysctx = get_context_instance(CONTEXT_SYSTEM);
 
@@ -209,7 +209,7 @@ class pmentities_testcase extends elis_database_test {
         list($rcid, $reid) = $this->create_roles('class');
 
         // Setup the editor role to be the default role for the class context.
-        elis::$config->elis_program->default_class_role_id = $reid;
+        elis::$config->local_elisprogram->default_class_role_id = $reid;
 
         $sysctx = get_context_instance(CONTEXT_SYSTEM);
 
@@ -247,7 +247,7 @@ class pmentities_testcase extends elis_database_test {
         list($rcid, $reid) = $this->create_roles('userset');
 
         // Setup the editor role to be the default role for the userset context.
-        elis::$config->elis_program->default_cluster_role_id = $reid;
+        elis::$config->local_elisprogram->default_cluster_role_id = $reid;
 
         $sysctx = get_context_instance(CONTEXT_SYSTEM);
 

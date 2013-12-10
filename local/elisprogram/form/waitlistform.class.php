@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -39,7 +39,7 @@ class waitlistaddform extends cmform {
         if(!empty($this->_customdata['students'])) {
             $student_list = $this->_customdata['students'];
 
-            $mform->addElement('header', 'waitlistaddform', get_string('waitinglistform_title', 'elis_program'));
+            $mform->addElement('header', 'waitlistaddform', get_string('waitinglistform_title', 'local_elisprogram'));
 
             foreach($student_list as $student) {
                 $mform->addElement('hidden', 'userid[' . $student->userid . ']', $student->userid);
@@ -55,7 +55,7 @@ class waitlistaddform extends cmform {
 
                 $context = get_context_instance(CONTEXT_SYSTEM);
 
-                if(has_capability('elis/program:overrideclasslimit', $context)) {
+                if(has_capability('local/elisprogram:overrideclasslimit', $context)) {
                     $mform->addElement('hidden', 'grade[' . $student->userid . ']', $student->grade);
                     $mform->setType('grade['.$student->userid.']', PARAM_INT);
                     $mform->addElement('hidden', 'credits[' . $student->credits . ']', $student->credits);
@@ -63,12 +63,12 @@ class waitlistaddform extends cmform {
                     $mform->addElement('hidden', 'locked[' . $student->locked . ']', $student->locked);
                     $mform->setType('locked['.$student->locked.']', PARAM_INT);
 
-                    $enrol_options[] = $mform->createElement('radio', 'enrol[' . $student->userid . ']', '', get_string('over_enrol', 'elis_program'), 2);
+                    $enrol_options[] = $mform->createElement('radio', 'enrol[' . $student->userid . ']', '', get_string('over_enrol', 'local_elisprogram'), 2);
                 }
 
                 $user = $DB->get_record(user::TABLE, array('id' => $student->userid));
                 $user->name = fullname($user);
-                $mform->addGroup($enrol_options, 'options[' . $student->userid . ']', get_string('add_to_waitinglist', 'elis_program', $user), array('&nbsp;&nbsp;&nbsp;'), false);
+                $mform->addGroup($enrol_options, 'options[' . $student->userid . ']', get_string('add_to_waitinglist', 'local_elisprogram', $user), array('&nbsp;&nbsp;&nbsp;'), false);
             }
         } else if(!empty($this->_customdata['student_ids'])) {
             $student_id = $this->_customdata['student_ids'];
@@ -87,8 +87,8 @@ class waitlistaddform extends cmform {
 
                 $context = get_context_instance(CONTEXT_SYSTEM);
 
-                if(has_capability('elis/program:overrideclasslimit', $context)) {
-                    $enrol_options[] = $mform->createElement('radio', 'enrol[' . $id . ']', '', get_string('over_enrol', 'elis_program'), 2);
+                if(has_capability('local/elisprogram:overrideclasslimit', $context)) {
+                    $enrol_options[] = $mform->createElement('radio', 'enrol[' . $id . ']', '', get_string('over_enrol', 'local_elisprogram'), 2);
                 }
 
                 $name = 'no name';
@@ -112,7 +112,7 @@ class waitlisteditform extends selectionform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
         $actions = array('remove' => get_string('remove'),
-                         'overenrol' => get_string('over_enrol', 'elis_program'));
+                         'overenrol' => get_string('over_enrol', 'local_elisprogram'));
         $mform->addElement('select', 'do', get_string('withselectedusers'), $actions);
 
         parent::definition();

@@ -1,7 +1,5 @@
 <?php
 /**
- * Form used for editing / displaying a user
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
@@ -18,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -65,14 +63,14 @@ class userform extends cmform {
         $mform->setType('idnumber', PARAM_TEXT);
         $mform->addRule('idnumber', null, 'required', null, 'client');
         $mform->addRule('idnumber', null, 'maxlength', 255);
-        $mform->addHelpButton('idnumber', 'useridnumber', 'elis_program');
+        $mform->addHelpButton('idnumber', 'useridnumber', 'local_elisprogram');
 
         $username_group = array();
 
         if(empty($disabled)) {
             //create
             $username_group[] =& $mform->createElement('text', 'username', get_string('username'));
-            $username_group[] =& $mform->createElement('checkbox', 'id_same_user', null, get_string('id_same_as_user', 'elis_program'));
+            $username_group[] =& $mform->createElement('checkbox', 'id_same_user', null, get_string('id_same_as_user', 'local_elisprogram'));
 
             $mform->disabledIf('username_group', 'id_same_user', 'checked');
 
@@ -105,7 +103,7 @@ class userform extends cmform {
         $mform->addRule('lastname', $strrequired, 'required', null, 'client');
         $mform->addRule('lastname', null, 'maxlength', 100);
 
-        $mform->addElement('text', 'mi', get_string('usermi', 'elis_program'));
+        $mform->addElement('text', 'mi', get_string('usermi', 'local_elisprogram'));
         $mform->setType('mi', PARAM_TEXT);
         $mform->addRule('mi', null, 'maxlength', 100);
 
@@ -115,16 +113,16 @@ class userform extends cmform {
         $mform->addRule('email', null, 'required', null, 'client');
         $mform->addRule('email', null, 'maxlength', 100);
 
-        $mform->addElement('text', 'email2', get_string('email2', 'elis_program'));
+        $mform->addElement('text', 'email2', get_string('email2', 'local_elisprogram'));
         $mform->setType('email2', PARAM_TEXT);
         $mform->addRule('email2', null, 'email', null, 'client');
         $mform->addRule('email2', null, 'maxlength', 100);
 
-        $mform->addElement('text', 'address', get_string('address', 'elis_program'));
+        $mform->addElement('text', 'address', get_string('address', 'local_elisprogram'));
         $mform->setType('address', PARAM_TEXT);
         $mform->addRule('address', null, 'maxlength', 100);
 
-        $mform->addElement('text', 'address2', get_string('address2', 'elis_program'));
+        $mform->addElement('text', 'address2', get_string('address2', 'local_elisprogram'));
         $mform->setType('address2', PARAM_TEXT);
         $mform->addRule('address2', null, 'maxlength', 100);
 
@@ -136,7 +134,7 @@ class userform extends cmform {
         $mform->setType('state', PARAM_TEXT);
         $mform->addRule('state', null, 'maxlength', 100);
 
-        $mform->addElement('text', 'postalcode', get_string('postalcode', 'elis_program'));
+        $mform->addElement('text', 'postalcode', get_string('postalcode', 'local_elisprogram'));
         $mform->setType('postalcode', PARAM_TEXT);
         $mform->addRule('postalcode', null, 'maxlength', 32);
 
@@ -150,11 +148,11 @@ class userform extends cmform {
         $mform->setType('phone', PARAM_TEXT);
         $mform->addRule('phone', null, 'maxlength', 100);
 
-        $mform->addElement('text', 'phone2', get_string('phone2', 'elis_program'));
+        $mform->addElement('text', 'phone2', get_string('phone2', 'local_elisprogram'));
         $mform->setType('phone2', PARAM_TEXT);
         $mform->addRule('phone2', null, 'maxlength', 100);
 
-        $mform->addElement('text', 'fax', get_string('fax', 'elis_program'));
+        $mform->addElement('text', 'fax', get_string('fax', 'local_elisprogram'));
         $mform->setType('fax', PARAM_TEXT);
         $mform->addRule('fax', null, 'maxlength', 100);
 
@@ -175,14 +173,14 @@ class userform extends cmform {
         $bdaygroup[] =& $mform->createElement('select', 'birthday', get_string('day', 'form'), $days, '', true);
         $bdaygroup[] =& $mform->createElement('select', 'birthmonth', get_string('month', 'form'), $months, '', true);
         $bdaygroup[] =& $mform->createElement('select', 'birthyear', get_string('year', 'form'), $years, '', true);
-        $mform->addGroup($bdaygroup, 'birthdate', get_string('userbirthdate', 'elis_program'), ' ', false);
+        $mform->addGroup($bdaygroup, 'birthdate', get_string('userbirthdate', 'local_elisprogram'), ' ', false);
 
-        //$mform->addElement('date_selector', 'birthdate', get_string('userbirthdate', 'elis_program')); // Note: date_selector limited to timestamp > 1970
+        //$mform->addElement('date_selector', 'birthdate', get_string('userbirthdate', 'local_elisprogram')); // Note: date_selector limited to timestamp > 1970
 
         $radioarray = array();
-        $radioarray[] = &$mform->createElement('radio', 'gender', '', get_string('male', 'elis_program'), 'M');
-        $radioarray[] = &$mform->createElement('radio', 'gender', '', get_string('female', 'elis_program'), 'F');
-        $mform->addGroup($radioarray, 'gender', get_string('usergender', 'elis_program'), ' ', false);
+        $radioarray[] = &$mform->createElement('radio', 'gender', '', get_string('male', 'local_elisprogram'), 'M');
+        $radioarray[] = &$mform->createElement('radio', 'gender', '', get_string('female', 'local_elisprogram'), 'F');
+        $mform->addGroup($radioarray, 'gender', get_string('usergender', 'local_elisprogram'), ' ', false);
 
         $language = get_string_manager()->get_list_of_translations(true);
         $mform->addElement('select', 'language', get_string('language'), $language);
@@ -190,26 +188,26 @@ class userform extends cmform {
         // ELIS-4041: ^^^ had to remove setDefault('language', 'en')
         //            'cause it never showed real language value always default?
         //            added method to userpage::get_default_object_for_add()
-        $mform->addHelpButton('language', 'user_language', 'elis_program');
+        $mform->addHelpButton('language', 'user_language', 'local_elisprogram');
 
-        $mform->addElement('text', 'transfercredits', get_string('user_transfercredits', 'elis_program'));
+        $mform->addElement('text', 'transfercredits', get_string('user_transfercredits', 'local_elisprogram'));
         $mform->setType('transfercredits', PARAM_INT);
-        $mform->addHelpButton('transfercredits', 'user_transfercredits', 'elis_program');
+        $mform->addHelpButton('transfercredits', 'user_transfercredits', 'local_elisprogram');
 
         $mform->addElement('textarea', 'comments', get_string('comments'));
         $mform->setType('comments', PARAM_CLEAN);
-        $mform->addHelpButton('comments', 'user_comments', 'elis_program');
+        $mform->addHelpButton('comments', 'user_comments', 'local_elisprogram');
 
-        $mform->addElement('textarea', 'notes', get_string('user_notes', 'elis_program'));
+        $mform->addElement('textarea', 'notes', get_string('user_notes', 'local_elisprogram'));
         $mform->setType('notes', PARAM_CLEAN);
-        $mform->addHelpButton('notes', 'user_notes', 'elis_program');
+        $mform->addHelpButton('notes', 'user_notes', 'local_elisprogram');
 
-        $mform->addElement('advcheckbox', 'inactive', get_string('user_inactive', 'elis_program'));
+        $mform->addElement('advcheckbox', 'inactive', get_string('user_inactive', 'local_elisprogram'));
         $mform->setType('inactive', PARAM_TEXT);
-        $mform->addHelpButton('inactive', 'user_inactive', 'elis_program');
+        $mform->addHelpButton('inactive', 'user_inactive', 'local_elisprogram');
 
-        $this->add_custom_fields('user', 'elis/program:user_edit',
-                                 'elis/program:user_view');
+        $this->add_custom_fields('user', 'local/elisprogram:user_edit',
+                                 'local/elisprogram:user_view');
 
         $this->add_action_buttons();
     }
@@ -230,7 +228,7 @@ class userform extends cmform {
 
         if (!empty($data['username'])) {
             if (!$this->check_unique(user::TABLE, 'username', $data['username'], $data['id'])) {
-                $errors['username_group'] = get_string('badusername', 'elis_program');
+                $errors['username_group'] = get_string('badusername', 'local_elisprogram');
             }
         } else if(!$data['id'] && empty($data['id_same_user'])) {
             $errors['username_group'] = get_string('required');
@@ -238,7 +236,7 @@ class userform extends cmform {
 
         if (!empty($data['idnumber'])) {
             if (!$this->check_unique(user::TABLE, 'idnumber', $data['idnumber'], $data['id'])) {
-                $errors['idnumber'] = get_string('badidnumber', 'elis_program');
+                $errors['idnumber'] = get_string('badidnumber', 'local_elisprogram');
             } else {
                 //make sure we don't set up an idnumber that is related to a non-linked Moodle user
                 require_once(elispm::lib('data/usermoodle.class.php'));
@@ -246,7 +244,7 @@ class userform extends cmform {
                     $muserid = 0;
                 }
                 if (!$this->check_unique('user', 'idnumber', $data['idnumber'], $muserid)) {
-                    $errors['idnumber'] = get_string('badidnumbermoodle', 'elis_program');
+                    $errors['idnumber'] = get_string('badidnumbermoodle', 'local_elisprogram');
                 }
             }
         }

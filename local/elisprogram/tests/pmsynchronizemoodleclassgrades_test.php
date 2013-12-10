@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elispm::lib('data/course.class.php'));
@@ -40,7 +40,7 @@ require_once($CFG->dirroot.'/lib/enrollib.php');
 
 /**
  * Unit testing for the pm_synchronize_moodle_class_grades method
- * @group elis_program
+ * @group local_elisprogram
  */
 class pmsynchronizemoodleclassgrades_testcase extends elis_database_test {
 
@@ -63,20 +63,20 @@ class pmsynchronizemoodleclassgrades_testcase extends elis_database_test {
     protected function load_csv_data($linkclass = true) {
         $csvs = array(
             // Need PM course to create PM class.
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
             // Need PM classes to create associations.
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
             // Need a Moodle course to sync users from.
-            'course' => elis::component_file('program', 'tests/fixtures/mdlcoursenonsite.csv'),
+            'course' => elispm::file('tests/fixtures/mdlcoursenonsite.csv'),
             // Need both the Moodle and the PM user.
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            usermoodle::TABLE => elis::component_file('program', 'tests/fixtures/usermoodle.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            usermoodle::TABLE => elispm::file('tests/fixtures/usermoodle.csv'),
         );
 
         if ($linkclass) {
             // Link the course and the class.
-            $csvs[classmoodlecourse::TABLE] = elis::component_file('program', 'tests/fixtures/class_moodle_course_nonsite.csv');
+            $csvs[classmoodlecourse::TABLE] = elispm::file('tests/fixtures/class_moodle_course_nonsite.csv');
         }
 
         $dataset = $this->createCsvDataSet($csvs);
@@ -329,7 +329,7 @@ class pmsynchronizemoodleclassgrades_testcase extends elis_database_test {
 
         // Re-associate.
         $dataset = $this->createCsvDataSet(array(
-            'course' => elis::component_file('program', 'tests/fixtures/mdlcoursenonsite.csv')
+            'course' => elispm::file('tests/fixtures/mdlcoursenonsite.csv')
         ));
         $this->loadDataSet($dataset);
 
@@ -360,7 +360,7 @@ class pmsynchronizemoodleclassgrades_testcase extends elis_database_test {
 
         // Re-associate.
         $dataset = $this->createCsvDataSet(array(
-            'course' => elis::component_file('program', 'tests/fixtures/mdlcoursenonsite.csv')
+            'course' => elispm::file('tests/fixtures/mdlcoursenonsite.csv')
         ));
         $this->loadDataSet($dataset);
 
@@ -1996,20 +1996,20 @@ class pmsynchronizemoodleclassgrades_testcase extends elis_database_test {
         global $DB;
 
         $dataset = $this->createCsvDataSet(array(
-            'context' => elis::component_file('program', 'tests/fixtures/gsync_context.csv'),
-            'course' => elis::component_file('program', 'tests/fixtures/gsync_mdl_course.csv'),
-            'grade_grades' => elis::component_file('program', 'tests/fixtures/gsync_grade_grades.csv'),
-            'grade_items' => elis::component_file('program', 'tests/fixtures/gsync_grade_items.csv'),
-            'role_assignments' => elis::component_file('program', 'tests/fixtures/gsync_role_assignments.csv'),
-            'user' => elis::component_file('program', 'tests/fixtures/gsync_mdl_user.csv'),
-            'user_enrolments' => elis::component_file('program', 'tests/fixtures/gsync_user_enrolments.csv'),
-            'enrol' => elis::component_file('program', 'tests/fixtures/gsync_enrol.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/gsync_class.csv'),
-            student::TABLE => elis::component_file('program', 'tests/fixtures/gsync_class_enrolment.csv'),
-            classmoodlecourse::TABLE => elis::component_file('program', 'tests/fixtures/gsync_class_moodle.csv'),
-            course::TABLE => elis::component_file('program', 'tests/fixtures/gsync_course.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/gsync_user.csv'),
-            usermoodle::TABLE => elis::component_file('program', 'tests/fixtures/gsync_user_moodle.csv'),
+            'context' => elispm::file('tests/fixtures/gsync_context.csv'),
+            'course' => elispm::file('tests/fixtures/gsync_mdl_course.csv'),
+            'grade_grades' => elispm::file('tests/fixtures/gsync_grade_grades.csv'),
+            'grade_items' => elispm::file('tests/fixtures/gsync_grade_items.csv'),
+            'role_assignments' => elispm::file('tests/fixtures/gsync_role_assignments.csv'),
+            'user' => elispm::file('tests/fixtures/gsync_mdl_user.csv'),
+            'user_enrolments' => elispm::file('tests/fixtures/gsync_user_enrolments.csv'),
+            'enrol' => elispm::file('tests/fixtures/gsync_enrol.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/gsync_class.csv'),
+            student::TABLE => elispm::file('tests/fixtures/gsync_class_enrolment.csv'),
+            classmoodlecourse::TABLE => elispm::file('tests/fixtures/gsync_class_moodle.csv'),
+            course::TABLE => elispm::file('tests/fixtures/gsync_course.csv'),
+            user::TABLE => elispm::file('tests/fixtures/gsync_user.csv'),
+            usermoodle::TABLE => elispm::file('tests/fixtures/gsync_user_moodle.csv'),
         ));
         $this->loadDataSet($dataset);
 

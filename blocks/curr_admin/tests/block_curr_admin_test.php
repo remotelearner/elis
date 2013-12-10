@@ -23,12 +23,12 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(dirname(__FILE__).'/../../moodleblock.class.php');
 require_once(dirname(__FILE__).'/../block_curr_admin.php');
 require_once(elispm::lib('menuitem.class.php'));
@@ -59,7 +59,7 @@ class block_curr_admin_testcase extends elis_database_test {
         $testuser->save();
         $testmuser = $testuser->get_moodleuser();
 
-        // Create role with cap: 'elis/program:class_view'.
+        // Create role with cap: 'local/elisprogram:class_view'.
         $testrole = new stdClass;
         $testrole->name = 'ELIS Class View';
         $testrole->shortname = '_test_ELIS_4093';
@@ -72,7 +72,7 @@ class block_curr_admin_testcase extends elis_database_test {
 
         // Ensure the role has our required capability assigned.
         $sitecontext = context_system::instance();
-        assign_capability('elis/program:class_view', CAP_ALLOW, $testrole->id, $sitecontext->id, true);
+        assign_capability('local/elisprogram:class_view', CAP_ALLOW, $testrole->id, $sitecontext->id, true);
         $sitecontext->mark_dirty();
 
         // Create ELIS Course Description.

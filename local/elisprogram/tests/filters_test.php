@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -30,7 +30,7 @@
 
 require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elis::lib('data/customfield.class.php'));
@@ -111,7 +111,7 @@ class test_generalized_filter_custom_field_multiselect_values extends generalize
 
 /**
  * Test filters.
- * @group elis_program
+ * @group local_elisprogram
  */
 class filters_testcase extends elis_database_test {
 
@@ -120,9 +120,9 @@ class filters_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            field::TABLE => elis::component_file('program', 'tests/fixtures/course_custom_fields.csv'),
-            field_contextlevel::TABLE => elis::component_file('program', 'tests/fixtures/course_custom_fields_contextlevels.csv'),
-            field_owner::TABLE => elis::component_file('program', 'tests/fixtures/course_custom_fields_owner.csv'),
+            field::TABLE => elispm::file('tests/fixtures/course_custom_fields.csv'),
+            field_contextlevel::TABLE => elispm::file('tests/fixtures/course_custom_fields_contextlevels.csv'),
+            field_owner::TABLE => elispm::file('tests/fixtures/course_custom_fields_owner.csv'),
         ));
         $this->loadDataSet($dataset);
     }

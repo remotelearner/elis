@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -40,7 +40,7 @@ class deepsight_action_enroledit extends deepsight_action_standard {
      * Sets the action's label from language string.
      */
     protected function postconstruct() {
-        $this->label = get_string('ds_action_edit', 'elis_program');
+        $this->label = get_string('ds_action_edit', 'local_elisprogram');
     }
 
     /**
@@ -124,9 +124,9 @@ class deepsight_action_enroledit extends deepsight_action_standard {
         // Completion status ints to labels.
         if (isset($enroldata['completestatusid'])) {
             $choices = array(
-                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'),
-                STUSTATUS_PASSED => get_string('passed', 'elis_program'),
-                STUSTATUS_FAILED => get_string('failed', 'elis_program'),
+                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'local_elisprogram'),
+                STUSTATUS_PASSED => get_string('passed', 'local_elisprogram'),
+                STUSTATUS_FAILED => get_string('failed', 'local_elisprogram'),
             );
             $enroldata['completestatusid'] = $choices[$enroldata['completestatusid']];
         }
@@ -152,41 +152,41 @@ class deepsight_action_enroledit extends deepsight_action_standard {
         $opts['condition'] = $this->condition;
         $opts['opts']['actionurl'] = $this->endpoint;
         $opts['opts']['mode'] = 'edit';
-        $opts['opts']['lang_enrolment_date'] = get_string('enrolment_time', 'elis_program');
-        $opts['opts']['lang_completion_status'] = get_string('student_status', 'elis_program');
-        $opts['opts']['lang_completion_notcomplete'] = get_string('n_completed', 'elis_program');
-        $opts['opts']['lang_completion_passed'] = get_string('passed', 'elis_program');
-        $opts['opts']['lang_completion_failed'] = get_string('failed', 'elis_program');
-        $opts['opts']['lang_completion_on'] = get_string('ds_completion_on', 'elis_program');
-        $opts['opts']['lang_grade'] = get_string('student_grade', 'elis_program');
-        $opts['opts']['lang_credits'] = get_string('student_credits', 'elis_program');
-        $opts['opts']['lang_lock'] = get_string('student_lock', 'elis_program');
-        $opts['opts']['lang_locked'] = get_string('student_locked', 'elis_program');
-        $opts['opts']['lang_time_graded'] = get_string('date_graded', 'elis_program');
-        $opts['opts']['lang_enroldata'] = get_string('enrolment_data', 'elis_program');
-        $opts['opts']['lang_learning_objectives'] = get_string('completion_elements', 'elis_program');
-        $opts['opts']['lang_bulk_confirm'] = get_string('ds_bulk_confirm', 'elis_program');
-        $opts['opts']['lang_enrolled'] = get_string('enroled', 'elis_program');
+        $opts['opts']['lang_enrolment_date'] = get_string('enrolment_time', 'local_elisprogram');
+        $opts['opts']['lang_completion_status'] = get_string('student_status', 'local_elisprogram');
+        $opts['opts']['lang_completion_notcomplete'] = get_string('n_completed', 'local_elisprogram');
+        $opts['opts']['lang_completion_passed'] = get_string('passed', 'local_elisprogram');
+        $opts['opts']['lang_completion_failed'] = get_string('failed', 'local_elisprogram');
+        $opts['opts']['lang_completion_on'] = get_string('ds_completion_on', 'local_elisprogram');
+        $opts['opts']['lang_grade'] = get_string('student_grade', 'local_elisprogram');
+        $opts['opts']['lang_credits'] = get_string('student_credits', 'local_elisprogram');
+        $opts['opts']['lang_lock'] = get_string('student_lock', 'local_elisprogram');
+        $opts['opts']['lang_locked'] = get_string('student_locked', 'local_elisprogram');
+        $opts['opts']['lang_time_graded'] = get_string('date_graded', 'local_elisprogram');
+        $opts['opts']['lang_enroldata'] = get_string('enrolment_data', 'local_elisprogram');
+        $opts['opts']['lang_learning_objectives'] = get_string('completion_elements', 'local_elisprogram');
+        $opts['opts']['lang_bulk_confirm'] = get_string('ds_bulk_confirm', 'local_elisprogram');
+        $opts['opts']['lang_enrolled'] = get_string('enroled', 'local_elisprogram');
         $opts['opts']['lang_months'] = array(
-            0 => get_string('month_jan_short', 'elis_program'),
-            1 => get_string('month_feb_short', 'elis_program'),
-            2 => get_string('month_mar_short', 'elis_program'),
-            3 => get_string('month_apr_short', 'elis_program'),
-            4 => get_string('month_may_short', 'elis_program'),
-            5 => get_string('month_jun_short', 'elis_program'),
-            6 => get_string('month_jul_short', 'elis_program'),
-            7 => get_string('month_aug_short', 'elis_program'),
-            8 => get_string('month_sep_short', 'elis_program'),
-            9 => get_string('month_oct_short', 'elis_program'),
-            10 => get_string('month_nov_short', 'elis_program'),
-            11 => get_string('month_dec_short', 'elis_program')
+            0 => get_string('month_jan_short', 'local_elisprogram'),
+            1 => get_string('month_feb_short', 'local_elisprogram'),
+            2 => get_string('month_mar_short', 'local_elisprogram'),
+            3 => get_string('month_apr_short', 'local_elisprogram'),
+            4 => get_string('month_may_short', 'local_elisprogram'),
+            5 => get_string('month_jun_short', 'local_elisprogram'),
+            6 => get_string('month_jul_short', 'local_elisprogram'),
+            7 => get_string('month_aug_short', 'local_elisprogram'),
+            8 => get_string('month_sep_short', 'local_elisprogram'),
+            9 => get_string('month_oct_short', 'local_elisprogram'),
+            10 => get_string('month_nov_short', 'local_elisprogram'),
+            11 => get_string('month_dec_short', 'local_elisprogram')
         );
-        $opts['opts']['lang_waitlist_headers'] = get_string('ds_waitlist_headers', 'elis_program');
-        $opts['opts']['lang_waitlist_overenrol'] = get_string('over_enrol', 'elis_program');
-        $opts['opts']['lang_waitlist_add'] = get_string('ds_add_to_waitlist', 'elis_program');
-        $opts['opts']['lang_waitlist_skip'] = get_string('skip_enrolment', 'elis_program');
-        $opts['opts']['lang_general_error'] = get_string('ds_unknown_error', 'elis_program');
-        $opts['opts']['lang_all_users'] = get_string('ds_allusers', 'elis_program');
+        $opts['opts']['lang_waitlist_headers'] = get_string('ds_waitlist_headers', 'local_elisprogram');
+        $opts['opts']['lang_waitlist_overenrol'] = get_string('over_enrol', 'local_elisprogram');
+        $opts['opts']['lang_waitlist_add'] = get_string('ds_add_to_waitlist', 'local_elisprogram');
+        $opts['opts']['lang_waitlist_skip'] = get_string('skip_enrolment', 'local_elisprogram');
+        $opts['opts']['lang_general_error'] = get_string('ds_unknown_error', 'local_elisprogram');
+        $opts['opts']['lang_all_users'] = get_string('ds_allusers', 'local_elisprogram');
         return $opts;
     }
 
@@ -209,7 +209,7 @@ class deepsight_action_enroledit extends deepsight_action_standard {
         );
 
         if (student::can_manage_assoc($userid, $classid) !== true) {
-            throw new Exception(get_string('not_permitted', 'elis_program'));
+            throw new Exception(get_string('not_permitted', 'local_elisprogram'));
         }
 
         $enroldata = array();

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -49,11 +49,11 @@ class certificateform extends cmform {
         $mform->setType('entity_type', PARAM_TEXT);
 
         if (!empty($this->_customdata['nosettingfound'])) {
-            $mform->addElement('header', 'nosettingfound', get_string('nosettingfound', 'elis_program'));
+            $mform->addElement('header', 'nosettingfound', get_string('nosettingfound', 'local_elisprogram'));
         }
 
         // border drop down selection
-        $name = get_string('cert_border_setting', 'elis_program');
+        $name = get_string('cert_border_setting', 'local_elisprogram');
         $borders = function_exists('cm_certificate_get_borders')
                    ? cm_certificate_get_borders()
                    : array('Fancy1-blue.jpg'  => 'Fancy1-blue',
@@ -63,10 +63,10 @@ class certificateform extends cmform {
                            ''                 => 'None'); // for testing
 
         $mform->addElement('select', 'cert_border', $name, $borders);
-        $mform->addHelpButton('cert_border', 'cert_border_setting', 'elis_program');
+        $mform->addHelpButton('cert_border', 'cert_border_setting', 'local_elisprogram');
 
         // Seal drop down selection
-        $name = get_string('cert_seal_setting', 'elis_program');
+        $name = get_string('cert_seal_setting', 'local_elisprogram');
         $seals = function_exists('cm_certificate_get_seals')
                  ? cm_certificate_get_seals()
                  : array('Fancy.png' => 'Fancy', 'Logo.png' => 'Logo',
@@ -74,18 +74,18 @@ class certificateform extends cmform {
                          'Teamwork.png' => 'Teamwork', '' => 'None'); // for testing
 
         $mform->addElement('select', 'cert_seal', $name, $seals);
-        $mform->addHelpButton('cert_seal', 'cert_seal_setting', 'elis_program');
+        $mform->addHelpButton('cert_seal', 'cert_seal_setting', 'local_elisprogram');
 
         // Template drop down selection
-        $name = get_string('certificate_template_file', 'elis_program');
+        $name = get_string('certificate_template_file', 'local_elisprogram');
         $templates = cm_certificate_get_templates();
 
         $mform->addElement('select', 'cert_template', $name, $templates);
         $mform->setDefault('cert_template', 'crsentitydefault.php');
-        $mform->addHelpButton('cert_template', 'certificate_template_file', 'elis_program');
+        $mform->addHelpButton('cert_template', 'certificate_template_file', 'local_elisprogram');
 
-        $name = get_string('cert_enable', 'elis_program');
-        $desc = '&nbsp;'.get_string('cert_enable_desc', 'elis_program');
+        $name = get_string('cert_enable', 'local_elisprogram');
+        $desc = '&nbsp;'.get_string('cert_enable_desc', 'local_elisprogram');
         $mform->addElement('advcheckbox', 'disable', $name, $desc, array('group' => 1), array(1, 0));
         $mform->setDefault('disable', 1);
 

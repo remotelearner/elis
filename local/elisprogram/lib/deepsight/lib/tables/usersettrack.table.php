@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
  */
 
 require_once(elispm::lib('data/clustertrack.class.php'));
-require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
+require_once(elispm::file('plugins/usetclassify/usersetclassification.class.php'));
 
 /**
  * A base class for managing userset - track associations. (one userset, multiple tracks)
@@ -47,8 +47,8 @@ class deepsight_datatable_usersettrack_base extends deepsight_datatable_track {
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_usersettrack.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_usersettrack.js';
         return $deps;
     }
 
@@ -74,7 +74,7 @@ class deepsight_datatable_usersettrack_assigned extends deepsight_datatable_user
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langautoenrol = get_string('usersettrack_autoenrol', 'elis_program');
+        $langautoenrol = get_string('usersettrack_autoenrol', 'local_elisprogram');
         $filters = parent::get_filters();
         $fielddata = array('clsttrk.autoenrol' => $langautoenrol);
         $autoenrol = new deepsight_filter_menuofchoices($this->DB, 'autoenrol', $langautoenrol, $fielddata, $this->endpoint);
@@ -177,7 +177,7 @@ class deepsight_datatable_usersettrack_available extends deepsight_datatable_use
     protected function get_filter_sql_permissions() {
         global $USER;
         $ctxlevel = 'track';
-        $perm = 'elis/program:associate';
+        $perm = 'local/elisprogram:associate';
         $additionalfilters = array();
         $additionalparams = array();
         $associatectxs = pm_context_set::for_user_with_capability($ctxlevel, $perm, $USER->id);

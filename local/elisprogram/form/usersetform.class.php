@@ -1,27 +1,27 @@
 <?php
-/*
-*  ELIS(TM): Enterprise Learning Intelligence Suite
-*
-*  Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
-*
-*  This program is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  (at your option) any later version.
-*
-*  This program is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*
-*  @package    elis_program
-*  @author     Remote-Learner.net Inc
-*  @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-*  @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
-*/
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    local_elisprogram
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
+ */
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -47,29 +47,29 @@ class usersetform extends cmform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('text', 'name', get_string('userset_name', 'elis_program'));
+        $mform->addElement('text', 'name', get_string('userset_name', 'local_elisprogram'));
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', get_string('required'), 'required', NULL, 'client');
-        $mform->addHelpButton('name', 'userset_name', 'elis_program');
+        $mform->addHelpButton('name', 'userset_name', 'local_elisprogram');
 
-        $mform->addElement('textarea', 'display', get_string('userset_description', 'elis_program'), array('cols'=>40, 'rows'=>2));
+        $mform->addElement('textarea', 'display', get_string('userset_description', 'local_elisprogram'), array('cols'=>40, 'rows'=>2));
         $mform->setType('display', PARAM_CLEAN);
-        $mform->addHelpButton('display', 'userset_description', 'elis_program');
+        $mform->addHelpButton('display', 'userset_description', 'local_elisprogram');
 
         $current_cluster_id = (isset($this->_customdata['obj']->id)) ? $this->_customdata['obj']->id : '';
 
         //obtain the non-child clusters that we could become the child of, with availability
         //determined based on the edit capability
-        $contexts = usersetpage::get_contexts('elis/program:userset_edit');
+        $contexts = usersetpage::get_contexts('local/elisprogram:userset_edit');
         $non_child_clusters = cluster_get_non_child_clusters($current_cluster_id, $contexts);
 
         //parent dropdown
-        $mform->addElement('select', 'parent', get_string('userset_parent', 'elis_program'), $non_child_clusters);
-        $mform->addHelpButton('parent', 'userset_parent', 'elis_program');
+        $mform->addElement('select', 'parent', get_string('userset_parent', 'local_elisprogram'), $non_child_clusters);
+        $mform->addHelpButton('parent', 'userset_parent', 'local_elisprogram');
 
         // allow plugins to add their own fields
 
-        $mform->addElement('header', 'userassociationfieldset', get_string('userset_userassociation', 'elis_program'));
+        $mform->addElement('header', 'userassociationfieldset', get_string('userset_userassociation', 'local_elisprogram'));
 
         $plugins = get_plugin_list(userset::ENROL_PLUGIN_TYPE);
         foreach ($plugins as $plugin => $plugindir) {
@@ -78,7 +78,7 @@ class usersetform extends cmform {
         }
 
         // custom fields
-        $this->add_custom_fields('cluster', 'elis/program:userset_edit', 'elis/program:userset_view', 'cluster');
+        $this->add_custom_fields('cluster', 'local/elisprogram:userset_edit', 'local/elisprogram:userset_view', 'cluster');
 
         $this->add_action_buttons();
     }
@@ -109,8 +109,8 @@ class usersetdeleteform extends cmform {
         $mform->setType('confirm', PARAM_INT);
 
         $radioarray = array();
-        $radioarray[] = &$mform->createElement('radio', 'deletesubs', '', get_string('deletesubs', 'elis_program'), 1);
-        $radioarray[] = &$mform->createElement('radio', 'deletesubs', '', get_string('promotesubs', 'elis_program'), 0);
+        $radioarray[] = &$mform->createElement('radio', 'deletesubs', '', get_string('deletesubs', 'local_elisprogram'), 1);
+        $radioarray[] = &$mform->createElement('radio', 'deletesubs', '', get_string('promotesubs', 'local_elisprogram'), 0);
         $mform->addGroup($radioarray, 'deletesubs', '', '<br />', false);
         $mform->setDefault('deletesubs', 0);
 

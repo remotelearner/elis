@@ -151,7 +151,7 @@ $pages = array(
     'health' => array('class' => 'healthpage',
                       'file' => 'healthpage.class.php'),
     'clstclass' => array('class' => 'usersetclassificationpage',
-                         'file' => 'plugins/userset_classification/usersetclassificationpage.class.php'),
+                         'file' => 'plugins/usetclassify/usersetclassificationpage.class.php'),
     'dim' => array('class' => 'dataimportpage',
                    'file' => 'elis_ip/elis_ip_page.php'),
     'dftcls' => array('class' => 'configclsdefaultpage',
@@ -186,7 +186,7 @@ if (isset($pages[$section])) {
     include elispm::file('dashboardpage.class.php');
     $PAGE = new dashboardpage();
 }
-$PAGE->requires->css('/elis/program/icons.css');
+$PAGE->requires->css('/local/elisprogram/icons.css');
 // ELIS-3042
 if (empty($PAGE->nologin) && !isloggedin()) {
     redirect($CFG->wwwroot);

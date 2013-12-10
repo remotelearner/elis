@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('lib.php'));
@@ -34,7 +34,7 @@ require_once(elispm::lib('data/usermoodle.class.php'));
 
 /**
  * Class for testing the pm_update_student_progress method and making sure it delegates to the appropriate methods.
- * @group elis_program
+ * @group local_elisprogram
  */
 class pmupdatestudentprogress_testcase extends elis_database_test {
 
@@ -49,15 +49,15 @@ class pmupdatestudentprogress_testcase extends elis_database_test {
         // Import CSV data.
         $dataset = $this->createCsvDataSet(array(
             // Need PM course to create PM class.
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
             // Need PM classes to create associations.
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
             // Set up associated users.
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            usermoodle::TABLE => elis::component_file('program', 'tests/fixtures/user_moodle.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            usermoodle::TABLE => elispm::file('tests/fixtures/user_moodle.csv'),
             // Set up learning objectives.
-            coursecompletion::TABLE => elis::component_file('program', 'tests/fixtures/course_completion.csv'),
+            coursecompletion::TABLE => elispm::file('tests/fixtures/course_completion.csv'),
         ));
         $this->loadDataSet($dataset);
 

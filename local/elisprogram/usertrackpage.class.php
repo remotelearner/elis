@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -105,7 +105,7 @@ class usertrackpage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $userviewctx = pm_context_set::for_user_with_capability('user', 'elis/program:user_view', $USER->id);
+        $userviewctx = pm_context_set::for_user_with_capability('user', 'local/elisprogram:user_view', $USER->id);
         return ($userviewctx->context_allowed($id, 'user') === true) ? true : false;
     }
 
@@ -118,7 +118,7 @@ class usertrackpage extends deepsightpage {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
         $canview = $this->can_do_default();
-        $associatectx = pm_context_set::for_user_with_capability('user', 'elis/program:associate', $USER->id);
+        $associatectx = pm_context_set::for_user_with_capability('user', 'local/elisprogram:associate', $USER->id);
         return ($canview === true && $associatectx->context_allowed($id, 'user') === true) ? true : false;
     }
 }
@@ -194,7 +194,7 @@ class trackuserpage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $userviewctx = pm_context_set::for_user_with_capability('track', 'elis/program:track_view', $USER->id);
+        $userviewctx = pm_context_set::for_user_with_capability('track', 'local/elisprogram:track_view', $USER->id);
         return ($userviewctx->context_allowed($id, 'track') === true) ? true : false;
     }
 

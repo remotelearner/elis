@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,11 +25,11 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/usertrack.class.php'));
-require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+require_once(elispm::file('enrol/userset/moodleprofile/userset_profile.class.php'));
 require_once(elispm::lib('data/clusterassignment.class.php'));
 require_once(elispm::lib('data/clustertrack.class.php'));
 require_once(elispm::lib('data/track.class.php'));
@@ -40,7 +40,7 @@ require_once(elispm::lib('data/userset.class.php'));
 
 /**
  * Test trackassignment get_available_users.
- * @group elis_program
+ * @group local_elisprogram
  */
 class trackassignmentgetavailableusers_testcase extends elis_database_test {
 
@@ -49,10 +49,10 @@ class trackassignmentgetavailableusers_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            curriculum::TABLE => elis::component_file('program', 'tests/fixtures/track_curriculum_available_users.csv'),
-            track::TABLE => elis::component_file('program', 'tests/fixtures/track_trackassignment_available_users.csv'),
-            usertrack::TABLE => elis::component_file('program', 'tests/fixtures/usertrack_trackassignment_available_users.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/user_trackassignment_available_users.csv'),
+            curriculum::TABLE => elispm::file('tests/fixtures/track_curriculum_available_users.csv'),
+            track::TABLE => elispm::file('tests/fixtures/track_trackassignment_available_users.csv'),
+            usertrack::TABLE => elispm::file('tests/fixtures/usertrack_trackassignment_available_users.csv'),
+            user::TABLE => elispm::file('tests/fixtures/user_trackassignment_available_users.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -67,7 +67,7 @@ class trackassignmentgetavailableusers_testcase extends elis_database_test {
         // Set up a test role that allows users to enrol users in tracks.
         $roleid = create_role('trackenrol', 'trackenrol', 'trackenrol');
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
-        assign_capability('elis/program:track_enrol', CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability('local/elisprogram:track_enrol', CAP_ALLOW, $roleid, $syscontext->id);
 
         // Set up our current user.
         $activeuser = new user(array(
@@ -294,7 +294,7 @@ class trackassignmentgetavailableusers_testcase extends elis_database_test {
     }
 
     /**
-     * Validate that the listing respects the elis/program:track_enrol_userset_user
+     * Validate that the listing respects the local/elisprogram:track_enrol_userset_user
      * capability as long as the appropriate userset and track are associated to
      * one another and the target user is in the userset
      */
@@ -348,7 +348,7 @@ class trackassignmentgetavailableusers_testcase extends elis_database_test {
         // Set up our test role.
         $roleid = create_role('testrole', 'testrole', 'testrole');
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
-        assign_capability('elis/program:track_enrol_userset_user', CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability('local/elisprogram:track_enrol_userset_user', CAP_ALLOW, $roleid, $syscontext->id);
 
         // Perform the role necessary assignment.
         $moodleuser = $DB->get_record('user', array('username' => 'activeuser'));

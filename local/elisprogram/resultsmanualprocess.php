@@ -50,10 +50,10 @@ if ((! $context) || (($context->contextlevel != CONTEXT_ELIS_CLASS) && ($context
 // Set page context.  Needed for custom field synchronization with Moodle users.
 $PAGE->set_context($context);
 
-$capability = 'elis/program:course_edit';
+$capability = 'local/elisprogram:course_edit';
 
 if ($context->contextlevel == $classlevel) {
-    $capability = 'elis/program:class_edit';
+    $capability = 'local/elisprogram:class_edit';
 }
 
 if (! has_capability($capability, $context)) {

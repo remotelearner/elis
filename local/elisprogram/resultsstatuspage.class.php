@@ -295,7 +295,7 @@ class course_enginestatuspage extends enginestatuspage {
      * @return bool True if the user has permission to use the default action
      */
     function can_do_default() {
-        return has_capability('elis/program:course_view', $this->get_context());
+        return has_capability('local/elisprogram:course_view', $this->get_context());
     }
 
     /**
@@ -303,7 +303,7 @@ class course_enginestatuspage extends enginestatuspage {
      * @return array the filter sql and sql parameters
      */
     public function table_filter() {
-        $contexts = pmclasspage::get_contexts('elis/program:class_view');
+        $contexts = pmclasspage::get_contexts('local/elisprogram:class_view');
         if ($contexts != null) {
             $filterobj = $contexts->get_filter('id', 'class');
             return $filterobj->get_sql(false, 'cc');

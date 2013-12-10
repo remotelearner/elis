@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -37,7 +37,7 @@ abstract class certificatepage extends pm_page {
     /**
      * Language file used within this class.
      */
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     /**
      * @var string The data class used within this class.
@@ -96,7 +96,7 @@ abstract class certificatepage extends pm_page {
      * @return bool True if the user has permission to use the default action
      */
     public function can_do_default() {
-        return has_capability('elis/program:'.$this->type.'_edit', $this->get_context());
+        return has_capability('local/elisprogram:'.$this->type.'_edit', $this->get_context());
     }
 
     /**
@@ -367,7 +367,7 @@ class course_certificatepage extends certificatepage {
      * @return bool True if the user has permission to use the default action
      */
     public function can_do_default() {
-        return has_capability('elis/program:course_view', $this->get_context());
+        return has_capability('local/elisprogram:course_view', $this->get_context());
     }
 
     /**
@@ -376,7 +376,7 @@ class course_certificatepage extends certificatepage {
      * @return bool True if the user has permission to do edits
      */
     public function can_do_edit() {
-        return has_capability('elis/program:course_edit', $this->get_context());
+        return has_capability('local/elisprogram:course_edit', $this->get_context());
     }
 
     /**

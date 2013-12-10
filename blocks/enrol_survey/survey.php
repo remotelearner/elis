@@ -29,10 +29,10 @@
 require_once(dirname(__FILE__) .'/../../config.php');
 require_once($CFG->dirroot .'/blocks/enrol_survey/forms.php');
 require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
-require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-require_once($CFG->dirroot .'/elis/program/lib/lib.php');
-require_once($CFG->dirroot .'/elis/program/lib/deprecatedlib.php'); // cm_get_crlmuserid()
-require_once($CFG->dirroot .'/elis/program/lib/data/user.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/deprecatedlib.php'); // cm_get_crlmuserid()
+require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
 global $COURSE, $DB, $ME, $OUTPUT, $PAGE, $USER, $block;
 

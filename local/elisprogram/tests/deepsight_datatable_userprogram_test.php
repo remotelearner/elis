@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,7 +26,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('deepsightpage.class.php'));
@@ -130,7 +130,7 @@ class deepsight_datatable_userprogram_available_mock extends deepsight_datatable
 
 /**
  * Tests userprogram datatable functions.
- * @group elis_program
+ * @group local_elisprogram
  * @group deepsight
  */
 class deepsight_datatable_userprogram_testcase extends deepsight_datatable_searchresults_test {
@@ -252,7 +252,7 @@ class deepsight_datatable_userprogram_testcase extends deepsight_datatable_searc
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:program_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:program_enrol', get_context_instance(CONTEXT_SYSTEM));
 
         // Construct test table.
         $table = new deepsight_datatable_userprogram_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
@@ -345,7 +345,7 @@ class deepsight_datatable_userprogram_testcase extends deepsight_datatable_searc
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:program_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:program_enrol', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($associations as $association) {
             $curriculumstudent = new curriculumstudent($association);
@@ -403,10 +403,10 @@ class deepsight_datatable_userprogram_testcase extends deepsight_datatable_searc
 
     /**
      * Test available table shows only programs the assigner has permission to enrol into based on the
-     * elis/program:program_enrol permissions on the program or higher context level.
+     * local/elisprogram:program_enrol permissions on the program or higher context level.
      *
      * @dataProvider dataprovider_available_permissions_program_enrol
-     * @param array $programstoallow An array of program IDs to assign the elis/program:program_enrol permission at.
+     * @param array $programstoallow An array of program IDs to assign the local/elisprogram:program_enrol permission at.
      * @param int $tableuserid The ID of the user we're managing.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
@@ -419,7 +419,7 @@ class deepsight_datatable_userprogram_testcase extends deepsight_datatable_searc
         // Set up permissions.
         $USER = $this->setup_permissions_test();
         foreach ($programstoallow as $programid) {
-            $this->give_permission_for_context($USER->id, 'elis/program:program_enrol', context_elis_program::instance($programid));
+            $this->give_permission_for_context($USER->id, 'local/elisprogram:program_enrol', context_elis_program::instance($programid));
         }
 
         // Construct test table.
@@ -644,10 +644,10 @@ class deepsight_datatable_userprogram_testcase extends deepsight_datatable_searc
 
     /**
      * Test available table shows only programs the user has permission to enrol into based on
-     * elis/program:program_enrol_userset_user permission on a parent userset.
+     * local/elisprogram:program_enrol_userset_user permission on a parent userset.
      *
      * @dataProvider dataprovider_available_permissions_program_enrol_userset_user
-     * @param array $usersetidsforperm An array of userset IDs to assign the elis/program:program_enrol_userset_user on.
+     * @param array $usersetidsforperm An array of userset IDs to assign the local/elisprogram:program_enrol_userset_user on.
      * @param array $clusterassignments An array of arrays of parameters to construct clusterassignments with.
      * @param array $clustercurriculums An array of arrays of parameters to construct clustercurriculums with.
      * @param int $tableuserid The id of the user to manage associations for.
@@ -677,7 +677,7 @@ class deepsight_datatable_userprogram_testcase extends deepsight_datatable_searc
         accesslib_clear_all_caches(true);
 
         // Set up capabilities.
-        $capability = 'elis/program:program_enrol_userset_user';
+        $capability = 'local/elisprogram:program_enrol_userset_user';
         foreach ($usersetidsforperm as $usersetid) {
             $this->give_permission_for_context($USER->id, $capability, context_elis_userset::instance($usersetid));
         }

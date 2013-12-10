@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,11 +25,11 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 /**
- * Quick test of all /elis/program/lib/data/*.class.php files to check $_dbfield_ properties and associations.
- * @group elis_program
+ * Quick test of all /local/elisprogram/lib/data/*.class.php files to check $_dbfield_ properties and associations.
+ * @group local_elisprogram
  */
 class dataobjectbuildintest_testcase extends basic_testcase {
 
@@ -38,7 +38,7 @@ class dataobjectbuildintest_testcase extends basic_testcase {
      */
     public function test_alldatafiles() {
         global $CFG;
-        $datadir = "{$CFG->dirroot}/elis/program/lib/data";
+        $datadir = "{$CFG->dirroot}/local/elisprogram/lib/data";
         $datafiles = scandir($datadir);
         $dbfielderrors = 0;
         $associationerrors = 0;

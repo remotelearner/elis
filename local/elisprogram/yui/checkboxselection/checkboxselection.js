@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-YUI.add('moodle-elis_program-checkboxselection', function(Y) {
+YUI.add('moodle-local_elisprogram-checkboxselection', function(Y) {
 
     /**
      * The checkboxselection module
@@ -41,7 +41,7 @@ YUI.add('moodle-elis_program-checkboxselection', function(Y) {
     }
 
     /**
-     * @class M.elis_program.checkboxselection
+     * @class M.local_elisprogram.checkboxselection
      */
     Y.extend(MODULEBASE, Y.Base, {
 
@@ -197,7 +197,7 @@ YUI.add('moodle-elis_program-checkboxselection', function(Y) {
             // var data = YAHOO.util.Connect.setForm(target);
             var link = target.getAttribute('action');
             var selected = Y.JSON.stringify(this.selections);
-            this.lastrequest = link+'?mode=bare&selected_checkboxes='+selected; // TBD: link + '?' + data 
+            this.lastrequest = link+'?mode=bare&selected_checkboxes='+selected; // TBD: link + '?' + data
             var cfg = {
                 method: 'POST',
                 data: 'mode=bare&selected_checkboxes='+selected,
@@ -376,8 +376,8 @@ YUI.add('moodle-elis_program-checkboxselection', function(Y) {
     }
     );
 
-    // Ensure that M.elis_program exists and that modulebase is initialised correctly
-    M.elis_program = M.elis_program || {};
+    // Ensure that M.local_elisprogram exists and that modulebase is initialised correctly
+    M.local_elisprogram = M.local_elisprogram || {};
 
     /**
      * Entry point for checkboxselection module
@@ -385,7 +385,7 @@ YUI.add('moodle-elis_program-checkboxselection', function(Y) {
      * @param string divid the div id for internal links
      * @return object the checkboxselection object
      */
-    M.elis_program.init_checkboxselection = function(basepage, divid) {
+    M.local_elisprogram.init_checkboxselection = function(basepage, divid) {
         var args = { basepage: basepage, divid: divid };
         return new MODULEBASE(args);
     }

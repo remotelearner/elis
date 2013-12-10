@@ -1,10 +1,7 @@
 <?php
 /**
- * Find and lock all unlocked completion elements scores and student class grades which should be locked
- * but cannot be updated because the Moodle referenced grade values do not exist anymore.
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,18 +16,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
+ */
+
+/**
+ * Find and lock all unlocked completion elements scores and student class grades which should be locked
+ * but cannot be updated because the Moodle referenced grade values do not exist anymore.
  */
 
 define('CLI_SCRIPT', true);
 
 require_once(dirname(dirname(dirname(dirname(__FILE__)))).'/config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('data/student.class.php'));
 
 if (isset($_SERVER['REMOTE_ADDR'])) {
@@ -41,7 +42,7 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 $dangling_total = 0;
 $dangling_fixed = 0;
 
-mtrace(' >>> '.get_string('health_dangling_check', 'elis_program'));
+mtrace(' >>> '.get_string('health_dangling_check', 'local_elisprogram'));
 
 // Cleanup unlocked, passed completion scores which are not associated with a valid Moodle grade item
 $sql = "SELECT ccg.id, ccg.locked, ccg.timemodified
@@ -124,11 +125,11 @@ $a = new stdClass;
 $a->fixed = $dangling_fixed;
 $a->total = $dangling_total;
 
-mtrace(' >>> '.get_string('health_dangling_fixed_counts', 'elis_program', $a));
+mtrace(' >>> '.get_string('health_dangling_fixed_counts', 'local_elisprogram', $a));
 
 if ($dangling_fixed > 0) {
     // Make a note that class grades are being recalculated
-    mtrace(' >>> '.get_string('health_dangling_recalculate', 'elis_program'), '');
+    mtrace(' >>> '.get_string('health_dangling_recalculate', 'local_elisprogram'), '');
     pm_update_enrolment_status();
-    mtrace(get_string('done', 'elis_program').'!');
+    mtrace(get_string('done', 'local_elisprogram').'!');
 }

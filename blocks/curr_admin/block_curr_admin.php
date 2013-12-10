@@ -24,7 +24,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('lib.php'));
 require_once(elis::plugin_file('block_curr_admin', 'lib.php'));
 require_once(elispm::lib('menuitem.class.php'));
@@ -108,7 +108,7 @@ class block_curr_admin extends block_base {
     /// Determine the users CM access level.
         $access = cm_determine_access($USER->id);
 
-        //make sure elis_program / custom contexts set up correctly
+        //make sure local_elisprogram / custom contexts set up correctly
         //to prevent error before the upgrade to ELIS 2
         if (empty($access) || $this->content !== NULL || !defined('CONTEXT_ELIS_PROGRAM')) {
             return $this->content;
@@ -116,28 +116,28 @@ class block_curr_admin extends block_base {
 
         //if we are not on a PM page, disable the expansion of
         //entities in the curr admin tree (logic in curriculum/index.php)
-        if (!is_a($PAGE, 'pm_page') && $PAGE->pagetype != 'admin-setting-elis_program_settings') {
+        if (!is_a($PAGE, 'pm_page') && $PAGE->pagetype != 'admin-setting-local_elisprogram_settings') {
             unset($USER->currentitypath);
         }
 
         // Include Icon CSS.
-        $PAGE->requires->css('/elis/program/icons.css');
+        $PAGE->requires->css('/local/elisprogram/icons.css');
 
         //CM entities for placement at the top of the menu
         $cm_entity_pages = array();
         $cm_entity_pages[] = new menuitem('root');
 
-        $num_block_icons = isset(elis::$config->elis_program->num_block_icons) ? elis::$config->elis_program->num_block_icons : 5;
+        $num_block_icons = isset(elis::$config->local_elisprogram->num_block_icons) ? elis::$config->local_elisprogram->num_block_icons : 5;
 
         /*****************************************
          * Clusters
          *****************************************/
-        if (!isset(elis::$config->elis_program->display_clusters_at_top_level) || !empty(elis::$config->elis_program->display_clusters_at_top_level)) {
+        if (!isset(elis::$config->local_elisprogram->display_clusters_at_top_level) || !empty(elis::$config->local_elisprogram->display_clusters_at_top_level)) {
             $manageclusters_css_class = block_curr_admin_get_item_css_class('manageclusters');
             $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
 
             require_once elispm::lib('contexts.php');
-            $context_result = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_view', $USER->id);
+            $context_result = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_view', $USER->id);
             $extrafilters = array('contexts' => $context_result,'parent' => 0);
             $num_records = cluster_count_records('', '', $extrafilters);
 
@@ -147,11 +147,11 @@ class block_curr_admin extends block_base {
                                     'action' => 'view');
 
                     //count sub-clusters
-                    $cluster_filter = array('contexts' => usersetpage::get_contexts('elis/program:userset_view'));
+                    $cluster_filter = array('contexts' => usersetpage::get_contexts('local/elisprogram:userset_view'));
                     $cluster_count = cluster_count_records('', '', array('parent' => $cluster->id), $cluster_filter);
 
                     //count associated curricula
-                    $curriculum_filter = array('contexts' => curriculumpage::get_contexts('elis/program:program_view'));
+                    $curriculum_filter = array('contexts' => curriculumpage::get_contexts('local/elisprogram:program_view'));
                     $curriculum_count = clustercurriculum::count_curricula($cluster->id, $curriculum_filter);
 
                     $isLeaf = empty($cluster_count) &&
@@ -169,12 +169,12 @@ class block_curr_admin extends block_base {
         /*****************************************
          * Curricula
          *****************************************/
-        if(!empty(elis::$config->elis_program->display_curricula_at_top_level)) {
+        if(!empty(elis::$config->local_elisprogram->display_curricula_at_top_level)) {
             $managecurricula_css_class = block_curr_admin_get_item_css_class('managecurricula');
             $curriculum_css_class = block_curr_admin_get_item_css_class('curriculum_instance');
 
             require_once elispm::file('curriculumpage.class.php');
-            $num_records = curriculum_count_records('', '', curriculumpage::get_contexts('elis/program:program_view'));
+            $num_records = curriculum_count_records('', '', curriculumpage::get_contexts('local/elisprogram:program_view'));
 
             $curricula = $DB->get_recordset(curriculum::TABLE, null, 'priority ASC, name ASC', '*', 0, $num_block_icons);
             foreach($curricula as $curriculum) {
@@ -182,15 +182,15 @@ class block_curr_admin extends block_base {
                                 'action' => 'view');
 
                 //count associated courses
-                $course_filter = array('contexts' => coursepage::get_contexts('elis/program:course_view'));
+                $course_filter = array('contexts' => coursepage::get_contexts('local/elisprogram:course_view'));
                 $course_count = curriculumcourse_count_records($curriculum->id, '', '', $course_filter);
 
                 //count associated tracks
-                $track_contexts = trackpage::get_contexts('elis/program:track_view');
+                $track_contexts = trackpage::get_contexts('local/elisprogram:track_view');
                 $track_count = track_count_records('', '', $curriculum->id, 0, $track_contexts);
 
                 //count associated clusters
-                $cluster_filter = array('contexts' => usersetpage::get_contexts('elis/program:userset_view'));
+                $cluster_filter = array('contexts' => usersetpage::get_contexts('local/elisprogram:userset_view'));
                 $cluster_count = clustercurriculum::count_clusters($curriculum->id, 0, $cluster_filter);
 
                 $isLeaf = empty($course_count) &&
@@ -237,8 +237,8 @@ class block_curr_admin extends block_base {
                 new menuitem('customfields', new menuitempage('customfieldpage', '', array('level' => 'user')), null, '',
                              block_curr_admin_get_item_css_class('customfields')),
                 new menuitem('clusterclassification',
-                             new menuitempage('usersetclassificationpage', 'plugins/userset_classification/usersetclassificationpage.class.php'),
-                             null, get_string('userset_classification', 'pmplugins_userset_classification'), block_curr_admin_get_item_css_class('clusterclassification')),
+                             new menuitempage('usersetclassificationpage', 'plugins/usetclassify/usersetclassificationpage.class.php'),
+                             null, get_string('userset_classification', 'elisprogram_usetclassify'), block_curr_admin_get_item_css_class('clusterclassification')),
 
                 //Users
                 new menuitem('users', null, 'root', '', block_curr_admin_get_item_css_class('users', true)),
@@ -248,7 +248,7 @@ class block_curr_admin extends block_base {
                              block_curr_admin_get_item_css_class('manageclusters')),
 
                 //Curriculum
-                new menuitem('curr', null, 'root', get_string('curriculum', 'elis_program'),
+                new menuitem('curr', null, 'root', get_string('curriculum', 'local_elisprogram'),
                              block_curr_admin_get_item_css_class('curr', true)),
                 new menuitem('certificatelist', new menuitempage('certificatelistpage'), null, '',
                              block_curr_admin_get_item_css_class('certificatelist')),
@@ -260,25 +260,25 @@ class block_curr_admin extends block_base {
                              block_curr_admin_get_item_css_class('manageclasses')),
 
                 //Learning Plan
-                new menuitem('crscat', null, 'root', get_string('learningplan', 'elis_program'),
+                new menuitem('crscat', null, 'root', get_string('learningplan', 'local_elisprogram'),
                              block_curr_admin_get_item_css_class('crscat', true)),
                 new menuitem('currentcourses', new menuitempage('coursecatalogpage', '', array('action' => 'current')), null, '',
                              block_curr_admin_get_item_css_class('currentcourses')),
                 new menuitem('availablecourses', new menuitempage('coursecatalogpage', '', array('action' => 'available')), null, '',
                              block_curr_admin_get_item_css_class('availablecourses')),
                 new menuitem('waitlist', new menuitempage('coursecatalogpage', '', array('action' => 'waitlist')), null,
-                             get_string('waitlistcourses', 'elis_program'), block_curr_admin_get_item_css_class('waitlist')),
+                             get_string('waitlistcourses', 'local_elisprogram'), block_curr_admin_get_item_css_class('waitlist')),
 
                 //Reports
-                new menuitem('rept', null, 'root', get_string('reports', 'elis_program'), block_curr_admin_get_item_css_class('rept', true))
+                new menuitem('rept', null, 'root', get_string('reports', 'local_elisprogram'), block_curr_admin_get_item_css_class('rept', true))
 
         ));
 
         if (has_capability('moodle/course:managegroups', get_context_instance(CONTEXT_COURSE, $SITE->id))) {
-            if (elis::$config->pmplugins_userset_groups->site_course_userset_groups) {
+            if (elis::$config->elisprogram_usetgroups->site_course_userset_groups) {
                 $pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'pmplugins_userset_groups'), block_curr_admin_get_item_css_class('manageclusters'));
             }
-            if (elis::$config->pmplugins_userset_groups->userset_groupings) {
+            if (elis::$config->elisprogram_usetgroups->userset_groupings) {
                 $pages[] = new menuitem('frontpagegroupings', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/groupings.php?id={$SITE->id}"), 'admn', get_string('frontpagegroupings', 'pmplugins_userset_groups'), block_curr_admin_get_item_css_class('manageclusters'));
             }
         }
@@ -294,16 +294,16 @@ class block_curr_admin extends block_base {
         //merge in the reporting page links
         $pages = array_merge($pages, $report_pages);
 
-        if (empty(elis::$config->elis_program->userdefinedtrack)) {
+        if (empty(elis::$config->local_elisprogram->userdefinedtrack)) {
             $pages[] = new menuitem('managetracks', new menuitempage('trackpage'), null, '', block_curr_admin_get_item_css_class('managetracks'));
         }
 
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
-        if (has_capability('elis/program:config', $syscontext)) {
+        if (has_capability('local/elisprogram:config', $syscontext)) {
             $pages[] = new menuitem('configmanager',
                                     new menuitempage('url_page',
                                                      'lib/menuitem.class.php',
-                                                     "{$CFG->wwwroot}/admin/settings.php?section=elis_program_settings"),
+                                                     "{$CFG->wwwroot}/admin/settings.php?section=local_elisprogram_settings"),
                                     'admn', get_string('configuration'),
                                     block_curr_admin_get_item_css_class('configuration')
                 );
@@ -325,7 +325,7 @@ class block_curr_admin extends block_base {
         $this->content->text = $tree->convert_to_markup();
         $this->content->footer = '';
 
-        $PAGE->requires->yui_module('moodle-elis_program-menuitem', 'M.elis_program.init_menuitem', array($tree->get_js_object(), $CFG->httpswwwroot), null, true);
+        $PAGE->requires->yui_module('moodle-local_elisprogram-menuitem', 'M.local_elisprogram.init_menuitem', array($tree->get_js_object(), $CFG->httpswwwroot), null, true);
         return $this->content;
     }
 

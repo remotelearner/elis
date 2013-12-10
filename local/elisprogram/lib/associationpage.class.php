@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -42,7 +41,7 @@ require_once elispm::lib('page.class.php');
  *
  */
 class associationpage extends pm_page {
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
     /**
      * The name of the class used for data objects
      */
@@ -59,7 +58,7 @@ class associationpage extends pm_page {
 
     public function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:manage', $context);
+        return has_capability('local/elisprogram:manage', $context);
     }
 
     /**
@@ -182,7 +181,7 @@ class associationpage extends pm_page {
             $this->after_pm_entity_add($obj);
             $target = $this->get_new_page(array('id' => $id), true); // TBD: 's' => ... && 'action' => 'default' || 'view' && 2nd param true???
             redirect($target->url, ucwords(get_class($obj)) .' '. $obj->id .
-                                   ' '.  get_string('saved','elis_program') .'.');
+                                   ' '.  get_string('saved','local_elisprogram') .'.');
         } else {
             $this->_form = $form;
             $this->display('add');
@@ -216,7 +215,7 @@ class associationpage extends pm_page {
         /*if(!$obj->get_dbloaded()) { // TBD
             $sparam = new stdClass;
             $sparam->id = $id;
-            print_error('invalid_objectid', 'elis_program', '', $sparam);
+            print_error('invalid_objectid', 'local_elisprogram', '', $sparam);
         }*/
         $obj->load();
         //error_log("associationpage::display_edit(): obj->id = {$obj->id}");
@@ -421,7 +420,7 @@ class associationpage extends pm_page {
         $id = $this->required_param('id', PARAM_INT);
 
         $obj->load(); // force load, so that the confirmation notice has something to display
-        $message = get_string('confirm_delete_association', 'elis_program', $obj->to_object());
+        $message = get_string('confirm_delete_association', 'local_elisprogram', $obj->to_object());
 
         $target_page = $this->get_new_page(array('action' => 'default', 'id' => $id, 'sesskey' => sesskey()), true);
         $no_url = $target_page->url;
@@ -467,7 +466,7 @@ class associationpage extends pm_page {
         }
 
         //TODO: not returning something valid here... needs id=1
-        redirect($returnurl, get_string('notice_'.get_class($obj).'_deleted', 'elis_program', $obj->to_object()));
+        redirect($returnurl, get_string('notice_'.get_class($obj).'_deleted', 'local_elisprogram', $obj->to_object()));
     }
 
     /**
@@ -493,11 +492,11 @@ class associationpage extends pm_page {
             $is_searching = $alpha || $search;
 
             //display the appropriate "no items found" message
-            $a->search = $is_searching ? get_string('matchingsearch', 'elis_program') : '';
-            $a->obj = get_string($itemstr, 'elis_program');
+            $a->search = $is_searching ? get_string('matchingsearch', 'local_elisprogram') : '';
+            $a->obj = get_string($itemstr, 'local_elisprogram');
 
             //display the appropriate message in a div
-            echo html_writer::tag('div', get_string('noitems', 'elis_program', $a));
+            echo html_writer::tag('div', get_string('noitems', 'local_elisprogram', $a));
             return;
         }
 
@@ -598,7 +597,7 @@ class associationpage extends pm_page {
             if($tab['showbutton'] === true) {
                 $target = new $tab['page'](array_merge($tab['params'], $params));
                 if ($target->can_do()) {
-                    $buttons[] = html_writer::link($target->url, html_writer::empty_tag('img', array('title' => $tab['name'], 'alt' => $tab['name'], 'src' => $OUTPUT->pix_url($tab['image'], 'elis_program'))));
+                    $buttons[] = html_writer::link($target->url, html_writer::empty_tag('img', array('title' => $tab['name'], 'alt' => $tab['name'], 'src' => $OUTPUT->pix_url($tab['image'], 'local_elisprogram'))));
                 }
             }
         }

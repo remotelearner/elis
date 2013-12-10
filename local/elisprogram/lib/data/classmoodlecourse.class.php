@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
@@ -88,7 +87,7 @@ class classmoodlecourse extends elis_data_object {
         }
 
         $instructors = instructor::find(new field_filter('classid', $this->classid));
-        if (elis::$config->elis_program->default_instructor_role && $instructors->valid()) {
+        if (elis::$config->local_elisprogram->default_instructor_role && $instructors->valid()) {
             /// At this point we must switch over the other Moodle site's DB config, if needed
             if (!empty($this->siteconfig)) {
                 // TBD: implement this in the future if needed in v2
@@ -117,7 +116,7 @@ class classmoodlecourse extends elis_data_object {
                 }
 
                 if (!is_enrolled($context, $muserid)) {
-                    $plugin->enrol_user($enrol, $muserid, elis::$config->elis_program->default_instructor_role, 0, 0);
+                    $plugin->enrol_user($enrol, $muserid, elis::$config->local_elisprogram->default_instructor_role, 0, 0);
                 }
             }
 
@@ -391,7 +390,7 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 
             // no template defined, so do nothing
             if (empty($template->id) || empty($template->location)) {
-                print_error('notemplate', 'elis_program');
+                print_error('notemplate', 'local_elisprogram');
             }
             $classname  = $template->templateclass;
 

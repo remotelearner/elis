@@ -43,7 +43,7 @@
 
 function xmldb_block_curr_admin_upgrade($oldversion = 0) {
     global $CFG, $THEME, $DB;
-    require_once($CFG->dirroot . '/elis/program/lib/setup.php');
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     $dbman = $DB->get_manager();
 
     $result = true;
@@ -951,7 +951,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         // sync profile fields
         $fields = field::get_for_context_level($ctxlvl);
         $fields = $fields ? $fields : array();
-        require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
+        require_once(elis::plugin_file('elisfields_moodleprofile', 'custom_fields.php'));
         foreach ($fields as $field) {
             $fieldobj = new field($field);
             sync_profile_field_with_moodle($fieldobj);

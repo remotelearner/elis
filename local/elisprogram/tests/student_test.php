@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/classmoodlecourse.class.php'));
@@ -41,7 +41,7 @@ require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
  * Test student data object.
- * @group elis_program
+ * @group local_elisprogram
  */
 class student_testcase extends elis_database_test {
 
@@ -50,12 +50,12 @@ class student_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            student::TABLE => elis::component_file('program', 'tests/fixtures/student.csv'),
-            waitlist::TABLE => elis::component_file('program', 'tests/fixtures/waitlist2.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            student::TABLE => elispm::file('tests/fixtures/student.csv'),
+            waitlist::TABLE => elispm::file('tests/fixtures/waitlist2.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -65,15 +65,15 @@ class student_testcase extends elis_database_test {
      */
     protected function load_csv_data_moodlenrol() {
         $dataset = $this->createCsvDataSet(array(
-            'course' => elis::component_file('program', 'tests/fixtures/mdlcourse.csv'),
-            'enrol' => elis::component_file('program', 'tests/fixtures/enrol.csv'),
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
-            'user_enrolments' => elis::component_file('program', 'tests/fixtures/user_enrolments.csv'),
-            classmoodlecourse::TABLE => elis::component_file('program', 'tests/fixtures/class_moodle_course.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            student::TABLE => elis::component_file('program', 'tests/fixtures/student.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            usermoodle::TABLE => elis::component_file('program', 'tests/fixtures/usermoodle.csv'),
+            'course' => elispm::file('tests/fixtures/mdlcourse.csv'),
+            'enrol' => elispm::file('tests/fixtures/enrol.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
+            'user_enrolments' => elispm::file('tests/fixtures/user_enrolments.csv'),
+            classmoodlecourse::TABLE => elispm::file('tests/fixtures/class_moodle_course.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            student::TABLE => elispm::file('tests/fixtures/student.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            usermoodle::TABLE => elispm::file('tests/fixtures/usermoodle.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -213,15 +213,15 @@ class student_testcase extends elis_database_test {
         try {
             $student->delete();
         } catch (Exception $e) {
-            $this->assertEquals(get_string('message_nodestinationuser', 'elis_program'), $e->getMessage());
+            $this->assertEquals(get_string('message_nodestinationuser', 'local_elisprogram'), $e->getMessage());
         }
     }
 
     public function test_get_students() {
         // Fixture.
         $dataset = $this->createCsvDataSet(array(
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            student::TABLE => elis::component_file('program', 'tests/fixtures/student.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            student::TABLE => elispm::file('tests/fixtures/student.csv'),
         ));
         $this->loadDataSet($dataset);
 
@@ -245,8 +245,8 @@ class student_testcase extends elis_database_test {
     public function test_get_waiting() {
         // Fixture.
         $dataset = $this->createCsvDataSet(array(
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            waitlist::TABLE => elis::component_file('program', 'tests/fixtures/waitlist2.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            waitlist::TABLE => elispm::file('tests/fixtures/waitlist2.csv'),
         ));
         $this->loadDataSet($dataset);
 

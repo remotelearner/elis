@@ -32,7 +32,7 @@ $helphead = required_param('heading', PARAM_TEXT);
 $helptext = required_param('helptext', PARAM_TEXT);
 $ajax     = optional_param('ajax', 0, PARAM_BOOL);
 
-$PAGE->set_url('/elis/program/help.php');
+$PAGE->set_url('/local/elisprogram/help.php');
 $PAGE->set_pagelayout('popup');
 $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
 

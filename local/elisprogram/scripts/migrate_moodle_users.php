@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement-scripts
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
+
 if (!isset($_SERVER['REMOTE_ADDR'])) {
     define('CLI_SCRIPT', true);
 }
@@ -38,7 +38,7 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
     $PAGE->set_context($context);
     $PAGE->set_pagelayout('standard');
     $PAGE->set_url($FULLME);
-    $PAGE->set_title(get_string('health_user_sync', 'elis_program'));
+    $PAGE->set_title(get_string('health_user_sync', 'local_elisprogram'));
     echo $OUTPUT->header();
 }
 
@@ -47,6 +47,6 @@ pm_migrate_moodle_users();
 mtrace('Done.');
 
 if (isset($_SERVER['REMOTE_ADDR'])) {
-    echo '<p><a href="'. $CFG->wwwroot .'/elis/program/index.php?s=health">Go back to health check page</a></p>';
+    echo '<p><a href="'. $CFG->wwwroot .'/local/elisprogram/index.php?s=health">Go back to health check page</a></p>';
     echo $OUTPUT->footer();
 }

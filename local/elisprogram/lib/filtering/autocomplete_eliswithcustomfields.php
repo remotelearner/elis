@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis-program
- * @subpackage filtering
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -73,13 +72,13 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
 
         //instance fields - fields to search from the instance's table
         if (!isset($options['instance_fields'])) {
-            print_error('autocomplete_noinstance', 'elis_program');
+            print_error('autocomplete_noinstance', 'local_elisprogram');
         }
         $this->instance_fields = $options['instance_fields'];
 
         //get instance contextid
         if (!isset($options['contextlevel']) || !isset($this->context_level_map[$options['contextlevel']])) {
-            print_error('autocomplete_nocontext', 'elis_program');
+            print_error('autocomplete_nocontext', 'local_elisprogram');
         }
         $this->instancetable = 'crlm_'.$this->context_level_map[$options['contextlevel']];
         $this->contextlevel = $options['contextlevel'];

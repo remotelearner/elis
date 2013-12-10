@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elisprogram_usetthemes
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -31,15 +30,15 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @return  boolean  true  Returns true to satisfy install procedure
  */
-function xmldb_pmplugins_userset_themes_install() {
+function xmldb_elisprogram_usetthemes_install() {
     //set up the cluster theme category
     $theme_category = new field_category();
-    $theme_category->name = get_string('userset_theme_category', 'pmplugins_userset_themes');
+    $theme_category->name = get_string('userset_theme_category', 'elisprogram_usetthemes');
 
     //set up the theme priority field
     $theme_priority_field = new field();
     $theme_priority_field->shortname = '_elis_userset_themepriority';
-    $theme_priority_field->name = get_string('userset_theme_priority', 'pmplugins_userset_themes');
+    $theme_priority_field->name = get_string('userset_theme_priority', 'elisprogram_usetthemes');
     $theme_priority_field->datatype = 'int';
 
     //set up the field and category
@@ -51,13 +50,13 @@ function xmldb_pmplugins_userset_themes_install() {
                            'columns' => 30,
                            'rows' => 10,
                            'maxlength' => 2048,
-                           'help_file' => 'pmplugins_userset_themes/_elis_userset_themepriority');
+                           'help_file' => 'elisprogram_usetthemes/_elis_userset_themepriority');
     field_owner::ensure_field_owner_exists($theme_priority_field, 'manual', $owner_options);
 
     //set up the field for selecting the applicable theme
     $theme_field = new field();
     $theme_field->shortname = '_elis_userset_theme';
-    $theme_field->name = get_string('userset_theme', 'pmplugins_userset_themes');
+    $theme_field->name = get_string('userset_theme', 'elisprogram_usetthemes');
     $theme_field->datatype = 'char';
 
     //set up the field and category
@@ -70,7 +69,7 @@ function xmldb_pmplugins_userset_themes_install() {
                            'columns' => 30,
                            'rows' => 10,
                            'maxlength' => 2048,
-                           'help_file' => 'pmplugins_userset_themes/_elis_userset_theme');
+                           'help_file' => 'elisprogram_usetthemes/_elis_userset_theme');
     field_owner::ensure_field_owner_exists($theme_field, 'manual', $owner_options);
 
     return true;

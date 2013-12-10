@@ -47,7 +47,7 @@ $PAGE->set_cacheable(true);
 $PAGE->set_button('&nbsp;');
 
 //$navlinks = array();
-//$navlinks[] = array('name' => $blockname, 'link' => "{$CFG->wwwroot}/elis/program/index.php?action=requests&s=crp", 'type' => 'misc');
+//$navlinks[] = array('name' => $blockname, 'link' => "{$CFG->wwwroot}/local/elisprogram/index.php?action=requests&s=crp", 'type' => 'misc');
 //$navlinks[] = array('name' => $header, 'type' => 'misc');
 // TBD
 // $PAGE->navbar->add()

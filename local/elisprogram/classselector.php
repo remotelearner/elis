@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -32,8 +32,8 @@ require_login(SITEID, false);
 
 global $CFG, $PAGE, $OUTPUT, $DB;
 
-require_once($CFG->dirroot . '/elis/program/lib/lib.php');
-require_once($CFG->dirroot . '/elis/program/lib/selectionpopup.class.php');
+require_once($CFG->dirroot . '/local/elisprogram/lib/lib.php');
+require_once($CFG->dirroot . '/local/elisprogram/lib/selectionpopup.class.php');
 require_once($CFG->dirroot . '/lib/weblib.php');
 require_once($CFG->dirroot . '/lib/dml/moodle_database.php');
 
@@ -45,7 +45,7 @@ $element_update = required_param('id', PARAM_TEXT);
 $callback       = required_param('callback', PARAM_TEXT);
 
 
-$baseurl        = new moodle_url('/elis/program/classselector.php',
+$baseurl        = new moodle_url('/local/elisprogram/classselector.php',
                                 array('alpha'    => $letterselect,
                                       'search'   => $search,
                                       'id'       => $element_update,
@@ -54,7 +54,7 @@ $baseurl        = new moodle_url('/elis/program/classselector.php',
 $PAGE->set_url($baseurl);
 
 pmalphabox($baseurl);
-pmsearchbox('/elis/program/classselector.php');
+pmsearchbox('/local/elisprogram/classselector.php');
 
 echo html_writer::start_tag('center');
 
@@ -99,8 +99,8 @@ if (empty($alphawhere) and empty($searchwhere)) {
 
 }
 
-$colheader1 = get_string('results_course_desc_header', 'elis_program');
-$colheader2 = get_string('results_id_number_header', 'elis_program');
+$colheader1 = get_string('results_course_desc_header', 'local_elisprogram');
+$colheader2 = get_string('results_id_number_header', 'local_elisprogram');
 
 $from = "{$CFG->prefix}crlm_course cd RIGHT JOIN {$CFG->prefix}crlm_class cls ON cd.id = cls.courseid ";
 $table->set_sql($columns, $from, $where, $params);

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -40,12 +40,12 @@ class deepsight_action_unenrol extends deepsight_action_confirm {
      */
     public function __construct(moodle_database &$DB, $name, $descsingle='', $descmultiple='') {
         parent::__construct($DB, $name);
-        $this->label = get_string('ds_action_unenrol', 'elis_program');
+        $this->label = get_string('ds_action_unenrol', 'local_elisprogram');
 
         $this->descsingle = (!empty($descsingle))
-                ? $descsingle : get_string('ds_action_unenrol_confirm', 'elis_program');
+                ? $descsingle : get_string('ds_action_unenrol_confirm', 'local_elisprogram');
         $this->descmultiple = (!empty($descmultiple))
-                ? $descmultiple : get_string('ds_action_unenrol_confirm_multi', 'elis_program');
+                ? $descmultiple : get_string('ds_action_unenrol_confirm_multi', 'local_elisprogram');
     }
 
     /**
@@ -80,7 +80,7 @@ class deepsight_action_unenrol extends deepsight_action_confirm {
     protected function can_unenrol($associationid) {
         global $DB;
         $student = new student($associationid);
-        if (empty(elis::$config->elis_program->force_unenrol_in_moodle)) {
+        if (empty(elis::$config->local_elisprogram->force_unenrol_in_moodle)) {
             // Check whether the user is enrolled in the Moodle course via any plugin other than the elis plugin.
             $mcourse = $student->pmclass->classmoodle;
             $muser = $student->users->get_moodleuser();

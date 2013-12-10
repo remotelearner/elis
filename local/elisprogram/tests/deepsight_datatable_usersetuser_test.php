@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,7 +26,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('data/curriculumstudent.class.php'));
@@ -123,7 +123,7 @@ class deepsight_datatable_usersetuser_available_mock extends deepsight_datatable
 
 /**
  * Tests usersetuser datatable functions.
- * @group elis_program
+ * @group local_elisprogram
  * @group deepsight
  */
 class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searchresults_test {
@@ -242,7 +242,7 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:userset_enrol', context_system::instance());
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:userset_enrol', context_system::instance());
 
         foreach ($associations as $association) {
             $clusterassignment = new clusterassignment($association);
@@ -328,9 +328,9 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
     }
 
     /**
-     * Test available table shows correct search results based on elis/program:userset_enrol perms.
+     * Test available table shows correct search results based on local/elisprogram:userset_enrol perms.
      * @dataProvider dataprovider_available_userset_enrol_perms
-     * @param array $permcontexts An array of context objects for which to assign the elis/program:userset_enrol permission.
+     * @param array $permcontexts An array of context objects for which to assign the local/elisprogram:userset_enrol permission.
      * @param int $tableusersetid The ID of the userset to use for the table.
      * @param array $expectedresults An array of expected search results.
      * @param int $expectedtotal The expected total number of search results.
@@ -352,7 +352,7 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
                     $permcontext = context_elis_userset::instance($id);
                     break;
             }
-            $this->give_permission_for_context($USER->id, 'elis/program:userset_enrol', $permcontext);
+            $this->give_permission_for_context($USER->id, 'local/elisprogram:userset_enrol', $permcontext);
         }
 
         // Construct test table.
@@ -441,7 +441,7 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:userset_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:userset_enrol', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($associations as $association) {
             $clusterassignment = new clusterassignment($association);
@@ -572,11 +572,11 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
      * Test available table obeys userset_enrol_userset_users permission.
      *
      * Test available table shows only users that are in usersets where:
-     *     - the assigner has the elis/program:userset_enrol_userset_user permission
+     *     - the assigner has the local/elisprogram:userset_enrol_userset_user permission
      *     - the current userset is associated with the userset.
      *
      * @dataProvider dataprovider_available_permissions_userset_enrol_userset_user
-     * @param array $usersetidsforperm An array of userset IDs to assign the elis/program:userset_enrol_userset_user on.
+     * @param array $usersetidsforperm An array of userset IDs to assign the local/elisprogram:userset_enrol_userset_user on.
      * @param array $clusterassignments An array of arrays of parameters to construct clusterassignments with.
      * @param int $tableusersetid The id of the userset to manage associations for.
      * @param array $expectedresults The expected page of results.
@@ -599,7 +599,7 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
         accesslib_clear_all_caches(true);
 
         // Assign capabilities.
-        $capability = 'elis/program:userset_enrol_userset_user';
+        $capability = 'local/elisprogram:userset_enrol_userset_user';
         foreach ($usersetidsforperm as $usersetid) {
             $this->give_permission_for_context($USER->id, $capability, context_elis_userset::instance($usersetid));
         }

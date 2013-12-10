@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elis::lib('data/customfield.class.php'));
@@ -37,7 +37,7 @@ require_once(elispm::lib('data/track.class.php'));
 
 /**
  * Test curriculum custom fields.
- * @group elis_program
+ * @group local_elisprogram
  */
 class fakecontexthierarchy_testcase extends elis_database_test {
 
@@ -90,7 +90,7 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         accesslib_clear_all_caches(true);
 
         $syscontext = context_system::instance();
-        assign_capability('elis/program:userset_enrol_userset_user', CAP_ALLOW, $role->id, $syscontext, true);
+        assign_capability('local/elisprogram:userset_enrol_userset_user', CAP_ALLOW, $role->id, $syscontext, true);
         $syscontext->mark_dirty();
 
         // Initialise testing data.
@@ -235,7 +235,7 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextscurriculum->contextlevel = 'curriculum';
 
-        $perm = 'elis/program:userset_enrol_userset_user';
+        $perm = 'local/elisprogram:userset_enrol_userset_user';
         $contexts = pm_context_set::for_user_with_capability('curriculum', $perm, $this->mdluserid, false);
         $this->assertEquals($contextscurriculum, $contexts);
 
@@ -246,7 +246,7 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextstrack->contextlevel = 'track';
 
-        $contexts = pm_context_set::for_user_with_capability('track', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('track', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextstrack, $contexts);
 
         // Validate the return value when looking at the 'course' level.
@@ -256,7 +256,7 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextscourse->contextlevel = 'course';
 
-        $contexts = pm_context_set::for_user_with_capability('course', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('course', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextscourse, $contexts);
 
         // Validate the return value when looking at the 'class' level.
@@ -266,11 +266,11 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextsclass->contextlevel = 'class';
 
-        $contexts = pm_context_set::for_user_with_capability('class', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('class', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextsclass, $contexts);
 
         // Validate checking for users with the given capability on this context.
-        $users = pm_get_users_by_capability('curriculum', $this->tprogramid, 'elis/program:userset_enrol_userset_user');
+        $users = pm_get_users_by_capability('curriculum', $this->tprogramid, 'local/elisprogram:userset_enrol_userset_user');
         $this->assertEquals($this->mdluserid, current($users)->id);
     }
 
@@ -294,7 +294,7 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextstrack->contextlevel = 'track';
 
-        $contexts = pm_context_set::for_user_with_capability('track', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('track', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextstrack, $contexts);
 
         // Validate the return value when looking at the 'class' level.
@@ -304,12 +304,12 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextsclass->contextlevel = 'class';
 
-        $perm = 'elis/program:userset_enrol_userset_user';
+        $perm = 'local/elisprogram:userset_enrol_userset_user';
         $contexts = pm_context_set::for_user_with_capability('class', $perm, $this->mdluserid);
         $this->assertEquals($contextsclass, $contexts);
 
         // Validate checking for users with the given capability on this context.
-        $users = pm_get_users_by_capability('track', $this->ttrackid, 'elis/program:userset_enrol_userset_user');
+        $users = pm_get_users_by_capability('track', $this->ttrackid, 'local/elisprogram:userset_enrol_userset_user');
         $this->assertEquals($this->mdluserid, current($users)->id);
     }
 
@@ -333,7 +333,7 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextscourse->contextlevel = 'course';
 
-        $contexts = pm_context_set::for_user_with_capability('course', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('course', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextscourse, $contexts);
 
         // Validate the return value when looking at the 'class' level.
@@ -343,11 +343,11 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextsclass->contextlevel = 'class';
 
-        $contexts = pm_context_set::for_user_with_capability('class', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('class', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextsclass, $contexts);
 
         // Validate checking for users with the given capability on this context.
-        $users = pm_get_users_by_capability('course', $this->tcourseid, 'elis/program:userset_enrol_userset_user');
+        $users = pm_get_users_by_capability('course', $this->tcourseid, 'local/elisprogram:userset_enrol_userset_user');
         $this->assertEquals($this->mdluserid, current($users)->id);
     }
 
@@ -371,11 +371,11 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextsclass->contextlevel = 'class';
 
-        $contexts = pm_context_set::for_user_with_capability('class', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('class', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextsclass, $contexts);
 
         // Validate checking for users with the given capability on this context.
-        $users = pm_get_users_by_capability('class', $this->tclassid, 'elis/program:userset_enrol_userset_user');
+        $users = pm_get_users_by_capability('class', $this->tclassid, 'local/elisprogram:userset_enrol_userset_user');
         $this->assertEquals($this->mdluserid, current($users)->id);
     }
 
@@ -399,7 +399,7 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextscluster->contextlevel = 'cluster';
 
-        $perm = 'elis/program:userset_enrol_userset_user';
+        $perm = 'local/elisprogram:userset_enrol_userset_user';
         $contexts = pm_context_set::for_user_with_capability('cluster', $perm, $this->mdluserid);
         $this->assertEquals($contextscluster, $contexts);
 
@@ -410,11 +410,11 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextsuser->contextlevel = 'user';
 
-        $contexts = pm_context_set::for_user_with_capability('user', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('user', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextsuser, $contexts);
 
         // Validate checking for users with the given capability on this context.
-        $users = pm_get_users_by_capability('cluster', $this->tusersetid, 'elis/program:userset_enrol_userset_user');
+        $users = pm_get_users_by_capability('cluster', $this->tusersetid, 'local/elisprogram:userset_enrol_userset_user');
         $this->assertEquals($this->mdluserid, current($users)->id);
     }
 
@@ -438,11 +438,11 @@ class fakecontexthierarchy_testcase extends elis_database_test {
         );
         $contextsuser->contextlevel = 'user';
 
-        $contexts = pm_context_set::for_user_with_capability('user', 'elis/program:userset_enrol_userset_user', $this->mdluserid);
+        $contexts = pm_context_set::for_user_with_capability('user', 'local/elisprogram:userset_enrol_userset_user', $this->mdluserid);
         $this->assertEquals($contextsuser, $contexts);
 
         // Validate checking for users with the given capability on this context.
-        $users = pm_get_users_by_capability('user', $this->tuserid, 'elis/program:userset_enrol_userset_user');
+        $users = pm_get_users_by_capability('user', $this->tuserid, 'local/elisprogram:userset_enrol_userset_user');
         $this->assertEquals($this->mdluserid, current($users)->id);
     }
 }

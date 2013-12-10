@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/track.class.php'));
@@ -37,7 +37,7 @@ require_once(elispm::lib('data/curriculumcourse.class.php'));
 
 /**
  * Unit tests for the track_assignment_get_listing method defined in track.class.php
- * @group elis_program
+ * @group local_elisprogram
  */
 class trackassignmentgetlisting_testcase extends elis_database_test {
 
@@ -46,13 +46,13 @@ class trackassignmentgetlisting_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            track::TABLE => elis::component_file('program', 'tests/fixtures/track.csv'),
-            trackassignment::TABLE => elis::component_file('program', 'tests/fixtures/trackassignment_trackassignment_listing.csv'),
-            student::TABLE => elis::component_file('program', 'tests/fixtures/student_trackassignment_listing.csv'),
-            usertrack::TABLE => elis::component_file('program', 'tests/fixtures/usertrack_trackassignment_listing.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/user_trackassignment_listing.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            curriculumcourse::TABLE => elis::component_file('program', 'tests/fixtures/curriculum_course_trackassignment_listing.csv'),
+            track::TABLE => elispm::file('tests/fixtures/track.csv'),
+            trackassignment::TABLE => elispm::file('tests/fixtures/trackassignment_trackassignment_listing.csv'),
+            student::TABLE => elispm::file('tests/fixtures/student_trackassignment_listing.csv'),
+            usertrack::TABLE => elispm::file('tests/fixtures/usertrack_trackassignment_listing.csv'),
+            user::TABLE => elispm::file('tests/fixtures/user_trackassignment_listing.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            curriculumcourse::TABLE => elispm::file('tests/fixtures/curriculum_course_trackassignment_listing.csv'),
         ));
         $this->loadDataSet($dataset);
     }

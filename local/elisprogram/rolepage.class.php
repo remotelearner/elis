@@ -1,9 +1,7 @@
 <?php
 /**
- * Common page class for role assignments
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -188,10 +185,10 @@ abstract class rolepage extends associationpage2 {
 
                 if (count($admin_assignable_roles) > 0) {
                     //denied based on configuration
-                    echo $OUTPUT->box(get_string('norolespermitted', 'elis_program'));
+                    echo $OUTPUT->box(get_string('norolespermitted', 'local_elisprogram'));
                 } else {
                     //no roles are assignable at this context
-                    echo $OUTPUT->box(get_string('norolesexist', 'elis_program'));
+                    echo $OUTPUT->box(get_string('norolesexist', 'local_elisprogram'));
                 }
             }
         }
@@ -246,7 +243,7 @@ abstract class rolepage extends associationpage2 {
         $tmppage = $this->get_new_page(array('_assign' => 'assign',
                                              'id'      => $id,
                                              'role'    => $role));
-        redirect($tmppage->url, get_string('users_assigned_to_role','elis_program',count($data->_selection)));
+        redirect($tmppage->url, get_string('users_assigned_to_role','local_elisprogram',count($data->_selection)));
     }
 
     protected function process_unassignment($data) {
@@ -271,7 +268,7 @@ abstract class rolepage extends associationpage2 {
         $tmppage = $this->get_new_page(array('_assign' => 'unassign',
                                              'id'      => $id,
                                              'role'    => $role));
-        redirect($tmppage->url, get_string('users_removed_from_role','elis_program',count($data->_selection)));
+        redirect($tmppage->url, get_string('users_removed_from_role','local_elisprogram',count($data->_selection)));
     }
 
     protected function get_selection_filter() {
@@ -408,7 +405,7 @@ abstract class rolepage extends associationpage2 {
     }
 
     protected function print_record_count($count, $label = null) {
-        print_string('usersfound','elis_program',$count);
+        print_string('usersfound','local_elisprogram',$count);
     }
 
     protected function create_selection_table($records, $baseurl) {
@@ -453,7 +450,7 @@ abstract class rolepage extends associationpage2 {
 
     protected function get_table_footer() {
         if ($this->is_assigning()) {
-            return get_string('onlyvalidmoodleusers', 'elis_program');
+            return get_string('onlyvalidmoodleusers', 'local_elisprogram');
         }
         return parent::get_table_footer();
     }
@@ -616,7 +613,7 @@ class cluster_rolepage extends rolepage {
      * capability, then only show them the cluster members (ELIS-1570).
      */
     protected function get_assigned_records($filter) {
-        if (has_capability('elis/program:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
+        if (has_capability('local/elisprogram:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
             global $CFG, $DB;
 
             $context = $this->get_context();
@@ -681,7 +678,7 @@ class cluster_rolepage extends rolepage {
      * capability, then only show them the cluster members (ELIS-1570).
      */
     protected function get_available_records($filter) {
-        if (has_capability('elis/program:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
+        if (has_capability('local/elisprogram:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
             global $CFG, $DB;
 
             $context = $this->get_context();
@@ -788,7 +785,7 @@ class cluster_rolepage extends rolepage {
                        AND u.deleted = 0";
 
         //start of RL addition
-        if (has_capability('elis/program:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
+        if (has_capability('local/elisprogram:userset_role_assign_userset_users', $this->get_context(), NULL, false)) {
             //users explicitly assigned this capability are limited to seeing users who are also
             //directly assigned to this cluster
             require_once(elispm::lib('data/clusterassignment.class.php'));

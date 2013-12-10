@@ -30,99 +30,99 @@ defined('MOODLE_INTERNAL') || die();
 
 $handlers = array (
     'message_send' => array (
-         'handlerfile'      => '/elis/program/lib/notifications.php',
+         'handlerfile'      => '/local/elisprogram/lib/notifications.php',
          'handlerfunction'  => 'pm_notify_send_handler',
          'schedule'         => 'instant'
      ),
     'role_assigned' => array (
-         'handlerfile'      => '/elis/program/lib/notifications.php',
+         'handlerfile'      => '/local/elisprogram/lib/notifications.php',
          'handlerfunction'  => 'pm_notify_role_assign_handler',
          'schedule'         => 'instant'
      ),
     'role_unassigned' => array (
-         'handlerfile'      => '/elis/program/lib/notifications.php',
+         'handlerfile'      => '/local/elisprogram/lib/notifications.php',
          'handlerfunction'  => 'pm_notify_role_unassign_handler',
          'schedule'         => 'instant'
      ),
     'track_assigned' => array (
-         'handlerfile'      => '/elis/program/lib/notifications.php',
+         'handlerfile'      => '/local/elisprogram/lib/notifications.php',
          'handlerfunction'  => 'pm_notify_track_assign_handler',
          'schedule'         => 'instant'
      ),
     'class_completed' => array (
-         'handlerfile'      => '/elis/program/lib/notifications.php',
+         'handlerfile'      => '/local/elisprogram/lib/notifications.php',
          'handlerfunction'  => 'pm_notify_class_completed_handler',
          'schedule'         => 'instant'
      ),
     'class_notcompleted' => array (
-         'handlerfile'      => '/elis/program/lib/data/student.class.php',
+         'handlerfile'      => '/local/elisprogram/lib/data/student.class.php',
          'handlerfunction'  => array('student', 'class_notcompleted_handler'),
          'schedule'         => 'instant'
      ),
     'class_notstarted' => array (
-         'handlerfile'      => '/elis/program/lib/data/student.class.php',
+         'handlerfile'      => '/local/elisprogram/lib/data/student.class.php',
          'handlerfunction'  => array('student', 'class_notstarted_handler'),
          'schedule'         => 'instant'
      ),
     'course_recurrence' => array (
-         'handlerfile'      => '/elis/program/lib/data/course.class.php',
+         'handlerfile'      => '/local/elisprogram/lib/data/course.class.php',
          'handlerfunction'  => array('course', 'course_recurrence_handler'),
          'schedule'         => 'instant'
      ),
     'curriculum_completed' => array (
-         'handlerfile'      => '/elis/program/lib/data/curriculumstudent.class.php',
+         'handlerfile'      => '/local/elisprogram/lib/data/curriculumstudent.class.php',
          'handlerfunction'  => array('curriculumstudent', 'curriculum_completed_handler'),
          'schedule'         => 'instant'
      ),
     'curriculum_notcompleted' => array (
-         'handlerfile'      => '/elis/program/lib/data/curriculumstudent.class.php',
+         'handlerfile'      => '/local/elisprogram/lib/data/curriculumstudent.class.php',
          'handlerfunction'  => array('curriculumstudent', 'curriculum_notcompleted_handler'),
          'schedule'         => 'instant'
      ),
     'curriculum_recurrence' => array (
-         'handlerfile'      => '/elis/program/lib/data/curriculum.class.php',
+         'handlerfile'      => '/local/elisprogram/lib/data/curriculum.class.php',
          'handlerfunction'  => array('curriculum', 'curriculum_recurrence_handler'),
          'schedule'         => 'instant'
      ),
     // triggered when a user is assigned to a cluster
     'cluster_assigned' => array (
-         'handlerfile'      => '/elis/program/lib/data/userset.class.php',
+         'handlerfile'      => '/local/elisprogram/lib/data/userset.class.php',
          'handlerfunction'  => array('userset', 'cluster_assigned_handler'),
          'schedule'         => 'instant'
      ),
     // triggered when a user is deassigned from a cluster
     'cluster_deassigned' => array (
-         'handlerfile'      => '/elis/program/lib/data/userset.class.php',
+         'handlerfile'      => '/local/elisprogram/lib/data/userset.class.php',
          'handlerfunction'  => array('userset', 'cluster_deassigned_handler'),
          'schedule'         => 'instant'
      ),
 
     'user_created' => array (
-        'handlerfile'       => '/elis/program/lib/lib.php',
+        'handlerfile'       => '/local/elisprogram/lib/lib.php',
         'handlerfunction'   => 'pm_moodle_user_to_pm',
         'schedule'          => 'instant'
      ),
 
     'crlm_class_completed' => array (
-        'handlerfile'       => '/elis/program/lib/lib.php',
+        'handlerfile'       => '/local/elisprogram/lib/lib.php',
         'handlerfunction'   => 'pm_course_complete',
         'schedule'          => 'instant'
      ),
 
      'crlm_instructor_assigned' => array (
-        'handlerfile'       => '/elis/program/lib/notifications.php',
+        'handlerfile'       => '/local/elisprogram/lib/notifications.php',
         'handlerfunction'   => 'pm_notify_instructor_assigned_handler',
         'schedule'          => 'instant'
      ),
 
      'crlm_instructor_unassigned' => array (
-        'handlerfile'       => '/elis/program/lib/notifications.php',
+        'handlerfile'       => '/local/elisprogram/lib/notifications.php',
         'handlerfunction'   => 'pm_notify_instructor_unassigned_handler',
         'schedule'          => 'instant'
      ),
 
      'user_deleted' => array (
-         'handlerfile' => '/elis/program/lib/data/user.class.php',
+         'handlerfile' => '/local/elisprogram/lib/data/user.class.php',
          'handlerfunction' => array('user', 'user_deleted_handler'),
          'schedule' => 'instant'
      ),

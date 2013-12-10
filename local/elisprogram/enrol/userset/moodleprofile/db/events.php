@@ -1,9 +1,7 @@
 <?php
 /**
- * Contains definitions for notification events.
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,25 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    usetenrol_moodleprofile
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
+ */
+
+/**
+ * Contains definitions for notification events.
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $handlers = array (
     'user_updated' => array (
-         'handlerfile'      => '/elis/program/enrol/userset/moodle_profile/lib.php',
+         'handlerfile'      => '/local/elisprogram/enrol/userset/moodleprofile/lib.php',
          'handlerfunction'  => 'cluster_profile_update_handler',
          'schedule'         => 'instant'
      ),
 
     'user_created' => array (
-         'handlerfile'      => '/elis/program/enrol/userset/moodle_profile/lib.php',
+         'handlerfile'      => '/local/elisprogram/enrol/userset/moodleprofile/lib.php',
          'handlerfunction'  => 'cluster_profile_update_handler',
          'schedule'         => 'instant'
      )

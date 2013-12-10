@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elispm::lib('data/clusterassignment.class.php'));
@@ -35,7 +35,7 @@ require_once(elispm::lib('data/student.class.php'));
 
 /**
  * Test the clusterassignment data object.
- * @group elis_program
+ * @group local_elisprogram
  */
 class clusterassignment_testcase extends elis_database_test {
 
@@ -44,8 +44,8 @@ class clusterassignment_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            clusterassignment::TABLE => elis::component_file('program', 'tests/fixtures/cluster_assignment.csv'),
-            userset::TABLE => elis::component_file('program', 'tests/fixtures/userset.csv'),
+            clusterassignment::TABLE => elispm::file('tests/fixtures/cluster_assignment.csv'),
+            userset::TABLE => elispm::file('tests/fixtures/userset.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -65,7 +65,7 @@ class clusterassignment_testcase extends elis_database_test {
      */
     public function test_clusterassignment_validationallowsmultipleplugins() {
         $this->load_csv_data();
-        $clusterassignment = new clusterassignment(array('clusterid' => 1, 'userid' => 1, 'plugin' => 'moodle_profile'));
+        $clusterassignment = new clusterassignment(array('clusterid' => 1, 'userid' => 1, 'plugin' => 'moodleprofile'));
         $clusterassignment->save();
         $this->assertEquals(1, 1);
     }

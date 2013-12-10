@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/coursetemplate.class.php'));
@@ -38,7 +38,7 @@ require_once(elispm::file('tests/other/datagenerator.php'));
 /**
  * Test track assignment
  * Since class is defined within track.class.php testDataObjectsFieldsAndAssociations.php will not auto test this class
- * @group elis_program
+ * @group local_elisprogram
  */
 class trackassignment_testcase extends elis_database_test {
 
@@ -47,9 +47,9 @@ class trackassignment_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            trackassignment::TABLE => elis::component_file('program', 'tests/fixtures/trackassignment.csv'),
-            track::TABLE => elis::component_file('program', 'tests/fixtures/track.csv'),
-            curriculumcourse::TABLE => elis::component_file('program', 'tests/fixtures/curriculum_course.csv'),
+            trackassignment::TABLE => elispm::file('tests/fixtures/trackassignment.csv'),
+            track::TABLE => elispm::file('tests/fixtures/track.csv'),
+            curriculumcourse::TABLE => elispm::file('tests/fixtures/curriculum_course.csv'),
         ));
         $this->loadDataSet($dataset);
 
@@ -147,7 +147,7 @@ class trackassignment_testcase extends elis_database_test {
     public function test_get_assigned_tracks() {
         // Fixture.
         $dataset = $this->createCsvDataset(array(
-            trackassignment::TABLE => elis::component_file('program', 'tests/fixtures/trackassignment.csv')
+            trackassignment::TABLE => elispm::file('tests/fixtures/trackassignment.csv')
         ));
         $this->loadDataSet($dataset);
 
@@ -176,11 +176,11 @@ class trackassignment_testcase extends elis_database_test {
     public function test_enrol_all_track_users_in_class() {
         // Fixture.
         $dataset = $this->createCsvDataset(array(
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            trackassignment::TABLE => elis::component_file('program', 'tests/fixtures/trackassignment.csv'),
-            usertrack::TABLE => elis::component_file('program', 'tests/fixtures/user_track.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/user2.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            trackassignment::TABLE => elispm::file('tests/fixtures/trackassignment.csv'),
+            usertrack::TABLE => elispm::file('tests/fixtures/user_track.csv'),
+            user::TABLE => elispm::file('tests/fixtures/user2.csv'),
         ));
         $this->loadDataSet($dataset);
 
@@ -193,6 +193,6 @@ class trackassignment_testcase extends elis_database_test {
         $output = ob_get_contents();
         ob_end_clean();
 
-        $this->assertEquals(get_string('n_users_enrolled', 'elis_program', 1), $output);
+        $this->assertEquals(get_string('n_users_enrolled', 'local_elisprogram', 1), $output);
     }
 }

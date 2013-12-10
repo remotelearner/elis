@@ -5,21 +5,21 @@
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or   
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the  
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -37,13 +37,13 @@ class resultsconfigform extends moodleform {
     }
 
     public function populate_title() {
-        $this->title=get_string('results_engine_defaults_config','elis_program');
+        $this->title=get_string('results_engine_defaults_config','local_elisprogram');
     }
 
     public function definition() {
         global $OUTPUT, $PAGE;
-        $PAGE->requires->js('/elis/program/js/results_engine/jquery-1.6.2.min.js', true);
-        $PAGE->requires->js('/elis/program/js/results_engine/results_config.js', true);
+        $PAGE->requires->js('/local/elisprogram/js/results_engine/jquery-1.6.2.min.js', true);
+        $PAGE->requires->js('/local/elisprogram/js/results_engine/results_config.js', true);
 
         $mform =& $this->_form;
         $mform->addElement('header', 'activationrules',$this->title);
@@ -88,7 +88,7 @@ class resultsconfigform extends moodleform {
 
         $mform->addElement('hidden', 'rowcount',$cd['nrc'],array('id'=>'rowcount'));
         $mform->setType('rowcount', PARAM_INT);
-        $mform->addElement('submit','addrange',get_string('results_add_another_score_btn', 'elis_program'),array('onclick'=>'$(\'#rowcount\').val(parseInt($(\'#rowcount\').val())+1)'));
+        $mform->addElement('submit','addrange',get_string('results_add_another_score_btn', 'local_elisprogram'),array('onclick'=>'$(\'#rowcount\').val(parseInt($(\'#rowcount\').val())+1)'));
 
         $this->add_additional_form_elements();
 
@@ -123,7 +123,7 @@ class resultsconfigform extends moodleform {
         $textgroup[] = &$mform->createElement('text', 'maxinput', 'Max', array('size' => 8));
         $textgroup[]=&$mform->createElement('static','namelabel','','Name');
         $textgroup[]=&$mform->createElement('text','nameinput','Name');
-        $textgroup[]=&$mform->createElement('static','deleteLink','','<img src="'.$OUTPUT->pix_url('delete','elis_program').'" onclick="delete_row('.$i.',$(this))" alt="Delete" style="cursor:pointer" title="Delete" /></a>');
+        $textgroup[]=&$mform->createElement('static','deleteLink','','<img src="'.$OUTPUT->pix_url('delete','local_elisprogram').'" onclick="delete_row('.$i.',$(this))" alt="Delete" style="cursor:pointer" title="Delete" /></a>');
         $this->generate_row_additional_elements($textgroup,$i);
 
         $mform->addGroup($textgroup,'textgroup_'.$i);

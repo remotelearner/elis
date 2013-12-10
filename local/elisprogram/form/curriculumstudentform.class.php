@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -29,7 +29,7 @@ require_once elispm::file('form/selectionform.class.php');
 
 class assigncurriculumform extends selectionform {
     function get_submit_button_name() {
-        return ucfirst(get_string('assign','elis_program'));
+        return ucfirst(get_string('assign','local_elisprogram'));
     }
 
     function definition() {
@@ -49,7 +49,7 @@ class assigncurriculumform extends selectionform {
 
 class unassigncurriculumform extends selectionform {
     function get_submit_button_name() {
-        return ucfirst(get_string('unassign','elis_program'));
+        return ucfirst(get_string('unassign','local_elisprogram'));
     }
 
     function definition() {
@@ -69,7 +69,7 @@ class unassigncurriculumform extends selectionform {
 
 class assignstudentform extends selectionform {
     function get_submit_button_name() {
-        return ucfirst(get_string('assign','elis_program'));
+        return ucfirst(get_string('assign','local_elisprogram'));
     }
 
     function definition() {
@@ -93,7 +93,7 @@ class assignstudentform extends selectionform {
 
 class unassignstudentform extends selectionform {
     function get_submit_button_name() {
-        return ucfirst(get_string('unassign','elis_program'));
+        return ucfirst(get_string('unassign','local_elisprogram'));
     }
 
     function definition() {

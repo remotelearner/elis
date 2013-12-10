@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,7 +26,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('data/clusterassignment.class.php'));
@@ -127,7 +127,7 @@ class deepsight_datatable_instructor_available_mock extends deepsight_datatable_
 
 /**
  * Tests instructor datatable functions.
- * @group elis_program
+ * @group local_elisprogram
  * @group deepsight
  */
 class deepsight_datatable_instructor_testcase extends deepsight_datatable_searchresults_test {
@@ -322,7 +322,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($associations as $association) {
             $association = new instructor($association);
@@ -405,7 +405,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($associations as $association) {
             $association = new student($association);
@@ -468,7 +468,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
 
         // Create associations.
         foreach ($students as $student) {
@@ -505,10 +505,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                         5,
                         array(),
                 ),
-                // 1: Test elis/program:assign_class_instructor at system level returns everything.
+                // 1: Test local/elisprogram:assign_class_instructor at system level returns everything.
                 array(
                         array(
-                            'elis/program:assign_class_instructor' => array('system' => true)
+                            'local/elisprogram:assign_class_instructor' => array('system' => true)
                         ),
                         array(),
                         array(),
@@ -520,10 +520,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                                 $this->get_search_result_row_assigning_user(),
                         ),
                 ),
-                // 2: Test elis/program:assign_class_instructor at the class level returns everything.
+                // 2: Test local/elisprogram:assign_class_instructor at the class level returns everything.
                 array(
                         array(
-                            'elis/program:assign_class_instructor' => array('class' => array(5))
+                            'local/elisprogram:assign_class_instructor' => array('class' => array(5))
                         ),
                         array(),
                         array(),
@@ -535,10 +535,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                                 $this->get_search_result_row_assigning_user(),
                         ),
                 ),
-                // 3: Test elis/program:assign_class_instructor at the wrong class level returns nothing.
+                // 3: Test local/elisprogram:assign_class_instructor at the wrong class level returns nothing.
                 array(
                         array(
-                            'elis/program:assign_class_instructor' => array('class' => array(6))
+                            'local/elisprogram:assign_class_instructor' => array('class' => array(6))
                         ),
                         array(),
                         array(),
@@ -546,10 +546,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                         5,
                         array(),
                 ),
-                // 4: Test elis/program:assign_userset_user_class_instructor with no association chain returns nothing.
+                // 4: Test local/elisprogram:assign_userset_user_class_instructor with no association chain returns nothing.
                 array(
                         array(
-                            'elis/program:assign_userset_user_class_instructor' => array('userset' => array(2))
+                            'local/elisprogram:assign_userset_user_class_instructor' => array('userset' => array(2))
                         ),
                         array(),
                         array(),
@@ -557,10 +557,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                         5,
                         array(),
                 ),
-                // 5: Test elis/program:assign_userset_user_class_instructor with only class-track returns nothing.
+                // 5: Test local/elisprogram:assign_userset_user_class_instructor with only class-track returns nothing.
                 array(
                         array(
-                            'elis/program:assign_userset_user_class_instructor' => array('userset' => array(2))
+                            'local/elisprogram:assign_userset_user_class_instructor' => array('userset' => array(2))
                         ),
                         array(
                                 array('classid' => 5, 'trackid' => 101)
@@ -570,10 +570,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                         5,
                         array(),
                 ),
-                // 6: Test elis/program:assign_userset_user_class_instructor with class-track and track-cluster returns nothing.
+                // 6: Test local/elisprogram:assign_userset_user_class_instructor with class-track and track-cluster returns nothing.
                 array(
                         array(
-                            'elis/program:assign_userset_user_class_instructor' => array('userset' => array(2))
+                            'local/elisprogram:assign_userset_user_class_instructor' => array('userset' => array(2))
                         ),
                         array(
                                 array('classid' => 5, 'trackid' => 101),
@@ -585,10 +585,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                         5,
                         array(),
                 ),
-                // 7: Test elis/program:assign_userset_user_class_instructor with correct assoc chain returns correct user.
+                // 7: Test local/elisprogram:assign_userset_user_class_instructor with correct assoc chain returns correct user.
                 array(
                         array(
-                            'elis/program:assign_userset_user_class_instructor' => array('userset' => array(2))
+                            'local/elisprogram:assign_userset_user_class_instructor' => array('userset' => array(2))
                         ),
                         array(
                                 array('classid' => 5, 'trackid' => 101),
@@ -604,10 +604,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                                 $this->get_search_result_row($this->resultscsv, 100),
                         ),
                 ),
-                // 8: Test elis/program:assign_userset_user_class_instructor with correct assoc chain returns correct users.
+                // 8: Test local/elisprogram:assign_userset_user_class_instructor with correct assoc chain returns correct users.
                 array(
                         array(
-                            'elis/program:assign_userset_user_class_instructor' => array('userset' => array(2))
+                            'local/elisprogram:assign_userset_user_class_instructor' => array('userset' => array(2))
                         ),
                         array(
                                 array('classid' => 5, 'trackid' => 101),
@@ -625,10 +625,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                                 $this->get_search_result_row($this->resultscsv, 101),
                         ),
                 ),
-                // 9: Test elis/program:assign_userset_user_class_instructor with correct assoc chain returns correct users.
+                // 9: Test local/elisprogram:assign_userset_user_class_instructor with correct assoc chain returns correct users.
                 array(
                         array(
-                            'elis/program:assign_userset_user_class_instructor' => array('userset' => array(2))
+                            'local/elisprogram:assign_userset_user_class_instructor' => array('userset' => array(2))
                         ),
                         array(
                                 array('classid' => 5, 'trackid' => 101),
@@ -646,10 +646,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                                 $this->get_search_result_row($this->resultscsv, 100),
                         ),
                 ),
-                // 10: Test elis/program:assign_userset_user_class_instructor with correct assoc chain returns correct users.
+                // 10: Test local/elisprogram:assign_userset_user_class_instructor with correct assoc chain returns correct users.
                 array(
                         array(
-                            'elis/program:assign_userset_user_class_instructor' => array('userset' => array(2, 3))
+                            'local/elisprogram:assign_userset_user_class_instructor' => array('userset' => array(2, 3))
                         ),
                         array(
                                 array('classid' => 5, 'trackid' => 101),
@@ -668,10 +668,10 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                                 $this->get_search_result_row($this->resultscsv, 101),
                         ),
                 ),
-                // 11: Test elis/program:assign_userset_user_class_instructor with correct assoc chain returns correct users.
+                // 11: Test local/elisprogram:assign_userset_user_class_instructor with correct assoc chain returns correct users.
                 array(
                         array(
-                            'elis/program:assign_userset_user_class_instructor' => array('userset' => array(2, 3))
+                            'local/elisprogram:assign_userset_user_class_instructor' => array('userset' => array(2, 3))
                         ),
                         array(
                                 array('classid' => 5, 'trackid' => 101),

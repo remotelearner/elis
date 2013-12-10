@@ -50,7 +50,7 @@ class elispm {
      * Return the full path name for a PM file.
      */
     static function file($file) {
-        return elis::component_file('program', $file);
+        return elis::component_file('elisprogram', $file);
     }
 
     /**
@@ -72,8 +72,8 @@ class elispm {
 }
 
 global $CFG;
-elispm::$basedir = elis::file('program');
-elispm::$libdir = elis::component_file('program', 'lib');
+elispm::$basedir = elis::file('elisprogram');
+elispm::$libdir = elis::component_file('elisprogram', 'lib');
 
 global $DB;
 elispm::$db = $DB;

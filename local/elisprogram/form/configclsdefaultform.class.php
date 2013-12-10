@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -36,21 +36,21 @@ class configclsdefaultform extends cmform {
     function definition() {
         $mform =& $this->_form;
 
-        $mform->addElement('header', 'clsdefault', get_string('defaultcls', 'elis_program'));
+        $mform->addElement('header', 'clsdefault', get_string('defaultcls', 'local_elisprogram'));
 
-        $mform->addElement('text', 'clsdftidnumber', get_string('class_idnumber', 'elis_program') . ':');
+        $mform->addElement('text', 'clsdftidnumber', get_string('class_idnumber', 'local_elisprogram') . ':');
         $mform->setType('clsdftidnumber', PARAM_TEXT);
 
-        $mform->addElement('date_selector', 'clsdftstartdate', get_string('class_startdate', 'elis_program') . ':', array('optional' => true));
-        $mform->addElement('date_selector', 'clsdftenddate', get_string('class_enddate', 'elis_program') . ':', array('optional' => true));
+        $mform->addElement('date_selector', 'clsdftstartdate', get_string('class_startdate', 'local_elisprogram') . ':', array('optional' => true));
+        $mform->addElement('date_selector', 'clsdftenddate', get_string('class_enddate', 'local_elisprogram') . ':', array('optional' => true));
 
-        $mform->addElement('time_selector', 'clsdftstarttime', get_string('class_starttime', 'elis_program') . ':',
-                           array('display_12h'=>elis::$config->elis_program->time_format_12h));
+        $mform->addElement('time_selector', 'clsdftstarttime', get_string('class_starttime', 'local_elisprogram') . ':',
+                           array('display_12h'=>elis::$config->local_elisprogram->time_format_12h));
 
-        $mform->addElement('time_selector', 'clsdftendtime', get_string('class_endtime', 'elis_program') . ':',
-                           array('display_12h'=>elis::$config->elis_program->time_format_12h));
+        $mform->addElement('time_selector', 'clsdftendtime', get_string('class_endtime', 'local_elisprogram') . ':',
+                           array('display_12h'=>elis::$config->local_elisprogram->time_format_12h));
 
-        $mform->addElement('text', 'clsdftmaxstudents', get_string('class_maxstudents', 'elis_program') . ':');
+        $mform->addElement('text', 'clsdftmaxstudents', get_string('class_maxstudents', 'local_elisprogram') . ':');
         $mform->setType('clsdftmaxstudents', PARAM_INT);
 
         $this->add_action_buttons();

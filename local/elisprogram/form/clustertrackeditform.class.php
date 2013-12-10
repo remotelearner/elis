@@ -1,26 +1,26 @@
 <?php
 /**
- *  ELIS(TM): Enterprise Learning Intelligence Suite
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
- *  Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * @package    local_elisprogram
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
- *  @package    elis_program
- *  @author     Remote-Learner.net Inc
- *  @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- *  @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -31,13 +31,13 @@ class clustertrackeditform extends moodleform {
     var $track_fields = array();
 
     function clustertrackeditform($action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true) {
-        $this->cluster_fields = array('name'    => get_string('userset_name','elis_program'),
-                                      'display' => get_string('userset_description','elis_program'),);
+        $this->cluster_fields = array('name'    => get_string('userset_name','local_elisprogram'),
+                                      'display' => get_string('userset_description','local_elisprogram'),);
 
-        $this->track_fields = array('name'        => get_string('track_name', 'elis_program'),
-                                    'description' => get_string('track_description', 'elis_program'),
-                                    'parcur'      => get_string('track_parcur', 'elis_program'),
-                                    'class'       => get_string('track_classes', 'elis_program'));
+        $this->track_fields = array('name'        => get_string('track_name', 'local_elisprogram'),
+                                    'description' => get_string('track_description', 'local_elisprogram'),
+                                    'parcur'      => get_string('track_parcur', 'local_elisprogram'),
+                                    'class'       => get_string('track_classes', 'local_elisprogram'));
 
         parent::__construct($action, $customdata, $method, $target, $attributes, $editable);
     }
@@ -46,7 +46,7 @@ class clustertrackeditform extends moodleform {
         $mform = $this->_form;
 
         //cluster stuff
-        $mform->addElement('header', 'clusterinfo', get_string('userset_info_group', 'elis_program'));
+        $mform->addElement('header', 'clusterinfo', get_string('userset_info_group', 'local_elisprogram'));
 
         foreach($this->cluster_fields as $id => $display) {
             $element =& $mform->createElement('text', 'cluster' . $id, $display);
@@ -56,7 +56,7 @@ class clustertrackeditform extends moodleform {
         }
 
         //track stuff
-        $mform->addElement('header', 'trackinfo', get_string('track_info_group', 'elis_program'));
+        $mform->addElement('header', 'trackinfo', get_string('track_info_group', 'local_elisprogram'));
 
         foreach($this->track_fields as $id => $display) {
             $element =& $mform->createElement('text', 'track' . $id, $display);
@@ -66,9 +66,9 @@ class clustertrackeditform extends moodleform {
         }
 
         //association stuff
-        $mform->addElement('header', 'associationinfo', get_string('association_info_group', 'elis_program'));
-        $mform->addElement('advcheckbox', 'autoenrol', get_string('usersettrack_autoenrol', 'elis_program'), null, null, array('0', '1'));
-        $mform->addHelpButton('autoenrol', 'usersettrackform:autoenrol', 'elis_program');
+        $mform->addElement('header', 'associationinfo', get_string('association_info_group', 'local_elisprogram'));
+        $mform->addElement('advcheckbox', 'autoenrol', get_string('usersettrack_autoenrol', 'local_elisprogram'), null, null, array('0', '1'));
+        $mform->addHelpButton('autoenrol', 'usersettrackform:autoenrol', 'local_elisprogram');
 
         $mform->addElement('hidden', 'association_id', '');
         $mform->setType('association_id', PARAM_INT);

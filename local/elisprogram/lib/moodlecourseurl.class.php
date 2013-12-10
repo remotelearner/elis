@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -55,7 +54,7 @@ class moodlecourseurl {
         global $ME, $PAGE;
 
         $this->_templateType = 'moodlecourseurl';
-        $this->_templateTypeString = get_string('moodlecourseurl', 'elis_program');
+        $this->_templateTypeString = get_string('moodlecourseurl', 'local_elisprogram');
         $this->_referenceTable =  'course';
 
         $context = get_context_instance(CONTEXT_SYSTEM);
@@ -84,7 +83,7 @@ class moodlecourseurl {
             }
             $navlinks .= '<span class="accesshide " >/&nbsp;</span><span class="arrow sep">&#x25BA;</span>'.
                 ' <li class="first"><a onclick="this.target=\'_top\'" href="'.
-                $CFG->wwwroot.'/elis/program/coursetemplatepage.php?class='.$this->_templateType.
+                $CFG->wwwroot.'/local/elisprogram/coursetemplatepage.php?class='.$this->_templateType.
                 '&category='.$category->id.'">'.htmlspecialchars($category->name).'</a></li><li class="first">';
 
         }
@@ -123,7 +122,7 @@ class moodlecourseurl {
         global $CFG;
         $html_escaped_name = htmlspecialchars($catObj->name);
         if ($subCat) {
-            $output = "<a href=\"{$CFG->wwwroot}/elis/program/coursetemplatepage.php".
+            $output = "<a href=\"{$CFG->wwwroot}/local/elisprogram/coursetemplatepage.php".
                       "?class={$this->_templateType}&category={$catObj->id}&selected={$selected}\">{$html_escaped_name}".
                       " (click to expand)</a><br />";
         } else {
@@ -145,10 +144,10 @@ class moodlecourseurl {
     function displayPage($category = 0, $selected = 0) {
         global $CFG, $ME, $PAGE, $OUTPUT;
 
-        $PAGE->requires->js('/elis/program/js/moodlecourseurl.js');
+        $PAGE->requires->js('/local/elisprogram/js/moodlecourseurl.js');
 
         if (!$site = get_site()) {
-            print_error('site_not_defined', 'elis_program');
+            print_error('site_not_defined', 'local_elisprogram');
         }
 
         $strcourses = get_string('courses');
@@ -157,7 +156,7 @@ class moodlecourseurl {
 
         // Build root breadcrumb
         $navigation['navlinks'] = '<li class="first"><a onclick="this.target=\'_top\'" href="'.
-                $CFG->wwwroot.'/elis/program/coursetemplatepage.php?class='.$this->_templateType.
+                $CFG->wwwroot.'/local/elisprogram/coursetemplatepage.php?class='.$this->_templateType.
                 '&selected='.$selected.'">Root</a></li><li class="first"> ';
 
         // Build breadcrumb of course subcategories
@@ -168,8 +167,8 @@ class moodlecourseurl {
         $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
         //$PAGE->set_title($site->fullname);
         //$PAGE->set_heading($site->shortname);
-        $PAGE->set_title(get_string('coursetemplate', 'elis_program'));
-        $PAGE->set_heading(get_string('coursetemplate', 'elis_program'));
+        $PAGE->set_title(get_string('coursetemplate', 'local_elisprogram'));
+        $PAGE->set_heading(get_string('coursetemplate', 'local_elisprogram'));
         $PAGE->set_pagelayout('popup');
         $PAGE->set_pagetype('elis');
         $PAGE->set_cacheable(true);
@@ -191,7 +190,7 @@ class moodlecourseurl {
                     echo $this->printCourses($course);
                 }
             } else {
-                echo get_string('no_courses', 'elis_program').'<br />';
+                echo get_string('no_courses', 'local_elisprogram').'<br />';
             }
             unset($courses);
         }

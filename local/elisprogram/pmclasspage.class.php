@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -90,13 +89,13 @@ class pmclasspage extends managementpage {
         // TODO: Ugly, this needs to be overhauled
         $cpage = new pmclasspage();
 
-        if($cpage->_has_capability('elis/program:class_enrol', $classid)
-           || $cpage->_has_capability('elis/program:class_enrol_userset_user', $classid)) {
+        if($cpage->_has_capability('local/elisprogram:class_enrol', $classid)
+           || $cpage->_has_capability('local/elisprogram:class_enrol_userset_user', $classid)) {
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:class_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:class_enrol_userset_user', $USER->id);
 
         //we first need to go through tracks to get to clusters
         $track_listing = new trackassignment(array('classid' => $classid));
@@ -155,18 +154,18 @@ class pmclasspage extends managementpage {
         }
 
         $this->tabs = array(
-        array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
-        array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
-        array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
-        array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting'),
-        array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor'),
+        array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'local_elisprogram'), 'showtab' => true),
+        array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+        array('tab_id' => 'studentpage', 'page' => 'studentpage', 'name' => get_string('enrolments', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        array('tab_id' => 'waitlistpage', 'page' => 'waitlistpage', 'name' => get_string('waiting', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'waiting'),
+        array('tab_id' => 'instructorpage', 'page' => 'instructorpage', 'name' => get_string('instructors', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'instructor'),
         array('tab_id' => 'class_rolepage', 'page' => 'class_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
-        array('tab_id' => 'class_enginepage', 'page' => 'class_enginepage', 'name' => get_string('results_engine', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'calculator'),
-        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'elis_program'), 'showbutton' => true, 'image' => 'delete')
+        array('tab_id' => 'class_enginepage', 'page' => 'class_enginepage', 'name' => get_string('results_engine', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'calculator'),
+        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete_label', 'local_elisprogram'), 'showbutton' => true, 'image' => 'delete')
         );
 
         if ($reports_installed) {
-            $this->tabs[] = array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'elis_program'),
+            $this->tabs[] = array('tab_id' => 'class_reportlinkspage', 'page' => 'class_reportlinkspage', '', 'name' => get_string('classreportlinks', 'local_elisprogram'),
                                   'showtab' => true, 'showbutton' => true, 'image' => 'report');
         }
 
@@ -176,26 +175,26 @@ class pmclasspage extends managementpage {
     function can_do_view() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        return $this->_has_capability('elis/program:class_view')
+        return $this->_has_capability('local/elisprogram:class_view')
             || instructor::user_is_instructor_of_class(pm_get_crlmuserid($USER->id), $id);
     }
 
     function can_do_edit() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        return $this->_has_capability('elis/program:class_edit')
+        return $this->_has_capability('local/elisprogram:class_edit')
             || instructor::user_is_instructor_of_class(pm_get_crlmuserid($USER->id), $id);
     }
 
     function can_do_delete() {
-        return $this->_has_capability('elis/program:class_delete');
+        return $this->_has_capability('local/elisprogram:class_delete');
     }
 
     function can_do_add() {
         global $USER;
         if (!empty($USER->id)) {
             $contexts = get_contexts_by_capability_for_user('course',
-                            'elis/program:class_create', $USER->id);
+                            'local/elisprogram:class_create', $USER->id);
             return(!$contexts->is_empty());
         }
         return false;
@@ -209,14 +208,14 @@ class pmclasspage extends managementpage {
     function can_do_default() {
         if (($id = $this->optional_param('id', 0, PARAM_INT)) > 0) {
             $crspg = new coursepage(array('id' => $id));
-            if ($crspg->_has_capability('elis/program:class_create', $id)) {
+            if ($crspg->_has_capability('local/elisprogram:class_create', $id)) {
                 return true;
             }
             $parentclusterid = $this->optional_param('parent_clusterid', 0, PARAM_INT);
-            $contexts = pmclasspage::get_contexts('elis/program:class_view');
+            $contexts = pmclasspage::get_contexts('local/elisprogram:class_view');
             return pmclass_count_records('', '', $id, false, $contexts, $parentclusterid) > 0;
         }
-        $contexts = pmclasspage::get_contexts('elis/program:class_view');
+        $contexts = pmclasspage::get_contexts('local/elisprogram:class_view');
         return !$contexts->is_empty();
     }
 
@@ -307,14 +306,14 @@ class pmclasspage extends managementpage {
 
         // Define columns
         $columns = array(
-            'crsname'      => array('header' => get_string('class_course', 'elis_program')),
-            'idnumber'     => array('header' => get_string('class_idnumber', 'elis_program')),
-            'moodlecourse' => array('header' => get_string('class_moodle_course', 'elis_program')),
-            'startdate'    => array('header' => get_string('class_startdate', 'elis_program')),
-            'enddate'      => array('header' => get_string('class_enddate', 'elis_program')),
-            'starttime'    => array('header' => get_string('class_starttime', 'elis_program')),
-            'endtime'      => array('header' => get_string('class_endtime', 'elis_program')),
-            'maxstudents'  => array('header' => get_string('class_maxstudents', 'elis_program')),
+            'crsname'      => array('header' => get_string('class_course', 'local_elisprogram')),
+            'idnumber'     => array('header' => get_string('class_idnumber', 'local_elisprogram')),
+            'moodlecourse' => array('header' => get_string('class_moodle_course', 'local_elisprogram')),
+            'startdate'    => array('header' => get_string('class_startdate', 'local_elisprogram')),
+            'enddate'      => array('header' => get_string('class_enddate', 'local_elisprogram')),
+            'starttime'    => array('header' => get_string('class_starttime', 'local_elisprogram')),
+            'endtime'      => array('header' => get_string('class_endtime', 'local_elisprogram')),
+            'maxstudents'  => array('header' => get_string('class_maxstudents', 'local_elisprogram')),
         );
 
         //set the column data needed to maintain and display current sort
@@ -325,12 +324,12 @@ class pmclasspage extends managementpage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        $contexts = pmclasspage::get_contexts('elis/program:class_view');
+        $contexts = pmclasspage::get_contexts('local/elisprogram:class_view');
         $items    = pmclass_get_listing($sort, $dir, $page * $perpage, $perpage, $namesearch, $alpha, $id, false, $contexts, $parent_clusterid);
         $numitems = pmclass_count_records($namesearch, $alpha, $id, false, $contexts, $parent_clusterid);
 
-        pmclasspage::get_contexts('elis/program:class_edit');
-        pmclasspage::get_contexts('elis/program:class_delete');
+        pmclasspage::get_contexts('local/elisprogram:class_edit');
+        pmclasspage::get_contexts('local/elisprogram:class_delete');
 
         if (!empty($id)) {
             $coursepage = new coursepage(array('id' => $id));
@@ -362,8 +361,8 @@ class pmclasspage extends managementpage {
 
         if ($needconfirm != 1) {
             $target = $this->get_new_page(array('action' => 'delete', 'id' => $id, 'force' => 1, 'needconfirm' => 1));
-            notify(get_string('pmclass_delete_warning', 'elis_program'), 'errorbox');
-            echo '<center><a href="'.$target->url.'">'.get_string('pmclass_delete_warning_continue', 'elis_program').'</a></center>';
+            notify(get_string('pmclass_delete_warning', 'local_elisprogram'), 'errorbox');
+            echo '<center><a href="'.$target->url.'">'.get_string('pmclass_delete_warning_continue', 'local_elisprogram').'</a></center>';
         } else {
             $obj = $this->get_new_data_object($id);
             $this->print_delete_form($obj);
@@ -389,7 +388,7 @@ class pmclasspage extends managementpage {
             $options['parent'] = $parent;
         }
 
-        $button = new single_button(new moodle_url('index.php', $options), get_string('add_class','elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('add_class','elis_program'), 'id'=>''));
+        $button = new single_button(new moodle_url('index.php', $options), get_string('add_class','local_elisprogram'), 'get', array('disabled'=>false, 'title'=>get_string('add_class','local_elisprogram'), 'id'=>''));
         echo $OUTPUT->render($button);
         echo '</div>';
     }
@@ -422,14 +421,14 @@ class pmclasspage extends managementpage {
         global $DB, $USER;
 
         //make sure a valid role is set
-        if(!empty(elis::$config->elis_program->default_class_role_id) && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_class_role_id))) {
+        if(!empty(elis::$config->local_elisprogram->default_class_role_id) && $DB->record_exists('role', array('id' => elis::$config->local_elisprogram->default_class_role_id))) {
 
             //get the context instance for capability checking
             $context_instance = context_elis_class::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if (!has_capability('elis/program:class_edit', $context_instance)) {
-                role_assign(elis::$config->elis_program->default_class_role_id, $USER->id, $context_instance->id);
+            if (!has_capability('local/elisprogram:class_edit', $context_instance)) {
+                role_assign(elis::$config->local_elisprogram->default_class_role_id, $USER->id, $context_instance->id);
             }
         }
     }

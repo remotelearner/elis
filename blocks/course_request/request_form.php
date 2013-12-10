@@ -27,11 +27,11 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/lib/formslib.php');
-require_once($CFG->dirroot .'/elis/core/lib/table.class.php');
-require_once($CFG->dirroot .'/elis/program/accesslib.php');
-require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
-require_once($CFG->dirroot .'/elis/program/pmclasspage.class.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/table.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/pmclasspage.class.php');
 
 /**
  * Form showing list of classes the current user has access to
@@ -41,7 +41,7 @@ class current_form extends moodleform {
         $mform = &$this->_form;
 
         // ensure the user is allowed to view the classes being listed
-        $user_classes = pmclass_get_listing('crsname', 'ASC', 0, 11, '', '', 0, false, pmclasspage::get_contexts('elis/program:class_view'));
+        $user_classes = pmclass_get_listing('crsname', 'ASC', 0, 11, '', '', 0, false, pmclasspage::get_contexts('local/elisprogram:class_view'));
 
         if (empty($user_classes)) {
             // show a default label
@@ -143,7 +143,7 @@ class create_form extends moodleform {
         $can_approve = has_capability('block/course_request:approve', $syscontext);
 
         if ($can_approve) {
-            require_once($CFG->dirroot .'/elis/program/lib/data/coursetemplate.class.php');
+            require_once($CFG->dirroot .'/local/elisprogram/lib/data/coursetemplate.class.php');
             // section header, since we know the section will be displayed
             $mform->addElement('header', 'classheader', get_string('createclassheader', 'block_course_request'));
 
@@ -277,7 +277,7 @@ class create_form extends moodleform {
                 }
 
                 $control = $manual->param_control;
-                require_once($CFG->dirroot ."/elis/core/fields/manual/field_controls/{$control}.php");
+                require_once($CFG->dirroot."/local/eliscore/fields/manual/field_controls/{$control}.php");
                 call_user_func("{$control}_control_display", $this, $mform, null, $field); // *TBV*
 
                 $element_name = "field_{$field->shortname}";
@@ -332,7 +332,7 @@ class create_form extends moodleform {
             if ($approval['crsidnumber'] == '') {
                 $errors['crsidnumber'] = 'Required';
             } else if ($DB->record_exists(course::TABLE, array('idnumber' => $approval['crsidnumber']))) {
-                $errors['crsidnumber'] = get_string('idnumber_already_used', 'elis_program');
+                $errors['crsidnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
             }
         }
 
@@ -344,7 +344,7 @@ class create_form extends moodleform {
                 if (empty($approval['clsidnumber'])) {
                     $errors['clsidnumber'] = 'Required';
                 } else if ($DB->record_exists(pmclass::TABLE, array('idnumber' => $approval['clsidnumber']))) {
-                    $errors['clsidnumber'] = get_string('idnumber_already_used', 'elis_program');
+                    $errors['clsidnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
                 }
             }
         }
@@ -399,7 +399,7 @@ class define_request_form {
      */
     private function display_for_context($contextlevel_name, $field_header, $button_text) {
         global $CFG, $DB;
-        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/contexts.php');
 
         $fields = field::get_for_context_level($contextlevel_name)->to_array();
         $fields = $fields ? $fields : array();

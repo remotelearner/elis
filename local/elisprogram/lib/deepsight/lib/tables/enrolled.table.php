@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -82,11 +82,11 @@ class deepsight_datatable_enrolled extends deepsight_datatable_user {
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langenrolmenttime = get_string('enrolment_time', 'elis_program');
-        $langcompletetime = get_string('completion_time', 'elis_program');
-        $langgrade = get_string('student_grade', 'elis_program');
-        $langcredits = get_string('student_credits', 'elis_program');
-        $langcompletestatus = get_string('student_status', 'elis_program');
+        $langenrolmenttime = get_string('enrolment_time', 'local_elisprogram');
+        $langcompletetime = get_string('completion_time', 'local_elisprogram');
+        $langgrade = get_string('student_grade', 'local_elisprogram');
+        $langcredits = get_string('student_credits', 'local_elisprogram');
+        $langcompletestatus = get_string('student_status', 'local_elisprogram');
 
         $completestatus = new deepsight_filter_menuofchoices($this->DB, 'completestatus', $langcompletestatus,
                                                              array('enrol.completestatusid' => $langcompletestatus),
@@ -128,15 +128,15 @@ class deepsight_datatable_enrolled extends deepsight_datatable_user {
      */
     protected function get_fixed_columns() {
         return array(
-            'element.idnumber' => get_string('student_idnumber', 'elis_program'),
+            'element.idnumber' => get_string('student_idnumber', 'local_elisprogram'),
             'element.firstname' => get_string('firstname', 'moodle'),
-            'element.lastname' => get_string('lastname', 'elis_program'),
-            'enrol.enrolmenttime' => get_string('enrolment_time', 'elis_program'),
-            'enrol.completetime' => get_string('completion_time', 'elis_program'),
-            'enrol.completestatusid' => get_string('student_status', 'elis_program'),
-            'enrol.grade' => get_string('student_grade', 'elis_program'),
-            'enrol.credits' => get_string('student_credits', 'elis_program'),
-            'enrol.locked' => get_string('student_locked', 'elis_program'),
+            'element.lastname' => get_string('lastname', 'local_elisprogram'),
+            'enrol.enrolmenttime' => get_string('enrolment_time', 'local_elisprogram'),
+            'enrol.completetime' => get_string('completion_time', 'local_elisprogram'),
+            'enrol.completestatusid' => get_string('student_status', 'local_elisprogram'),
+            'enrol.grade' => get_string('student_grade', 'local_elisprogram'),
+            'enrol.credits' => get_string('student_credits', 'local_elisprogram'),
+            'enrol.locked' => get_string('student_locked', 'local_elisprogram'),
         );
     }
 
@@ -162,8 +162,8 @@ class deepsight_datatable_enrolled extends deepsight_datatable_user {
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_enroledit.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_enroledit.js';
         return $deps;
     }
 
@@ -199,9 +199,9 @@ class deepsight_datatable_enrolled extends deepsight_datatable_user {
         // Completion status ints to labels.
         if (isset($row['enrol_completestatusid'])) {
             $choices = array(
-                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'),
-                STUSTATUS_PASSED => get_string('passed', 'elis_program'),
-                STUSTATUS_FAILED => get_string('failed', 'elis_program'),
+                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'local_elisprogram'),
+                STUSTATUS_PASSED => get_string('passed', 'local_elisprogram'),
+                STUSTATUS_FAILED => get_string('failed', 'local_elisprogram'),
             );
             $row['enrol_completestatusid'] = $choices[$row['enrol_completestatusid']];
         }

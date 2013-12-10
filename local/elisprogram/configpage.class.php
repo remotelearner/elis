@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -38,7 +37,7 @@ class configpage extends pm_page {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:config', $context);
+        return has_capability('local/elisprogram:config', $context);
     }
 
     function build_navbar_default($who = null) { // was build_navigation_default
@@ -46,8 +45,8 @@ class configpage extends pm_page {
 
         $page = $this->get_new_page(array('action' => 'default'), true);
 
-        $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
-        $this->navbar->add(get_string('notifications', 'elis_program'), $page->url);
+        $this->navbar->add(get_string('learningplan', 'local_elisprogram'), "{$CFG->wwwroot}/local/elisprogram/");
+        $this->navbar->add(get_string('notifications', 'local_elisprogram'), $page->url);
     }
 
     function get_title_default() {
@@ -76,12 +75,12 @@ class configpage extends pm_page {
             redirect($target->url);
             return;
         }
-        $configform->set_data(elis::$config->elis_program);
+        $configform->set_data(elis::$config->local_elisprogram);
 
         if ($configdata = $configform->get_data()) {
-            $old_cluster_groups = elis::$config->elis_program->cluster_groups;
-            $old_site_course_cluster_groups = elis::$config->elis_program->site_course_cluster_groups;
-            $old_cluster_groupings = elis::$config->elis_program->cluster_groupings;
+            $old_cluster_groups = elis::$config->local_elisprogram->cluster_groups;
+            $old_site_course_cluster_groups = elis::$config->local_elisprogram->site_course_cluster_groups;
+            $old_cluster_groupings = elis::$config->local_elisprogram->cluster_groupings;
 
             // Track settings
             self::config_set_value($configdata, 'userdefinedtrack', 0);
@@ -96,7 +95,7 @@ class configpage extends pm_page {
             // We need to check for an required update before setting the variable as the API call requires the
             // variable to be set before the changes can take place.
             if (isset($configdata->curriculum_expiration_start) &&
-                $configdata->curriculum_expiration_start != elis::$config->elis_program->curriculum_expiration_start) {
+                $configdata->curriculum_expiration_start != elis::$config->local_elisprogram->curriculum_expiration_start) {
 
                 $curassupdate = true;
             }
@@ -134,7 +133,7 @@ class configpage extends pm_page {
 
             // User settings
             self::config_set_value($configdata, 'auto_assign_user_idnumber', 0);
-            $old_cfg = elis::$config->elis_program->auto_assign_user_idnumber;
+            $old_cfg = elis::$config->local_elisprogram->auto_assign_user_idnumber;
             // if this setting is changed to true, synchronize the users
             if (isset($configdata->auto_assign_user_idnumber)
                 && $configdata->auto_assign_user_idnumber != 0
@@ -164,20 +163,20 @@ class configpage extends pm_page {
 
             // TODO: ELIS 2 port of roles
             //enrolment synchronization roles
-            /*$old_role_sync = elis::$config->elis_program->enrolment_role_sync_student_role;
+            /*$old_role_sync = elis::$config->local_elisprogram->enrolment_role_sync_student_role;
             self::config_set_value($configdata, 'enrolment_role_sync_student_role', 0);
             if (isset($configdata->enrolment_role_sync_student_role)
                 && $configdata->enrolment_role_sync_student_role != 0
                 && $configdata->enrolment_role_sync_student_role != $old_role_sync) {
-                require_once CURMAN_DIRLOCATION . '/plugins/enrolment_role_sync/lib.php';
+                require_once CURMAN_DIRLOCATION . '/plugins/enrolrolesync/lib.php';
                 enrolment_role_sync::student_sync_role_set();
             }
-            $old_role_sync = elis::$config->elis_program->enrolment_role_sync_instructor_role;
+            $old_role_sync = elis::$config->local_elisprogram->enrolment_role_sync_instructor_role;
             self::config_set_value($configdata, 'enrolment_role_sync_instructor_role', 0);
             if (isset($configdata->enrolment_role_sync_instructor_role)
                 && $configdata->enrolment_role_sync_instructor_role != 0
                 && $configdata->enrolment_role_sync_instructor_role != $old_role_sync) {
-                require_once CURMAN_DIRLOCATION . '/plugins/enrolment_role_sync/lib.php';
+                require_once CURMAN_DIRLOCATION . '/plugins/enrolrolesync/lib.php';
                 enrolment_role_sync::instructor_sync_role_set();
             }
             */

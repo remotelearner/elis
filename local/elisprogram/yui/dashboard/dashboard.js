@@ -1,12 +1,6 @@
 /**
- * Generic JavaScript methods for a association/selection page.  Allows
- * multiple items to be selected using checkboxes, and use AJAX to do
- * paging/searching while maintaining the selection.  The selection will be
- * submitted as a form fieled called '_selection', which will be a JSON-encoded
- * array.
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +15,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @copyright  2013 onwards Remote-Learner {@link http://www.remote-learner.ca/}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
  */
-YUI.add('moodle-elis_program-dashboard', function(Y) {
+
+/**
+ * Generic JavaScript methods for a association/selection page.  Allows
+ * multiple items to be selected using checkboxes, and use AJAX to do
+ * paging/searching while maintaining the selection.  The selection will be
+ * submitted as a form fieled called '_selection', which will be a JSON-encoded
+ * array.
+ */
+
+YUI.add('moodle-local_elisprogram-dashboard', function(Y) {
     /**
      * Toggle visible with state class name
      * @property TOGGLECOMPLETEDINITCLASSNAME
@@ -123,7 +126,7 @@ YUI.add('moodle-elis_program-dashboard', function(Y) {
                 context: this
             };
 
-            var requesturl = this.get('wwwroot')+'/elis/program/userprefset.php';
+            var requesturl = this.get('wwwroot')+'/local/elisprogram/userprefset.php';
             Y.io(requesturl, cfg);
         },
 
@@ -400,7 +403,7 @@ YUI.add('moodle-elis_program-dashboard', function(Y) {
                 context: this
             };
 
-            var requesturl = this.get('wwwroot')+'/elis/program/togglecompletedcourses.php';
+            var requesturl = this.get('wwwroot')+'/local/elisprogram/togglecompletedcourses.php';
             Y.io(requesturl, cfg);
         },
 
@@ -434,7 +437,7 @@ YUI.add('moodle-elis_program-dashboard', function(Y) {
         }
     });
 
-    M.elis_program = M.elis_program || {};
+    M.local_elisprogram = M.local_elisprogram || {};
 
     /**
      * Creates an instance of the TOGGLECOMPLETEDINIT class.
@@ -442,7 +445,7 @@ YUI.add('moodle-elis_program-dashboard', function(Y) {
      * @param {Object} params parameters passed into the module class
      * @return {Object} Returns an instance of TOGGLECOMPLETEDINIT
      */
-    M.elis_program.init_togglecomplete = function(params) {
+    M.local_elisprogram.init_togglecomplete = function(params) {
         return new TOGGLECOMPLETEDINIT(params);
     }
 
@@ -452,7 +455,7 @@ YUI.add('moodle-elis_program-dashboard', function(Y) {
      * @param {Object} params parameters passed into the module class
      * @return {Object} Returns an instance of TOGGLEVISIBLEINITWITHSTATE
      */
-    M.elis_program.init_togglevisibleinitstate = function(params) {
+    M.local_elisprogram.init_togglevisibleinitstate = function(params) {
         return new TOGGLEVISIBLEINITWITHSTATE(params);
     }
 }, '@VERSION@', {

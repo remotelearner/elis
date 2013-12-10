@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -107,7 +107,7 @@ class clustertrackpage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $requiredperms = array('elis/program:userset_view', 'elis/program:associate');
+        $requiredperms = array('local/elisprogram:userset_view', 'local/elisprogram:associate');
         foreach ($requiredperms as $perm) {
             $ctx = pm_context_set::for_user_with_capability('cluster', $perm, $USER->id);
             if ($ctx->context_allowed($id, 'cluster') !== true) {
@@ -201,7 +201,7 @@ class trackclusterpage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $requiredperms = array('elis/program:track_view', 'elis/program:associate');
+        $requiredperms = array('local/elisprogram:track_view', 'local/elisprogram:associate');
         foreach ($requiredperms as $perm) {
             $ctx = pm_context_set::for_user_with_capability('track', $perm, $USER->id);
             if ($ctx->context_allowed($id, 'track') !== true) {

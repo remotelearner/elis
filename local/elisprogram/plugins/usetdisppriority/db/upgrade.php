@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elisprogram_usetdisppriority
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -28,11 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot . '/elis/program/lib/setup.php');
+require_once($CFG->dirroot . '/local/elisprogram/lib/setup.php');
 require_once(elis::lib('data/customfield.class.php'));
-require_once(elis::plugin_file('pmplugins_userset_display_priority', 'lib.php'));
+require_once(elis::plugin_file('elisprogram_usetdisppriority', 'lib.php'));
 
-function xmldb_pmplugins_userset_display_priority_upgrade($oldversion = 0) {
+function xmldb_elisprogram_usetdisppriority_upgrade($oldversion = 0) {
     global $CFG, $THEME, $DB;
     $dbman = $DB->get_manager();
 
@@ -50,12 +49,12 @@ function xmldb_pmplugins_userset_display_priority_upgrade($oldversion = 0) {
             $category = $field->category;
             if ($category->name == 'Cluster Display Settings') {
                 // the field name hasn't been changed from the old default
-                $category->name = get_string('display_settings_category_name', 'pmplugins_userset_display_priority');
+                $category->name = get_string('display_settings_category_name', 'elisprogram_usetdisppriority');
                 $category->save();
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011071200, 'pmplugins', 'userset_display_priority');
+        upgrade_plugin_savepoint($result, 2011071200, 'elisprogram', 'usetdisppriority');
     }
 
     if ($result && $oldversion < 2011101200) {
@@ -67,12 +66,12 @@ function xmldb_pmplugins_userset_display_priority_upgrade($oldversion = 0) {
                 $owner->fieldid = $field->id;
                 $owner->plugin = 'manual';
                 //$owner->exclude = 0; // TBD
-                $owner->param_help_file = 'pmplugins_userset_display_priority/display_priority';
+                $owner->param_help_file = 'elisprogram_usetdisppriority/display_priority';
                 $owner->save();
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'userset_display_priority');
+        upgrade_plugin_savepoint($result, 2011101200, 'elisprogram', 'usetdisppriority');
     }
 
     if ($result && $oldversion < 2011101800) {
@@ -88,7 +87,7 @@ function xmldb_pmplugins_userset_display_priority_upgrade($oldversion = 0) {
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011101800, 'pmplugins', 'userset_display_priority');
+        upgrade_plugin_savepoint($result, 2011101800, 'elisprogram', 'usetdisppriority');
     }
 
     return $result;

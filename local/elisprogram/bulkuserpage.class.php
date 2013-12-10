@@ -1,7 +1,5 @@
 <?php
 /**
- * Page for bulk user actions.
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
@@ -18,11 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
+ */
+
+/**
+ * Page for bulk user actions.
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -42,7 +44,7 @@ require_once CURMAN_DIRLOCATION . '/lib/contexts.php';
 class bulkuserpage extends selectionpage {
     var $pagename    = 'bulkuser';
     var $section     = 'admn';
-    var $form_class  = 'bulkuserform';  
+    var $form_class  = 'bulkuserform';
     static $contexts = array();
 
     static function get_contexts($capability) {
@@ -55,7 +57,7 @@ class bulkuserpage extends selectionpage {
 
     function can_do_default() {
         //this allows for cluster role assignments to be taken into account
-        $contexts = bulkuserpage::get_contexts('elis/program:user_edit');
+        $contexts = bulkuserpage::get_contexts('local/elisprogram:user_edit');
         return !$contexts->is_empty();
     }
 
@@ -64,7 +66,7 @@ class bulkuserpage extends selectionpage {
      * @return bool Whether the user has permission or not
      */
     public function can_do_delete() {
-        $contexts = bulkuserpage::get_contexts('elis/program:user_delete');
+        $contexts = bulkuserpage::get_contexts('local/elisprogram:user_delete');
         return !$contexts->is_empty();
     }
 
@@ -81,10 +83,10 @@ class bulkuserpage extends selectionpage {
      * @return object Bulk user form object
      */
     protected function get_selection_form() {
-        $customdata = array('inactive' => get_string('mark_inactive', 'elis_program'));
+        $customdata = array('inactive' => get_string('mark_inactive', 'local_elisprogram'));
 
         if ($this->can_do_delete()) {
-            $customdata['delete'] = get_string('delete', 'elis_program');
+            $customdata['delete'] = get_string('delete', 'local_elisprogram');
         }
 
         return new bulkuserform(null, $customdata);
@@ -111,7 +113,7 @@ class bulkuserpage extends selectionpage {
         $extrasql = $filter->get_sql_filter();
 
         //filter based on cluster role assignments
-        $context_set = pm_context_set::for_user_with_capability('cluster', 'elis/program:user_edit', $USER->id);
+        $context_set = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:user_edit', $USER->id);
 
         // Get list of users
         $items    = usermanagement_get_users_recordset($sort, $dir, $perpage * $pagenum,
@@ -145,7 +147,7 @@ class bulkuserpage extends selectionpage {
         global $DB, $OUTPUT;
 
         if (empty($data->_selection)) {
-            print_error('no_items_selected', 'elis_program', $this->get_basepage()->url);
+            print_error('no_items_selected', 'local_elisprogram', $this->get_basepage()->url);
         } else {
             $usersstring = implode(', ', array_map('fullname', $DB->get_records_select('crlm_user', 'id in ('.implode(',',$data->_selection).')')));
             $buttoncontinue = new single_button(
@@ -159,7 +161,7 @@ class bulkuserpage extends selectionpage {
                                                  array('s' => $this->pagename)),
                                   get_string('no'), 'GET');
 
-            echo $OUTPUT->confirm(get_string('confirm_bulk_'. $data->do, 'elis_program', $usersstring), $buttoncontinue, $buttoncancel);
+            echo $OUTPUT->confirm(get_string('confirm_bulk_'. $data->do, 'local_elisprogram', $usersstring), $buttoncontinue, $buttoncancel);
         }
     }
 
@@ -187,9 +189,9 @@ class bulkuserpage extends selectionpage {
         $tmppage = new bulkuserpage();
 
         if ($result) {
-            redirect($tmppage->url, get_string('success_bulk_inactive', 'elis_program'));
+            redirect($tmppage->url, get_string('success_bulk_inactive', 'local_elisprogram'));
         } else {
-            print_error('error_bulk_inactive', 'elis_program', $tmppage->url);
+            print_error('error_bulk_inactive', 'local_elisprogram', $tmppage->url);
         }
     }
 
@@ -213,7 +215,7 @@ class bulkuserpage extends selectionpage {
         }
 
         $tmppage = new bulkuserpage();
-        redirect($tmppage->url, get_string('success_bulk_delete', 'elis_program'));
+        redirect($tmppage->url, get_string('success_bulk_delete', 'local_elisprogram'));
     }
 }
 
@@ -227,10 +229,10 @@ class bulkusertable extends selection_table {
     function __construct(&$items, $url) {
         $columns = array(
             '_selection'  => array('header' => get_string('select'), 'sortable' => false),
-            'idnumber'    => array('header' => get_string('id', 'elis_program')),
-             'name'       => array('header' => get_string('name', 'elis_program')),
-             'country'    => array('header' => get_string('country', 'elis_program')),
-            'timecreated' => array('header' => get_string('registered_date', 'elis_program'))
+            'idnumber'    => array('header' => get_string('id', 'local_elisprogram')),
+             'name'       => array('header' => get_string('name', 'local_elisprogram')),
+             'country'    => array('header' => get_string('country', 'local_elisprogram')),
+            'timecreated' => array('header' => get_string('registered_date', 'local_elisprogram'))
             );
 
         $sort = optional_param('sort', 'name', PARAM_ALPHA);
@@ -245,9 +247,9 @@ class bulkusertable extends selection_table {
             $sort = 'name';
             $columns[$sort]['sortable'] = $dir;
         }
- 
+
         parent::__construct($items, $columns, $url);
-        $this->display_date = new display_date_item(get_string('pm_date_format', 'elis_program'));
+        $this->display_date = new display_date_item(get_string('pm_date_format', 'local_elisprogram'));
     }
 
     function get_item_display_timecreated($column, $item) {
@@ -292,7 +294,7 @@ class bulk_user_filtering extends pm_user_filtering {
     function get_field($fieldname, $advanced) {
         switch ($fieldname) {
         case 'nomoodleuser':
-            return new no_moodle_user_filter('nomoodleuser', get_string('nomoodleuser_filt', 'elis_program'), $advanced, 'idnumber');
+            return new no_moodle_user_filter('nomoodleuser', get_string('nomoodleuser_filt', 'local_elisprogram'), $advanced, 'idnumber');
         default:
             return parent::get_field($fieldname, $advanced);
         }
@@ -369,7 +371,7 @@ class no_moodle_user_filter extends user_filter_type {
         $retval = '';
 
         if(!empty($data['value'])) {
-            $retval = get_string('nomoodleuser_filt', 'elis_program');
+            $retval = get_string('nomoodleuser_filt', 'local_elisprogram');
         }
         return $retval;
     }

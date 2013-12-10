@@ -29,9 +29,9 @@
  */
 
 require_once(dirname(__FILE__) .'/../../../../../config.php');
-require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
-require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/contexts.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/data/course.class.php');
 
 if (!isloggedin() || isguestuser()) {
     mtrace("ERROR: must be logged in!");

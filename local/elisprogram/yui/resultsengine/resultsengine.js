@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
  * YUI3 module to handle the functionality of the results engine from from selecting tracks and classes
  * from a YUI Panel, to event handlers and the inserting of hidden elements into the DOM.
  */
-YUI.add('moodle-elis_program-resultsengine', function(Y) {
+YUI.add('moodle-local_elisprogram-resultsengine', function(Y) {
     /**
      * Toggle completed init class name
      * @property PROCESSMANUALCLASSNAME
@@ -386,7 +386,7 @@ YUI.add('moodle-elis_program-resultsengine', function(Y) {
                 context: this
             };
 
-            var requesturl = this.get('wwwroot')+'/elis/program/'+selectortype+'selector.php';
+            var requesturl = this.get('wwwroot')+'/local/elisprogram/'+selectortype+'selector.php';
             Y.io(requesturl, cfg);
         },
 
@@ -622,7 +622,7 @@ YUI.add('moodle-elis_program-resultsengine', function(Y) {
         }
     });
 
-    M.elis_program = M.elis_program || {};
+    M.local_elisprogram = M.local_elisprogram || {};
 
     /**
      * Creates an instance of the init_selector class.
@@ -630,7 +630,7 @@ YUI.add('moodle-elis_program-resultsengine', function(Y) {
      * @param {Object} params parameters passed into the module class
      * @return {Object} Returns an instance of init_selector
      */
-    M.elis_program.init_resultsengineform = function(params) {
+    M.local_elisprogram.init_resultsengineform = function(params) {
         return new RESULTSENGINEFORM(params);
     }
 
@@ -640,7 +640,7 @@ YUI.add('moodle-elis_program-resultsengine', function(Y) {
      * @param {Object} params parameters passed into the module class
      * @return {Object} Returns an instance of PROCESSMANUAL
      */
-    M.elis_program.init_processmanual = function(params) {
+    M.local_elisprogram.init_processmanual = function(params) {
         return new PROCESSMANUAL(params);
     }
 }, '@VERSION@', {

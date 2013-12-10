@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,14 +25,14 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // ELIS Libs.
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
-require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
-require_once(elis::file('program/enrol/userset/moodle_profile/userset_profile.class.php'));
-require_once(elis::file('core/fields/manual/custom_fields.php'));
+require_once(elis::file('eliscore/fields/moodle_profile/custom_fields.php'));
+require_once(elis::file('elisprogram/enrol/userset/moodleprofile/userset_profile.class.php'));
+require_once(elis::file('eliscore/fields/manual/custom_fields.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once(elispm::file('form/cmform.class.php'));
 
@@ -69,7 +69,7 @@ class test_moodleform extends cmform {
 
 /**
  * Test curriculum custom fields.
- * @group elis_program
+ * @group local_elisprogram
  */
 class curriculumcustomfields_testcase extends elis_database_test {
 
@@ -212,7 +212,7 @@ class curriculumcustomfields_testcase extends elis_database_test {
         field_owner::ensure_field_owner_exists($field, 'manual', $manualowneroptions);
         $owner = new field_owner();
         $owner->fieldid = $field->id;
-        $owner->plugin = 'moodle_profile';
+        $owner->plugin = 'moodleprofile';
         $owner->exclude = pm_moodle_profile::sync_to_moodle;
         $owner->save();
 

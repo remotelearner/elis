@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elisprogram_usetgroups
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -31,15 +30,15 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @return  boolean  Returns true to indicate success
  */
-function xmldb_pmplugins_userset_groups_install() {
+function xmldb_elisprogram_usetgroups_install() {
     //set up the cluster group category
     $group_category = new field_category();
-    $group_category->name = get_string('userset_group_category', 'pmplugins_userset_groups');
+    $group_category->name = get_string('userset_group_category', 'elisprogram_usetgroups');
 
     //set up the field that allows users to turn the groupings on
     $group_field = new field();
     $group_field->shortname = 'userset_group';
-    $group_field->name = get_string('userset_group', 'pmplugins_userset_groups');
+    $group_field->name = get_string('userset_group', 'elisprogram_usetgroups');
     $group_field->datatype = 'bool';
 
     //set up the field and category
@@ -53,13 +52,13 @@ function xmldb_pmplugins_userset_groups_install() {
                            'columns' => 30,
                            'rows' => 10,
                            'maxlength' => 2048,
-                           'help_file' => 'pmplugins_userset_groups/userset_group',
+                           'help_file' => 'elisprogram_usetgroups/userset_group',
                           );
     field_owner::ensure_field_owner_exists($group_field, 'manual', $owner_options);
 
     $field = new field();
     $field->shortname = 'userset_groupings';
-    $field->name = get_string('autoenrol_groupings', 'pmplugins_userset_classification');
+    $field->name = get_string('autoenrol_groupings', 'elisprogram_usetclassify');
     $field->datatype = 'bool';
     $field = field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_USERSET, $group_category);
 
@@ -70,7 +69,7 @@ function xmldb_pmplugins_userset_groups_install() {
                            'columns' => 30,
                            'rows' => 10,
                            'maxlength' => 2048,
-                           'help_file' => 'pmplugins_userset_groups/autoenrol_groupings');
+                           'help_file' => 'elisprogram_usetgroups/autoenrol_groupings');
     field_owner::ensure_field_owner_exists($field, 'manual', $owner_options);
 
     return true;

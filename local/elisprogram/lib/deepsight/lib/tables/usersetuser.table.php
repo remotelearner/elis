@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -44,7 +44,7 @@ class deepsight_datatable_usersetuser_base extends deepsight_datatable_user {
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
         return $deps;
     }
 
@@ -97,7 +97,7 @@ class deepsight_datatable_usersetuser_assigned extends deepsight_datatable_users
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langautoass = get_string('auto_assign', 'elis_program');
+        $langautoass = get_string('auto_assign', 'local_elisprogram');
         $filters = array(
                 new deepsight_filter_usersetuser_autoassigned($this->DB, 'autoass', $langautoass, array(), $this->endpoint)
         );

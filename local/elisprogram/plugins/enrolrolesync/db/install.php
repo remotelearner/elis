@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elisprogram_enrolrolesync
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -31,17 +30,17 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @return  boolean  true  Returns true to satisfy install procedure
  */
-function xmldb_pmplugins_enrolment_role_sync_install() {
+function xmldb_elisprogram_enrolrolesync_install() {
     //set the student role based on the old value
-    $old_student_roleid = get_config('elis_program', 'enrolment_role_sync_student_role');
+    $old_student_roleid = get_config('local_elisprogram', 'enrolment_role_sync_student_role');
     if ($old_student_roleid !== null) {
-        set_config('student_role', $old_student_roleid, 'pmplugins_enrolment_role_sync');
+        set_config('student_role', $old_student_roleid, 'elisprogram_enrolrolesync');
     }
 
     //set the instructor role based on the old value
-    $old_instructor_roleid = get_config('elis_program', 'enrolment_role_sync_instructor_role');
+    $old_instructor_roleid = get_config('local_elisprogram', 'enrolment_role_sync_instructor_role');
     if ($old_instructor_roleid !== null) {
-        set_config('instructor_role', $old_instructor_roleid, 'pmplugins_enrolment_role_sync');
+        set_config('instructor_role', $old_instructor_roleid, 'elisprogram_enrolrolesync');
     }
 
     return true;

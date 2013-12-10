@@ -16,10 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ *
  */
 
 require_once dirname(__FILE__) . '/lib/setup.php';
@@ -36,12 +37,12 @@ if ((! $context) || (($context->contextlevel != CONTEXT_ELIS_CLASS) && ($context
     exit;
 }
 
-$capability = 'elis/program:course_edit';
+$capability = 'local/elisprogram:course_edit';
 $table      = 'crlm_course';
 $fields     = 'id, name as idnumber';
 
 if ($context->contextlevel == CONTEXT_ELIS_CLASS) {
-    $capability = 'elis/program:class_edit';
+    $capability = 'local/elisprogram:class_edit';
     $table      = 'crlm_class';
     $fields     = 'id, idnumber';
 }
@@ -52,9 +53,9 @@ if (! has_capability($capability, $context)) {
 }
 
 $object = $DB->get_record($table, array('id' => $context->instanceid), $fields);
-$source = $CFG->wwwroot .'/elis/program/resultsmanualprocess.php';
+$source = $CFG->wwwroot .'/local/elisprogram/resultsmanualprocess.php';
 
-$PAGE->requires->yui_module('moodle-elis_program-resultsengine', 'M.elis_program.init_processmanual',
+$PAGE->requires->yui_module('moodle-local_elisprogram-resultsengine', 'M.local_elisprogram.init_processmanual',
         array(
                 array(
                     'source' => $source,

@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -31,7 +31,7 @@ $helphead = required_param('heading', PARAM_TEXT);
 $helptext = required_param('helptext', PARAM_TEXT);
 $ajax     = optional_param('ajax', 1, PARAM_BOOL);
 
-$PAGE->set_url('/elis/program/help_ajax.php');
+$PAGE->set_url('/local/elisprogram/help_ajax.php');
 $PAGE->set_pagelayout('popup');
 $PAGE->set_context(context_system::instance());
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -52,20 +52,20 @@ class deepsight_filter_date extends deepsight_filter_standard {
         }
 
         $opts['lang_months'] = array(
-            0 => get_string('month_jan', 'elis_program'),
-            1 => get_string('month_feb', 'elis_program'),
-            2 => get_string('month_mar', 'elis_program'),
-            3 => get_string('month_apr', 'elis_program'),
-            4 => get_string('month_may', 'elis_program'),
-            5 => get_string('month_jun', 'elis_program'),
-            6 => get_string('month_jul', 'elis_program'),
-            7 => get_string('month_aug', 'elis_program'),
-            8 => get_string('month_sep', 'elis_program'),
-            9 => get_string('month_oct', 'elis_program'),
-            10 => get_string('month_nov', 'elis_program'),
-            11 => get_string('month_dec', 'elis_program')
+            0 => get_string('month_jan', 'local_elisprogram'),
+            1 => get_string('month_feb', 'local_elisprogram'),
+            2 => get_string('month_mar', 'local_elisprogram'),
+            3 => get_string('month_apr', 'local_elisprogram'),
+            4 => get_string('month_may', 'local_elisprogram'),
+            5 => get_string('month_jun', 'local_elisprogram'),
+            6 => get_string('month_jul', 'local_elisprogram'),
+            7 => get_string('month_aug', 'local_elisprogram'),
+            8 => get_string('month_sep', 'local_elisprogram'),
+            9 => get_string('month_oct', 'local_elisprogram'),
+            10 => get_string('month_nov', 'local_elisprogram'),
+            11 => get_string('month_dec', 'local_elisprogram')
         );
-        $opts['lang_clear'] = get_string('clear', 'elis_program');
+        $opts['lang_clear'] = get_string('clear', 'local_elisprogram');
         return $opts;
     }
 

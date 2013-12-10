@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,19 +25,19 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
-require_once($CFG->dirroot.'/elis/program/accesslib.php');
+require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 require_once(elis::lib('data/customfield.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('data/user.class.php'));
-require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+require_once(elispm::file('enrol/userset/moodleprofile/userset_profile.class.php'));
 require_once(elispm::file('usersetpage.class.php'));
 
 /**
  * Test userset data object.
- * @group elis_program
+ * @group local_elisprogram
  */
 class userset_testcase extends elis_database_test {
 
@@ -46,8 +46,8 @@ class userset_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            userset::TABLE => elis::component_file('program', 'tests/fixtures/userset.csv'),
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv')
+            userset::TABLE => elispm::file('tests/fixtures/userset.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv')
         ));
         $this->loadDataSet($dataset);
     }
@@ -102,7 +102,7 @@ class userset_testcase extends elis_database_test {
         // Read it back.
         $result = new moodle_recordset_phpunit_datatable(userset::TABLE, userset::find(null, array(), 0, 0));
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'tests/fixtures/userset_update_test_result.csv'));
+        $dataset->addTable(userset::TABLE, elispm::file('tests/fixtures/userset_update_test_result.csv'));
         $this->assertTablesEqual($dataset->getTable(userset::TABLE), $result);
     }
 
@@ -127,7 +127,7 @@ class userset_testcase extends elis_database_test {
         // Read it back.
         $result = new moodle_recordset_phpunit_datatable(userset::TABLE, userset::find(null, array(), 0, 0));
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'tests/fixtures/userset_promote_test_result.csv'));
+        $dataset->addTable(userset::TABLE, elispm::file('tests/fixtures/userset_promote_test_result.csv'));
         $this->assertTablesEqual($dataset->getTable(userset::TABLE), $result);
     }
 
@@ -153,7 +153,7 @@ class userset_testcase extends elis_database_test {
         $recordset = $DB->get_recordset(userset::TABLE, null, '', 'name,display,parent,depth,id');
         $result = new moodle_recordset_phpunit_datatable(userset::TABLE, $recordset);
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(userset::TABLE, elis::component_file('program', 'tests/fixtures/userset_delete_subset_b_test_result.csv'));
+        $dataset->addTable(userset::TABLE, elispm::file('tests/fixtures/userset_delete_subset_b_test_result.csv'));
         $this->assertTablesEqual($dataset->getTable(userset::TABLE), $result);
     }
 
@@ -177,7 +177,7 @@ class userset_testcase extends elis_database_test {
 
         $this->load_csv_data();
 
-        // Create role with cap: 'elis/program:class_view'.
+        // Create role with cap: 'local/elisprogram:class_view'.
         $testrole = new stdClass;
         $testrole->name = 'ELIS Sub-Userset Manager';
         $testrole->shortname = '_test_ELIS_3848';
@@ -190,10 +190,10 @@ class userset_testcase extends elis_database_test {
 
         // Ensure the role has our required capability assigned.
         $syscontext = context_system::instance();
-        assign_capability('elis/program:userset', CAP_ALLOW, $testrole->id, $syscontext->id, true);
-        assign_capability('elis/program:userset_view', CAP_ALLOW, $testrole->id, $syscontext->id, true);
-        assign_capability('elis/program:userset_create', CAP_ALLOW, $testrole->id, $syscontext->id, true);
-        assign_capability('elis/program:userset_enrol_userset_user', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('local/elisprogram:userset', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('local/elisprogram:userset_view', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('local/elisprogram:userset_create', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('local/elisprogram:userset_enrol_userset_user', CAP_ALLOW, $testrole->id, $syscontext->id, true);
         $syscontext->mark_dirty();
 
         // Assign a test user a role within the parent userset.
@@ -220,7 +220,7 @@ class userset_testcase extends elis_database_test {
 
         $this->load_csv_data();
 
-        // Create role with cap: 'elis/program:class_view'.
+        // Create role with cap: 'local/elisprogram:class_view'.
         $testrole = new stdClass;
         $testrole->name = 'ELIS Sub-Userset Manager';
         $testrole->shortname = '_test_ELIS_3848';
@@ -233,10 +233,10 @@ class userset_testcase extends elis_database_test {
 
         // Ensure the role has our required capability assigned.
         $syscontext = context_system::instance();
-        assign_capability('elis/program:userset', CAP_ALLOW, $testrole->id, $syscontext->id, true);
-        assign_capability('elis/program:userset_view', CAP_ALLOW, $testrole->id, $syscontext->id, true);
-        assign_capability('elis/program:userset_create', CAP_ALLOW, $testrole->id, $syscontext->id, true);
-        assign_capability('elis/program:userset_enrol_userset_user', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('local/elisprogram:userset', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('local/elisprogram:userset_view', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('local/elisprogram:userset_create', CAP_ALLOW, $testrole->id, $syscontext->id, true);
+        assign_capability('local/elisprogram:userset_enrol_userset_user', CAP_ALLOW, $testrole->id, $syscontext->id, true);
         $syscontext->mark_dirty();
 
         // Assign a test user a role within the parent userset.
@@ -267,8 +267,8 @@ class userset_testcase extends elis_database_test {
     public function test_deleteparentpromotechildren() {
         // Load great-grandfather, grandfather, parent, child usersets. ids 5,6,7,8, respectively.
         $dataset = $this->createCsvDataSet(array(
-            userset::TABLE => elis::component_file('program', 'tests/fixtures/userset_grandfathers.csv'),
-            'context' => elis::component_file('program', 'tests/fixtures/userset_context.csv')
+            userset::TABLE => elispm::file('tests/fixtures/userset_grandfathers.csv'),
+            'context' => elispm::file('tests/fixtures/userset_context.csv')
         ));
         $this->loadDataSet($dataset);
 

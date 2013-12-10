@@ -26,7 +26,7 @@
 
 require_once('../../config.php');
 require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('menuitem.class.php'));
 

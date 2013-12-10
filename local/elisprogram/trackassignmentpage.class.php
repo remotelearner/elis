@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -130,7 +130,7 @@ class trackassignmentpage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $viewctx = pm_context_set::for_user_with_capability('track', 'elis/program:track_view', $USER->id);
+        $viewctx = pm_context_set::for_user_with_capability('track', 'local/elisprogram:track_view', $USER->id);
         return ($viewctx->context_allowed($id, 'track') === true) ? true : false;
     }
 
@@ -142,7 +142,7 @@ class trackassignmentpage extends deepsightpage {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
         $canview = $this->can_do_default();
-        $associatectx = pm_context_set::for_user_with_capability('track', 'elis/program:associate', $USER->id);
+        $associatectx = pm_context_set::for_user_with_capability('track', 'local/elisprogram:associate', $USER->id);
         return ($canview === true && $associatectx->context_allowed($id, 'track') === true) ? true : false;
     }
 
@@ -156,8 +156,8 @@ class trackassignmentpage extends deepsightpage {
         $id = $this->required_param('id', PARAM_INT);
 
         // Determine if user has track_create or track_edit permissions.
-        $trackcreatectx = pm_context_set::for_user_with_capability('track', 'elis/program:track_create', $USER->id);
-        $trackeditctx = pm_context_set::for_user_with_capability('track', 'elis/program:track_edit', $USER->id);
+        $trackcreatectx = pm_context_set::for_user_with_capability('track', 'local/elisprogram:track_create', $USER->id);
+        $trackeditctx = pm_context_set::for_user_with_capability('track', 'local/elisprogram:track_edit', $USER->id);
         $trackcreateallowed = ($trackcreatectx->context_allowed($id, 'track') === true) ? true : false;
         $trackeditallowed = ($trackeditctx->context_allowed($id, 'track') === true) ? true : false;
         return ($trackcreateallowed === true || $trackeditallowed === true) ? true : false;
@@ -174,7 +174,7 @@ class trackassignmentpage extends deepsightpage {
         $track->track_auto_create();
 
         $tmppage = new trackassignmentpage(array('id' => $id));
-        redirect($tmppage->url, get_string('track_success_autocreate', 'elis_program'));
+        redirect($tmppage->url, get_string('track_success_autocreate', 'local_elisprogram'));
     }
 
     /**
@@ -203,7 +203,7 @@ class trackassignmentpage extends deepsightpage {
         if ($this->can_do_autocreate() === true) {
             echo html_writer::start_tag('div', array('style' => 'text-align:center'));
             $tmppage = new trackassignmentpage(array('action' => 'autocreate', 'id' => $id));
-            $button = new single_button($tmppage->url, get_string('track_autocreate_button', 'elis_program'), 'get');
+            $button = new single_button($tmppage->url, get_string('track_autocreate_button', 'local_elisprogram'), 'get');
             echo $OUTPUT->render($button);
             echo html_writer::end_tag('div');
         }

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    elisprogram_usetgroups
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -35,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot.'/group/lib.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 
 /**
@@ -193,7 +192,7 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
     global $CFG, $DB;
 
     require_once elispm::lib('data/usermoodle.class.php');
-    $enabled = get_config('pmplugins_userset_groups', 'site_course_userset_groups');
+    $enabled = get_config('elisprogram_usetgroups', 'site_course_userset_groups');
 
     //make sure this functionality is even enabled
     if(!empty($enabled)) {
@@ -272,7 +271,7 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
 
     }
 
-    $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
+    $enabled = get_config('elisprogram_usetgroups', 'userset_groupings');
 
     if(!empty($enabled)) {
         //query condition
@@ -304,7 +303,7 @@ function userset_groups_update_site_course($clusterid = 0, $add_members = false,
 function userset_groups_grouping_helper($clusterid, $name) {
     global $CFG, $DB;
 
-    $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
+    $enabled = get_config('elisprogram_usetgroups', 'userset_groupings');
 
     if(!empty($enabled) && userset_groups_grouping_allowed($clusterid)) {
 
@@ -352,7 +351,7 @@ function userset_groups_grouping_helper($clusterid, $name) {
 function userset_groups_update_user_site_course($userid, $clusterid) {
     global $DB;
 
-    $enabled = get_config('pmplugins_userset_groups', 'site_course_userset_groups');
+    $enabled = get_config('elisprogram_usetgroups', 'site_course_userset_groups');
 
     //make sure this site-course group functionality is even enabled
     if(!empty($enabled)) {
@@ -411,7 +410,7 @@ function userset_groups_update_groups($attributes = array()) {
     global $DB;
 
     require_once elispm::lib('data/usermoodle.class.php');
-    $enabled = get_config('pmplugins_userset_groups', 'userset_groups');
+    $enabled = get_config('elisprogram_usetgroups', 'userset_groups');
 
     //nothing to do if global setting is off
     if (!empty($enabled)) {
@@ -532,7 +531,7 @@ function userset_groups_update_groups($attributes = array()) {
 function userset_groups_update_grouping_closure($clusterid, $include_children = false) {
     global $CFG;
 
-    $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
+    $enabled = get_config('elisprogram_usetgroups', 'userset_groupings');
 
     if(empty($enabled) || !userset_groups_grouping_allowed($clusterid)) {
         return true;
@@ -631,7 +630,7 @@ function userset_groups_userset_allows_groups($clusterid) {
 function userset_groups_grouping_allowed($clusterid) {
     global $CFG, $DB;
 
-    $enabled = get_config('pmplugins_userset_groups', 'userset_groupings');
+    $enabled = get_config('elisprogram_usetgroups', 'userset_groupings');
 
     if(empty($enabled)) {
         return false;

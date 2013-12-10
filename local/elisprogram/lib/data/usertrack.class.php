@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/student.class.php');
@@ -168,7 +167,7 @@ class usertrack extends elis_data_object {
             // ELIS-3460: check pre-requisites ...
             $curcrs = new curriculumcourse(array('courseid' => $class->courseid, 'curriculumid' => $track->curid));
             if (!$curcrs->prerequisites_satisfied($userid)) {
-                //error_log("/elis/program/lib/data/usertrack.class.php::enrol({$userid}); pre-requisites NOT satisfied for course: {$class->courseid}, curriculum: {$track->curid}");
+                //error_log("/local/elisprogram/lib/data/usertrack.class.php::enrol({$userid}); pre-requisites NOT satisfied for course: {$class->courseid}, curriculum: {$track->curid}");
                 continue;
             }
             $now = time();
@@ -195,7 +194,7 @@ class usertrack extends elis_data_object {
                 $status = true;
             } catch (Exception $e) {
                 $param = array('message' => $e->getMessage());
-                echo cm_error(get_string('record_not_created_reason', 'elis_program', $param));
+                echo cm_error(get_string('record_not_created_reason', 'local_elisprogram', $param));
             }
         }
         unset($classes);
@@ -287,7 +286,7 @@ class usertrack extends elis_data_object {
 
         $params = array($trackid);
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where .= ' AND usr.inactive = 0 ';
         }
 
@@ -343,7 +342,7 @@ class usertrack extends elis_data_object {
         global $USER, $DB;
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:track_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
 
@@ -353,7 +352,7 @@ class usertrack extends elis_data_object {
         if (!trackpage::can_enrol_into_track($trackid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if ($tpage->_has_capability('elis/program:track_enrol', $trackid)) {
+        } else if ($tpage->_has_capability('local/elisprogram:track_enrol', $trackid)) {
             //current user has the direct capability
             return true;
         }
@@ -426,17 +425,17 @@ class usertrack extends elis_data_object {
             $params['lastname'] = "{$alpha}%";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'AND usr.inactive = 0 ';
         }
 
         // TODO: Ugly, this needs to be overhauled
         $tpage = new trackpage();
 
-        if (!$tpage->_has_capability('elis/program:track_enrol', $trackid)) {
+        if (!$tpage->_has_capability('local/elisprogram:track_enrol', $trackid)) {
             //perform SQL filtering for the more "conditional" capability
             //get the context for the "indirect" capability
-            $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
+            $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:track_enrol_userset_user', $USER->id);
 
             //get the clusters and check the context against them
             $clusters = clustertrack::get_clusters($trackid);
@@ -499,17 +498,17 @@ class usertrack extends elis_data_object {
             $params['lastname'] = "{$alpha}%";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'AND usr.inactive = 0 ';
         }
 
         // TODO: Ugly, this needs to be overhauled
         $tpage = new trackpage();
 
-        if (!$tpage->_has_capability('elis/program:track_enrol', $trackid)) {
+        if (!$tpage->_has_capability('local/elisprogram:track_enrol', $trackid)) {
             //perform SQL filtering for the more "conditional" capability
             //get the context for the "indirect" capability
-            $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
+            $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:track_enrol_userset_user', $USER->id);
 
             //get the clusters and check the context against them
             $clusters = clustertrack::get_clusters($trackid);

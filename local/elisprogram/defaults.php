@@ -1,9 +1,7 @@
 <?php
 /**
- * Default configuration options
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
+ */
+
+/**
+ * Default configuration options.
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -50,46 +51,46 @@ $defaults = array(
     'notify_classenrol_user' => 0,
     'notify_classenrol_role' => 0,
     'notify_classenrol_supervisor' => 0,
-    //'notify_classenrol_message' => get_string('notifyclassenrolmessagedef', 'elis_program'),
+    //'notify_classenrol_message' => get_string('notifyclassenrolmessagedef', 'local_elisprogram'),
 
     'notify_classcompleted_user' => 0,
     'notify_classcompleted_role' => 0,
     'notify_classcompleted_supervisor' => 0,
-    //'notify_classcompleted_message' => get_string('notifyclasscompletedmessagedef', 'elis_program'),
+    //'notify_classcompleted_message' => get_string('notifyclasscompletedmessagedef', 'local_elisprogram'),
 
     'notify_classnotstarted_user' => 0,
     'notify_classnotstarted_role' => 0,
     'notify_classnotstarted_supervisor' => 0,
-    //'notify_classnotstarted_message' => get_string('notifyclassnotstartedmessagedef', 'elis_program'),
+    //'notify_classnotstarted_message' => get_string('notifyclassnotstartedmessagedef', 'local_elisprogram'),
     'notify_classnotstarted_days' => 10,
 
     'notify_classnotcompleted_user' => 0,
     'notify_classnotcompleted_role' => 0,
     'notify_classnotcompleted_supervisor' => 0,
-    //'notify_classnotcompleted_message' => get_string('notifyclassnotcompletedmessagedef', 'elis_program'),
+    //'notify_classnotcompleted_message' => get_string('notifyclassnotcompletedmessagedef', 'local_elisprogram'),
     'notify_classnotcompleted_days' => 10,
 
     'notify_curriculumnotcompleted_user' => 0,
     'notify_curriculumnotcompleted_role' => 0,
     'notify_curriculumnotcompleted_supervisor' => 0,
-    //'notify_curriculumnotcompleted_message' => get_string('notifycurriculumnotcompletedmessagedef', 'elis_program'),
+    //'notify_curriculumnotcompleted_message' => get_string('notifycurriculumnotcompletedmessagedef', 'local_elisprogram'),
     'notify_classnotstarted_days' => 10,
 
     'notify_trackenrol_user' => 0,
     'notify_trackenrol_role' => 0,
     'notify_trackenrol_supervisor' => 0,
-    //'notify_ttrackenrol_message' => get_string('notifytrackenrolmessagedef', 'elis_program'),
+    //'notify_ttrackenrol_message' => get_string('notifytrackenrolmessagedef', 'local_elisprogram'),
 
     'notify_courserecurrence_user' => 0,
     'notify_courserecurrence_role' => 0,
     'notify_courserecurrence_supervisor' => 0,
-    //'notify_courserecurrence_message' => get_string('notifycourserecurrencemessagedef', 'elis_program'),
+    //'notify_courserecurrence_message' => get_string('notifycourserecurrencemessagedef', 'local_elisprogram'),
     'notify_courserecurrence_days' => 10,
 
     'notify_curriculumrecurrence_user' => 0,
     'notify_curriculumrecurrence_role' => 0,
     'notify_curriculumrecurrence_supervisor' => 0,
-    //'notify_curriculumrecurrence_message' => get_string('notifycurriculumrecurrencemessagedef', 'elis_program'),
+    //'notify_curriculumrecurrence_message' => get_string('notifycurriculumrecurrencemessagedef', 'local_elisprogram'),
     'notify_curriculumrecurrence_days' => 10,
 
     //number of icons of each type to display at each level in the curr admin block

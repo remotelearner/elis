@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elis::lib('data/data_object_with_custom_fields.class.php'));
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elispm::lib('data/curriculumcourse.class.php'));
@@ -153,10 +153,10 @@ class clustercurriculum extends elis_data_object {
         }
 
         //require plugin code if enabled
-        $plugins = get_plugin_list('pmplugins');
-        $display_priority_enabled = isset($plugins['userset_display_priority']);
+        $plugins = get_plugin_list('elisprogram');
+        $display_priority_enabled = isset($plugins['usetdisppriority']);
         if($display_priority_enabled) {
-            require_once(elis::plugin_file('pmplugins_userset_display_priority', 'lib.php'));
+            require_once(elis::plugin_file('elisprogram_usetdisppriority', 'lib.php'));
         }
 
         $select  = 'SELECT clstcur.id, clstcur.clusterid, clst.name, clst.display, clstcur.autoenrol ';

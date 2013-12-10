@@ -47,8 +47,8 @@ define('ECR_MC_ROLE_COMPONENT', 'enrol_elis'); // TBD
 function block_course_request_can_do_request() {
     global $CFG, $DB, $USER;
 
-    require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
- 
+    require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+
     $context = get_context_instance(CONTEXT_SYSTEM);
 
     //handle system context in case no courses are set up
@@ -68,7 +68,7 @@ function block_course_request_can_do_request() {
 
         //this will handle both the course and curriculum cases
         $course_sql = 'SELECT * FROM {'. course::TABLE . "} course $where";
-                   
+
         if ($DB->record_exists_sql($course_sql, $params)) {
             return true;
         }
@@ -93,20 +93,20 @@ function block_course_request_get_approval_message($request, $statusnote = null)
     if (empty($request->courseid) && empty($CFG->block_course_request_create_class_with_course)) {
         //just course
         $a = new stdClass;
-        $a->link = $CFG->wwwroot .'/elis/program/index.php?action=view&id='.$request->newcourseid.'&s=crs';;
+        $a->link = $CFG->wwwroot.'/local/elisprogram/index.php?action=view&id='.$request->newcourseid.'&s=crs';;
         $a->coursename = $request->title;
         $notice = get_string('notification_courserequestapproved', 'block_course_request', $a);
     } else if (!empty($request->courseid)) {
         //just class
         $a = new stdClass;
-        $a->link  = $CFG->wwwroot .'/elis/program/index.php?action=view&id='.$request->classid.'&s=cls';
+        $a->link  = $CFG->wwwroot.'/local/elisprogram/index.php?action=view&id='.$request->classid.'&s=cls';
         $a->coursename = $request->title;
         $a->classidnumber = $request->classidnumber;
         $notice = get_string('notification_classrequestapproved', 'block_course_request', $a);
     } else {
         //course and class
         $a = new stdClass;
-        $a->link  = $CFG->wwwroot .'/elis/program/index.php?action=view&id='.$request->classid.'&s=cls';
+        $a->link  = $CFG->wwwroot.'/local/elisprogram/index.php?action=view&id='.$request->classid.'&s=cls';
         $a->coursename = $request->title;
         $a->classidnumber = $request->classidnumber;
         $notice = get_string('notification_courseandclassrequestapproved', 'block_course_request', $a);
@@ -134,8 +134,8 @@ function block_course_request_get_denial_message($request, $statusnote = null) {
 
     $notice = '';
     $a = new stdClass;
-    $a->link = $CFG->wwwroot .'/elis/program/index.php?action=requests&s=crp';
-    $a->coursename = $request->title; 
+    $a->link = $CFG->wwwroot.'/local/elisprogram/index.php?action=requests&s=crp';
+    $a->coursename = $request->title;
 
     if (empty($request->courseid) && empty($CFG->block_course_request_create_class_with_course)) {
         //just course

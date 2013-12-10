@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/course.class.php');
 require_once elispm::lib('data/curriculum.class.php');
@@ -228,7 +228,7 @@ class curriculumcourse extends elis_data_object {
             $config_data['existingPrerequisites'] = $existingPrerequisites;
         }
 
-        $contexts = coursepage::get_contexts('elis/program:course_view');
+        $contexts = coursepage::get_contexts('local/elisprogram:course_view');
         $courseListing = course_get_listing('crs.name', 'ASC', 0, 0, '', '', $contexts);
         unset($courseListing[$this->courseid]);
 
@@ -295,7 +295,7 @@ class curriculumcourse extends elis_data_object {
             $config_data['existingCorequisites'] = $existingCorequisites;
         }
 
-        $contexts = coursepage::get_contexts('elis/program:course_view');
+        $contexts = coursepage::get_contexts('local/elisprogram:course_view');
         $courseListing = course_get_listing('crs.name', 'ASC', 0, 0, '', '', $contexts);
         unset($courseListing[$this->courseid]);
 

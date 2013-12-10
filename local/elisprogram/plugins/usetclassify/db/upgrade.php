@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elisprogram_usetclassify
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -28,11 +27,11 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elis::lib('data/customfield.class.php'));
-require_once(elis::plugin_file('pmplugins_userset_classification', 'lib.php'));
+require_once(elis::plugin_file('elisprogram_usetclassify', 'lib.php'));
 
-function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
+function xmldb_elisprogram_usetclassify_upgrade($oldversion = 0) {
     global $CFG, $THEME, $DB;
     $dbman = $DB->get_manager();
 
@@ -48,19 +47,19 @@ function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
             $field->shortname = USERSET_CLASSIFICATION_FIELD;
             if ($field->name == 'Cluster classification') {
                 // the field name hasn't been changed from the old default
-                $field->name = get_string('classification_field_name', 'pmplugins_userset_classification');
+                $field->name = get_string('classification_field_name', 'elisprogram_usetclassify');
             }
             $field->save();
 
             $category = $field->category;
             if ($category->name == 'Cluster classification') {
                 // the field name hasn't been changed from the old default
-                $category->name = get_string('classification_category_name', 'pmplugins_userset_classification');
+                $category->name = get_string('classification_category_name', 'elisprogram_usetclassify');
                 $category->save();
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011071400, 'pmplugins', 'userset_classification');
+        upgrade_plugin_savepoint($result, 2011071400, 'elisprogram', 'usetclassify');
     }
 
     if ($result && $oldversion < 2011101200) {
@@ -73,12 +72,12 @@ function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
                 $owner->fieldid = $field->id;
                 $owner->plugin = 'manual';
                 //$owner->exclude = 0; // TBD
-                $owner->param_help_file = 'pmplugins_userset_classification/cluster_classification';
+                $owner->param_help_file = 'elisprogram_usetclassify/cluster_classification';
                 $owner->save();
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'userset_classification');
+        upgrade_plugin_savepoint($result, 2011101200, 'elisprogram', 'usetclassify');
     }
 
     if ($result && $oldversion < 2011101800) {
@@ -99,12 +98,12 @@ function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
             }
         }
 
-        upgrade_plugin_savepoint($result, 2011101800, 'pmplugins', 'userset_classification');
+        upgrade_plugin_savepoint($result, 2011101800, 'elisprogram', 'usetclassify');
     }
 
     if ($result && $oldversion < 2011110300) {
         // Make sure to rename the default classification name from "Cluster" to "User set"
-        require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
+        require_once(elispm::file('plugins/usetclassify/usersetclassification.class.php'));
 
         //make sure there are no custom fields with invalid categories
         pm_fix_orphaned_fields();
@@ -119,7 +118,7 @@ function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
 
 	        if ($default->valid()) {
 	            $default = $default->current();
-	            $default->name = get_string('cluster', 'elis_program');
+	            $default->name = get_string('cluster', 'local_elisprogram');
 	            $default->save();
 	        }
 
@@ -136,13 +135,13 @@ function xmldb_pmplugins_userset_classification_upgrade($oldversion = 0) {
 	                    $owner->save();
 	                } else if ($owner->plugin == 'manual') {
 	                    $owner->param_options_source = 'userset_classifications';
-	                    $owner->param_help_file = 'pmplugins_userset_classification/cluster_classification';
+	                    $owner->param_help_file = 'elisprogram_usetclassify/cluster_classification';
 	                    $owner->save();
 	                }
 	            }
 	        }
 
-	        upgrade_plugin_savepoint($result, 2011110300, 'pmplugins', 'userset_classification');
+	        upgrade_plugin_savepoint($result, 2011110300, 'elisprogram', 'usetclassify');
         }
     }
 

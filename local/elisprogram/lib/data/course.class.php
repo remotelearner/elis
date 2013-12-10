@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('lib.php');
@@ -298,7 +297,7 @@ class course extends data_object_with_custom_fields {
                 INNER JOIN {'. course::TABLE .'} cco ON cco.id = cc.courseid
                 WHERE cco.id = ? ';
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'AND usr.inactive = 0 ';
         }
         $sql .= 'GROUP BY cce.completestatusid';
@@ -463,7 +462,7 @@ class course extends data_object_with_custom_fields {
         $prefix = self::$config_default_prefix;
         $prefixlen = strlen($prefix);
 
-        foreach (elis::$config->elis_program as $key => $data) {
+        foreach (elis::$config->local_elisprogram as $key => $data) {
             if (false !== strpos($key, $prefix)) {
                 $index = substr($key, $prefixlen);
                 $default_values[$index] = $data;
@@ -480,9 +479,9 @@ class course extends data_object_with_custom_fields {
     public static function check_for_nags() {
         global $CFG, $DB;
 
-        $sendtouser =       elis::$config->elis_program->notify_courserecurrence_user;
-        $sendtorole =       elis::$config->elis_program->notify_courserecurrence_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_courserecurrence_supervisor;
+        $sendtouser =       elis::$config->local_elisprogram->notify_courserecurrence_user;
+        $sendtorole =       elis::$config->local_elisprogram->notify_courserecurrence_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_courserecurrence_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -570,9 +569,9 @@ class course extends data_object_with_custom_fields {
         require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
-        $sendtouser       = elis::$config->elis_program->notify_courserecurrence_user;
-        $sendtorole       = elis::$config->elis_program->notify_courserecurrence_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_courserecurrence_supervisor;
+        $sendtouser       = elis::$config->local_elisprogram->notify_courserecurrence_user;
+        $sendtorole       = elis::$config->local_elisprogram->notify_courserecurrence_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_courserecurrence_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -587,9 +586,9 @@ class course extends data_object_with_custom_fields {
         $enroluser->load();
         if (empty($enroluser->id)) {
             if (in_cron()) {
-                mtrace(get_string('nouser', 'elis_program'));
+                mtrace(get_string('nouser', 'local_elisprogram'));
             } else {
-                print_error('nouser', 'elis_program');
+                print_error('nouser', 'local_elisprogram');
             }
             return true;
         }
@@ -597,9 +596,9 @@ class course extends data_object_with_custom_fields {
         /// Set up the text of the message
         $message = new notification();
 
-        $text = empty(elis::$config->elis_program->notify_courserecurrence_message) ?
-                    get_string('notifycourserecurrencemessagedef', 'elis_program') :
-                    elis::$config->elis_program->notify_courserecurrence_message;
+        $text = empty(elis::$config->local_elisprogram->notify_courserecurrence_message) ?
+                    get_string('notifycourserecurrencemessagedef', 'local_elisprogram') :
+                    elis::$config->local_elisprogram->notify_courserecurrence_message;
         $pmuser = $DB->get_record(user::TABLE, array('id' => $user->userid));
         $student = new user($pmuser);
 
@@ -619,14 +618,14 @@ class course extends data_object_with_custom_fields {
 
         if ($sendtorole) {
             /// Get all users with the notify_courserecurrence capability.
-            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_courserecurrence')) {
+            if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_courserecurrence')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $student->id, 'elis/program:notify_courserecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $student->id, 'local/elisprogram:notify_courserecurrence')) {
                 $users = $users + $supervisors;
             }
         }

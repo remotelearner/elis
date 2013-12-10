@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -50,14 +50,14 @@ class deepsight_action_usersetsubuserset_makesubset extends deepsight_action_con
     public function __construct(moodle_database &$DB, $name, $descsingle='', $descmultiple='') {
         parent::__construct($DB, $name);
 
-        $this->label = get_string('ds_assign_as_subset', 'elis_program');
+        $this->label = get_string('ds_assign_as_subset', 'local_elisprogram');
 
         $curuserset = required_param('id', PARAM_INT);
         $curuserset = new userset($curuserset);
         $this->descsingle = (!empty($descsingle))
-                ? $descsingle : get_string('ds_action_assign_subset', 'elis_program', $curuserset->name);
+                ? $descsingle : get_string('ds_action_assign_subset', 'local_elisprogram', $curuserset->name);
         $this->descmultiple = (!empty($descmultiple))
-                ? $descmultiple : get_string('ds_action_assign_subset_multi', 'elis_program', $curuserset->name);
+                ? $descmultiple : get_string('ds_action_assign_subset_multi', 'local_elisprogram', $curuserset->name);
     }
 
     /**
@@ -79,10 +79,10 @@ class deepsight_action_usersetsubuserset_makesubset extends deepsight_action_con
         unset($possiblesubsets);
 
         // We need edit permissions.
-        $perm = 'elis/program:userset_edit';
+        $perm = 'local/elisprogram:userset_edit';
         $userseteditctx = pm_context_set::for_user_with_capability('cluster', $perm, $USER->id);
         if ($userseteditctx->context_allowed($curusersetid, 'cluster') !== true) {
-            throw new moodle_exception('not_permitted', 'elis_program');
+            throw new moodle_exception('not_permitted', 'local_elisprogram');
         }
 
         // Loop through requested elements to move. Check for permissions and do an sanity check on IDs and parent ID, then move.
@@ -123,7 +123,7 @@ class deepsight_action_usersetsubuserset_editlink extends deepsight_action_link 
     /**
      * @var string The link target (without query string)
      */
-    public $baseurl = '/elis/program/index.php';
+    public $baseurl = '/local/elisprogram/index.php';
 
     /**
      * @var array Query parameters for the link target
@@ -152,7 +152,7 @@ class deepsight_action_usersetsubuserset_trackslink extends deepsight_action_lin
     /**
      * @var string The link target (without query string)
      */
-    public $baseurl = '/elis/program/index.php';
+    public $baseurl = '/local/elisprogram/index.php';
 
     /**
      * @var array Query parameters for the link target
@@ -180,7 +180,7 @@ class deepsight_action_usersetsubuserset_userslink extends deepsight_action_link
     /**
      * @var string The link target (without query string)
      */
-    public $baseurl = '/elis/program/index.php';
+    public $baseurl = '/local/elisprogram/index.php';
 
     /**
      * @var array Query parameters for the link target
@@ -208,7 +208,7 @@ class deepsight_action_usersetsubuserset_programslink extends deepsight_action_l
     /**
      * @var string The link target (without query string)
      */
-    public $baseurl = '/elis/program/index.php';
+    public $baseurl = '/local/elisprogram/index.php';
 
     /**
      * @var array Query parameters for the link target
@@ -236,7 +236,7 @@ class deepsight_action_usersetsubuserset_deletelink extends deepsight_action_lin
     /**
      * @var string The link target (without query string)
      */
-    public $baseurl = '/elis/program/index.php';
+    public $baseurl = '/local/elisprogram/index.php';
 
     /**
      * @var array Query parameters for the link target

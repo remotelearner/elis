@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/course.class.php'));
@@ -41,7 +41,7 @@ require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
  * Test user functions
- * @group elis_program
+ * @group local_elisprogram
  */
 class user_testcase extends elis_database_test {
 
@@ -50,14 +50,14 @@ class user_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
-            'user_info_category' => elis::component_file('program', 'tests/fixtures/user_info_category.csv'),
-            'user_info_field' => elis::component_file('program', 'tests/fixtures/user_info_field.csv'),
-            'user_info_data' => elis::component_file('program', 'tests/fixtures/user_info_data.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            usermoodle::TABLE => elis::component_file('program', 'tests/fixtures/usermoodle.csv'),
-            field::TABLE => elis::component_file('program', 'tests/fixtures/user_field.csv'),
-            field_owner::TABLE => elis::component_file('program', 'tests/fixtures/user_field_owner.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
+            'user_info_category' => elispm::file('tests/fixtures/user_info_category.csv'),
+            'user_info_field' => elispm::file('tests/fixtures/user_info_field.csv'),
+            'user_info_data' => elispm::file('tests/fixtures/user_info_data.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            usermoodle::TABLE => elispm::file('tests/fixtures/usermoodle.csv'),
+            field::TABLE => elispm::file('tests/fixtures/user_field.csv'),
+            field_owner::TABLE => elispm::file('tests/fixtures/user_field_owner.csv'),
         ));
         $this->loadDataSet($dataset);
 
@@ -66,11 +66,11 @@ class user_testcase extends elis_database_test {
 
         // Load field data next (we need the user context ID and context level).
         $dataset = $this->createCsvDataSet(array(
-            field_contextlevel::TABLE => elis::component_file('program', 'tests/fixtures/user_field_contextlevel.csv'),
-            field_category_contextlevel::TABLE => elis::component_file('program', 'tests/fixtures/user_field_category_contextlevel.csv'),
-            field_data_int::TABLE => elis::component_file('program', 'tests/fixtures/user_field_data_int.csv'),
-            field_data_char::TABLE => elis::component_file('program', 'tests/fixtures/user_field_data_char.csv'),
-            field_data_text::TABLE => elis::component_file('program', 'tests/fixtures/user_field_data_text.csv'),
+            field_contextlevel::TABLE => elispm::file('tests/fixtures/user_field_contextlevel.csv'),
+            field_category_contextlevel::TABLE => elispm::file('tests/fixtures/user_field_category_contextlevel.csv'),
+            field_data_int::TABLE => elispm::file('tests/fixtures/user_field_data_int.csv'),
+            field_data_char::TABLE => elispm::file('tests/fixtures/user_field_data_char.csv'),
+            field_data_text::TABLE => elispm::file('tests/fixtures/user_field_data_text.csv'),
         ));
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         $dataset->addFullReplacement('##USERCTXID##', $usercontext->id);
@@ -174,7 +174,7 @@ class user_testcase extends elis_database_test {
         $result = new moodle_recordset_phpunit_datatable('user_info_data',
                 $DB->get_records('user_info_data', null, '', 'id, userid, fieldid, data'));
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable('user_info_data', elis::component_file('program', 'tests/fixtures/user_info_data.csv'));
+        $dataset->addTable('user_info_data', elispm::file('tests/fixtures/user_info_data.csv'));
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         // Only the second text field should be changed; everything else should be the same.
         $dataset->addFullReplacement('Second text entry field', 'bla');
@@ -259,9 +259,9 @@ class user_testcase extends elis_database_test {
                 $DB->get_recordset(field_data_text::TABLE, null, '', 'contextid, fieldid, data')));
         $usercontext = context_elis_user::instance(103);
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
-        $dataset->addTable(field_data_int::TABLE, elis::component_file('program', 'tests/fixtures/user_field_data_int.csv'));
-        $dataset->addTable(field_data_char::TABLE, elis::component_file('program', 'tests/fixtures/user_field_data_char.csv'));
-        $dataset->addTable(field_data_text::TABLE, elis::component_file('program', 'tests/fixtures/user_field_data_text.csv'));
+        $dataset->addTable(field_data_int::TABLE, elispm::file('tests/fixtures/user_field_data_int.csv'));
+        $dataset->addTable(field_data_char::TABLE, elispm::file('tests/fixtures/user_field_data_char.csv'));
+        $dataset->addTable(field_data_text::TABLE, elispm::file('tests/fixtures/user_field_data_text.csv'));
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         $dataset->addFullReplacement('##USERCTXID##', $usercontext->id);
         $dataset->addFullReplacement('##USERCTXLVL##', CONTEXT_ELIS_USER);
@@ -308,8 +308,8 @@ class user_testcase extends elis_database_test {
                             $pmclass->idnumber,
                             $pmcourse->syllabus,
                             0,
-                            get_string('n_completed', 'elis_program'),
-                            get_string('na', 'elis_program')
+                            get_string('n_completed', 'local_elisprogram'),
+                            get_string('na', 'local_elisprogram')
                     )
                 )
             )

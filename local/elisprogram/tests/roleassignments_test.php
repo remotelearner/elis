@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/curriculum.class.php'));
@@ -36,7 +36,7 @@ require_once($CFG->dirroot.'/admin/roles/lib.php');
 
 /**
  * Test role assignments
- * @group elis_program
+ * @group local_elisprogram
  */
 class roleassignments_testcase extends elis_database_test {
 
@@ -54,18 +54,18 @@ class roleassignments_testcase extends elis_database_test {
     protected function load_csv_data() {
 
         $dataset = $this->createCsvDataSet(array(
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
-            'user_info_field' => elis::component_file('program', 'tests/fixtures/user_info_field.csv'),
-            'user_info_data' => elis::component_file('program', 'tests/fixtures/user_info_data.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            usermoodle::TABLE => elis::component_file('program', 'tests/fixtures/usermoodle.csv'),
-            field::TABLE => elis::component_file('program', 'tests/fixtures/user_field.csv'),
-            field_owner::TABLE => elis::component_file('program', 'tests/fixtures/user_field_owner.csv'),
-            curriculum::TABLE => elis::component_file('program', 'tests/fixtures/curriculum.csv'),
-            track::TABLE => elis::component_file('program', 'tests/fixtures/track.csv'),
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            userset::TABLE => elis::component_file('program', 'tests/fixtures/userset.csv')
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
+            'user_info_field' => elispm::file('tests/fixtures/user_info_field.csv'),
+            'user_info_data' => elispm::file('tests/fixtures/user_info_data.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            usermoodle::TABLE => elispm::file('tests/fixtures/usermoodle.csv'),
+            field::TABLE => elispm::file('tests/fixtures/user_field.csv'),
+            field_owner::TABLE => elispm::file('tests/fixtures/user_field_owner.csv'),
+            curriculum::TABLE => elispm::file('tests/fixtures/curriculum.csv'),
+            track::TABLE => elispm::file('tests/fixtures/track.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            userset::TABLE => elispm::file('tests/fixtures/userset.csv')
         ));
         $dataset = new PHPUnit_Extensions_Database_DataSet_ReplacementDataSet($dataset);
         $dataset->addSubStrReplacement('\n', "\n");
@@ -235,12 +235,12 @@ class roleassignments_testcase extends elis_database_test {
             CONTEXT_COURSE => get_string('course'),
             CONTEXT_MODULE => get_string('activitymodule'),
             CONTEXT_BLOCK => get_string('block'),
-            1001 => get_string('curriculum', 'elis_program'),
-            1002 => get_string('track', 'elis_program'),
-            1003 => get_string('course', 'elis_program'),
-            1004 => get_string('class', 'elis_program'),
-            1005 => get_string('context_level_user', 'elis_program'),
-            1006 => get_string('cluster', 'elis_program')
+            1001 => get_string('curriculum', 'local_elisprogram'),
+            1002 => get_string('track', 'local_elisprogram'),
+            1003 => get_string('course', 'local_elisprogram'),
+            1004 => get_string('class', 'local_elisprogram'),
+            1005 => get_string('context_level_user', 'local_elisprogram'),
+            1006 => get_string('cluster', 'local_elisprogram')
         );
 
         $this->assertEquals($allcontextlevels, $roletable->get_all_context_levels());
@@ -284,9 +284,9 @@ class roleassignments_testcase extends elis_database_test {
         global $DB;
 
         // Setup ELIS PM configuration for notification messages on enrolment.
-        elis::$config->elis_program->notify_classenrol_user             = 0;
-        elis::$config->elis_program->notify_classenrol_role             = 1;
-        elis::$config->elis_program->fitem_id_notify_classenrol_message = '%%userenrolname%% has been enrolled in the class %%classname%%.';
+        elis::$config->local_elisprogram->notify_classenrol_user             = 0;
+        elis::$config->local_elisprogram->notify_classenrol_role             = 1;
+        elis::$config->local_elisprogram->fitem_id_notify_classenrol_message = '%%userenrolname%% has been enrolled in the class %%classname%%.';
 
         // Add the correct capability to the system level role and assign that role to the admin user.
         $admin = get_admin();
@@ -294,7 +294,7 @@ class roleassignments_testcase extends elis_database_test {
         $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
 
-        $this->assertTrue(assign_capability('elis/program:notify_classenrol', CAP_ALLOW, $role->id, $syscontext->id));
+        $this->assertTrue(assign_capability('local/elisprogram:notify_classenrol', CAP_ALLOW, $role->id, $syscontext->id));
         $syscontext->mark_dirty();
         $this->assertGreaterThan(0, role_assign($role->id, $admin->id, $syscontext->id));
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    elisprogram_archive
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -28,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elispm::file('plugins/archive/lib.php');
 
 /**
@@ -36,7 +35,7 @@ require_once elispm::file('plugins/archive/lib.php');
  *
  * @return  boolean  true  Returns true to satisfy install procedure
  */
-function xmldb_pmplugins_archive_install() {
+function xmldb_elisprogram_archive_install() {
     global $CFG;
 
     require_once elispm::lib('setup.php');
@@ -45,11 +44,11 @@ function xmldb_pmplugins_archive_install() {
     // Archive field
     $field = new field();
     $field->shortname = ARCHIVE_FIELD;
-    $field->name = get_string('archive_field_name', 'pmplugins_archive');
+    $field->name = get_string('archive_field_name', 'elisprogram_archive');
     $field->datatype = 'bool';
 
     $category = new field_category();
-    $category->name = get_string('archive_category_name', 'pmplugins_archive');
+    $category->name = get_string('archive_category_name', 'elisprogram_archive');
 
     $field = field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_PROGRAM, $category);
 
@@ -63,7 +62,7 @@ function xmldb_pmplugins_archive_install() {
         $owner->param_edit_capability = '';
         $owner->param_control = 'checkbox';
         $owner->param_options_source = '';
-        $owner->param_help_file = 'pmplugins_archive/archive_program';
+        $owner->param_help_file = 'elisprogram_archive/archive_program';
         $owner->save();
     }
 
@@ -74,7 +73,7 @@ function xmldb_pmplugins_archive_install() {
                            'columns'         => 30,
                            'rows'            => 10,
                            'maxlength'       => 2048,
-                           'help_file'       => 'pmplugins_archive/archive_program');
+                           'help_file'       => 'elisprogram_archive/archive_program');
     field_owner::ensure_field_owner_exists($field, 'manual', $owner_options);
 
     return true;

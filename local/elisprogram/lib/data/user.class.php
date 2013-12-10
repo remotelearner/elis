@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('data/clusterassignment.class.php');
 require_once elispm::lib('data/student.class.php');
@@ -696,9 +696,9 @@ class user extends data_object_with_custom_fields {
               ORDER BY cur.priority ASC, cur.name ASC';
 
         //mapping of completion status to display string
-        $status_mapping = array(STUSTATUS_PASSED => get_string('passed', 'elis_program'),
-                                STUSTATUS_FAILED => get_string('failed', 'elis_program'),
-                                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'));
+        $status_mapping = array(STUSTATUS_PASSED => get_string('passed', 'local_elisprogram'),
+                                STUSTATUS_FAILED => get_string('failed', 'local_elisprogram'),
+                                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'local_elisprogram'));
 
         if ($usercurs = $DB->get_records_sql($sql, $params)) {
             //^pre-ELIS-3615 WAS: if ($usercurs = curriculumstudent::get_curricula($this->id)) {
@@ -765,7 +765,7 @@ class user extends data_object_with_custom_fields {
                                     pm_display_grade($classdata->grade),
                                     $status_mapping[$classdata->completestatusid],
                                     $classdata->completestatusid == STUSTATUS_PASSED && !empty($classdata->completetime) ?
-                                        userdate($classdata->completetime, get_string('pm_date_format', 'elis_program')) : get_string('na','elis_program')
+                                        userdate($classdata->completetime, get_string('pm_date_format', 'local_elisprogram')) : get_string('na','local_elisprogram')
                                     );
                             }
                         } else {
@@ -774,11 +774,11 @@ class user extends data_object_with_custom_fields {
 
                             $data[] = array(
                                 $course->coursename,
-                                get_string('dashboard_na', 'elis_program'),
+                                get_string('dashboard_na', 'local_elisprogram'),
                                 $coursedesc,
                                 0,
-                                get_string('not_enrolled', 'elis_program'),
-                                get_string('na','elis_program')
+                                get_string('not_enrolled', 'local_elisprogram'),
+                                get_string('na','local_elisprogram')
                             );
                         }
                         unset($cdata);
@@ -821,12 +821,12 @@ class user extends data_object_with_custom_fields {
     function get_dashboard_program_table($curricula) {
         $table = new html_table();
         $table->head = array(
-            get_string('course', 'elis_program'),
-            get_string('class', 'elis_program'),
-            get_string('description', 'elis_program'),
-            get_string('score', 'elis_program'),
-            get_string('student_status', 'elis_program'),
-            get_string('date', 'elis_program')
+            get_string('course', 'local_elisprogram'),
+            get_string('class', 'local_elisprogram'),
+            get_string('description', 'local_elisprogram'),
+            get_string('score', 'local_elisprogram'),
+            get_string('student_status', 'local_elisprogram'),
+            get_string('date', 'local_elisprogram')
         );
         $table->data = $curricula['data'];
 
@@ -941,17 +941,17 @@ class user extends data_object_with_custom_fields {
     function get_dashboard_nonprogram_table($classes) {
         global $CFG;
 
-        $status_mapping = array(STUSTATUS_PASSED => get_string('passed', 'elis_program'),
-                                STUSTATUS_FAILED => get_string('failed', 'elis_program'),
-                                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'elis_program'));
+        $status_mapping = array(STUSTATUS_PASSED => get_string('passed', 'local_elisprogram'),
+                                STUSTATUS_FAILED => get_string('failed', 'local_elisprogram'),
+                                STUSTATUS_NOTCOMPLETE => get_string('n_completed', 'local_elisprogram'));
 
         $table = new html_table();
         $table->head = array(
-            get_string('course', 'elis_program'),
-            get_string('class', 'elis_program'),
-            get_string('score', 'elis_program'),
-            get_string('student_status', 'elis_program'),
-            get_string('date', 'elis_program')
+            get_string('course', 'local_elisprogram'),
+            get_string('class', 'local_elisprogram'),
+            get_string('score', 'local_elisprogram'),
+            get_string('student_status', 'local_elisprogram'),
+            get_string('date', 'local_elisprogram')
         );
 
         $table->data = array();
@@ -973,7 +973,7 @@ class user extends data_object_with_custom_fields {
                     pm_display_grade($class->grade),
                     $status_mapping[$class->completestatusid],
                     $class->completestatusid == STUSTATUS_PASSED && !empty($class->completetime) ?
-                        userdate($class->completetime, get_string('pm_date_format', 'elis_program')) : get_string('na','elis_program')
+                        userdate($class->completetime, get_string('pm_date_format', 'local_elisprogram')) : get_string('na','local_elisprogram')
                 );
             }
         }
@@ -999,8 +999,8 @@ class user extends data_object_with_custom_fields {
 
         //determine whether we are allow students to view completed courses
         //(value default to enabled)
-        $allow_show_completed = !isset(elis::$config->elis_program->display_completed_courses) ||
-                                !empty(elis::$config->elis_program->display_completed_courses);
+        $allow_show_completed = !isset(elis::$config->local_elisprogram->display_completed_courses) ||
+                                !empty(elis::$config->local_elisprogram->display_completed_courses);
 
         $output = '';
 
@@ -1009,10 +1009,10 @@ class user extends data_object_with_custom_fields {
                 //special message because no courses are displayed and we can't show them
                 if ($programid == false) {
                     //nonprogram case
-                    $output = get_string('dashboard_summary_nonprogram_hidden', 'elis_program');
+                    $output = get_string('dashboard_summary_nonprogram_hidden', 'local_elisprogram');
                 } else {
                     //program case
-                    $output = get_string('dashboard_summary_program_hidden', 'elis_program');
+                    $output = get_string('dashboard_summary_program_hidden', 'local_elisprogram');
                 }
             }
         } else if ($completecourses > 0) {
@@ -1022,19 +1022,19 @@ class user extends data_object_with_custom_fields {
                 //nonprogram cases
                 if ($completecourses == $totalcourses) {
                     //all courses hidden
-                    $output = get_string('dashboard_summary_nonprogram_all', 'elis_program', $a);
+                    $output = get_string('dashboard_summary_nonprogram_all', 'local_elisprogram', $a);
                 } else {
                     //some courses hidden
-                    $output = get_string('dashboard_summary_nonprogram', 'elis_program', $a);
+                    $output = get_string('dashboard_summary_nonprogram', 'local_elisprogram', $a);
                 }
             } else {
                 //program case
                 if ($completecourses == $totalcourses) {
                     //all courses hidden
-                    $output = get_string('dashboard_summary_program_all', 'elis_program', $a);
+                    $output = get_string('dashboard_summary_program_all', 'local_elisprogram', $a);
                 } else {
                     //some courses hidden
-                    $output = get_string('dashboard_summary_program', 'elis_program', $a);
+                    $output = get_string('dashboard_summary_program', 'local_elisprogram', $a);
                 }
             }
         }
@@ -1048,10 +1048,10 @@ class user extends data_object_with_custom_fields {
                 $output .= $br_tag.$br_tag;
 
                 //static part of the "show all" text
-                $output .= get_string('dashboard_show_all', 'elis_program');
+                $output .= get_string('dashboard_show_all', 'local_elisprogram');
 
                 //the link
-                $show_all_text = get_string('dashboard_show_all_link', 'elis_program');
+                $show_all_text = get_string('dashboard_show_all_link', 'local_elisprogram');
                 $parameter = $programid == false ? 'false' : $programid;
                 $attributes = array('href' => '#', 'name' => 'curriculum-'.$parameter);
                 $output .= html_writer::tag('a', $show_all_text, $attributes);
@@ -1107,19 +1107,19 @@ class user extends data_object_with_custom_fields {
         $field_exists = field::get_for_context_level_with_name('curriculum', $archive_var);
         if (!empty($field_exists)) {
             $tabrow = array();
-            $tabrow[] = new tabobject('currentlp', $CFG->wwwroot.'/elis/program/index.php?tab=currentlp',
-                                      get_string('tab_current_learning_plans','elis_program'));
-            $tabrow[] = new tabobject('archivedlp', $CFG->wwwroot.'/elis/program/index.php?tab=archivedlp',
-                                      get_string('tab_archived_learning_plans','elis_program'));
+            $tabrow[] = new tabobject('currentlp', $CFG->wwwroot.'/local/elisprogram/index.php?tab=currentlp',
+                                      get_string('tab_current_learning_plans','local_elisprogram'));
+            $tabrow[] = new tabobject('archivedlp', $CFG->wwwroot.'/local/elisprogram/index.php?tab=archivedlp',
+                                      get_string('tab_archived_learning_plans','local_elisprogram'));
             $tabrows = array($tabrow);
             print_tabs($tabrows, $tab);
         }
 
-        $content .= $OUTPUT->heading(get_string('learningplanwelcome', 'elis_program', fullname($this)));
+        $content .= $OUTPUT->heading(get_string('learningplanwelcome', 'local_elisprogram', fullname($this)));
 
         if ($totalcurricula === 0) { // ELIS-3615 was: if ($totalcourses === 0)
             $blank_lang = ($tab == 'archivedlp') ? 'noarchivedplan' : 'nolearningplan';
-            $content .= '<br /><center>' . get_string($blank_lang, 'elis_program') . '</center>';
+            $content .= '<br /><center>' . get_string($blank_lang, 'local_elisprogram') . '</center>';
         }
 
         // Load the user preferences for hide/show button states
@@ -1136,8 +1136,8 @@ class user extends data_object_with_custom_fields {
 
         //determine whether we are allow students to view completed courses
         //(value default to enabled)
-        $allow_show_completed = !isset(elis::$config->elis_program->display_completed_courses) ||
-                                !empty(elis::$config->elis_program->display_completed_courses);
+        $allow_show_completed = !isset(elis::$config->local_elisprogram->display_completed_courses) ||
+                                !empty(elis::$config->local_elisprogram->display_completed_courses);
 
         if (!empty($usercurs)) {
             foreach ($usercurs as $usercur) {
@@ -1148,11 +1148,11 @@ class user extends data_object_with_custom_fields {
                 //convert our data to an output table
                 $table = $this->get_dashboard_program_table($curricula);
 
-                $curricula_name = empty(elis::$config->elis_program->disablecoursecatalog)
+                $curricula_name = empty(elis::$config->local_elisprogram->disablecoursecatalog)
                                 ? ('<a href="index.php?s=crscat&section=curr&showcurid=' . $curricula['id'] . '">' . $curricula['name'] . '</a>')
                                 : $curricula['name'];
 
-                $header_curr_name = get_string('learningplanname', 'elis_program', $curricula_name);
+                $header_curr_name = get_string('learningplanname', 'local_elisprogram', $curricula_name);
 
                 //only show toggle if enabled via PM config
                 if ($allow_show_completed) {
@@ -1162,14 +1162,14 @@ class user extends data_object_with_custom_fields {
                     $enabled = $completecoursesmap[$curricula['id']] > 0 ? 'true' : 'false';
 
                     // Javascript code for toggling display of completed courses
-                    $PAGE->requires->yui_module('moodle-elis_program-dashboard', 'M.elis_program.init_togglecomplete',
+                    $PAGE->requires->yui_module('moodle-local_elisprogram-dashboard', 'M.local_elisprogram.init_togglecomplete',
                             array(
                                     array(
                                         'addbefore' => 'curriculum'.$curricula['id'].'script',
                                         'nameattr' => 'curriculum-'.$curricula['id'].'completedbutton',
-                                        'buttonlabel' => get_string('showcompletedcourses', 'elis_program'),
-                                        'hidetext' => get_string('hidecompletedcourses', 'elis_program'),
-                                        'showtext' => get_string('showcompletedcourses', 'elis_program'),
+                                        'buttonlabel' => get_string('showcompletedcourses', 'local_elisprogram'),
+                                        'hidetext' => get_string('hidecompletedcourses', 'local_elisprogram'),
+                                        'showtext' => get_string('showcompletedcourses', 'local_elisprogram'),
                                         'element' => 'curriculum-'.$curricula['id'],
                                         'displayed' => $displayed,
                                         'enabled' => $enabled,
@@ -1181,21 +1181,21 @@ class user extends data_object_with_custom_fields {
                 }
 
                 if (in_array($curricula['id'],$collapsed_array)) {
-                    $button_label = get_string('showcourses','elis_program');
+                    $button_label = get_string('showcourses','local_elisprogram');
                     $extra_class = ' hide';
                 } else {
-                    $button_label = get_string('hidecourses','elis_program');
+                    $button_label = get_string('hidecourses','local_elisprogram');
                     $extra_class = '';
                 }
 
-                $PAGE->requires->yui_module('moodle-elis_program-dashboard', 'M.elis_program.init_togglevisibleinitstate',
+                $PAGE->requires->yui_module('moodle-local_elisprogram-dashboard', 'M.local_elisprogram.init_togglevisibleinitstate',
                         array(
                                 array(
                                     'addbefore' => 'curriculum'.$curricula['id'].'script',
                                     'nameattr' => 'curriculum'.$curricula['id'].'button',
                                     'buttonlabel' => $button_label,
-                                    'hidetext' => get_string('hidecourses', 'elis_program'),
-                                    'showtext' => get_string('showcourses', 'elis_program'),
+                                    'hidetext' => get_string('hidecourses', 'local_elisprogram'),
+                                    'showtext' => get_string('showcourses', 'local_elisprogram'),
                                     'element' => 'curriculum-'.$curricula['id'],
                                     'wwwroot' => $CFG->wwwroot
                                 )
@@ -1212,7 +1212,7 @@ class user extends data_object_with_custom_fields {
 
                 if (empty($curricula['data']) && $totalcoursesmap[$usercur->curid] == 0) {
                     //nothing in the table, and no completed courses are being hidden
-                    $content .= $OUTPUT->box(get_string('nocoursedescassoc','elis_program'));
+                    $content .= $OUTPUT->box(get_string('nocoursedescassoc','local_elisprogram'));
                 } else {
                     if (!empty($table->data)) {
                         //we are showing some data
@@ -1239,7 +1239,7 @@ class user extends data_object_with_custom_fields {
                 //convert this data to a display table
                 $table = $this->get_dashboard_nonprogram_table($classes);
 
-                $header_curr_name = get_string('noncurriculacourses', 'elis_program');
+                $header_curr_name = get_string('noncurriculacourses', 'local_elisprogram');
 
                 //only show toggle if enabled via PM config
                 if ($allow_show_completed) {
@@ -1249,14 +1249,14 @@ class user extends data_object_with_custom_fields {
                     $enabled = $completecourses > 0 ? 'true' : 'false';
 
                     // Javascript code for toggling display of completed courses
-                    $PAGE->requires->yui_module('moodle-elis_program-dashboard', 'M.elis_program.init_togglecomplete',
+                    $PAGE->requires->yui_module('moodle-local_elisprogram-dashboard', 'M.local_elisprogram.init_togglecomplete',
                             array(
                                     array(
                                         'addbefore' => 'noncurriculascript',
                                         'nameattr' => 'noncurriculacompletedbutton',
-                                        'buttonlabel' => get_string('showcompletedcourses', 'elis_program'),
-                                        'hidetext' => get_string('hidecompletedcourses', 'elis_program'),
-                                        'showtext' => get_string('showcompletedcourses', 'elis_program'),
+                                        'buttonlabel' => get_string('showcompletedcourses', 'local_elisprogram'),
+                                        'hidetext' => get_string('hidecompletedcourses', 'local_elisprogram'),
+                                        'showtext' => get_string('showcompletedcourses', 'local_elisprogram'),
                                         'element' => 'curriculum-na',
                                         'displayed' => $displayed,
                                         'enabled' => $enabled,
@@ -1268,22 +1268,22 @@ class user extends data_object_with_custom_fields {
                 }
 
                 if (in_array('na',$collapsed_array)) {
-                    $button_label = get_string('showcourses','elis_program');
+                    $button_label = get_string('showcourses','local_elisprogram');
                     $extra_class = ' hide';
                 } else {
-                    $button_label = get_string('hidecourses','elis_program');
+                    $button_label = get_string('hidecourses','local_elisprogram');
                     $extra_class = '';
                 }
 
                 // Javascript code for toggling display of completed courses
-                $PAGE->requires->yui_module('moodle-elis_program-dashboard', 'M.elis_program.init_togglevisibleinitstate',
+                $PAGE->requires->yui_module('moodle-local_elisprogram-dashboard', 'M.local_elisprogram.init_togglevisibleinitstate',
                         array(
                                 array(
                                     'addbefore' => 'noncurriculascript',
                                     'nameattr' => 'noncurriculabutton',
                                     'buttonlabel' => $button_label,
-                                    'hidetext' => get_string('hidecourses', 'elis_program'),
-                                    'showtext' => get_string('showcourses', 'elis_program'),
+                                    'hidetext' => get_string('hidecourses', 'local_elisprogram'),
+                                    'showtext' => get_string('showcourses', 'local_elisprogram'),
                                     'element' => 'curriculum-na',
                                     'wwwroot' => $CFG->wwwroot
                                 )
@@ -1421,7 +1421,7 @@ class pm_show_inactive_filter extends user_filter_type {
             if($data['value'] == 1) {
                 $retval = get_string('all');
             } else if($data['value'] == 2) {
-                $retval = get_string('inactive', 'elis_program');
+                $retval = get_string('inactive', 'local_elisprogram');
             }
         }
 
@@ -1729,17 +1729,17 @@ class pm_user_filtering extends user_filtering {
             $clusters = userset_get_menu();
             //need to reference the user table directly to allow use of filters in DB calls that do not
             //require the full SQL query with table aliases
-            return new pm_user_userset_filter('clusterid', get_string('usercluster', 'elis_program'), $advanced, '{'.user::TABLE.'}.id', $clusters);
+            return new pm_user_userset_filter('clusterid', get_string('usercluster', 'local_elisprogram'), $advanced, '{'.user::TABLE.'}.id', $clusters);
 
         case 'curriculumid':
             $choices = program_get_menu();
             //need to reference the user table directly to allow use of filters in DB calls that do not
             //require the full SQL query with table aliases
-            return new pm_user_program_filter('curriculumid', get_string('usercurricula', 'elis_program'), $advanced, '{'.user::TABLE.'}.id', $choices);
+            return new pm_user_program_filter('curriculumid', get_string('usercurricula', 'local_elisprogram'), $advanced, '{'.user::TABLE.'}.id', $choices);
 
         case 'inactive':
-            $inactive_options = array(get_string('o_active', 'elis_program'), get_string('all'), get_string('o_inactive', 'elis_program'));
-            return new pm_show_inactive_filter('inactive', get_string('showinactive', 'elis_program'), $advanced, 'inactive', $inactive_options);
+            $inactive_options = array(get_string('o_active', 'local_elisprogram'), get_string('all'), get_string('o_inactive', 'local_elisprogram'));
+            return new pm_show_inactive_filter('inactive', get_string('showinactive', 'local_elisprogram'), $advanced, 'inactive', $inactive_options);
 
 
         default:

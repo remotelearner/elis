@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    pmplugins_archive
+ * @package    elisprogram_archive
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../eliscore/test_config.php');
 global $CFG;
 
 // Libs.
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
-require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+require_once(elis::file('eliscore/fields/moodle_profile/custom_fields.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 
 /**
  * Test archive program plugin.
- * @group pmplugins_archive
- * @group elis_program
+ * @group elisprogram_archive
+ * @group local_elisprogram
  */
 class archiveprogramplugin_testcase extends elis_database_test {
 
@@ -48,7 +48,7 @@ class archiveprogramplugin_testcase extends elis_database_test {
 
         require_once(dirname(__FILE__).'/../db/install.php');
 
-        $this->assertTrue(xmldb_pmplugins_archive_install());
+        $this->assertTrue(xmldb_elisprogram_archive_install());
 
         $field = $DB->get_record(field::TABLE, array('shortname' => ARCHIVE_FIELD));
         $this->assertNotEmpty($field->id);

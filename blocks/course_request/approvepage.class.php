@@ -27,12 +27,12 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/lib/formslib.php');
 
-require_once($CFG->dirroot .'/elis/core/lib/data/customfield.class.php');
-require_once($CFG->dirroot .'/elis/core/lib/table.class.php');
-require_once($CFG->dirroot .'/elis/program/accesslib.php');
-require_once($CFG->dirroot .'/elis/program/lib/page.class.php');
-require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
-require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/table.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/page.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
 // main lib file for the course request block
 require_once($CFG->dirroot .'/blocks/course_request/lib.php');
@@ -83,7 +83,7 @@ class courserequestapprovepage extends pm_page {
     function add_custom_fields($formdata, $contextlevel_name, &$entity) {
         global $CFG;
 
-        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/contexts.php');
 
         $contextlevel = context_elis_helper::get_level_from_name($contextlevel_name);
         if ($fields = field::get_for_context_level($contextlevel)) {
@@ -168,7 +168,7 @@ class courserequestapprovepage extends pm_page {
      */
     function add_approval_form_constants(&$request) {
         global $CFG, $DB;
-        require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
         // obtain the course idnumber if applicable
         if ($request->courseid != 0) {
@@ -307,7 +307,7 @@ class courserequestapprovepage extends pm_page {
         global $CFG;
 
         if (empty($request->courseid)) {
-            require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
+            require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
             // create a new course
             $crsdata = array(
                 'name'     => $request->title,
@@ -354,7 +354,7 @@ class courserequestapprovepage extends pm_page {
         // Create the new class if we are using an existing course, or if
         // create_class_with_course is on.
         if (!empty($request->courseid) || !empty($CFG->block_course_request_create_class_with_course)) {
-            require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
+            require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
             $clsdata = array(
                 'courseid'        => $courseid,
                 'idnumber'        => $formdata->clsidnumber,
@@ -393,7 +393,7 @@ class courserequestapprovepage extends pm_page {
 
                 // copy role over into Moodle course
                 if (isset($CFG->block_course_request_class_role) && $CFG->block_course_request_class_role) {
-                    require_once($CFG->dirroot .'/elis/program/lib/data/classmoodlecourse.class.php');
+                    require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
                     if ($class_moodle_record = $DB->get_record(classmoodlecourse::TABLE, array('classid' => $newclass->id))) {
                         $context = context_course::instance($class_moodle_record->moodlecourseid);
                         role_assign($CFG->block_course_request_class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
@@ -527,7 +527,7 @@ class pending_requests_page_table extends display_table {
         $this->page = $page;
         parent::__construct($items, $columns, $page->url);
         // ***TBD*** $decorators
-        $this->display_date = new display_date_item(get_string('pm_date_format', 'elis_program'));
+        $this->display_date = new display_date_item(get_string('pm_date_format', 'local_elisprogram'));
     }
 
     function get_column_align_buttons() {
@@ -831,7 +831,7 @@ class pending_request_approve_form extends create_form {
         $errors = array();
 
         if ($data['approvalaction'] == 'approve') {
-            require_once($CFG->dirroot .'/elis/program/lib/data/pmclass.class.php');
+            require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
             $recordid = $data['request']; // TBV: addslashes()
 
@@ -841,29 +841,29 @@ class pending_request_approve_form extends create_form {
                 if (empty($data['clsidnumber'])) {
                     $errors['clsidnumber'] = get_string('required');
                 } else if ($DB->record_exists(pmclass::TABLE, array('idnumber' => $data['clsidnumber']))) {
-                    $errors['clsidnumber'] = get_string('idnumber_already_used', 'elis_program');
+                    $errors['clsidnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
                 }
             } else {
-                require_once($CFG->dirroot .'/elis/program/lib/data/course.class.php');
+                require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
                 if (empty($CFG->block_course_request_create_class_with_course)) {
                     // new course with no associated class
                     if (empty($data['crsidnumber'])) {
                         $errors['crsidnumber'] = get_string('required');
                     } else if ($DB->record_exists(course::TABLE, array('idnumber' => $data['crsidnumber']))) {
-                        $errors['crsidnumber'] = get_string('idnumber_already_used', 'elis_program');
+                        $errors['crsidnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
                     }
                 } else {
                     // new course with an associated class
                     if (empty($data['crsidnumber'])) {
                         $errors['crsidnumber'] = get_string('required');
                     } else if ($DB->record_exists(course::TABLE, array('idnumber' => $data['crsidnumber']))) {
-                        $errors['crsidnumber'] = get_string('idnumber_already_used', 'elis_program');
+                        $errors['crsidnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
                     }
 
                     if (empty($data['clsidnumber'])) {
                         $errors['clsidnumber'] = get_string('required');
                     } else if ($DB->record_exists(pmclass::TABLE, array('idnumber' => $data['clsidnumber']))) {
-                        $errors['clsidnumber'] = get_string('idnumber_already_used', 'elis_program');
+                        $errors['clsidnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
                     }
                 }
             }

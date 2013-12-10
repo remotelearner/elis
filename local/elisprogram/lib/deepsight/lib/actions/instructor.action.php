@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -59,27 +59,27 @@ abstract class deepsight_action_instructor_assignedit_base extends deepsight_act
         $opts['condition'] = $this->condition;
         $opts['opts']['actionurl'] = $this->endpoint;
         $opts['opts']['mode'] = $this->mode;
-        $opts['opts']['langbulkconfirm'] = get_string('ds_bulk_confirm', 'elis_program');
-        $opts['opts']['langworking'] = get_string('ds_working', 'elis_program');
-        $opts['opts']['langchanges'] = get_string('ds_changes', 'elis_program');
-        $opts['opts']['langnochanges'] = get_string('ds_nochanges', 'elis_program');
-        $opts['opts']['langgeneralerror'] = get_string('ds_unknown_error', 'elis_program');
-        $opts['opts']['langtitle'] = get_string('ds_assocdata', 'elis_program');
-        $opts['opts']['langassigntime'] = get_string('instructor_assignment', 'elis_program');
-        $opts['opts']['langcompletetime'] = get_string('instructor_completion', 'elis_program');
+        $opts['opts']['langbulkconfirm'] = get_string('ds_bulk_confirm', 'local_elisprogram');
+        $opts['opts']['langworking'] = get_string('ds_working', 'local_elisprogram');
+        $opts['opts']['langchanges'] = get_string('ds_changes', 'local_elisprogram');
+        $opts['opts']['langnochanges'] = get_string('ds_nochanges', 'local_elisprogram');
+        $opts['opts']['langgeneralerror'] = get_string('ds_unknown_error', 'local_elisprogram');
+        $opts['opts']['langtitle'] = get_string('ds_assocdata', 'local_elisprogram');
+        $opts['opts']['langassigntime'] = get_string('instructor_assignment', 'local_elisprogram');
+        $opts['opts']['langcompletetime'] = get_string('instructor_completion', 'local_elisprogram');
         $opts['opts']['lang_months'] = array(
-            0 => get_string('month_jan_short', 'elis_program'),
-            1 => get_string('month_feb_short', 'elis_program'),
-            2 => get_string('month_mar_short', 'elis_program'),
-            3 => get_string('month_apr_short', 'elis_program'),
-            4 => get_string('month_may_short', 'elis_program'),
-            5 => get_string('month_jun_short', 'elis_program'),
-            6 => get_string('month_jul_short', 'elis_program'),
-            7 => get_string('month_aug_short', 'elis_program'),
-            8 => get_string('month_sep_short', 'elis_program'),
-            9 => get_string('month_oct_short', 'elis_program'),
-            10 => get_string('month_nov_short', 'elis_program'),
-            11 => get_string('month_dec_short', 'elis_program')
+            0 => get_string('month_jan_short', 'local_elisprogram'),
+            1 => get_string('month_feb_short', 'local_elisprogram'),
+            2 => get_string('month_mar_short', 'local_elisprogram'),
+            3 => get_string('month_apr_short', 'local_elisprogram'),
+            4 => get_string('month_may_short', 'local_elisprogram'),
+            5 => get_string('month_jun_short', 'local_elisprogram'),
+            6 => get_string('month_jul_short', 'local_elisprogram'),
+            7 => get_string('month_aug_short', 'local_elisprogram'),
+            8 => get_string('month_sep_short', 'local_elisprogram'),
+            9 => get_string('month_oct_short', 'local_elisprogram'),
+            10 => get_string('month_nov_short', 'local_elisprogram'),
+            11 => get_string('month_dec_short', 'local_elisprogram')
         );
         return $opts;
     }
@@ -154,13 +154,13 @@ class deepsight_action_instructor_assign extends deepsight_action_instructor_ass
      */
     public function __construct(moodle_database &$DB, $name, $descsingle='', $descmultiple='') {
         parent::__construct($DB, $name);
-        $this->label = ucwords(get_string('assign', 'elis_program'));
+        $this->label = ucwords(get_string('assign', 'local_elisprogram'));
 
         $this->descsingle = (!empty($descsingle))
-                ? $descsingle : get_string('ds_action_instructor_assign', 'elis_program');
+                ? $descsingle : get_string('ds_action_instructor_assign', 'local_elisprogram');
 
         $this->descmultiple = (!empty($descmultiple))
-                ? $descmultiple : get_string('ds_action_instructor_assign_multi', 'elis_program');
+                ? $descmultiple : get_string('ds_action_instructor_assign_multi', 'local_elisprogram');
     }
 
     /**
@@ -177,7 +177,7 @@ class deepsight_action_instructor_assign extends deepsight_action_instructor_ass
         $assocdata = $this->process_incoming_assoc_data($assocdata, $bulkaction);
 
         if (instructorpage::can_enrol_into_class($classid) !== true) {
-            throw new moodle_exception('not_permitted', 'elis_program');
+            throw new moodle_exception('not_permitted', 'local_elisprogram');
         }
 
         foreach ($elements as $userid => $label) {
@@ -224,7 +224,7 @@ class deepsight_action_instructor_edit extends deepsight_action_instructor_assig
      * Sets the correct language string on the label.
      */
     protected function postconstruct() {
-        $this->label = get_string('edit', 'elis_program');
+        $this->label = get_string('edit', 'local_elisprogram');
     }
 
     /**
@@ -241,7 +241,7 @@ class deepsight_action_instructor_edit extends deepsight_action_instructor_assig
         $assocdata = $this->process_incoming_assoc_data($assocdata, $bulkaction);
 
         if (instructorpage::can_enrol_into_class($classid) !== true) {
-            throw new moodle_exception('not_permitted', 'elis_program');
+            throw new moodle_exception('not_permitted', 'local_elisprogram');
         }
 
         foreach ($elements as $userid => $label) {
@@ -301,13 +301,13 @@ class deepsight_action_instructor_unassign extends deepsight_action_confirm {
      */
     public function __construct(moodle_database &$DB, $name, $descsingle='', $descmultiple='') {
         parent::__construct($DB, $name);
-        $this->label = ucwords(get_string('unassign', 'elis_program'));
+        $this->label = ucwords(get_string('unassign', 'local_elisprogram'));
 
         $this->descsingle = (!empty($descsingle))
-                ? $descsingle : get_string('ds_action_instructor_unassign', 'elis_program');
+                ? $descsingle : get_string('ds_action_instructor_unassign', 'local_elisprogram');
 
         $this->descmultiple = (!empty($descmultiple))
-                ? $descmultiple : get_string('ds_action_instructor_unassign_multi', 'elis_program');
+                ? $descmultiple : get_string('ds_action_instructor_unassign_multi', 'local_elisprogram');
     }
 
     /**
@@ -322,7 +322,7 @@ class deepsight_action_instructor_unassign extends deepsight_action_confirm {
         $classid = required_param('id', PARAM_INT);
 
         if (instructorpage::can_enrol_into_class($classid) !== true) {
-            throw new moodle_exception('not_permitted', 'elis_program');
+            throw new moodle_exception('not_permitted', 'local_elisprogram');
         }
 
         foreach ($elements as $userid => $label) {

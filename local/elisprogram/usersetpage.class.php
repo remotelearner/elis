@@ -33,7 +33,7 @@ require_once(elispm::lib('data/clustercurriculum.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('contexts.php'));
 require_once(elispm::file('form/usersetform.class.php'));
-require_once(elis::plugin_file('usersetenrol_manual', 'usersetassignmentpage.class.php'));
+require_once(elis::plugin_file('usetenrol_manual', 'usersetassignmentpage.class.php'));
 
 /**
  * Page to manage user subsets.
@@ -103,7 +103,7 @@ class usersetsubusersetpage extends deepsightpage {
      */
     public function can_do_default() {
         $id = $this->required_param('id', PARAM_INT);
-        $requiredperms = array('elis/program:userset_view');
+        $requiredperms = array('local/elisprogram:userset_view');
         return $this->has_perms_for_element($requiredperms, 'cluster', $id);
     }
 
@@ -113,7 +113,7 @@ class usersetsubusersetpage extends deepsightpage {
      */
     public function can_do_add() {
         $id = $this->required_param('id', PARAM_INT);
-        $requiredperms = array('elis/program:userset_edit');
+        $requiredperms = array('local/elisprogram:userset_edit');
         return $this->has_perms_for_element($requiredperms, 'cluster', $id);
     }
 
@@ -145,7 +145,7 @@ class usersetsubusersetpage extends deepsightpage {
             return;
         }
 
-        $addbutton = $OUTPUT->single_button($targetpage->url, get_string("add_{$this->data_class}", 'elis_program'), 'get');
+        $addbutton = $OUTPUT->single_button($targetpage->url, get_string("add_{$this->data_class}", 'local_elisprogram'), 'get');
         echo html_writer::tag('div', $addbutton, array('style' => 'text-align: center'));
     }
 }
@@ -195,7 +195,7 @@ class usersetpage extends managementpage {
 
         //check the standard capability
         $page = new usersetpage();
-        if ($page->_has_capability('elis/program:userset_enrol', $clusterid)) {
+        if ($page->_has_capability('local/elisprogram:userset_enrol', $clusterid)) {
             return true;
         }
 
@@ -205,13 +205,13 @@ class usersetpage extends managementpage {
 
         if (!empty($cluster->parent)) {
             //check to see if the current user has the secondary capability anywhere up the cluster tree
-            $contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
+            $contexts = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_enrol_userset_user', $USER->id);
             return $contexts->context_allowed($clusterid, 'cluster');
         }
       */
 
         //check to see if the current user has the secondary capability anywhere up the cluster tree
-        $contexts = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
+        $contexts = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_enrol_userset_user', $USER->id);
         return $contexts->context_allowed($clusterid, 'cluster');
     }
 
@@ -238,14 +238,14 @@ class usersetpage extends managementpage {
                     'tab_id' => 'view',
                     'page' => 'usersetpage',
                     'params' => array('action' => 'view'),
-                    'name' => get_string('detail', 'elis_program'),
+                    'name' => get_string('detail', 'local_elisprogram'),
                     'showtab' => true
                 ),
                 array(
                     'tab_id' => 'edit',
                     'page' => 'usersetpage',
                     'params' => array('action' => 'edit'),
-                    'name' => get_string('edit', 'elis_program'),
+                    'name' => get_string('edit', 'local_elisprogram'),
                     'showtab' => true,
                     'showbutton' => true,
                     'image' => 'edit'
@@ -254,7 +254,7 @@ class usersetpage extends managementpage {
                     'tab_id' => 'usersetsubusersetpage',
                     'page' => 'usersetsubusersetpage',
                     'params' => array(),
-                    'name' => get_string('usersubsets', 'elis_program'),
+                    'name' => get_string('usersubsets', 'local_elisprogram'),
                     'showtab' => true,
                     'showbutton' => true,
                     'image' => 'cluster'
@@ -262,7 +262,7 @@ class usersetpage extends managementpage {
                 array(
                     'tab_id' => 'clustertrackpage',
                     'page' => 'clustertrackpage',
-                    'name' => get_string('tracks', 'elis_program'),
+                    'name' => get_string('tracks', 'local_elisprogram'),
                     'showtab' => true,
                     'showbutton' => true,
                     'image' => 'track'
@@ -270,7 +270,7 @@ class usersetpage extends managementpage {
                 array(
                     'tab_id' => 'clusteruserpage',
                     'page' => 'clusteruserpage',
-                    'name' => get_string('users', 'elis_program'),
+                    'name' => get_string('users', 'local_elisprogram'),
                     'showtab' => true,
                     'showbutton' => true,
                     'image' => 'user'
@@ -278,7 +278,7 @@ class usersetpage extends managementpage {
                 array(
                     'tab_id' => 'clustercurriculumpage',
                     'page' => 'clustercurriculumpage',
-                    'name' => get_string('curricula', 'elis_program'),
+                    'name' => get_string('curricula', 'local_elisprogram'),
                     'showtab' => true,
                     'showbutton' => true,
                     'image' => 'curriculum'
@@ -295,7 +295,7 @@ class usersetpage extends managementpage {
                     'tab_id' => 'delete',
                     'page' => 'usersetpage',
                     'params' => array('action' => 'delete'),
-                    'name' => get_string('delete_label', 'elis_program'),
+                    'name' => get_string('delete_label', 'local_elisprogram'),
                     'showbutton' => true,
                     'image' => 'delete'
                 ),
@@ -306,7 +306,7 @@ class usersetpage extends managementpage {
 
     function can_do_view() {
         $id = $this->required_param('id', PARAM_INT);
-        if ($this->_has_capability('elis/program:userset_view')) {
+        if ($this->_has_capability('local/elisprogram:userset_view')) {
             return true;
         }
 
@@ -315,7 +315,7 @@ class usersetpage extends managementpage {
          */
 
         $viewable_clusters = userset::get_viewable_clusters();
-        $contextset = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_view');
+        $contextset = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_view');
         return in_array($id, $viewable_clusters)
             || userset::exists(array(new usersubset_filter('id', new field_filter('id', $id)),
                                      $contextset->get_filter('id')))
@@ -328,7 +328,7 @@ class usersetpage extends managementpage {
     }
 
     function can_do_edit() {
-        return $this->_has_capability('elis/program:userset_edit');
+        return $this->_has_capability('local/elisprogram:userset_edit');
     }
 
     function can_do_subcluster() {
@@ -337,11 +337,11 @@ class usersetpage extends managementpage {
         $context = context_elis_userset::instance($subclusterid);
 
         //make sure editing is allowed on both clusters
-        return $this->_has_capability('elis/program:userset_edit') && has_capability('elis/program:userset_edit', $context);
+        return $this->_has_capability('local/elisprogram:userset_edit') && has_capability('local/elisprogram:userset_edit', $context);
     }
 
     function can_do_delete() {
-        return $this->_has_capability('elis/program:userset_delete');
+        return $this->_has_capability('local/elisprogram:userset_delete');
     }
 
     function can_do_confirm() {
@@ -359,7 +359,7 @@ class usersetpage extends managementpage {
             $context = get_context_instance(CONTEXT_SYSTEM);
         }
 
-        return has_capability('elis/program:userset_create', $context);
+        return has_capability('local/elisprogram:userset_create', $context);
     }
 
     /**
@@ -425,7 +425,7 @@ class usersetpage extends managementpage {
         if ($parent) {
             return $this->can_do_view();
         }
-        $contexts = self::get_contexts('elis/program:userset_view');
+        $contexts = self::get_contexts('local/elisprogram:userset_view');
         return !$contexts->is_empty();
     }
 
@@ -493,8 +493,8 @@ class usersetpage extends managementpage {
 
         // Define columns
         $columns = array(
-            'name' => array('header' => get_string('userset_name','elis_program')),
-            'display' => array('header' => get_string('userset_description','elis_program')),
+            'name' => array('header' => get_string('userset_name','local_elisprogram')),
+            'display' => array('header' => get_string('userset_description','local_elisprogram')),
         );
 
         // set sorting
@@ -508,26 +508,26 @@ class usersetpage extends managementpage {
             $columns[$sort]['sortable'] = $dir;
         }
 
-        $extrafilters = array('contexts' => self::get_contexts('elis/program:userset_view'),
+        $extrafilters = array('contexts' => self::get_contexts('local/elisprogram:userset_view'),
                               'parent' => $parent,
                               'classification' => $classification);
         $items = cluster_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, $extrafilters);
         $numitems = cluster_count_records($namesearch, $alpha, $extrafilters);
 
-        self::get_contexts('elis/program:userset_edit');
-        self::get_contexts('elis/program:userset_delete');
+        self::get_contexts('local/elisprogram:userset_edit');
+        self::get_contexts('local/elisprogram:userset_delete');
 
         $this->print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=true, $searchflag=true);
 
         if ($this->optional_param('id', 0, PARAM_INT)) {
             //get the non-parent clusters that are accessible based on the edit capability
-            $contexts = usersetpage::get_contexts('elis/program:userset_edit');
+            $contexts = usersetpage::get_contexts('local/elisprogram:userset_edit');
             $non_parent_clusters = cluster_get_possible_sub_clusters($this->optional_param('id', 0, PARAM_INT), $contexts);
 
             //display the dropdown if there are one or more available clusters
             if (count($non_parent_clusters) > 0) {
                 echo html_writer::start_tag('div', array('align' => 'center'));
-                echo get_string('cluster_subcluster_prompt','elis_program') . ': ';
+                echo get_string('cluster_subcluster_prompt','local_elisprogram') . ': ';
                 $url = $this->get_new_page(array('action'=>'subcluster','id'=>$this->optional_param('id', 0, PARAM_INT)))->url . '&amp;subclusterid=';
                 echo $OUTPUT->single_select($url, 'subclusterid', $non_parent_clusters);
                 echo html_writer::end_tag('div');
@@ -563,7 +563,7 @@ class usersetpage extends managementpage {
 
         if ($form->is_cancelled()) {
             //cancelled, so redirect back to view page
-            redirect($target_page->url, get_string('delete_cancelled', 'elis_program'));
+            redirect($target_page->url, get_string('delete_cancelled', 'local_elisprogram'));
         }
 
         $obj = $this->get_new_data_object($id);
@@ -579,7 +579,7 @@ class usersetpage extends managementpage {
             $returnurl = $CFG->wwwroot.$returnurl;
         }
 
-        redirect($returnurl, get_string('notice_'.get_class($obj).'_deleted', 'elis_program', $obj->to_object()));
+        redirect($returnurl, get_string('notice_'.get_class($obj).'_deleted', 'local_elisprogram', $obj->to_object()));
     }
 
     /**
@@ -596,7 +596,7 @@ class usersetpage extends managementpage {
         $cluster->parent = $id;
         $cluster->save();
 
-        redirect($target_page->url, get_string('cluster_assigned','elis_program'));
+        redirect($target_page->url, get_string('cluster_assigned','local_elisprogram'));
     }
 
     /**
@@ -614,7 +614,7 @@ class usersetpage extends managementpage {
             $context = context_elis_userset::instance($obj->id);
             $like = $DB->sql_like('path', '?');
             $a->descendants = $DB->count_records_select('context',$DB->sql_like('path', '?'), array("{$context->path}/%")) - $a->subclusters;
-            print_string($a->descendants ? 'confirm_delete_with_usersubsets_and_descendants' : 'confirm_delete_with_usersubsets', 'elis_program', array('name'=>$obj->name, 'subclusters'=>$count));
+            print_string($a->descendants ? 'confirm_delete_with_usersubsets_and_descendants' : 'confirm_delete_with_usersubsets', 'local_elisprogram', array('name'=>$obj->name, 'subclusters'=>$count));
             $target = $this->get_new_page(array('action' => 'delete', 'confirm'=>'1'));
             $form = new usersetdeleteform($target->url, array('obj' => $obj, 'a' => $a));
             $form->display();
@@ -641,7 +641,7 @@ class usersetpage extends managementpage {
         $target_page = $this->get_new_page($options, true);
         $url = $target_page->url;
 
-        echo html_writer::tag('div', $OUTPUT->single_button($url, get_string("add_{$this->data_class}",'elis_program'), 'get'), array('style' => 'text-align: center'));
+        echo html_writer::tag('div', $OUTPUT->single_button($url, get_string("add_{$this->data_class}",'local_elisprogram'), 'get'), array('style' => 'text-align: center'));
     }
 
     function get_default_object_for_add() {
@@ -650,8 +650,8 @@ class usersetpage extends managementpage {
             $obj = new stdClass;
             $obj->parent = $parent;
             if ($parent) {
-                require_once(elis::plugin_file('pmplugins_userset_classification','usersetclassification.class.php'));
-                require_once(elis::plugin_file('pmplugins_userset_classification','lib.php'));
+                require_once(elis::plugin_file('elisprogram_usetclassify','usersetclassification.class.php'));
+                require_once(elis::plugin_file('elisprogram_usetclassify','lib.php'));
                 if ($classification = usersetclassification::get_for_cluster($parent)) {
                     $fieldname = 'field_'.USERSET_CLASSIFICATION_FIELD;
                     if ($classification->param_child_classification) {
@@ -686,15 +686,15 @@ class usersetpage extends managementpage {
         global $USER, $DB;
 
         //make sure a valid role is set
-        if(!empty(elis::$config->elis_program->default_cluster_role_id)
-           && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_cluster_role_id))) {
+        if(!empty(elis::$config->local_elisprogram->default_cluster_role_id)
+           && $DB->record_exists('role', array('id' => elis::$config->local_elisprogram->default_cluster_role_id))) {
 
             //get the context instance for capability checking
             $context_instance = context_elis_userset::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if (!has_capability('elis/program:userset_edit', $context_instance)) {
-                role_assign(elis::$config->elis_program->default_cluster_role_id, $USER->id, $context_instance->id);
+            if (!has_capability('local/elisprogram:userset_edit', $context_instance)) {
+                role_assign(elis::$config->local_elisprogram->default_cluster_role_id, $USER->id, $context_instance->id);
             }
         }
     }

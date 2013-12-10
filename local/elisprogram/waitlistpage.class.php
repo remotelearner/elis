@@ -36,7 +36,7 @@ require_once elispm::file('studentpage.class.php');
 require_once elispm::file('form/waitlistform.class.php');
 
 class waitlistpage extends selectionpage {
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     var $data_class  = 'waitlist';
     var $pagename    = 'wtg';
@@ -98,7 +98,7 @@ class waitlistpage extends selectionpage {
             if (!empty($this->data_class)) {
                 $nomatchlabel = 'no_'. $this->data_class .'_matching';
                 if (!get_string_manager()->string_exists($nomatchlabel, self::LANG_FILE)) {
-                    error_log("/elis/program/lib/selectionpage.class.php:: string '{$nomatchlabel}' not found.");
+                    error_log("/local/elisprogram/lib/selectionpage.class.php:: string '{$nomatchlabel}' not found.");
                     $nomatchlabel = null;
                 }
             }
@@ -240,7 +240,7 @@ class waitlistpage extends selectionpage {
 }
 
 class waitlist_table extends selection_table {
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     function __construct(&$items, $url) {
         $sort         = optional_param('sort', 'timecreated', PARAM_CLEAN);

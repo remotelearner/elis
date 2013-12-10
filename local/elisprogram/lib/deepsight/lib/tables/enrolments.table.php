@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -85,7 +85,7 @@ class deepsight_datatable_enrolments extends deepsight_datatable_user {
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_enroledit.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_enroledit.js';
         return $deps;
     }
 
@@ -95,7 +95,7 @@ class deepsight_datatable_enrolments extends deepsight_datatable_user {
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langshowing = get_string('ds_showing', 'elis_program').':';
+        $langshowing = get_string('ds_showing', 'local_elisprogram').':';
 
         $enrolmentfilter = new deepsight_filter_enrolmentstatus($this->DB, 'enrolled', $langshowing);
         $enrolmentfilter->set_classid($this->classid);
@@ -129,7 +129,7 @@ class deepsight_datatable_enrolments extends deepsight_datatable_user {
         $opts = parent::get_table_js_opts();
         $opts['dragdrop'] = true;
         $opts['multiselect'] = true;
-        $langenroled = get_string('enroled', 'elis_program');
+        $langenroled = get_string('enroled', 'local_elisprogram');
         $opts['rowfilter'] = 'function(row, rowdata) {
                                 if (rowdata.meta.enrolled == true) {
                                     row.addClass(\'disabled\').find(\'td.actions\').html(\''.$langenroled.'\');

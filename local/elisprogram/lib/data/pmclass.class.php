@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elis::lib('data/customfield.class.php');
 require_once elispm::lib('lib.php');
@@ -148,7 +147,7 @@ class pmclass extends data_object_with_custom_fields {
             $clsid = $this->id;
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $inactive = 'AND usr.inactive = 0';
         } else {
             $inactive = '';
@@ -471,7 +470,7 @@ class pmclass extends data_object_with_custom_fields {
         $prefix = self::$config_default_prefix;
         $prefixlen = strlen($prefix);
 
-        foreach (elis::$config->elis_program as $key => $data) {
+        foreach (elis::$config->local_elisprogram as $key => $data) {
           if (false !== strpos($key, $prefix)) {
               $index = substr($key, $prefixlen);
               $default_values[$index] = $data;
@@ -490,16 +489,16 @@ class pmclass extends data_object_with_custom_fields {
         global $CFG;
         $result = true;
 
-        $sendtouser       = elis::$config->elis_program->notify_classnotstarted_user;
-        $sendtorole       = elis::$config->elis_program->notify_classnotstarted_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_classnotstarted_supervisor;
+        $sendtouser       = elis::$config->local_elisprogram->notify_classnotstarted_user;
+        $sendtorole       = elis::$config->local_elisprogram->notify_classnotstarted_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_classnotstarted_supervisor;
         if ($sendtouser || $sendtorole || $sendtosupervisor) {
             $result = self::check_for_nags_notstarted() && $result;
         }
 
-        $sendtouser       = elis::$config->elis_program->notify_classnotcompleted_user;
-        $sendtorole       = elis::$config->elis_program->notify_classnotcompleted_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_classnotcompleted_supervisor;
+        $sendtouser       = elis::$config->local_elisprogram->notify_classnotcompleted_user;
+        $sendtorole       = elis::$config->local_elisprogram->notify_classnotcompleted_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_classnotcompleted_supervisor;
         if ($sendtouser || $sendtorole || $sendtosupervisor) {
             $result = self::check_for_nags_notcompleted() && $result;
         }
@@ -524,7 +523,7 @@ class pmclass extends data_object_with_custom_fields {
         /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
 
         $timenow = time();
-        $timedelta = elis::$config->elis_program->notify_classnotstarted_days * 60*60*24;
+        $timedelta = elis::$config->local_elisprogram->notify_classnotstarted_days * 60*60*24;
 
         // If the student is enrolled prior to this time, then they have been
         // enrolled for at least [notify_classnotstarted_days] days
@@ -605,7 +604,7 @@ class pmclass extends data_object_with_custom_fields {
         /// LEFT JOIN notification log where there isn't a notification record for the course and user and 'class_notstarted'.
 
         $timenow = time();
-        $timedelta = elis::$config->elis_program->notify_classnotcompleted_days * 24*60*60;
+        $timedelta = elis::$config->local_elisprogram->notify_classnotcompleted_days * 24*60*60;
 
         // If the completion time is prior to this time, then it will complete
         // within [notify_classnotcompleted_days] days
@@ -745,7 +744,7 @@ class pmclass extends data_object_with_custom_fields {
                         $this->$key = $data;
                     } catch (data_object_exception $ex) {
                         // ELIS-3989: just log - TBV
-                        error_log("/elis/program/lib/data/pmclass.class.php::auto_create_class() - data_object_exception setting property from defaults: $key = $data");
+                        error_log("/local/elisprogram/lib/data/pmclass.class.php::auto_create_class() - data_object_exception setting property from defaults: $key = $data");
                     }
                 }
             }
@@ -772,14 +771,14 @@ class pmclass extends data_object_with_custom_fields {
     public static function get_allowed_clusters($clsid) {
         global $USER;
 
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:class_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:class_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
 
         // TODO: Ugly, this needs to be overhauled
         $cpage = new pmclasspage();
 
-        if ($cpage->_has_capability('elis/program:class_enrol_userset_user', $clsid)) {
+        if ($cpage->_has_capability('local/elisprogram:class_enrol_userset_user', $clsid)) {
             require_once elispm::lib('data/clusterassignment.class.php');
             $cmuserid = pm_get_crlmuserid($USER->id);
             $userclusters = clusterassignment::find(new field_filter('userid', $cmuserid));
@@ -866,7 +865,7 @@ class pmclass extends data_object_with_custom_fields {
         $cmc = $this->_db->get_record(classmoodlecourse::TABLE, array('classid'=>$this->id));
         if ($cmc) {
             if ($cmc->autocreated == -1) {
-                $cmc->autocreated = elis::$config->elis_program->autocreated_unknown_is_yes;
+                $cmc->autocreated = elis::$config->local_elisprogram->autocreated_unknown_is_yes;
             }
             if (empty($options['moodlecourses']) || $options['moodlecourses'] == 'copyalways'
                 || ($options['moodlecourses'] == 'copyautocreated' && $cmc->autocreated)) {

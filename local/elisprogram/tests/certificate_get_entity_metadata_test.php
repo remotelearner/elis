@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/student.class.php'));
@@ -39,7 +39,7 @@ require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
  * PHPUnit test to retrieve a user's certificates
- * @group elis_program
+ * @group local_elisprogram
  */
 class certificate_get_entity_metadata_testcase extends elis_database_test {
 
@@ -48,13 +48,13 @@ class certificate_get_entity_metadata_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            student::TABLE => elis::component_file('program', 'tests/fixtures/class_enrolment.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/class.csv'),
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            certificatesettings::TABLE => elis::component_file('program', 'tests/fixtures/certificate_settings.csv'),
-            certificateissued::TABLE => elis::component_file('program', 'tests/fixtures/certificate_issued.csv'),
-            instructor::TABLE => elis::component_file('program', 'tests/fixtures/instructor.csv'),
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
+            student::TABLE => elispm::file('tests/fixtures/class_enrolment.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/class.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            certificatesettings::TABLE => elispm::file('tests/fixtures/certificate_settings.csv'),
+            certificateissued::TABLE => elispm::file('tests/fixtures/certificate_issued.csv'),
+            instructor::TABLE => elispm::file('tests/fixtures/instructor.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
         ));
         $this->loadDataSet($dataset);
     }

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elispm::lib('data/pmclass.class.php'));
@@ -33,7 +33,7 @@ require_once(elispm::lib('data/classmoodlecourse.class.php'));
 
 /**
  * Test auto-creating moodle courses.
- * @group elis_program
+ * @group local_elisprogram
  */
 class autocreatemoodlecourse_testcase extends elis_database_test {
 
@@ -51,10 +51,10 @@ class autocreatemoodlecourse_testcase extends elis_database_test {
 
         // Load initial data from CSVs.
         $dataset = $this->createCsvDataSet(array(
-            'course' => elis::component_file('program', 'tests/fixtures/autocreatemoodlecourse_course.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/autocreatemoodlecourse_class.csv'),
-            course::TABLE => elis::component_file('program', 'tests/fixtures/autocreatemoodlecourse_coursedescription.csv'),
-            coursetemplate::TABLE => elis::component_file('program', 'tests/fixtures/autocreatemoodlecourse_coursetemplate.csv'),
+            'course' => elispm::file('tests/fixtures/autocreatemoodlecourse_course.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/autocreatemoodlecourse_class.csv'),
+            course::TABLE => elispm::file('tests/fixtures/autocreatemoodlecourse_coursedescription.csv'),
+            coursetemplate::TABLE => elispm::file('tests/fixtures/autocreatemoodlecourse_coursetemplate.csv'),
         ));
         $this->loadDataSet($dataset);
 

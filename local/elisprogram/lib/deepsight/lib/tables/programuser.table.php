@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -46,7 +46,7 @@ class deepsight_datatable_programuser_base extends deepsight_datatable_user {
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
         return $deps;
     }
 
@@ -114,7 +114,7 @@ class deepsight_datatable_programuser_assigned extends deepsight_datatable_progr
         // If not already set, determine whether the user can unassign anyone - but only if $canunassignany is true.
         if ($canunassignany === true && $canunassignall === null) {
             $cpage = new curriculumpage();
-            if ($cpage->_has_capability('elis/program:program_enrol', $this->programid)) {
+            if ($cpage->_has_capability('local/elisprogram:program_enrol', $this->programid)) {
                 $canunassignall = true;
             }
         }

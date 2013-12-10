@@ -1,7 +1,5 @@
 <?php
 /**
- * Form used for editing / displaying a course
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
  * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
@@ -18,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -52,7 +50,7 @@ class cmCourseForm extends cmform {
             }
         }
 
-        $PAGE->requires->js('/elis/program/js/courseform.js');
+        $PAGE->requires->js('/local/elisprogram/js/courseform.js');
 
         $this->set_data($this->_customdata['obj']);
 
@@ -61,55 +59,55 @@ class cmCourseForm extends cmform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
-        $mform->addElement('text', 'name', get_string('course_name', 'elis_program') . ':');
+        $mform->addElement('text', 'name', get_string('course_name', 'local_elisprogram') . ':');
         $mform->setType('name', PARAM_TEXT);
-        $mform->addRule('name', get_string('required_field', 'elis_program', get_string('course_name', 'elis_program')), 'required', null, 'client');
+        $mform->addRule('name', get_string('required_field', 'local_elisprogram', get_string('course_name', 'local_elisprogram')), 'required', null, 'client');
         $mform->addRule('name', null, 'maxlength', 255, 'client');
-        $mform->addHelpButton('name', 'courseform:course_name', 'elis_program');
+        $mform->addHelpButton('name', 'courseform:course_name', 'local_elisprogram');
 
-        $mform->addElement('text', 'code', get_string('course_code', 'elis_program') . ':');
+        $mform->addElement('text', 'code', get_string('course_code', 'local_elisprogram') . ':');
         $mform->setType('code', PARAM_TEXT);
         $mform->addRule('code', null, 'maxlength', 100, 'client');
-        $mform->addHelpButton('code', 'courseform:course_code', 'elis_program');
+        $mform->addHelpButton('code', 'courseform:course_code', 'local_elisprogram');
 
-        $mform->addElement('text', 'idnumber', get_string('course_idnumber', 'elis_program') . ':');
+        $mform->addElement('text', 'idnumber', get_string('course_idnumber', 'local_elisprogram') . ':');
         $mform->setType('idnumber', PARAM_TEXT);
-        $mform->addRule('idnumber', get_string('required_field', 'elis_program', get_string('course_idnumber', 'elis_program')), 'required', null, 'client');
+        $mform->addRule('idnumber', get_string('required_field', 'local_elisprogram', get_string('course_idnumber', 'local_elisprogram')), 'required', null, 'client');
         $mform->addRule('idnumber', null, 'maxlength', 100, 'client');
-        $mform->addHelpButton('idnumber', 'courseform:course_idnumber', 'elis_program');
+        $mform->addHelpButton('idnumber', 'courseform:course_idnumber', 'local_elisprogram');
 
         $attributes = array('cols'=>40, 'rows'=>2);
-        $mform->addElement('textarea', 'syllabus', get_string('course_syllabus', 'elis_program') . ':', $attributes);
+        $mform->addElement('textarea', 'syllabus', get_string('course_syllabus', 'local_elisprogram') . ':', $attributes);
         $mform->setType('syllabus', PARAM_CLEAN);
-        $mform->addHelpButton('syllabus', 'courseform:course_syllabus', 'elis_program');
+        $mform->addHelpButton('syllabus', 'courseform:course_syllabus', 'local_elisprogram');
 
-        $mform->addElement('text', 'lengthdescription', get_string('length_description', 'elis_program'));
+        $mform->addElement('text', 'lengthdescription', get_string('length_description', 'local_elisprogram'));
         $mform->setType('lengthdescription', PARAM_TEXT);
         $mform->addRule('lengthdescription', null, 'maxlength', 100, 'client');
-        $mform->addHelpButton('lengthdescription', 'courseform:length_description', 'elis_program');
+        $mform->addHelpButton('lengthdescription', 'courseform:length_description', 'local_elisprogram');
 
-        $mform->addElement('text', 'length', get_string('duration', 'elis_program') . ':');
+        $mform->addElement('text', 'length', get_string('duration', 'local_elisprogram') . ':');
         $mform->setType('length', PARAM_INT);
-        $mform->addHelpButton('length', 'courseform:duration', 'elis_program');
+        $mform->addHelpButton('length', 'courseform:duration', 'local_elisprogram');
 
-        $mform->addElement('text', 'credits', get_string('credits', 'elis_program') . ':');
+        $mform->addElement('text', 'credits', get_string('credits', 'local_elisprogram') . ':');
         $mform->setType('credits', PARAM_TEXT);
         $mform->addRule('credits', null, 'maxlength', 10, 'client');
-        $mform->addHelpButton('credits', 'courseform:credits', 'elis_program');
+        $mform->addHelpButton('credits', 'courseform:credits', 'local_elisprogram');
 
         $grades = range(0,100,1);
-        $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'elis_program') . ':', $grades);
-        $mform->addHelpButton('completion_grade', 'courseform:completion_grade', 'elis_program');
+        $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'local_elisprogram') . ':', $grades);
+        $mform->addHelpButton('completion_grade', 'courseform:completion_grade', 'local_elisprogram');
 
-        $mform->addElement('text', 'cost', get_string('cost', 'elis_program') . ':');
+        $mform->addElement('text', 'cost', get_string('cost', 'local_elisprogram') . ':');
         $mform->setType('cost', PARAM_TEXT);
         $mform->addRule('cost', null, 'maxlength', 10, 'client');
-        $mform->addHelpButton('cost', 'courseform:cost', 'elis_program');
+        $mform->addHelpButton('cost', 'courseform:cost', 'local_elisprogram');
 
-        $mform->addElement('text', 'version', get_string('course_version', 'elis_program') . ':');
+        $mform->addElement('text', 'version', get_string('course_version', 'local_elisprogram') . ':');
         $mform->setType('version', PARAM_TEXT);
         $mform->addRule('version', null, 'maxlength', 100, 'client');
-        $mform->addHelpButton('version', 'courseform:course_version', 'elis_program');
+        $mform->addHelpButton('version', 'courseform:course_version', 'local_elisprogram');
 
         // Print form items for course template browsing
 
@@ -117,12 +115,12 @@ class cmCourseForm extends cmform {
         $mform->addElement('hidden', 'templateclass', 'moodlecourseurl', array('id' => 'id_templateclass'));
         $mform->setType('templateclass', PARAM_TEXT);
         if (empty($locationlabel) || optional_param('action', '', PARAM_CLEAN) != 'view') {
-            $mform->addElement('text', 'locationlabel', get_string('coursetemplate', 'elis_program'), array('readonly' => 'readonly', 'value' => $locationlabel));
+            $mform->addElement('text', 'locationlabel', get_string('coursetemplate', 'local_elisprogram'), array('readonly' => 'readonly', 'value' => $locationlabel));
             $mform->setType('locationlabel', PARAM_TEXT);
-            $mform->addHelpButton('locationlabel', 'courseform:coursetemplate', 'elis_program');
+            $mform->addHelpButton('locationlabel', 'courseform:coursetemplate', 'local_elisprogram');
         } else {
-            $mform->addElement('static', 'locationlabellink', get_string('coursetemplate', 'elis_program').':',  "<a href=\"{$CFG->wwwroot}/course/view.php?id={$course->id}\">{$locationlabel}</a>");
-            $mform->addHelpButton('locationlabellink', 'courseform:coursetemplate', 'elis_program');
+            $mform->addElement('static', 'locationlabellink', get_string('coursetemplate', 'local_elisprogram').':',  "<a href=\"{$CFG->wwwroot}/course/view.php?id={$course->id}\">{$locationlabel}</a>");
+            $mform->addHelpButton('locationlabellink', 'courseform:coursetemplate', 'local_elisprogram');
         }
 
         if (empty($id)) {
@@ -138,8 +136,8 @@ class cmCourseForm extends cmform {
         }
 
         $templateButtons = array();
-        $templateButtons[] =& $mform->createElement('button', 'submit1', get_string('browse', 'elis_program'), array('onClick'=>'openNewWindow();'));
-        $templateButtons[] =& $mform->createElement('button', 'submit1', get_string('clear', 'elis_program'), array('onClick'=>'cleartext();'));
+        $templateButtons[] =& $mform->createElement('button', 'submit1', get_string('browse', 'local_elisprogram'), array('onClick'=>'openNewWindow();'));
+        $templateButtons[] =& $mform->createElement('button', 'submit1', get_string('clear', 'local_elisprogram'), array('onClick'=>'cleartext();'));
         $mform->addGroup($templateButtons, 'templateButtons', '', '', false);
 
         // Multi select box for choosing curricula (only when creating a course)
@@ -154,21 +152,21 @@ class cmCourseForm extends cmform {
                 $values[$key] = $val->name;
             }
 
-            $strcur = get_string("curricula", "elis_program");
+            $strcur = get_string("curricula", "local_elisprogram");
 
             // Set an explicit width if the select box will have no elements.
             $attributes = empty($values) ? array('style' => 'width: 200px;') : array();
 
             $multiSelect =& $mform->addElement('select', 'curriculum', $strcur . ':', $values, $attributes);
             $multiSelect->setMultiple(true);
-            $mform->addHelpButton('curriculum', 'courseform:curriculum', 'elis_program');
+            $mform->addHelpButton('curriculum', 'courseform:curriculum', 'local_elisprogram');
 
-            $mform->addElement('submit', 'makecurcourse', get_string('makecurcourse', 'elis_program'));
+            $mform->addElement('submit', 'makecurcourse', get_string('makecurcourse', 'local_elisprogram'));
         }
 
         // custom fields
-        $this->add_custom_fields('course', 'elis/program:course_edit',
-                                 'elis/program:course_view');
+        $this->add_custom_fields('course', 'local/elisprogram:course_edit',
+                                 'local/elisprogram:course_view');
 
         $this->add_action_buttons();
 
@@ -183,7 +181,7 @@ class cmCourseForm extends cmform {
 
         $counttext = "Passed: {$counts[2]}, Failed: {$counts[1]}, In Progress: {$counts[0]}";
 
-        $this->_form->addElement('static', 'test', get_string('completion_status', 'elis_program'), $counttext);
+        $this->_form->addElement('static', 'test', get_string('completion_status', 'local_elisprogram'), $counttext);
 
         parent::freeze();
     }
@@ -199,7 +197,7 @@ class cmCourseForm extends cmform {
             $params[] = $data['id'];
         }
         if ($DB->record_exists_select(course::TABLE, $sql, $params)) {
-            $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
+            $errors['idnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
         }
 
         $errors += parent::validate_custom_fields($data, 'course');
@@ -238,34 +236,34 @@ class completionform extends cmform {
 
         $options = array(
             'lockcourse' => 1,
-            'nocoursestring' => get_string('selecttemplate', 'elis_program'),
+            'nocoursestring' => get_string('selecttemplate', 'local_elisprogram'),
         );
         if ($course->coursetemplate->valid()) {
             $template = $course->coursetemplate->current();
             $options['courseid'] = $template->location;
         }
-        $mform->addElement(elis_gradebook_idnumber_selector::NAME, 'idnumber', get_string('course_idnumber', 'elis_program') . ':', $options);
+        $mform->addElement(elis_gradebook_idnumber_selector::NAME, 'idnumber', get_string('course_idnumber', 'local_elisprogram') . ':', $options);
         $mform->setType('idnumber', PARAM_TEXT);
         $mform->addRule('idnumber', null, 'maxlength', 100, 'client');
         $mform->addRule('idnumber', null, 'required', null, 'client');
-        $mform->addHelpButton('idnumber', 'completionform:course_idnumber', 'elis_program');
+        $mform->addHelpButton('idnumber', 'completionform:course_idnumber', 'local_elisprogram');
 
-        $mform->addElement('text', 'name', get_string('course_name', 'elis_program'));
+        $mform->addElement('text', 'name', get_string('course_name', 'local_elisprogram'));
         $mform->setType('name', PARAM_CLEAN);
         $mform->addRule('name', null, 'maxlength', 255, 'client');
-        $mform->addHelpButton('name', 'completionform:course_name', 'elis_program');
+        $mform->addHelpButton('name', 'completionform:course_name', 'local_elisprogram');
 
         $attributes = array('rows'=>2, 'cols'=>40);
-        $mform->addElement('textarea', 'description', get_string('course_syllabus', 'elis_program') . ':', $attributes);
+        $mform->addElement('textarea', 'description', get_string('course_syllabus', 'local_elisprogram') . ':', $attributes);
         $mform->setType('description', PARAM_CLEAN);
-        $mform->addHelpButton('description', 'completionform:course_syllabus', 'elis_program');
+        $mform->addHelpButton('description', 'completionform:course_syllabus', 'local_elisprogram');
 
         $grades = range(0,100,1);
-        $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'elis_program') . ':', $grades);
-        $mform->addHelpButton('completion_grade', 'completionform:completion_grade', 'elis_program');
+        $mform->addElement('select', 'completion_grade', get_string('completion_grade', 'local_elisprogram') . ':', $grades);
+        $mform->addHelpButton('completion_grade', 'completionform:completion_grade', 'local_elisprogram');
 
-        $mform->addElement('checkbox', 'required', get_string('required', 'elis_program') . ':');
-        $mform->addHelpButton('required', 'completionform:required', 'elis_program');
+        $mform->addElement('checkbox', 'required', get_string('required', 'local_elisprogram') . ':');
+        $mform->addHelpButton('required', 'completionform:required', 'local_elisprogram');
 
         $this->add_action_buttons();
     }
@@ -290,7 +288,7 @@ class completionform extends cmform {
             $params[] = $data['elemid'];
         }
         if ($DB->record_exists_select(coursecompletion::TABLE, $sql, $params)) {
-            $errors['idnumber'] = get_string('idnumber_already_used', 'elis_program');
+            $errors['idnumber'] = get_string('idnumber_already_used', 'local_elisprogram');
         }
 
         return $errors;

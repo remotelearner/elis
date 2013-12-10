@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -50,8 +50,8 @@ class deepsight_datatable_courseprogram_base extends deepsight_datatable_program
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_programcourse.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_programcourse.js';
         return $deps;
     }
 
@@ -80,7 +80,7 @@ class deepsight_datatable_courseprogram_assigned extends deepsight_datatable_cou
         $filters = parent::get_filters();
 
         // Required.
-        $langrequired = get_string('curriculumcourseform:required', 'elis_program');
+        $langrequired = get_string('curriculumcourseform:required', 'local_elisprogram');
         $fielddata = array('curcrs.required' => $langrequired);
         $required = new deepsight_filter_menuofchoices($this->DB, 'required', $langrequired, $fielddata, $this->endpoint);
         $required->set_choices(array(
@@ -90,19 +90,19 @@ class deepsight_datatable_courseprogram_assigned extends deepsight_datatable_cou
         $filters[] = $required;
 
         // Frequency.
-        $langfrequency = get_string('curriculumcourseform:frequency', 'elis_program');
+        $langfrequency = get_string('curriculumcourseform:frequency', 'local_elisprogram');
         $fielddata = array('curcrs.frequency' => $langfrequency);
         $filters[] = new deepsight_filter_searchselect($this->DB, 'frequency', $langfrequency, $fielddata, $this->endpoint,
                 curriculumcourse::TABLE, 'frequency');
 
         // Timeperiod.
-        $langtimeperiod = get_string('curriculumcourseform:time_period', 'elis_program');
+        $langtimeperiod = get_string('curriculumcourseform:time_period', 'local_elisprogram');
         $fielddata = array('curcrs.timeperiod' => $langtimeperiod);
         $filters[] = new deepsight_filter_searchselect($this->DB, 'timeperiod', $langtimeperiod, $fielddata, $this->endpoint,
                 curriculumcourse::TABLE, 'timeperiod');
 
         // Position.
-        $langposition = get_string('curriculumcourseform:position', 'elis_program');
+        $langposition = get_string('curriculumcourseform:position', 'local_elisprogram');
         $fielddata = array('curcrs.position' => $langposition);
         $filters[] = new deepsight_filter_searchselect($this->DB, 'position', $langposition, $fielddata, $this->endpoint,
                 curriculumcourse::TABLE, 'position');
@@ -140,10 +140,10 @@ class deepsight_datatable_courseprogram_assigned extends deepsight_datatable_cou
 
         if (isset($row['curcrs_timeperiod'])) {
             $timeperiodlang = array(
-                'year' => get_string('time_period_year', 'elis_program'),
-                'month' => get_string('time_period_month', 'elis_program'),
-                'week' => get_string('time_period_week', 'elis_program'),
-                'day' => get_string('time_period_day', 'elis_program')
+                'year' => get_string('time_period_year', 'local_elisprogram'),
+                'month' => get_string('time_period_month', 'local_elisprogram'),
+                'week' => get_string('time_period_week', 'local_elisprogram'),
+                'day' => get_string('time_period_day', 'local_elisprogram')
             );
             if (isset($timeperiodlang[$row['curcrs_timeperiod']])) {
                 $row['curcrs_timeperiod'] = $timeperiodlang[$row['curcrs_timeperiod']];
@@ -244,7 +244,7 @@ class deepsight_datatable_courseprogram_available extends deepsight_datatable_co
     protected function get_filter_sql_permissions() {
         global $USER;
         $ctxlevel = 'curriculum';
-        $perm = 'elis/program:associate';
+        $perm = 'local/elisprogram:associate';
         $additionalfilters = array();
         $additionalparams = array();
         $associatectxs = pm_context_set::for_user_with_capability($ctxlevel, $perm, $USER->id);

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elispm::lib('data/course.class.php'));
@@ -33,7 +33,7 @@ require_once(elispm::lib('data/course.class.php'));
 /**
  * Test coursecompletion data object.
  * Since class is defined within course.class.php, testDataObjectsFieldsAndAssociations.php will not auto test this class
- * @group elis_program
+ * @group local_elisprogram
  */
 class coursecompletion_testcase extends elis_database_test {
 
@@ -42,7 +42,7 @@ class coursecompletion_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            coursecompletion::TABLE => elis::component_file('program', 'tests/fixtures/course_completion.csv')
+            coursecompletion::TABLE => elispm::file('tests/fixtures/course_completion.csv')
         ));
         $this->loadDataSet($dataset);
     }

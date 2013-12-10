@@ -25,7 +25,7 @@
  */
 
 require_once('../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('deprecatedlib.php'));
 require_once(elispm::lib('data/user.class.php'));
 

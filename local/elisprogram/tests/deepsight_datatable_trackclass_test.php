@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,7 +26,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('deepsightpage.class.php'));
@@ -127,7 +127,7 @@ class deepsight_datatable_trackclass_available_mock extends deepsight_datatable_
 
 /**
  * Tests trackclass datatable functions.
- * @group elis_program
+ * @group local_elisprogram
  * @group deepsight
  */
 class deepsight_datatable_trackclass_testcase extends deepsight_datatable_searchresults_test {
@@ -322,7 +322,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
         $USER = $this->setup_permissions_test();
 
         // We're not interested in permissions for this test, so give associate permission globally.
-        $this->give_permission_for_context($USER->id, 'elis/program:associate', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($programcourse as $association) {
             $association = new curriculumcourse($association);
@@ -419,7 +419,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:associate', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
 
         // We're not interested in the class > course > program > track requirement for this test, so assign all courses to all
         // programs.
@@ -498,7 +498,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
     }
 
     /**
-     * Test available table only shows classes that the assigner has the elis/program::associate permission on.
+     * Test available table only shows classes that the assigner has the local/elisprogram::associate permission on.
      * @dataProvider dataprovider_available_permissions_associate
      * @param array $contextstoassign An array of information specifying the contexts to assign the associate permission on.
      *                                This is formatted like array('system' => true, 'class' => array(1, 2, 3))
@@ -525,7 +525,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
         // Set up capabilities.
         foreach ($contextstoassign as $contexttype => $ids) {
             if ($contexttype === 'system') {
-                $this->give_permission_for_context($USER->id, 'elis/program:associate', get_context_instance(CONTEXT_SYSTEM));
+                $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
             } else {
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
@@ -533,7 +533,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
                             $context = context_elis_class::instance($contextinstanceid);
                             break;
                     }
-                    $this->give_permission_for_context($USER->id, 'elis/program:associate', $context);
+                    $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', $context);
                 }
             }
         }

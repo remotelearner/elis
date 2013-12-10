@@ -16,10 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
@@ -66,7 +65,7 @@ function certificate_output_completion($person_fullname, $entity_name, $certific
     // use the TCPDF library
     require_once($CFG->libdir.'/pdflib.php');
 
-//     error_log("/elis/program/lib/certificate.php::certificate_output_completion('{$person_fullname}', '{$entity_name}',
+//     error_log("/local/elisprogram/lib/certificate.php::certificate_output_completion('{$person_fullname}', '{$entity_name}',
 //               '{$certificatecode}', '{$date_string}', '{$expirydate}', '{$curriculum_frequency}', '{$border}', '{$seal}', '{$template}')");
 
     // global settings
@@ -91,30 +90,30 @@ function certificate_output_completion($person_fullname, $entity_name, $certific
     $pageheight = $pdf->getPageHeight();
     cm_certificate_check_data_path('borders');
     if (!empty($border)) {
-        if (file_exists($CFG->dirroot.'/elis/program/pix/certificate/borders/'.$border)) {
-            $pdf->Image($CFG->dirroot.'/elis/program/pix/certificate/borders/'.$border, 0, 0, $pagewidth, $pageheight);
-        } else if (file_exists($CFG->dataroot.'/elis/program/pix/certificate/borders/'.$border)) {
-            $pdf->Image($CFG->dataroot.'/elis/program/pix/certificate/borders/'.$border, 0, 0, $pagewidth, $pageheight);
+        if (file_exists($CFG->dirroot.'/local/elisprogram/pix/certificate/borders/'.$border)) {
+            $pdf->Image($CFG->dirroot.'/local/elisprogram/pix/certificate/borders/'.$border, 0, 0, $pagewidth, $pageheight);
+        } else if (file_exists($CFG->dataroot.'/local/elisprogram/pix/certificate/borders/'.$border)) {
+            $pdf->Image($CFG->dataroot.'/local/elisprogram/pix/certificate/borders/'.$border, 0, 0, $pagewidth, $pageheight);
         }
     }
 
     // draw the seal
     cm_certificate_check_data_path('seals');
     if (!empty($seal)) {
-        if (file_exists($CFG->dirroot .'/elis/program/pix/certificate/seals/'. $seal)) {
-            $pdf->Image($CFG->dirroot .'/elis/program/pix/certificate/seals/'. $seal, 8.0, 5.8);
-        } else if (file_exists($CFG->dataroot .'/elis/program/pix/certificate/seals/' . $seal)) {
-            $pdf->Image($CFG->dataroot .'/elis/program/pix/certificate/seals/'. $seal, 8.0, 5.8);
+        if (file_exists($CFG->dirroot .'/local/elisprogram/pix/certificate/seals/'. $seal)) {
+            $pdf->Image($CFG->dirroot .'/local/elisprogram/pix/certificate/seals/'. $seal, 8.0, 5.8);
+        } else if (file_exists($CFG->dataroot .'/local/elisprogram/pix/certificate/seals/' . $seal)) {
+            $pdf->Image($CFG->dataroot .'/local/elisprogram/pix/certificate/seals/'. $seal, 8.0, 5.8);
         }
     }
 
     // Include the certificate template
     cm_certificate_check_data_path('templates');
 
-    if (file_exists($CFG->dirroot.'/elis/program/pix/certificate/templates/'.$template)) {
-        include($CFG->dirroot.'/elis/program/pix/certificate/templates/'.$template);
-    } else if (file_exists($CFG->dataroot.'/elis/program/pix/certificate/templates/'.$template)) {
-        include($CFG->dataroot.'/elis/program/pix/certificate/templates/'.$template);
+    if (file_exists($CFG->dirroot.'/local/elisprogram/pix/certificate/templates/'.$template)) {
+        include($CFG->dirroot.'/local/elisprogram/pix/certificate/templates/'.$template);
+    } else if (file_exists($CFG->dataroot.'/local/elisprogram/pix/certificate/templates/'.$template)) {
+        include($CFG->dataroot.'/local/elisprogram/pix/certificate/templates/'.$template);
     }
 
     $pdf->Output();
@@ -165,30 +164,30 @@ function certificate_output_entity_completion($params, $border = '', $seal = '',
     // Draw the border.
     cm_certificate_check_data_path('borders');
     if (!empty($border)) {
-        if (file_exists($CFG->dirroot.'/elis/program/pix/certificate/borders/'.$border)) {
-            $pdf->Image($CFG->dirroot.'/elis/program/pix/certificate/borders/'.$border, 0, 0, $pagewidth, $pageheight);
-        } else if (file_exists($CFG->dataroot.'/elis/program/pix/certificate/borders/'.$border)) {
-            $pdf->Image($CFG->dataroot.'/elis/program/pix/certificate/borders/'.$border, 0, 0, $pagewidth, $pageheight);
+        if (file_exists($CFG->dirroot.'/local/elisprogram/pix/certificate/borders/'.$border)) {
+            $pdf->Image($CFG->dirroot.'/local/elisprogram/pix/certificate/borders/'.$border, 0, 0, $pagewidth, $pageheight);
+        } else if (file_exists($CFG->dataroot.'/local/elisprogram/pix/certificate/borders/'.$border)) {
+            $pdf->Image($CFG->dataroot.'/local/elisprogram/pix/certificate/borders/'.$border, 0, 0, $pagewidth, $pageheight);
         }
     }
 
     // Draw the seal.
     cm_certificate_check_data_path('seals');
     if (!empty($seal)) {
-        if (file_exists($CFG->dirroot.'/elis/program/pix/certificate/seals/'.$seal)) {
-            $pdf->Image($CFG->dirroot.'/elis/program/pix/certificate/seals/'.$seal, 8.0, 5.8);
-        } else if (file_exists($CFG->dataroot.'/elis/program/pix/certificate/seals/'.$seal)) {
-            $pdf->Image($CFG->dataroot.'/elis/program/pix/certificate/seals/'.$seal, 8.0, 5.8);
+        if (file_exists($CFG->dirroot.'/local/elisprogram/pix/certificate/seals/'.$seal)) {
+            $pdf->Image($CFG->dirroot.'/local/elisprogram/pix/certificate/seals/'.$seal, 8.0, 5.8);
+        } else if (file_exists($CFG->dataroot.'/local/elisprogram/pix/certificate/seals/'.$seal)) {
+            $pdf->Image($CFG->dataroot.'/local/elisprogram/pix/certificate/seals/'.$seal, 8.0, 5.8);
         }
     }
 
     // Include the certificate template.
     cm_certificate_check_data_path('templates');
 
-    if (file_exists($CFG->dirroot.'/elis/program/pix/certificate/templates/'.$template)) {
-        include($CFG->dirroot.'/elis/program/pix/certificate/templates/'.$template);
-    } else if (file_exists($CFG->dataroot.'/elis/program/pix/certificate/templates/'.$template)) {
-        include($CFG->dataroot.'/elis/program/pix/certificate/templates/'.$template);
+    if (file_exists($CFG->dirroot.'/local/elisprogram/pix/certificate/templates/'.$template)) {
+        include($CFG->dirroot.'/local/elisprogram/pix/certificate/templates/'.$template);
+    } else if (file_exists($CFG->dataroot.'/local/elisprogram/pix/certificate/templates/'.$template)) {
+        include($CFG->dataroot.'/local/elisprogram/pix/certificate/templates/'.$template);
     }
 
     $pdf->Output();
@@ -198,7 +197,7 @@ function cm_certificate_get_borders() {
     global $CFG;
 
     // Add default images
-    $my_path = "{$CFG->dirroot}/elis/program/pix/certificate/borders";
+    $my_path = "{$CFG->dirroot}/local/elisprogram/pix/certificate/borders";
     $borderstyleoptions = array();
     if (file_exists($my_path) && $handle = opendir($my_path)) {
         while (false !== ($file = readdir($handle))) {
@@ -214,7 +213,7 @@ function cm_certificate_get_borders() {
 
     // Add custom images
     cm_certificate_check_data_path('borders');
-    $my_path = "{$CFG->dataroot}/elis/program/pix/certificate/borders";
+    $my_path = "{$CFG->dataroot}/local/elisprogram/pix/certificate/borders";
     if (file_exists($my_path) && $handle = opendir($my_path)) {
         while (false !== ($file = readdir($handle))) {
             if (strpos($file, '.png',1)||strpos($file, '.jpg',1) ) {
@@ -240,7 +239,7 @@ function cm_certificate_get_seals() {
     global $CFG;
 
     // Add default images
-    $my_path = "{$CFG->dirroot}/elis/program/pix/certificate/seals";
+    $my_path = "{$CFG->dirroot}/local/elisprogram/pix/certificate/seals";
     $sealoptions = array();
     if (file_exists($my_path) && $handle = opendir($my_path)) {
         while (false !== ($file = readdir($handle))) {
@@ -256,7 +255,7 @@ function cm_certificate_get_seals() {
 
     // Add custom images
     cm_certificate_check_data_path('seals');
-    $my_path = "{$CFG->dataroot}/elis/program/pix/certificate/seals";
+    $my_path = "{$CFG->dataroot}/local/elisprogram/pix/certificate/seals";
     if (file_exists($my_path) && $handle = opendir($my_path)) {
         while (false !== ($file = readdir($handle))) {
             if (strpos($file, '.png',1)||strpos($file, '.jpg',1) ) {
@@ -281,7 +280,7 @@ function cm_certificate_get_seals() {
 function cm_certificate_check_data_path($imagetype) {
     global $CFG;
 
-    $path_array = array('elis', 'program', 'pix', 'certificate', $imagetype);
+    $path_array = array('local', 'elisprogram', 'pix', 'certificate', $imagetype);
     $full_path = $CFG->dataroot;
     foreach ($path_array as $path) {
         $full_path .= '/' . $path;
@@ -303,7 +302,7 @@ function cm_certificate_get_templates() {
     // Add default templates
     $templateoptions = array();
 
-    $my_path = $CFG->dirroot.'/elis/program/pix/certificate/templates';
+    $my_path = $CFG->dirroot.'/local/elisprogram/pix/certificate/templates';
 
     if (file_exists($my_path) && is_dir($my_path) && $handle = opendir($my_path)) {
         while (false !== ($file = readdir($handle))) {
@@ -316,7 +315,7 @@ function cm_certificate_get_templates() {
 
     // Add custom images
     cm_certificate_check_data_path('templates');
-    $my_path = $CFG->dataroot.'/elis/program/pix/certificate/templates';
+    $my_path = $CFG->dataroot.'/local/elisprogram/pix/certificate/templates';
     if (file_exists($my_path) && is_dir($my_path) && $handle = opendir($my_path)) {
         while (false !== ($file = readdir($handle))) {
             if (strpos($file, '.php',1) ) {
@@ -440,11 +439,11 @@ function cm_certificate_get_code() {
     // Check if the length has exceeded the maximum length
     if ($maximumchar < $addchar) {
         if (!cm_certificate_email_random_number_fail($this)) {
-            $message = get_string('certificate_email_fail', 'elis_program');
+            $message = get_string('certificate_email_fail', 'local_elisprogram');
             $OUTPUT->notification($message);
         }
 
-        print_error('certificate_code_error', 'elis_program');
+        print_error('certificate_code_error', 'local_elisprogram');
     }
 }
 

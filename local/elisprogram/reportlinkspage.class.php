@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -44,7 +43,7 @@ class class_reportlinkspage extends pm_page {
     }
 
     function get_page_title_default() {
-        return get_string('classreportlinks', 'elis_program');
+        return get_string('classreportlinks', 'local_elisprogram');
     }
 
     /**
@@ -88,12 +87,12 @@ class class_reportlinkspage extends pm_page {
 
         // Class roster report
         $class_roster_report_link = $CFG->wwwroot . '/blocks/php_report/render_report_page.php?report=class_roster&classid=' . $id . '&classid_parent=' . $course_id;
-        $class_roster_report_name = get_string('classrosterreport', 'elis_program');
+        $class_roster_report_name = get_string('classrosterreport', 'local_elisprogram');
         echo '<li><a href="' . $class_roster_report_link . '">' . $class_roster_report_name . '</a></li>';
 
         // Class completion report
         $class_completion_report_link = $CFG->wwwroot . '/blocks/php_report/render_report_page.php?report=class_completion_gas_gauge&class=' . $id . '&class_parent=' . $course_id;
-        $class_completion_report_name = get_string('classcompletionreport', 'elis_program');
+        $class_completion_report_name = get_string('classcompletionreport', 'local_elisprogram');
         echo '<li><a href="' . $class_completion_report_link . '">' . $class_completion_report_name . '</a></li>';
 
         echo '</ul>';

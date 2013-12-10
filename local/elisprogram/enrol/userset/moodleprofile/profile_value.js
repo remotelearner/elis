@@ -1,6 +1,6 @@
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    usetenrol_moodleprofile
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -74,7 +73,7 @@ function update_profile_value_list(fieldIndex, elementName, selectedValue, origi
 	    failure:get_profile_value_failure
         }
 
-    var requestURL = 'enrol/userset/moodle_profile/profile_value.php?field=' + field + '&elementName=' + elementName;
+    var requestURL = 'enrol/userset/moodleprofile/profile_value.php?field=' + field + '&elementName=' + elementName;
     if(selectedValue != null) {
 	//ignore this part if we are just using the default value
 	requestURL += '&value=' + selectedValue;

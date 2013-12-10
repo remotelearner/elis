@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -64,10 +64,10 @@ class trackform extends cmform {
 
         $curs = array();
         if (!empty($USER->id)) {
-            // TBD: and/or capability 'elis/program:track_edit|view' ?
+            // TBD: and/or capability 'local/elisprogram:track_edit|view' ?
             // This is necessary for creating a new track but will prevent a parent programs from appearing
             // when the user has track edit permissions but not track creation permission -- ELIS-5954
-            $contexts = get_contexts_by_capability_for_user('curriculum', 'elis/program:track_create', $USER->id);
+            $contexts = get_contexts_by_capability_for_user('curriculum', 'local/elisprogram:track_create', $USER->id);
             $curs = curriculum_get_listing('name', 'ASC', 0, 0, '', '', $contexts);
         }
         if (empty($this->_customdata['obj']->id)) {
@@ -78,9 +78,9 @@ class trackform extends cmform {
                 }
             }
 
-            $mform->addElement('select', 'curid', get_string('curriculum', 'elis_program') . ':', $curid_options);
+            $mform->addElement('select', 'curid', get_string('curriculum', 'local_elisprogram') . ':', $curid_options);
             $mform->addRule('curid', get_string('required'), 'required', NULL, 'client');
-            $mform->addHelpButton('curid','trackform:curriculum_curid', 'elis_program');
+            $mform->addHelpButton('curid','trackform:curriculum_curid', 'local_elisprogram');
         } else { // Track editing, do not allow the user to change curriculum
             // Make sure that the parent program for this track is always included otherwise the display is messed up
             // and hitting the form Cancel button causes a DB error -- ELIS-5954
@@ -88,32 +88,32 @@ class trackform extends cmform {
 
             $curs = curriculum_get_listing('name', 'ASC', 0, 0, $track->curriculum->name);
 
-            $mform->addElement('static', 'curidstatic', get_string('curriculum', 'elis_program') . ':', $curs[$this->_customdata['obj']->curid]->name);
-            $mform->addHelpButton('curidstatic', 'trackform:curriculum_curidstatic', 'elis_program');
+            $mform->addElement('static', 'curidstatic', get_string('curriculum', 'local_elisprogram') . ':', $curs[$this->_customdata['obj']->curid]->name);
+            $mform->addHelpButton('curidstatic', 'trackform:curriculum_curidstatic', 'local_elisprogram');
 
             $mform->addElement('hidden', 'curid');
             $mform->setType('curid', PARAM_INT);
         }
 
-        $mform->addElement('text', 'idnumber', get_string('track_idnumber', 'elis_program') . ':');
+        $mform->addElement('text', 'idnumber', get_string('track_idnumber', 'local_elisprogram') . ':');
         $mform->setType('idnumber', PARAM_TEXT);
         $mform->addRule('idnumber', get_string('required'), 'required', NULL, 'client');
         $mform->addRule('idnumber', null, 'maxlength', 100);
-        $mform->addHelpButton('idnumber', 'trackform:track_idnumber', 'elis_program');
+        $mform->addHelpButton('idnumber', 'trackform:track_idnumber', 'local_elisprogram');
 
-        $mform->addElement('text', 'name', get_string('track_name', 'elis_program') . ':');
+        $mform->addElement('text', 'name', get_string('track_name', 'local_elisprogram') . ':');
         $mform->setType('name', PARAM_TEXT);
         $mform->addRule('name', null, 'maxlength', 255);
         $mform->addRule('name', get_string('required'), 'required', NULL, 'client');
-        $mform->addHelpButton('name', 'trackform:track_name', 'elis_program');
+        $mform->addHelpButton('name', 'trackform:track_name', 'local_elisprogram');
 
-        $mform->addElement('textarea', 'description', get_string('track_description', 'elis_program') . ':');
+        $mform->addElement('textarea', 'description', get_string('track_description', 'local_elisprogram') . ':');
         $mform->setType('description', PARAM_CLEAN);
-        $mform->addHelpButton('description', 'trackform:track_description', 'elis_program');
+        $mform->addHelpButton('description', 'trackform:track_description', 'local_elisprogram');
 
-        $mform->addElement('date_selector', 'startdate', get_string('track_startdate', 'elis_program') . ':', array('optional'=>true));
-        $mform->addElement('date_selector', 'enddate', get_string('track_enddate', 'elis_program') . ':', array('optional'=>true));
-        $mform->addHelpButton('startdate', 'trackform:track_startdate', 'elis_program');
+        $mform->addElement('date_selector', 'startdate', get_string('track_startdate', 'local_elisprogram') . ':', array('optional'=>true));
+        $mform->addElement('date_selector', 'enddate', get_string('track_enddate', 'local_elisprogram') . ':', array('optional'=>true));
+        $mform->addHelpButton('startdate', 'trackform:track_startdate', 'local_elisprogram');
 
         if (!empty($this->_customdata['obj']->id)) {
             $trackassignobj = new trackassignment(array('trackid' =>$this->_customdata['obj']->id));
@@ -121,12 +121,12 @@ class trackform extends cmform {
 
         // Only show auto-create checkbox if the track does not have any classes assigned
         if (!isset($trackassignobj) || 0 == $trackassignobj->count_assigned_classes_from_track()) {
-            $mform->addElement('checkbox', 'autocreate', get_string('track_autocreate', 'elis_program') . ':');
-            $mform->addHelpButton('autocreate', 'trackform:track_autocreate', 'elis_program');
+            $mform->addElement('checkbox', 'autocreate', get_string('track_autocreate', 'local_elisprogram') . ':');
+            $mform->addHelpButton('autocreate', 'trackform:track_autocreate', 'local_elisprogram');
         }
 
         // custom fields
-        $this->add_custom_fields('track', 'elis/program:track_edit', 'elis/program:track_view', 'curriculum');
+        $this->add_custom_fields('track', 'local/elisprogram:track_edit', 'local/elisprogram:track_view', 'curriculum');
 
         $this->add_action_buttons();
     }
@@ -148,13 +148,13 @@ class trackform extends cmform {
 
         if (!empty($data['idnumber'])) {
             if (!$this->check_unique(track::TABLE, 'idnumber', $data['idnumber'], $data['id'])) {
-                $errors['idnumber'] = get_string('badidnumber', 'elis_program');
+                $errors['idnumber'] = get_string('badidnumber', 'local_elisprogram');
             }
         }
 
         if(!empty($data['startdate']) && !empty($data['enddate']) && !empty($data['disablestart']) && !empty($data['disableend'])) {
             if($data['startdate'] > $data['enddate']) {
-                $errors['startdate'] = get_string('error_date_range', 'elis_program');
+                $errors['startdate'] = get_string('error_date_range', 'local_elisprogram');
             }
         }
 

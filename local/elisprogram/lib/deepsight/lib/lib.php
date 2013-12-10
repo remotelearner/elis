@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -123,8 +123,8 @@ function ds_process_displaytime($time, $showtime = false) {
         return '-';
     }
     $format = ($showtime === true)
-            ? get_string('pm_datetime_format', 'elis_program')
-            : get_string('pm_date_format', 'elis_program');
+            ? get_string('pm_datetime_format', 'local_elisprogram')
+            : get_string('pm_date_format', 'local_elisprogram');
 
     return userdate($time, $format);
 }
@@ -462,7 +462,7 @@ abstract class deepsight_action_confirm extends deepsight_action_standard {
      */
     public function __construct(moodle_database &$DB, $name, $descsingle = '', $descmultiple = '') {
         parent::__construct($DB, $name);
-        $this->label = get_string('assign', 'elis_program');
+        $this->label = get_string('assign', 'local_elisprogram');
     }
 
     /**
@@ -476,8 +476,8 @@ abstract class deepsight_action_confirm extends deepsight_action_standard {
         $opts['opts']['actionurl'] = $this->endpoint;
         $opts['opts']['desc_single'] = $this->descsingle;
         $opts['opts']['desc_multiple'] = $this->descmultiple;
-        $opts['opts']['lang_bulk_confirm'] = get_string('ds_bulk_confirm', 'elis_program');
-        $opts['opts']['lang_working'] = get_string('ds_working', 'elis_program');
+        $opts['opts']['lang_bulk_confirm'] = get_string('ds_bulk_confirm', 'local_elisprogram');
+        $opts['opts']['lang_working'] = get_string('ds_working', 'local_elisprogram');
         return $opts;
     }
 }
@@ -770,16 +770,16 @@ class deepsight_bulkactionpanel_standard implements deepsight_bulkactionpanel {
      */
     public function get_init_js() {
         // Language strings.
-        $langselectedelement = get_string('ds_selectedelement', 'elis_program');
-        $langselectedelements = get_string('ds_selectedelements', 'elis_program');
-        $langdefaultstatus = get_string('ds_bulk_defaultstatus', 'elis_program');
-        $langaddall = get_string('ds_bulk_addall', 'elis_program');
-        $langsearchresults = get_string('ds_searchresults', 'elis_program');
-        $langclear = get_string('clear', 'elis_program');
-        $langunloadconfirm = get_string('ds_bulk_unloadconfirm', 'elis_program');
-        $langresult = get_string('result', 'elis_program');
-        $langresults = get_string('results', 'elis_program');
-        $langshowing = get_string('ds_showing', 'elis_program');
+        $langselectedelement = get_string('ds_selectedelement', 'local_elisprogram');
+        $langselectedelements = get_string('ds_selectedelements', 'local_elisprogram');
+        $langdefaultstatus = get_string('ds_bulk_defaultstatus', 'local_elisprogram');
+        $langaddall = get_string('ds_bulk_addall', 'local_elisprogram');
+        $langsearchresults = get_string('ds_searchresults', 'local_elisprogram');
+        $langclear = get_string('clear', 'local_elisprogram');
+        $langunloadconfirm = get_string('ds_bulk_unloadconfirm', 'local_elisprogram');
+        $langresult = get_string('result', 'local_elisprogram');
+        $langresults = get_string('results', 'local_elisprogram');
+        $langshowing = get_string('ds_showing', 'local_elisprogram');
         $langpage = get_string('page', 'moodle');
 
         // Actions.
@@ -1150,7 +1150,7 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
     public function get_html() {
         return '<style type="text/css"> @import url("lib/deepsight/css/base.css");</style>
                 <div id="'.$this->name.'" class="deepsight_datatable_wrapper">
-                    <span class="filterlabel">'.get_string('filters', 'elis_program').': </span>
+                    <span class="filterlabel">'.get_string('filters', 'local_elisprogram').': </span>
                     <div id="'.$this->name.'_filterbar" class="deepsight_filterbar"></div>
                     <table id="'.$this->name.'_datatable" class="generaltable deepsight_datatable"></table>
                 </div>';
@@ -1163,14 +1163,14 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
      */
     public function get_js_dependencies() {
         return array(
-            '/elis/program/lib/deepsight/js/jquery-ui-1.10.1.custom.min.js',
-            '/elis/program/lib/deepsight/js/deepsight.js',
-            '/elis/program/lib/deepsight/js/filters/deepsight_filter_generator.js',
-            '/elis/program/lib/deepsight/js/filters/deepsight_filter_switch.js',
-            '/elis/program/lib/deepsight/js/filters/deepsight_filter_date.js',
-            '/elis/program/lib/deepsight/js/filters/deepsight_filter_textsearch.js',
-            '/elis/program/lib/deepsight/js/filters/deepsight_filter_searchselect.js',
-            '/elis/program/lib/deepsight/js/filters/deepsight_filterbar.js',
+            '/local/elisprogram/lib/deepsight/js/jquery-ui-1.10.1.custom.min.js',
+            '/local/elisprogram/lib/deepsight/js/deepsight.js',
+            '/local/elisprogram/lib/deepsight/js/filters/deepsight_filter_generator.js',
+            '/local/elisprogram/lib/deepsight/js/filters/deepsight_filter_switch.js',
+            '/local/elisprogram/lib/deepsight/js/filters/deepsight_filter_date.js',
+            '/local/elisprogram/lib/deepsight/js/filters/deepsight_filter_textsearch.js',
+            '/local/elisprogram/lib/deepsight/js/filters/deepsight_filter_searchselect.js',
+            '/local/elisprogram/lib/deepsight/js/filters/deepsight_filterbar.js',
         );
     }
 
@@ -1192,15 +1192,15 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
             'initial_filters' => $this->initial_filters,
             'rowfilter' => null,
             'actions' => array(),
-            'lang_no_results' => get_string('ds_noresults', 'elis_program'),
-            'lang_errormessage' => get_string('ds_errormessage', 'elis_program'),
-            'lang_error' => get_string('ds_errordetails', 'elis_program'),
-            'lang_actions' => get_string('ds_actions', 'elis_program'),
+            'lang_no_results' => get_string('ds_noresults', 'local_elisprogram'),
+            'lang_errormessage' => get_string('ds_errormessage', 'local_elisprogram'),
+            'lang_error' => get_string('ds_errordetails', 'local_elisprogram'),
+            'lang_actions' => get_string('ds_actions', 'local_elisprogram'),
             'lang_page' => get_string('page', 'moodle'),
-            'lang_result' => get_string('result', 'elis_program'),
-            'lang_results' => get_string('results', 'elis_program'),
-            'lang_showing' => get_string('ds_showing', 'elis_program'),
-            'lang_loading' => get_string('ds_loading', 'elis_program'),
+            'lang_result' => get_string('result', 'local_elisprogram'),
+            'lang_results' => get_string('results', 'local_elisprogram'),
+            'lang_showing' => get_string('ds_showing', 'local_elisprogram'),
+            'lang_loading' => get_string('ds_loading', 'local_elisprogram'),
         );
         foreach ($this->actions as $action) {
             $opts['actions'][] = $action->get_js_opts();
@@ -1246,7 +1246,7 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
                     datatable: {$this->name}_datatable,
                     filters: {$filterbarfilters},
                     starting_filters: {$filterbarstartingfilters},
-                    lang_add: '".get_string('add', 'elis_program')."'
+                    lang_add: '".get_string('add', 'local_elisprogram')."'
                 });";
 
         return $js;
@@ -1774,7 +1774,7 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
     /**
      * Get standard permission filters for a user - element available table.
      *
-     * This takes into account the elis/program:[element]_enrol, and elis:program/[element]_enrol_userset_user permissions.
+     * This takes into account the local/elisprogram:[element]_enrol, and elis:program/[element]_enrol_userset_user permissions.
      *
      * @param string $elementtype The type of element we're associating to. I.e. program, track, class, userset.
      * @param string $elementidsfromclusterids An SQL query to get ids for associated $elementtype from a list of clusters. Use
@@ -1796,8 +1796,8 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
             throw new Exception('Bad element type specified for get_filter_sql_permissions_userelement_available');
         }
 
-        $enrolperm = 'elis/program:'.$elementtype.'_enrol';
-        $usersetenrolperm = 'elis/program:'.$elementtype.'_enrol_userset_user';
+        $enrolperm = 'local/elisprogram:'.$elementtype.'_enrol';
+        $usersetenrolperm = 'local/elisprogram:'.$elementtype.'_enrol_userset_user';
         $ctxlevel = $elementtype2ctxlevel[$elementtype];
 
         $additionalfilters = array();
@@ -1846,7 +1846,7 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
     /**
      * Get standard permission filters for an element - user available table.
      *
-     * This takes into account the elis/program:[element]_enrol, and elis:program/[element]_enrol_userset_user permissions.
+     * This takes into account the local/elisprogram:[element]_enrol, and elis:program/[element]_enrol_userset_user permissions.
      *
      * @param string $elementtype The type of element we're associating to. I.e. program, track, class, userset.
      * @param int $elementid The ID of the base element we're associating to.
@@ -1867,8 +1867,8 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
             throw new Exception('Bad element type specified for get_filter_sql_permissions_userelement_available');
         }
 
-        $enrolperm = 'elis/program:'.$elementtype.'_enrol';
-        $usersetenrolperm = 'elis/program:'.$elementtype.'_enrol_userset_user';
+        $enrolperm = 'local/elisprogram:'.$elementtype.'_enrol';
+        $usersetenrolperm = 'local/elisprogram:'.$elementtype.'_enrol_userset_user';
         $ctxlevel = $elementtype2ctxlevel[$elementtype];
 
         $additionalfilters = array();

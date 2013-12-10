@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/clusterassignment.class.php'));
@@ -35,7 +35,7 @@ require_once(elispm::lib('data/userset.class.php'));
 
 /**
  * Test retrieval of users as used by the bulk user page.
- * @group elis_program
+ * @group local_elisprogram
  */
 class usermanagementgetsusers_testcase extends elis_database_test {
 
@@ -44,7 +44,7 @@ class usermanagementgetsusers_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            userset::TABLE => elis::component_file('program', 'tests/fixtures/userset.csv')
+            userset::TABLE => elispm::file('tests/fixtures/userset.csv')
         ));
         $this->loadDataSet($dataset);
     }
@@ -81,7 +81,7 @@ class usermanagementgetsusers_testcase extends elis_database_test {
         // Set up our test role.
         $syscontext = get_context_instance(CONTEXT_SYSTEM);
         $roleid = create_role('clusteradmin', 'clusteradmin', 'clusteradmin');
-        assign_capability('elis/program:user_edit', CAP_ALLOW, $roleid, $syscontext->id);
+        assign_capability('local/elisprogram:user_edit', CAP_ALLOW, $roleid, $syscontext->id);
         // Assign the userset administrator an appropriate role on the userset.
         $instance     = context_elis_userset::instance(1);
         role_assign($roleid, $USER->id, $instance->id);
@@ -112,7 +112,7 @@ class usermanagementgetsusers_testcase extends elis_database_test {
         $this->set_up_users();
 
         // The context set our user set administrator has access to.
-        $contextset = pm_context_set::for_user_with_capability('cluster', 'elis/program:user_edit', $USER->id);
+        $contextset = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:user_edit', $USER->id);
 
         // Validate count.
         $count = usermanagement_count_users(array(), $contextset);
@@ -146,7 +146,7 @@ class usermanagementgetsusers_testcase extends elis_database_test {
         $this->set_up_users();
 
         // The context set our user set administrator has access to.
-        $contextset = pm_context_set::for_user_with_capability('cluster', 'elis/program:user_edit', $USER->id);
+        $contextset = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:user_edit', $USER->id);
 
         // Validate record.
         $users = usermanagement_get_users_recordset('name', 'ASC', 0, 0, array(), $contextset);
@@ -192,7 +192,7 @@ class usermanagementgetsusers_testcase extends elis_database_test {
         $clusterassignment->save();
 
         // The context set our user set administrator has access to.
-        $contextset = pm_context_set::for_user_with_capability('cluster', 'elis/program:user_edit', $USER->id);
+        $contextset = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:user_edit', $USER->id);
 
         // Add a filter to filter down to only our first test user.
         $extrasql = array('username = :testusername', array('testusername' => 'clusteruser'));
@@ -244,7 +244,7 @@ class usermanagementgetsusers_testcase extends elis_database_test {
         $clusterassignment->save();
 
         // The context set our user set administrator has access to.
-        $contextset = pm_context_set::for_user_with_capability('cluster', 'elis/program:user_edit', $USER->id);
+        $contextset = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:user_edit', $USER->id);
 
         // Add a filter to filter down to only our first test user.
         $extrasql = array('username = :testusername', array('testusername' => 'clusteruser'));

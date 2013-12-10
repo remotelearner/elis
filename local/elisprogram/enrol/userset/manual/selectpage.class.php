@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    usetenrol_manual
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -28,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once(elispm::lib('selectionpage.class.php'));
 require_once(elispm::file('usersetpage.class.php'));
-require_once(elis::plugin_file('usersetenrol_manual', 'select_form.class.php'));
+require_once(elis::plugin_file('usetenrol_manual', 'select_form.class.php'));
 
 class clusteruserselectpage extends selectionpage {
     var $default_tab = 'clusteruserpage';
@@ -78,11 +77,11 @@ class clusteruserselectpage extends selectionpage {
         // TODO: Ugly, this needs to be overhauled
         $upage = new usersetpage();
 
-        if (!$upage->_has_capability('elis/program:userset_enrol')) {
+        if (!$upage->_has_capability('local/elisprogram:userset_enrol')) {
             //perform SQL filtering for the more "conditional" capability
 
             //get the context for the "indirect" capability
-            $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:userset_enrol_userset_user', $USER->id);
+            $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_enrol_userset_user', $USER->id);
 
             $allowed_clusters = userset::get_allowed_clusters($id);
 
@@ -140,7 +139,7 @@ class clusteruserselectpage extends selectionpage {
             cluster_manual_assign_user($data->id, $userid, !empty($data->autoenrol), !empty($data->leader));
         }
         $tmppage = new clusteruserpage(array('id' => $data->id));
-//        redirect($tmppage->url, get_string('userset_user_assigned', 'elis_program', count($data->_selection)));
+//        redirect($tmppage->url, get_string('userset_user_assigned', 'local_elisprogram', count($data->_selection)));
         redirect($tmppage->url, '', 2);
     }
 }
@@ -151,7 +150,7 @@ class clusteruserselecttable extends selection_table {
         $url->params(array('id' => required_param('id', PARAM_INT)));
         $columns = array(
             '_selection'   => array('header' => ''),
-            'idnumber'     => array('header' => get_string('idnumber', 'elis_program')),
+            'idnumber'     => array('header' => get_string('idnumber', 'local_elisprogram')),
             'name'        => array('header' => array('firstname' => array('header' => get_string('firstname')),
                                                       'lastname' => array('header' => get_string('lastname'))),
                                    'display_function' => array('display_table', 'display_user_fullname_item')),

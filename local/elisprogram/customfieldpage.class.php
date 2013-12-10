@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -43,7 +42,7 @@ class customfieldpage extends pm_page {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:config', $context) || has_capability('elis/program:manage', $context);
+        return has_capability('local/elisprogram:config', $context) || has_capability('local/elisprogram:manage', $context);
     }
 
     function display_default() {
@@ -51,7 +50,7 @@ class customfieldpage extends pm_page {
         $level = $this->required_param('level', PARAM_ACTION);
 
         if (!$ctxlvl = context_elis_helper::get_level_from_name($level)) {
-            print_error('invalid_context_level', 'elis_program');
+            print_error('invalid_context_level', 'local_elisprogram');
         }
 
         $tmppage = new moodle_url($this->url);
@@ -60,7 +59,7 @@ class customfieldpage extends pm_page {
         $contextlevels = context_elis_helper::get_legacy_levels();
         foreach($contextlevels as $contextlevel => $val) {
             $tmppage->param('level', $contextlevel);
-            $tabs[] = new tabobject($contextlevel, $tmppage->out(), get_string($contextlevel, 'elis_program'));
+            $tabs[] = new tabobject($contextlevel, $tmppage->out(), get_string($contextlevel, 'local_elisprogram'));
         }
         print_tabs(array($tabs), $level);
 
@@ -85,7 +84,7 @@ class customfieldpage extends pm_page {
         $edittxt = get_string('edit');
         $syncerr = false;
         if (empty($category_names)) {
-            echo $OUTPUT->heading(get_string('field_no_categories_defined', 'elis_program'));
+            echo $OUTPUT->heading(get_string('field_no_categories_defined', 'local_elisprogram'));
         }
         foreach ($fieldsbycategory as $categoryid => $fields) {
             $categorypage = new moodle_url($this->url);
@@ -106,13 +105,13 @@ class customfieldpage extends pm_page {
             }
 
             if (empty($fields)) {
-                print_string('field_no_fields_defined', 'elis_program');
+                print_string('field_no_fields_defined', 'local_elisprogram');
             } else {
                 if ($level == 'user') {
                     require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
                     $table = new customuserfieldtable($fields, array('name' => array('header' => get_string('name')),
-                                                                     'datatype' => array('header' => get_string('field_datatype', 'elis_program')),
-                                                                     'syncwithmoodle' => array('header' => get_string('field_syncwithmoodle', 'elis_program')),
+                                                                     'datatype' => array('header' => get_string('field_datatype', 'local_elisprogram')),
+                                                                     'syncwithmoodle' => array('header' => get_string('field_syncwithmoodle', 'local_elisprogram')),
                                                                      'buttons' => array('header' => '')), $this->url);
                 } else {
                     $table = new customfieldtable($fields, array('name' => array('header' => get_string('name')),
@@ -124,14 +123,14 @@ class customfieldpage extends pm_page {
             }
         }
         if ($syncerr) {
-            print_string('moodle_field_sync_warning', 'elis_program');
+            print_string('moodle_field_sync_warning', 'local_elisprogram');
         }
 
         // button for new category
         $options = array('s' => 'field',
                          'action'=>'editcategory',
                          'level' => $level);
-        $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_category', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_category', 'elis_program'), 'id'=>''));
+        $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_category', 'local_elisprogram'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_category', 'local_elisprogram'), 'id'=>''));
         echo $OUTPUT->render($button);
 
         if (!empty($category_names)) {
@@ -150,23 +149,23 @@ class customfieldpage extends pm_page {
                 echo '<div>';
                 //popup_form("{$tmppage->url}&amp;id=",
                 //           array_map(create_function('$x', 'return $x->name;'), $moodlefields),
-                //           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'elis_program'));
+                //           'frommoodleform', '', 'choose', '', '', false, 'self', get_string('field_from_moodle', 'local_elisprogram'));
                 $actionurl = new moodle_url($tmppage->out());
 
-                $single_select = new single_select($actionurl, 'id', array_map(create_function('$x', 'return $x->name;'), $moodlefields), null, array(''=>get_string('field_from_moodle', 'elis_program')));
+                $single_select = new single_select($actionurl, 'id', array_map(create_function('$x', 'return $x->name;'), $moodlefields), null, array(''=>get_string('field_from_moodle', 'local_elisprogram')));
                 echo $OUTPUT->render($single_select);
                 echo '</div>';
 
                 $options = array('s' => 'field',
                                  'action' => 'forceresync');
-                $button = new single_button(new moodle_url('index.php', $options), get_string('field_force_resync', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_force_resync', 'elis_program'), 'id'=>''));
+                $button = new single_button(new moodle_url('index.php', $options), get_string('field_force_resync', 'local_elisprogram'), 'get', array('disabled'=>false, 'title'=>get_string('field_force_resync', 'local_elisprogram'), 'id'=>''));
                 echo $OUTPUT->render($button);
             } else {
                 // create new field from scratch
                 $options = array('s' => 'field',
                                  'action'=>'editfield',
                                  'level' => $level);
-                $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_new', 'elis_program'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_new', 'elis_program'), 'id'=>''));
+                $button = new single_button(new moodle_url('index.php', $options), get_string('field_create_new', 'local_elisprogram'), 'get', array('disabled'=>false, 'title'=>get_string('field_create_new', 'local_elisprogram'), 'id'=>''));
                 echo $OUTPUT->render($button);
             }
         }
@@ -188,10 +187,10 @@ class customfieldpage extends pm_page {
             $buttoncontinue = new single_button(new moodle_url('index.php', $optionsyes), get_string('yes'), 'POST');
             $buttoncancel   = new single_button(new moodle_url('index.php', $optionsno), get_string('no'), 'GET');
 
-            echo $OUTPUT->confirm(get_string('field_confirm_force_resync', 'elis_program'),
+            echo $OUTPUT->confirm(get_string('field_confirm_force_resync', 'local_elisprogram'),
                                   $buttoncontinue, $buttoncancel);
         } else {
-            print_string('field_resyncing', 'elis_program');
+            print_string('field_resyncing', 'local_elisprogram');
             $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
             $fields = $fields ? $fields : array();
             require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
@@ -210,14 +209,14 @@ class customfieldpage extends pm_page {
         $level = $this->required_param('level', PARAM_ACTION);
         $ctxlvl = context_elis_helper::get_level_from_name($level);
         if (!$ctxlvl) {
-            print_error('invalid_context_level', 'elis_program');
+            print_error('invalid_context_level', 'local_elisprogram');
         }
         $id = $this->optional_param('id', 0, PARAM_INT);
         $tmppage = new customfieldpage(array('level' => $level, 'id' => $id, 'action' => 'editcategory', 'level' => $level));
         $form = new fieldcategoryform($tmppage->url);
         if ($form->is_cancelled()) {
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
+            redirect($tmppage->url, get_string('edit_cancelled', 'local_elisprogram'));
         } else if ($data = $form->get_data()) {
             $data->id = $id;
             $category = new field_category($data);
@@ -232,7 +231,7 @@ class customfieldpage extends pm_page {
                 $categorycontext->save();
             }
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->url, get_string('field_category_saved', 'elis_program', $category->name));
+            redirect($tmppage->url, get_string('field_category_saved', 'local_elisprogram', $category->name));
         } else {
             if ($id) {
                 $category = new field_category($id);
@@ -251,7 +250,7 @@ class customfieldpage extends pm_page {
         $category = new field_category($id);
 
         if (!$category->id) {
-            print_error('invalid_category_id', 'elis_program');
+            print_error('invalid_category_id', 'local_elisprogram');
         }
 
         $confirm = $this->optional_param('confirm', 0, PARAM_INT);
@@ -261,7 +260,7 @@ class customfieldpage extends pm_page {
 
             $category->delete();
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->url, get_string('field_category_deleted', 'elis_program', $category->name));
+            redirect($tmppage->url, get_string('field_category_deleted', 'local_elisprogram', $category->name));
         } else {
             $optionsyes = array('s' => $this->pagename,
                                 'action' => 'deletecategory',
@@ -276,7 +275,7 @@ class customfieldpage extends pm_page {
             $buttoncontinue = new single_button(new moodle_url('index.php', $optionsyes), get_string('yes'), 'POST');
             $buttoncancel   = new single_button(new moodle_url('index.php', $optionsno), get_string('no'), 'GET');
 
-            echo $OUTPUT->confirm(get_string('confirm_delete_category', 'elis_program', $category->name),
+            echo $OUTPUT->confirm(get_string('confirm_delete_category', 'local_elisprogram', $category->name),
                                   $buttoncontinue, $buttoncancel);
         }
     }
@@ -291,7 +290,7 @@ class customfieldpage extends pm_page {
         $level = $this->required_param('level', PARAM_ACTION);
         $ctxlvl = context_elis_helper::get_level_from_name($level);
         if (!$ctxlvl) {
-            print_error('invalid_context_level', 'elis_program');
+            print_error('invalid_context_level', 'local_elisprogram');
         }
         $id = $this->optional_param('id', NULL, PARAM_INT);
 
@@ -303,7 +302,7 @@ class customfieldpage extends pm_page {
                                'from'  => optional_param('from', '', PARAM_CLEAN)));
         if ($form->is_cancelled()) {
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->url, get_string('edit_cancelled', 'elis_program'));
+            redirect($tmppage->url, get_string('edit_cancelled', 'local_elisprogram'));
         } else if ($data = $form->get_data()) {
             $src = !empty($data->manual_field_options_source)
                    ? $data->manual_field_options_source : '';
@@ -316,7 +315,7 @@ class customfieldpage extends pm_page {
                     if (!$data->multivalued && !empty($src)) {
                         $elem = "defaultdata_radio_{$src}";
                         $data->defaultdata = isset($data->$elem) ? $data->$elem : ''; // radio buttons unset by default
-                        // error_log("/elis/program/customfieldpage.class.php:: defaultdata->{$elem} = {$data->defaultdata}");
+                        // error_log("/local/elisprogram/customfieldpage.class.php:: defaultdata->{$elem} = {$data->defaultdata}");
                     } else if (!$data->multivalued && !empty($data->manual_field_options)) {
                         $data->defaultdata = str_replace("\r", '', $data->defaultdata_radio);
                     } else {
@@ -389,13 +388,13 @@ class customfieldpage extends pm_page {
             }
 
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->url, get_string('field_saved', 'elis_program', $field));
+            redirect($tmppage->url, get_string('field_saved', 'local_elisprogram', $field));
         } else {
             if (!empty($id)) {
                 if ($this->optional_param('from', NULL, PARAM_CLEAN) == 'moodle' && $level == 'user') {
                     $moodlefield = $DB->get_record('user_info_field', array('id'=>$id));
                     if (!$moodlefield) {
-                        print_error('invalid_field_id', 'elis_program');
+                        print_error('invalid_field_id', 'local_elisprogram');
                     }
                     unset($moodlefield->id);
                     $data_array = (array)$moodlefield;
@@ -514,14 +513,14 @@ class customfieldpage extends pm_page {
         $field = new field($id);
 
         if (!$field->id) {
-            print_error('invalid_field_id', 'elis_program');
+            print_error('invalid_field_id', 'local_elisprogram');
         }
 
         $confirm = $this->optional_param('confirm', 0, PARAM_INT);
         if ($confirm) {
             $field->delete();
             $tmppage = new customfieldpage(array('level' => $level));
-            redirect($tmppage->url, get_string('field_deleted', 'elis_program', $field));
+            redirect($tmppage->url, get_string('field_deleted', 'local_elisprogram', $field));
         } else {
             $optionsyes = array('s' => $this->pagename,
                                 'action' => 'deletefield',
@@ -536,7 +535,7 @@ class customfieldpage extends pm_page {
             $buttoncontinue = new single_button(new moodle_url('index.php', $optionsyes), get_string('yes'), 'POST');
             $buttoncancel   = new single_button(new moodle_url('index.php', $optionsno), get_string('no'), 'GET');
 
-            echo $OUTPUT->confirm(get_string('confirm_delete_field', 'elis_program',
+            echo $OUTPUT->confirm(get_string('confirm_delete_field', 'local_elisprogram',
                                              array('datatype'=>$field->datatype, 'name'=>$field->name)
                                             ),
                                   $buttoncontinue, $buttoncancel);
@@ -551,7 +550,7 @@ class customfieldpage extends pm_page {
         parent::build_navbar_default($who);
 
         $url = $this->get_new_page(array('level'=>'user'), true)->url;
-        $this->navbar->add(get_string("manage_custom_fields", 'elis_program'), $url);
+        $this->navbar->add(get_string("manage_custom_fields", 'local_elisprogram'), $url);
     }
 }
 
@@ -561,7 +560,7 @@ class customfieldtable extends display_table {
     }
 
     function get_item_display_datatype($column, $item) {
-        return get_string("field_datatype_{$item->datatype}", 'elis_program');
+        return get_string("field_datatype_{$item->datatype}", 'local_elisprogram');
     }
 
     function get_item_display_buttons($column, $item) {

@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanager
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -128,14 +127,14 @@ $string['bulkedit_displayusers'] = 'Display Users';
 
 $string['certificate_settings'] = 'Certificate Settings';
 $string['cert_border_help'] = 'The certificate border image is what gets displayed as the background for certificates in the program.
-You can add more border images by uploading them to your moodledata directory under the directory: /elis/program/pix/certificate/borders/ ';
+You can add more border images by uploading them to your moodledata directory under the directory: /local/elisprogram/pix/certificate/borders/ ';
 $string['cert_border_setting'] = 'Certificate border image';
 $string['cert_border_setting_help'] = 'The certificate border image is what gets displayed as the background for certificates in the program.';
 $string['cert_class_complete'] = 'You have earned the following Class Completion Certificates';
 $string['cert_enable'] = 'Enable certificate';
 $string['cert_enable_desc'] = 'Check the box to enable certificates';
 $string['cert_seal_help'] = 'The certificate seal image is what gets displayed as the logo on certificates in the program.
-You can add more seal images by uploading them to your moodledata directory under the directory: /elis/program/pix/certificate/seals/ ';
+You can add more seal images by uploading them to your moodledata directory under the directory: /local/elisprogram/pix/certificate/seals/ ';
 $string['cert_seal_setting'] = 'Certificate seal image';
 $string['cert_seal_setting_help'] = 'The certificate seal image is what gets displayed as the logo on certificates in the program.';
 $string['certificate_border_image'] = 'Certificate border image';
@@ -589,11 +588,11 @@ $string['grade_element'] = 'Grade Element';
 $string['grade_update_warning'] = '<div><strong>Note:</strong> updating grades for individual learning objectives on this screen will not automatically update the class instance grade or completion status.</div>';
 
 $string['health_checking'] = "Checking...\n<ul>\n";
-$string['health_check_link'] = 'The <a href="{$a->wwwroot}/elis/program/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
+$string['health_check_link'] = 'The <a href="{$a->wwwroot}/local/elisprogram/index.php?s=health">ELIS health page</a> may help diagnose potential problems with the site.';
 $string['health_cluster_orphans'] = 'Orphaned user sets found!';
 $string['health_cluster_orphansdesc'] = 'There are {$a->count} user subsets which have had their parent user sets deleted.<br/><ul>';
 $string['health_cluster_orphansdescnone'] = 'There were no orphaned user sets found.';
-$string['health_cluster_orphanssoln'] = 'From the command line change to the directory {$a}/elis/program/scripts<br/>
+$string['health_cluster_orphanssoln'] = 'From the command line change to the directory {$a}/local/elisprogram/scripts<br/>
                 Run the script fix_cluster_orphans.php to convert all user sets with missing parent user sets to top-level.';
 $string['health_completion'] = 'Completion export';
 $string['health_completiondesc'] = 'The Completion Export block, which conflicts with Integration Point, is present.';
@@ -631,7 +630,7 @@ $string['health_trackcheck'] = 'Unassociated class instances found in tracks';
 $string['health_trackcheckdesc'] = 'Found {$a} class instances that are attached to tracks when associated course descriptions are not attached to the program.';
 $string['health_trackcheckdescnone'] = 'There were no issues found.';
 $string['health_trackchecksoln'] = 'Need to remove all class instances in tracks that do not have an associated course descriptions in its associated program by running the script linked below.<br/><br/>' .
-               '<a href="{$a}/elis/program/scripts/fix_track_classes.php">Fix this now</a>';
+               '<a href="{$a}/local/elisprogram/scripts/fix_track_classes.php">Fix this now</a>';
 $string['health_user_dupiddesc'] = 'There are {$a} user records with duplicate and/or empty idnumbers.';
 $string['health_user_dupidsoln'] = '<p>The Moodle user table contains users with duplicate and/or empty idnumbers. Please open a support ticket to have these fixed. Once this has been corrected, please re-check this page for updated status.</p>';
 $string['health_user_sync'] = 'User Records Mismatch - Synchronize Users';
@@ -639,7 +638,7 @@ $string['health_user_syncdesc'] = 'There are {$a} extra user records for Moodle 
 $string['health_user_syncsoln'] = 'Users need to be synchronized by running the script which is linked below.<br/><br/>
                 This process can take a long time, we recommend you run it during non-peak hours, and leave this window open until you see a success message.
                 If the script times out (stops loading before indicating success), please open a support ticket to have this run for you.<br/><br/>
-                <a href="{$a}/elis/program/scripts/migrate_moodle_users.php">Fix this now</a>';
+                <a href="{$a}/local/elisprogram/scripts/migrate_moodle_users.php">Fix this now</a>';
 $string['hidecompletedcourses'] = 'Hide Completed Courses';
 $string['hidecourses'] = 'Hide Courses';
 
@@ -772,9 +771,9 @@ $string['n_completed'] = 'Not Completed';
 $string['n_users_enrolled'] = '{$a} user(s) enrolled.';
 $string['n_users_unsatisfied_prereq'] = '{$a} user(s) had unsatisfied pre-requisite(s).';
 $string['n_users_waitlisted'] = '{$a} user(s) waitlisted.';
-$string['no_associate_caps_class'] = 'You cannot associate any classes because do not have the elis/program:associate capability on any classes.';
-$string['no_associate_caps_track'] = 'You cannot associate any tracks because do not have the elis/program:associate capability on any tracks.';
-$string['no_associate_caps_curriculum'] = 'You cannot associate any programs because do not have the elis/program:associate capability on any programs.';
+$string['no_associate_caps_class'] = 'You cannot associate any classes because do not have the local/elisprogram:associate capability on any classes.';
+$string['no_associate_caps_track'] = 'You cannot associate any tracks because do not have the local/elisprogram:associate capability on any tracks.';
+$string['no_associate_caps_curriculum'] = 'You cannot associate any programs because do not have the local/elisprogram:associate capability on any programs.';
 $string['no_blank_menuoption'] = 'Blank/empty menu options are not allowed';
 $string['no_classes_available'] = 'No classes currently available.  Please check again later.';
 $string['no_completion_elements'] = 'There are no learning objectives defined.';
@@ -1144,8 +1143,8 @@ $string['studentnotfound'] = 'student not found';
 $string['studentnotunenrolled'] = 'Student: {$a->name} not unenrolled.';
 $string['students'] = 'Students';
 $string['studentunenrolled'] = 'Student: {$a->name} unenrolled.';
-$string['subplugintype_pmplugins_plural'] = 'General plugins';
-$string['subplugintype_usersetenrol_plural'] = 'User Set enrolment methods';
+$string['subplugintype_elisprogram_plural'] = 'General plugins';
+$string['subplugintype_usetenrol_plural'] = 'User Set enrolment methods';
 $string['success'] = 'Success';
 $string['success_bulk_delete'] = 'Successfully deleted users.';
 $string['success_bulk_inactive'] = 'Successfully marked users as inactive.';

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -112,7 +112,7 @@ class clustercurriculumpage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $requiredperms = array('elis/program:userset_view', 'elis/program:associate');
+        $requiredperms = array('local/elisprogram:userset_view', 'local/elisprogram:associate');
         foreach ($requiredperms as $perm) {
             $ctx = pm_context_set::for_user_with_capability('cluster', $perm, $USER->id);
             if ($ctx->context_allowed($id, 'cluster') !== true) {
@@ -137,14 +137,14 @@ class clustercurriculumpage extends deepsightpage {
         global $OUTPUT;
         $id = $this->required_param('id', PARAM_INT);
         $options = array('id' => $id, 's' => 'clstcur', 'action' => 'copycurredit');
-        $button = new single_button(new moodle_url('index.php', $options), get_string('userset_cpycurr', 'elis_program'), 'get');
+        $button = new single_button(new moodle_url('index.php', $options), get_string('userset_cpycurr', 'local_elisprogram'), 'get');
 
         // Add a more specific CSS class.
         $button->class = str_replace('singlebutton', 'singlebutton clscpycurrbtn ', $button->class);
 
         echo '<div style="display:inline-block;text-align:center;width:100%;margin-bottom:25px">';
-        echo get_string('userset_cpycurr_instruction', 'elis_program');
-        echo $OUTPUT->help_icon('program_copy', 'elis_program');
+        echo get_string('userset_cpycurr_instruction', 'local_elisprogram');
+        echo $OUTPUT->help_icon('program_copy', 'local_elisprogram');
         echo $OUTPUT->render($button);
         echo '</div>';
 
@@ -157,7 +157,7 @@ class clustercurriculumpage extends deepsightpage {
     public function display_copycurredit() {
         global $CFG, $USER, $PAGE, $DB, $OUTPUT;
 
-        $PAGE->requires->js('/elis/program/js/clustercurriculumpage.js');
+        $PAGE->requires->js('/local/elisprogram/js/clustercurriculumpage.js');
 
         $id = $this->required_param('id', PARAM_INT);
 
@@ -166,13 +166,13 @@ class clustercurriculumpage extends deepsightpage {
 
         $table = new html_table();
         $table->head = array(
-                get_string('userset_cpyclustname', 'elis_program'),
-                get_string('userset_cpycurname', 'elis_program'),
-                get_string('userset_cpyadd', 'elis_program'),
-                get_string('userset_cpytrkcpy', 'elis_program'),
-                get_string('userset_cpycrscpy', 'elis_program'),
-                get_string('userset_cpyclscpy', 'elis_program'),
-                get_string('userset_cpymdlclscpy', 'elis_program'),
+                get_string('userset_cpyclustname', 'local_elisprogram'),
+                get_string('userset_cpycurname', 'local_elisprogram'),
+                get_string('userset_cpyadd', 'local_elisprogram'),
+                get_string('userset_cpytrkcpy', 'local_elisprogram'),
+                get_string('userset_cpycrscpy', 'local_elisprogram'),
+                get_string('userset_cpyclscpy', 'local_elisprogram'),
+                get_string('userset_cpymdlclscpy', 'local_elisprogram'),
         );
 
         $table->class = 'cluster_copy_curriculum';
@@ -186,17 +186,17 @@ class clustercurriculumpage extends deepsightpage {
         $sql = 'SELECT * from {'.userset::TABLE.'}';
 
         // Exclude clusters the user does not have the capability to manage/see.
-        $context = get_contexts_by_capability_for_user('cluster', 'elis/program:userset_view', $USER->id);
+        $context = get_contexts_by_capability_for_user('cluster', 'local/elisprogram:userset_view', $USER->id);
 
         echo '<form action="index.php" method="post">';
 
-        $mdlcrsoptions = array('copyalways' => get_string('program_copy_mdlcrs_copyalways', 'elis_program'),
-                               'copyautocreated' => get_string('program_copy_mdlcrs_copyautocreated', 'elis_program'),
-                               'autocreatenew' => get_string('program_copy_mdlcrs_autocreatenew', 'elis_program'),
-                               'link' => get_string('program_copy_mdlcrs_link', 'elis_program')
+        $mdlcrsoptions = array('copyalways' => get_string('program_copy_mdlcrs_copyalways', 'local_elisprogram'),
+                               'copyautocreated' => get_string('program_copy_mdlcrs_copyautocreated', 'local_elisprogram'),
+                               'autocreatenew' => get_string('program_copy_mdlcrs_autocreatenew', 'local_elisprogram'),
+                               'link' => get_string('program_copy_mdlcrs_link', 'local_elisprogram')
             );
 
-        $contexts = curriculumpage::get_contexts('elis/program:associate');
+        $contexts = curriculumpage::get_contexts('local/elisprogram:associate');
         foreach ($clusters as $clusid => $clusdata) {
             if (!$context->context_allowed($clusid, 'cluster')) {
                 continue;
@@ -252,7 +252,7 @@ class clustercurriculumpage extends deepsightpage {
         }
 
         // Add unassociated row to table.
-        $table->data[] = array(get_string('usersetprogram_unassociated', 'elis_program'),
+        $table->data[] = array(get_string('usersetprogram_unassociated', 'local_elisprogram'),
                                '', '', '', '', '', '');
         $table->rowclass[] = 'clus_cpy_row unassigned';
 
@@ -303,7 +303,7 @@ class clustercurriculumpage extends deepsightpage {
         echo html_writer::table($table);
 
         echo '<div class="clus_curr_cpy_save_exit">';
-        echo '<input type="submit" name="save" value="'.get_string('userset_saveexit', 'elis_program').'">';
+        echo '<input type="submit" name="save" value="'.get_string('userset_saveexit', 'local_elisprogram').'">';
         echo '<div class="hidden">';
         echo '<input type="hidden" name="id" value="'.$id.'">';
         echo '<input type="hidden" name="s" value="clstcur">';
@@ -330,7 +330,7 @@ class clustercurriculumpage extends deepsightpage {
         $clusterid = $this->required_param('id', PARAM_INT);
 
         if (empty($data)) {
-            notify(get_string('nodatasubmit', 'elis_program'), 'red');
+            notify(get_string('nodatasubmit', 'local_elisprogram'), 'red');
         }
 
         $targetcluster = new userset($clusterid);
@@ -405,7 +405,7 @@ class clustercurriculumpage extends deepsightpage {
                     $tempcurr = new stdClass;
                     $tempcurr->name = $curr->name;
                     $tempcurr->newname = $newcurr->name;
-                    notify(get_string('clustcpycurr', 'elis_program', $tempcurr), 'notifysuccess');
+                    notify(get_string('clustcpycurr', 'local_elisprogram', $tempcurr), 'notifysuccess');
                 }
             }
         }
@@ -491,7 +491,7 @@ class curriculumclusterpage extends deepsightpage {
     public function can_do_default() {
         global $USER;
         $id = $this->required_param('id', PARAM_INT);
-        $requiredperms = array('elis/program:program_view', 'elis/program:associate');
+        $requiredperms = array('local/elisprogram:program_view', 'local/elisprogram:associate');
         foreach ($requiredperms as $perm) {
             $ctx = pm_context_set::for_user_with_capability('curriculum', $perm, $USER->id);
             if ($ctx->context_allowed($id, 'curriculum') !== true) {

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -49,14 +48,14 @@ class enrolconfirmform extends cmform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
 
-        $limit_group[] = $mform->addElement('static', 'lbl_classlimit', get_string('class_limit', 'elis_program') . ':', $data->limit);
+        $limit_group[] = $mform->addElement('static', 'lbl_classlimit', get_string('class_limit', 'local_elisprogram') . ':', $data->limit);
 
-        $mform->addElement('static', 'lbl_enroled', get_string('enroled', 'elis_program') . ': ', $data->enroled);
-        $mform->addElement('static', 'lbl_num_waitlist', get_string('num_waitlist', 'elis_program') . ': ', $data->waitlisted);
+        $mform->addElement('static', 'lbl_enroled', get_string('enroled', 'local_elisprogram') . ': ', $data->enroled);
+        $mform->addElement('static', 'lbl_num_waitlist', get_string('num_waitlist', 'local_elisprogram') . ': ', $data->waitlisted);
 
-        $mform->addElement('static', 'lbl_enrol_confirmation', '', get_string('enrol_confirmation', 'elis_program', $data->a));
+        $mform->addElement('static', 'lbl_enrol_confirmation', '', get_string('enrol_confirmation', 'local_elisprogram', $data->a));
 
-        $this->add_action_buttons(true, get_string('btn_waitlist_add', 'elis_program'));
+        $this->add_action_buttons(true, get_string('btn_waitlist_add', 'local_elisprogram'));
     }
 }
 

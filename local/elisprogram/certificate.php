@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -27,7 +27,7 @@
  */
 
 require_once(dirname(__FILE__) .'/../../config.php');
-require_once($CFG->dirroot .'/elis/program/lib/setup.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('data/curriculumstudent.class.php'));
 require_once(elispm::lib('certificate.php'));
 require_once(elispm::lib('deprecatedlib.php')); // cm_get_crlmuserid()
@@ -47,29 +47,29 @@ if (!empty($curass->user)) {
 $curuserid = cm_get_crlmuserid($USER->id);
 
 if (!isset($curass->user) || !isset($curass->curriculum)) {
-    print_string('invalid_curriculum_completion', 'elis_program');
+    print_string('invalid_curriculum_completion', 'local_elisprogram');
 } else if ($curuserid != $curass->userid) {
-    print_string('curriculum_userid_mismatch', 'elis_program');
+    print_string('curriculum_userid_mismatch', 'local_elisprogram');
 } else if (0 == (int)($curass->timecompleted)) {
-    print_string('error_curriculum_incomplete', 'elis_program');
+    print_string('error_curriculum_incomplete', 'local_elisprogram');
 } else {
     $datecomplete = date("F j, Y", $curass->timecompleted);
 
     $dateexpired = '';
-    if (!empty(elis::$config->elis_program->enable_curriculum_expiration) && !empty($curass->timeexpired)) {
+    if (!empty(elis::$config->local_elisprogram->enable_curriculum_expiration) && !empty($curass->timeexpired)) {
         $dateexpired  =  date("F j, Y", $curass->timeexpired);
     }
 
-    $borderimage = (isset(elis::$config->elis_program->certificate_border_image))
-            ? elis::$config->elis_program->certificate_border_image
+    $borderimage = (isset(elis::$config->local_elisprogram->certificate_border_image))
+            ? elis::$config->local_elisprogram->certificate_border_image
             : 'Fancy1-blue.jpg';
 
-    $sealimage = (isset(elis::$config->elis_program->certificate_seal_image))
-            ? elis::$config->elis_program->certificate_seal_image
+    $sealimage = (isset(elis::$config->local_elisprogram->certificate_seal_image))
+            ? elis::$config->local_elisprogram->certificate_seal_image
             : 'none';
 
-    $templates = (isset(elis::$config->elis_program->certificate_template_file))
-            ? elis::$config->elis_program->certificate_template_file
+    $templates = (isset(elis::$config->local_elisprogram->certificate_template_file))
+            ? elis::$config->local_elisprogram->certificate_template_file
             : 'default.php';
 
     certificate_output_completion($curass->user->__toString(), $curass->curriculum->__toString(), $curass->certificatecode,

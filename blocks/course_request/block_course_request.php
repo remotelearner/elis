@@ -62,7 +62,7 @@ class block_course_request extends block_base {
 
         //check request permissions
         if (block_course_request_can_do_request()) {
-            $items[] = '<a href="'. $CFG->wwwroot .'/elis/program/index.php?action=default&s=crp">' .
+            $items[] = '<a href="'. $CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=crp">' .
                        get_string('courserequestpages', 'block_course_request') . '</a>';
         }
 
@@ -73,13 +73,13 @@ class block_course_request extends block_base {
             $allow_course_fields = !empty($CFG->block_course_request_use_course_fields);
 
             if ($allow_class_fields || $allow_course_fields) {
-                $items[] = '<a href="'. $CFG->wwwroot .'/elis/program/index.php?action=default&s=erp">' .
+                $items[] = '<a href="'. $CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=erp">' .
                            get_string('editrequestpages', 'block_course_request') . '</a>';
             }
         }
 
         if (has_capability('block/course_request:approve', $context)) {
-            $items[] = '<a href="'. $CFG->wwwroot .'/elis/program/index.php?action=default&s=arp">' .
+            $items[] = '<a href="'. $CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=arp">' .
                        get_string('approvependingrequests', 'block_course_request') . '</a>';
         }
 

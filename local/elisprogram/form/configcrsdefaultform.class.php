@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -37,40 +36,40 @@ class configcrsdefaultform extends cmform {
     function definition() {
         $mform =& $this->_form;
 
-        $mform->addElement('header', 'crsdftdefault', get_string('defaultcrs', 'elis_program'));
+        $mform->addElement('header', 'crsdftdefault', get_string('defaultcrs', 'local_elisprogram'));
 
-        $mform->addElement('text', 'crsdftname', get_string('course_name', 'elis_program') . ':');
+        $mform->addElement('text', 'crsdftname', get_string('course_name', 'local_elisprogram') . ':');
         $mform->setType('crsdftname', PARAM_TEXT);
 
-        $mform->addElement('text', 'crsdftcode', get_string('course_code', 'elis_program') . ':');
+        $mform->addElement('text', 'crsdftcode', get_string('course_code', 'local_elisprogram') . ':');
         $mform->setType('crsdftcode', PARAM_TEXT);
 
-        $mform->addElement('text', 'crsdftidnumber', get_string('course_idnumber', 'elis_program') . ':');
+        $mform->addElement('text', 'crsdftidnumber', get_string('course_idnumber', 'local_elisprogram') . ':');
         $mform->setType('crsdftidnumber', PARAM_TEXT);
 
         $attributes = array('cols'=>40, 'rows'=>2);
-        $mform->addElement('textarea', 'crsdftsyllabus', get_string('course_syllabus', 'elis_program') . ':', $attributes);
+        $mform->addElement('textarea', 'crsdftsyllabus', get_string('course_syllabus', 'local_elisprogram') . ':', $attributes);
         $mform->setType('crsdftsyllabus', PARAM_CLEAN);
 
-        $mform->addElement('text', 'crsdftlengthdescription', get_string('length_description', 'elis_program'));
+        $mform->addElement('text', 'crsdftlengthdescription', get_string('length_description', 'local_elisprogram'));
         $mform->setType('crsdftlengthdescription', PARAM_TEXT);
         $mform->addRule('crsdftlengthdescription', null, 'maxlength', 100);
 
-        $mform->addElement('text', 'crsdftlength', get_string('duration', 'elis_program') . ':');
+        $mform->addElement('text', 'crsdftlength', get_string('duration', 'local_elisprogram') . ':');
         $mform->setType('crsdftlength', PARAM_INT);
 
-        $mform->addElement('text', 'crsdftcredits', get_string('credits', 'elis_program') . ':');
+        $mform->addElement('text', 'crsdftcredits', get_string('credits', 'local_elisprogram') . ':');
         $mform->setType('crsdftcredits', PARAM_NUMBER);
         $mform->addRule('crsdftcredits', null, 'maxlength', 10);
 
         $grades = range(0,100,1);
-        $mform->addElement('select', 'crsdftcompletion_grade', get_string('completion_grade', 'elis_program') . ':', $grades);
+        $mform->addElement('select', 'crsdftcompletion_grade', get_string('completion_grade', 'local_elisprogram') . ':', $grades);
 
-        $mform->addElement('text', 'crsdftcost', get_string('cost', 'elis_program') . ':');
+        $mform->addElement('text', 'crsdftcost', get_string('cost', 'local_elisprogram') . ':');
         $mform->setType('crsdftcost', PARAM_TEXT);
         $mform->addRule('crsdftcost', null, 'maxlength', 10);
 
-        $mform->addElement('text', 'crsdftversion', get_string('course_version', 'elis_program') . ':');
+        $mform->addElement('text', 'crsdftversion', get_string('course_version', 'local_elisprogram') . ':');
         $mform->setType('crsdftversion', PARAM_TEXT);
         $mform->addRule('crsdftversion', null, 'maxlength', 100);
 

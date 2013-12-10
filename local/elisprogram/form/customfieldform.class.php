@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -76,19 +76,19 @@ class customfieldform extends cmform {
         //$form->addHelpButton('description', 'helptext');
 
         $choices = array(
-            'text' => get_string('field_datatype_text', 'elis_program'),
-            'char' => get_string('field_datatype_char', 'elis_program'),
-            'int' => get_string('field_datatype_int', 'elis_program'),
-            'num' => get_string('field_datatype_num', 'elis_program'),
-            'bool' => get_string('field_datatype_bool', 'elis_program'),
-            'datetime' => get_string('field_datatype_datetime', 'elis_program'),
+            'text' => get_string('field_datatype_text', 'local_elisprogram'),
+            'char' => get_string('field_datatype_char', 'local_elisprogram'),
+            'int' => get_string('field_datatype_int', 'local_elisprogram'),
+            'num' => get_string('field_datatype_num', 'local_elisprogram'),
+            'bool' => get_string('field_datatype_bool', 'local_elisprogram'),
+            'datetime' => get_string('field_datatype_datetime', 'local_elisprogram'),
             );
-        $form->addElement('select', 'datatype', get_string('field_datatype', 'elis_program'), $choices);
+        $form->addElement('select', 'datatype', get_string('field_datatype', 'local_elisprogram'), $choices);
 
         $form->addElement('advcheckbox', 'forceunique', get_string('profileforceunique', 'admin'));
         $form->setAdvanced('forceunique');
 
-        $form->addElement('advcheckbox', 'multivalued', get_string('field_multivalued', 'elis_program'), '', array('group' => false));
+        $form->addElement('advcheckbox', 'multivalued', get_string('field_multivalued', 'local_elisprogram'), '', array('group' => false));
         $form->setAdvanced('multivalued');
         $form->disabledIf('multivalued', 'datatype', 'eq', 'datetime');
 
@@ -347,7 +347,7 @@ class customfieldform extends cmform {
             foreach ($menu_options as $menu_option) {
                 // ELIS-8066: Disallow blank/empty menu options
                 if (empty($menu_option)) {
-                    $err['manual_field_options'] = get_string('no_blank_menuoption', 'elis_program');
+                    $err['manual_field_options'] = get_string('no_blank_menuoption', 'local_elisprogram');
                 }
                 $select_options[] = array('text' => $menu_option,
                                           'attr' => array('value' => $menu_option));
@@ -368,7 +368,7 @@ class customfieldform extends cmform {
             $level = $this->_customdata['level'];
             $contextlevel = context_elis_helper::get_level_from_name($level);
             if (!$contextlevel) {
-                print_error('invalid_context_level', 'elis_program');
+                print_error('invalid_context_level', 'local_elisprogram');
             }
 
             $editsql = '';

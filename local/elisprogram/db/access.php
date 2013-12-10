@@ -37,7 +37,7 @@ defined('MOODLE_INTERNAL') || die();
 //   $<componenttype>_<component_name>_contextlevels
 
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/accesslib.php');
+require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
 /*
 $contextlevels = array(
@@ -83,7 +83,7 @@ $contextlevels = array(
 
 $capabilities = array(
 
-    'elis/program:config' => array(
+    'local/elisprogram:config' => array(
 
         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_CONFIG | RISK_DATALOSS,
         'captype' => 'write',
@@ -96,7 +96,7 @@ $capabilities = array(
 
 // Master control switch, kind of (legacy):
 
-    'elis/program:manage' => array(
+    'local/elisprogram:manage' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -112,7 +112,7 @@ $capabilities = array(
 
 // Programs:
 
-    'elis/program:program_view' => array(
+    'local/elisprogram:program_view' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'read',
@@ -126,7 +126,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:program_create' => array(
+    'local/elisprogram:program_create' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -140,7 +140,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:program_edit' => array(
+    'local/elisprogram:program_edit' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -154,7 +154,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:program_delete' => array(
+    'local/elisprogram:program_delete' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -168,7 +168,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:program_enrol' => array(
+    'local/elisprogram:program_enrol' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -184,7 +184,7 @@ $capabilities = array(
 
 // Tracks:
 
-    'elis/program:track_view' => array(
+    'local/elisprogram:track_view' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -197,7 +197,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:track_create' => array(
+    'local/elisprogram:track_create' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -210,7 +210,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:track_edit' => array(
+    'local/elisprogram:track_edit' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -223,7 +223,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:track_delete' => array(
+    'local/elisprogram:track_delete' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -236,7 +236,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:track_enrol' => array(
+    'local/elisprogram:track_enrol' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -251,7 +251,7 @@ $capabilities = array(
 
 // User sets:
 
-    'elis/program:userset_view' => array(
+    'local/elisprogram:userset_view' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -264,7 +264,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:userset_create' => array(
+    'local/elisprogram:userset_create' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -277,7 +277,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:userset_edit' => array(
+    'local/elisprogram:userset_edit' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -290,7 +290,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:userset_delete' => array(
+    'local/elisprogram:userset_delete' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -303,7 +303,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:userset_enrol' => array(
+    'local/elisprogram:userset_enrol' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -318,7 +318,7 @@ $capabilities = array(
 
 // Courses:
 
-    'elis/program:course_view' => array(
+    'local/elisprogram:course_view' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'read',
@@ -332,7 +332,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:course_create' => array(
+    'local/elisprogram:course_create' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -346,7 +346,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:course_edit' => array(
+    'local/elisprogram:course_edit' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -360,7 +360,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:course_delete' => array(
+    'local/elisprogram:course_delete' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -376,7 +376,7 @@ $capabilities = array(
 
 // Classes:
 
-    'elis/program:class_view' => array(
+    'local/elisprogram:class_view' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'read',
@@ -390,7 +390,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:class_create' => array(
+    'local/elisprogram:class_create' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -404,7 +404,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:class_edit' => array(
+    'local/elisprogram:class_edit' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -418,7 +418,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:class_delete' => array(
+    'local/elisprogram:class_delete' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -432,7 +432,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:class_enrol' => array(
+    'local/elisprogram:class_enrol' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -446,7 +446,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:assign_class_instructor' => array(
+    'local/elisprogram:assign_class_instructor' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -461,7 +461,7 @@ $capabilities = array(
 
 // Users:
 
-    'elis/program:user_view' => array(
+    'local/elisprogram:user_view' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'read',
@@ -472,7 +472,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:user_create' => array(
+    'local/elisprogram:user_create' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -483,7 +483,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:user_edit' => array(
+    'local/elisprogram:user_edit' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -494,7 +494,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:user_delete' => array(
+    'local/elisprogram:user_delete' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -507,7 +507,7 @@ $capabilities = array(
 
 // Reports:
 
-    'elis/program:viewownreports' => array(
+    'local/elisprogram:viewownreports' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -521,7 +521,7 @@ $capabilities = array(
 
 // Files
 
-    'elis/program:managefiles' => array(
+    'local/elisprogram:managefiles' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_XSS | RISK_DATALOSS,
         'captype' => 'write',
@@ -537,7 +537,7 @@ $capabilities = array(
 
 // Notifications:
 
-    'elis/program:notify_trackenrol' => array(
+    'local/elisprogram:notify_trackenrol' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -551,7 +551,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_classenrol' => array(
+    'local/elisprogram:notify_classenrol' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -565,7 +565,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_classcomplete' => array(
+    'local/elisprogram:notify_classcomplete' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -579,7 +579,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_classnotstart' => array(
+    'local/elisprogram:notify_classnotstart' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -593,7 +593,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_classnotcomplete' => array(
+    'local/elisprogram:notify_classnotcomplete' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -607,7 +607,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_courserecurrence' => array(
+    'local/elisprogram:notify_courserecurrence' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -621,7 +621,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_programrecurrence' => array(
+    'local/elisprogram:notify_programrecurrence' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -635,7 +635,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_programcomplete' => array(
+    'local/elisprogram:notify_programcomplete' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -649,7 +649,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_programnotcomplete' => array(
+    'local/elisprogram:notify_programnotcomplete' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -663,7 +663,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_programdue' => array(
+    'local/elisprogram:notify_programdue' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -677,7 +677,7 @@ $capabilities = array(
         )
      ),
 
-    'elis/program:notify_coursedue' => array(
+    'local/elisprogram:notify_coursedue' => array(
 
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
@@ -693,7 +693,7 @@ $capabilities = array(
 
 // Enrolment via clusters:
 
-     'elis/program:program_enrol_userset_user' => array(
+     'local/elisprogram:program_enrol_userset_user' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -704,7 +704,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:track_enrol_userset_user' => array(
+    'local/elisprogram:track_enrol_userset_user' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -714,7 +714,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:userset_enrol_userset_user' => array(
+    'local/elisprogram:userset_enrol_userset_user' => array(
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -724,7 +724,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:class_enrol_userset_user' => array(
+    'local/elisprogram:class_enrol_userset_user' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -735,7 +735,7 @@ $capabilities = array(
         )
     ),
 
-    'elis/program:assign_userset_user_class_instructor' => array(
+    'local/elisprogram:assign_userset_user_class_instructor' => array(
 
         'riskbitmask' => RISK_PERSONAL | RISK_DATALOSS,
         'captype' => 'write',
@@ -747,7 +747,7 @@ $capabilities = array(
 
 // Other:
 
-    'elis/program:viewcoursecatalog' => array(
+    'local/elisprogram:viewcoursecatalog' => array(
 
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -758,7 +758,7 @@ $capabilities = array(
         )
      ),
 
-     'elis/program:overrideclasslimit' => array(
+     'local/elisprogram:overrideclasslimit' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:overrideclasslimit',
@@ -767,13 +767,13 @@ $capabilities = array(
         )
      ),
 
-     'elis/program:userset_role_assign_userset_users' => array(
+     'local/elisprogram:userset_role_assign_userset_users' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:cluster:role_assign_cluster_users',
      ),
 
-     'elis/program:associate' => array(
+     'local/elisprogram:associate' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'clonepermissionsfrom' => 'block/curr_admin:associate',

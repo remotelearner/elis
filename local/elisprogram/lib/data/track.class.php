@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('lib.php');
 require_once elispm::lib('data/classmoodlecourse.class.php');
@@ -181,7 +180,7 @@ class track extends data_object_with_custom_fields {
             // Create class
             $classparams['courseid'] = $curcourec->courseid;
             if (!($classid = $classojb->auto_create_class($classparams))) {
-                cm_error(get_string('error_creating_class', 'elis_program', $curcourec->name));
+                cm_error(get_string('error_creating_class', 'local_elisprogram', $curcourec->name));
                 continue;
             }
 
@@ -205,8 +204,8 @@ class track extends data_object_with_custom_fields {
             $trackclassobj->save();
 
             // Create and assign class to default system track
-            // TODO: for now, use elis::$config->elis_program in place of $CURMAN->config
-            if (!empty(elis::$config->elis_program->userdefinedtrack)) {
+            // TODO: for now, use elis::$config->local_elisprogram in place of $CURMAN->config
+            if (!empty(elis::$config->local_elisprogram->userdefinedtrack)) {
                 $trkid = $this->create_default_track();
 
                 $trackclassobj = new trackassignment(array(
@@ -669,12 +668,12 @@ class trackassignment extends elis_data_object {
         if ((empty($this->trackid) or
              empty($this->classid) or
              empty($this->courseid)) and
-            empty(elis::$config->elis_program->userdefinedtrack)) {
+            empty(elis::$config->local_elisprogram->userdefinedtrack)) {
             cm_error('trackid and classid have not been properly initialized');
             return false;
         } else if ((empty($this->courseid) or
                    empty($this->classid)) and
-                  elis::$config->elis_program->userdefinedtrack) {
+                  elis::$config->local_elisprogram->userdefinedtrack) {
             cm_error('courseid has not been properly initialized');
         }
 
@@ -700,7 +699,7 @@ class trackassignment extends elis_data_object {
             foreach ($users as $user) {
                 // ELIS-3460: Must check pre-requisites ...
                 if (!$curcrsobj->prerequisites_satisfied($user->userid)) {
-                    //error_log("/elis/program/lib/data/track.class.php:trackassignment::save(); pre-requisites NOT satisfied for course: {$this->courseid}, curriculum: {$this->track->curid}");
+                    //error_log("/local/elisprogram/lib/data/track.class.php:trackassignment::save(); pre-requisites NOT satisfied for course: {$this->courseid}, curriculum: {$this->track->curid}");
                     continue;
                 }
                 $now = time();
@@ -727,7 +726,7 @@ class trackassignment extends elis_data_object {
                 } catch (Exception $e) {
                     $param = array('message' => $e->getMessage());
                     echo cm_error(get_string('record_not_created_reason',
-                                             'elis_program', $param));
+                                             'local_elisprogram', $param));
                 }
             }
         }
@@ -836,15 +835,15 @@ class trackassignment extends elis_data_object {
                 }
             }
 
-            print_string('n_users_enrolled', 'elis_program', $count);
+            print_string('n_users_enrolled', 'local_elisprogram', $count);
             if ($waitlisted) {
-                print_string('n_users_waitlisted', 'elis_program', $waitlisted);
+                print_string('n_users_waitlisted', 'local_elisprogram', $waitlisted);
             }
             if ($prereq) {
-                print_string('n_users_unsatisfied_prereq', 'elis_program', $prereq);
+                print_string('n_users_unsatisfied_prereq', 'local_elisprogram', $prereq);
             }
         } else {
-            print_string('all_users_already_enrolled', 'elis_program');
+            print_string('all_users_already_enrolled', 'local_elisprogram');
         }
         unset($users);
     }
@@ -921,14 +920,14 @@ function track_get_listing($sort='name', $dir='ASC', $startrec=0, $perpage=0, $n
 
     if (!empty($userid)) {
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:track_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
 
         $clusters = cluster_get_user_clusters($userid);
         $allowed_clusters = $context->get_allowed_instances($clusters, 'cluster', 'clusterid');
 
-        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'elis/program:track_enrol', $USER->id);
+        $curriculum_context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:track_enrol', $USER->id);
         $curriculum_filter_object = $curriculum_context->get_filter('id', 'track');
         $curriculum_filter = $curriculum_filter_object->get_sql(false, 'trk');
 
@@ -1084,7 +1083,7 @@ function track_assignment_get_listing($trackid = 0, $sort='cls.idnumber', $dir='
 
     //calculate an appropriate condition if we need to filter out inactive users
     $inactive_condition = '';
-    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+    if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
         $inactive_condition = ' AND u.inactive = 0';
     }
 

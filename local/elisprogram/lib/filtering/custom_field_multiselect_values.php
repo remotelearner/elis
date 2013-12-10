@@ -200,7 +200,7 @@ class generalized_filter_custom_field_multiselect_values extends generalized_fil
      * @return  string|boolean                            returns the capability we need to check, or false
      *                                                    on failure
      */
-    public static function field_capability($owners, $default_view_capability = 'elis/program:course_view') {
+    public static function field_capability($owners, $default_view_capability = 'local/elisprogram:course_view') {
 
         if (isset($owners['manual'])) {
             //the manual owner contains the permissions info
@@ -235,7 +235,7 @@ class generalized_filter_custom_field_multiselect_values extends generalized_fil
         global $CFG, $USER;
         $owners = $field->owners;
 
-        require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+        require_once($CFG->dirroot .'/local/elisprogram/lib/contexts.php');
 
         if (!in_array($field->shortname, $this->_field_exceptions) &&
             ($view_capability = self::field_capability($owners))) {

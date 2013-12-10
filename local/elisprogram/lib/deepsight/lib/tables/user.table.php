@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -43,19 +43,19 @@ class deepsight_datatable_user extends deepsight_datatable_standard {
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langidnumber = get_string('student_idnumber', 'elis_program');
+        $langidnumber = get_string('student_idnumber', 'local_elisprogram');
         $langusername = get_string('username', 'moodle');
         $langname = get_string('name', 'moodle');
         $langfirstname = get_string('firstname', 'moodle');
-        $langlastname = get_string('lastname', 'elis_program');
+        $langlastname = get_string('lastname', 'local_elisprogram');
         $langcity = get_string('city', 'moodle');
-        $langpostalcode = get_string('postalcode', 'elis_program');
+        $langpostalcode = get_string('postalcode', 'local_elisprogram');
         $langstate = get_string('state', 'moodle');
         $langcountry = get_string('country', 'moodle');
-        $langemail = get_string('student_email', 'elis_program');
+        $langemail = get_string('student_email', 'local_elisprogram');
         $langaddress = get_string('address', 'moodle');
         $langphone = get_string('phone', 'moodle');
-        $langtimecreated = get_string('timecreated', 'elis_program');
+        $langtimecreated = get_string('timecreated', 'local_elisprogram');
 
         $filters = array(
             new deepsight_filter_textsearch($this->DB, 'idnumber', $langidnumber, array('element.idnumber' => $langidnumber)),
@@ -99,9 +99,9 @@ class deepsight_datatable_user extends deepsight_datatable_standard {
      */
     protected function get_fixed_columns() {
         return array(
-            'element.idnumber' => get_string('student_idnumber', 'elis_program'),
+            'element.idnumber' => get_string('student_idnumber', 'local_elisprogram'),
             'element.firstname' => get_string('firstname', 'moodle'),
-            'element.lastname' => get_string('lastname', 'elis_program')
+            'element.lastname' => get_string('lastname', 'local_elisprogram')
         );
     }
 
@@ -170,7 +170,7 @@ class deepsight_datatable_user extends deepsight_datatable_standard {
     protected function get_filter_sql(array $filters) {
         list($filtersql, $filterparams) = parent::get_filter_sql($filters);
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $activefilter = 'element.inactive = 0 ';
             $filtersql = (!empty($filtersql))
                 ? $filtersql.' AND '.$activefilter

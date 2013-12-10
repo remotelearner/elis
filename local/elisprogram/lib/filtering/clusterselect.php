@@ -33,8 +33,8 @@ require_once($CFG->dirroot .'/elis/core/lib/filtering/equalityselect.php');
 require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
 
 // required for cluster_get_listings()
-require_once($CFG->dirroot .'/elis/program/lib/data/userset.class.php');
-require_once($CFG->dirroot .'/elis/program/lib/data/clusterassignment.class.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
+require_once($CFG->dirroot .'/local/elisprogram/lib/data/clusterassignment.class.php');
 
 /**
  * Generic filter based on a list of values.

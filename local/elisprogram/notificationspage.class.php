@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -38,19 +37,19 @@ class notifications extends pm_page {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:config', $context);
+        return has_capability('local/elisprogram:config', $context);
     }
 
     function build_navbar_default($who = null) { // was build_navigation_default
         global $CFG;
         parent::build_navbar_default($who);
         $page = $this->get_new_page(array('action' => 'default'), true);
-        //$this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
-        $this->navbar->add(get_string('notifications', 'elis_program'), $page->url);
+        //$this->navbar->add(get_string('learningplan', 'local_elisprogram'), "{$CFG->wwwroot}/local/elisprogram/");
+        $this->navbar->add(get_string('notifications', 'local_elisprogram'), $page->url);
     }
 
     function get_title_default() {
-        return get_string('notifications', 'elis_program');
+        return get_string('notifications', 'local_elisprogram');
     }
 
     function do_default() {
@@ -77,7 +76,7 @@ class notifications extends pm_page {
 
         $configform = new $this->form_class($target->url);
 
-        $configform->set_data(elis::$config->elis_program);
+        $configform->set_data(elis::$config->local_elisprogram);
 
         if ($configdata = $configform->get_data()) {
         /// Notifications section:
@@ -86,7 +85,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_classenrol_role', 0);
             configpage::config_set_value($configdata, 'notify_classenrol_supervisor', 0);
             if (empty($configdata->notify_classenrol_message)) {
-                $configdata->notify_classenrol_message = get_string('notifyclassenrolmessagedef', 'elis_program');
+                $configdata->notify_classenrol_message = get_string('notifyclassenrolmessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_classenrol_message', $configdata->notify_classenrol_message);
 
@@ -94,7 +93,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_classcompleted_role', 0);
             configpage::config_set_value($configdata, 'notify_classcompleted_supervisor', 0);
             if (empty($configdata->notify_classcompleted_message)) {
-                $configdata->notify_classcompleted_message = get_string('notifyclasscompletedmessagedef', 'elis_program');
+                $configdata->notify_classcompleted_message = get_string('notifyclasscompletedmessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_classcompleted_message', $configdata->notify_classcompleted_message);
 
@@ -102,7 +101,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_classnotstarted_role', 0);
             configpage::config_set_value($configdata, 'notify_classnotstarted_supervisor', 0);
             if (empty($configdata->notify_classnotstarted_message)) {
-                $configdata->notify_classnotstarted_message = get_string('notifyclassnotstartedmessagedef', 'elis_program');
+                $configdata->notify_classnotstarted_message = get_string('notifyclassnotstartedmessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_classnotstarted_message', $configdata->notify_classnotstarted_message);
             configpage::config_set_value($configdata, 'notify_classnotstarted_days', 0);
@@ -111,7 +110,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_classnotcompleted_role', 0);
             configpage::config_set_value($configdata, 'notify_classnotcompleted_supervisor', 0);
             if (empty($configdata->notify_classnotcompleted_message)) {
-                $configdata->notify_classnotcompleted_message = get_string('notifyclassnotcompletedmessagedef', 'elis_program');
+                $configdata->notify_classnotcompleted_message = get_string('notifyclassnotcompletedmessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_classnotcompleted_message', $configdata->notify_classnotcompleted_message);
             configpage::config_set_value($configdata, 'notify_classnotcompleted_days', 0);
@@ -120,7 +119,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_curriculumcompleted_role', 0);
             configpage::config_set_value($configdata, 'notify_curriculumcompleted_supervisor', 0);
             if (empty($configdata->notify_curriculumcompleted_message)) {
-                $configdata->notify_curriculumcompleted_message = get_string('notifycurriculumcompletedmessagedef', 'elis_program');
+                $configdata->notify_curriculumcompleted_message = get_string('notifycurriculumcompletedmessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_curriculumcompleted_message', $configdata->notify_curriculumcompleted_message);
 
@@ -129,7 +128,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_curriculumnotcompleted_role', 0);
             configpage::config_set_value($configdata, 'notify_curriculumnotcompleted_supervisor', 0);
             if (empty($configdata->notify_curriculumnotcompleted_message)) {
-                $configdata->notify_curriculumnotcompleted_message = get_string('notifycurriculumnotcompletedmessagedef', 'elis_program');
+                $configdata->notify_curriculumnotcompleted_message = get_string('notifycurriculumnotcompletedmessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_curriculumnotcompleted_message', $configdata->notify_curriculumnotcompleted_message);
             configpage::config_set_value($configdata, 'notify_curriculumnotcompleted_days', 0);
@@ -138,7 +137,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_trackenrol_role', 0);
             configpage::config_set_value($configdata, 'notify_trackenrol_supervisor', 0);
             if (empty($configdata->notify_trackenrol_message)) {
-                $configdata->notify_trackenrol_message = get_string('notifytrackenrolmessagedef', 'elis_program');
+                $configdata->notify_trackenrol_message = get_string('notifytrackenrolmessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_trackenrol_message', $configdata->notify_trackenrol_message);
 
@@ -147,7 +146,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_courserecurrence_role', 0);
             configpage::config_set_value($configdata, 'notify_courserecurrence_supervisor', 0);
             if (empty($configdata->notify_courserecurrence_message)) {
-                $configdata->notify_courserecurrence_message = get_string('notifycourserecurrencemessagedef', 'elis_program');
+                $configdata->notify_courserecurrence_message = get_string('notifycourserecurrencemessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_courserecurrence_message', $configdata->notify_courserecurrence_message);
             configpage::config_set_value($configdata, 'notify_courserecurrence_days', 0);
@@ -156,7 +155,7 @@ class notifications extends pm_page {
             configpage::config_set_value($configdata, 'notify_curriculumrecurrence_role', 0);
             configpage::config_set_value($configdata, 'notify_curriculumrecurrence_supervisor', 0);
             if (empty($configdata->notify_curriculumrecurrence_message)) {
-                $configdata->notify_curriculumrecurrence_message = get_string('notifycurriculumrecurrencemessagedef', 'elis_program');
+                $configdata->notify_curriculumrecurrence_message = get_string('notifycurriculumrecurrencemessagedef', 'local_elisprogram');
             }
             pm_set_config('notify_curriculumrecurrence_message', $configdata->notify_curriculumrecurrence_message);
             configpage::config_set_value($configdata, 'notify_curriculumrecurrence_days', 0);

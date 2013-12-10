@@ -15,14 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-YUI.add('moodle-elis_program-clustertree', function(Y) {
+YUI.add('moodle-local_elisprogram-clustertree', function(Y) {
 
     /**
      * The menuitem module
@@ -41,7 +41,7 @@ YUI.add('moodle-elis_program-clustertree', function(Y) {
     }
 
     /**
-     * @class M.elis_program.clustertree
+     * @class M.local_elisprogram.clustertree
      */
     Y.extend(MODULEBASE, Y.Base, {
 
@@ -54,7 +54,7 @@ YUI.add('moodle-elis_program-clustertree', function(Y) {
         initializer : function(args) {
             document.wwwroot = args.wwwroot;
             if (!args.script || args.script == '') {
-                args.script = '/elis/program/lib/filtering/helpers/clustertree_load_menu.php';
+                args.script = '/local/elisprogram/lib/filtering/helpers/clustertree_load_menu.php';
             }
             document.clustertreescript = args.script;
             document.clustertreescope = this;
@@ -617,8 +617,8 @@ YUI.add('moodle-elis_program-clustertree', function(Y) {
     }
     );
 
-    // Ensure that M.elis_program exists and that modulebase is initialised correctly
-    M.elis_program = M.elis_program || {};
+    // Ensure that M.local_elisprogram exists and that modulebase is initialised correctly
+    M.local_elisprogram = M.local_elisprogram || {};
 
     /**
      * Entry point for clustertree module
@@ -632,7 +632,7 @@ YUI.add('moodle-elis_program-clustertree', function(Y) {
      * @param string script the backend script to make AJAX calls too
      * @return object the clustertree object
      */
-    M.elis_program.init_clustertree = function(wwwroot, instanceid, uniqueid, treeobj, exmode, reportid, dropdownbuttontext, treebuttontext, script) {
+    M.local_elisprogram.init_clustertree = function(wwwroot, instanceid, uniqueid, treeobj, exmode, reportid, dropdownbuttontext, treebuttontext, script) {
         var args = { wwwroot: wwwroot, instanceid: instanceid, uniqueid: uniqueid, tree: treeobj, executionmode: exmode, reportid: reportid,
                dropdownbuttontext: dropdownbuttontext, treebuttontext: treebuttontext, script: script};
         return new MODULEBASE(args);

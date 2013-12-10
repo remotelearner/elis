@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -248,7 +247,7 @@ function cm_choose_from_menu($options, $name, $selected = '', $nothing = 'choose
                              $tabindex = 0, $id = '') {
     if ($nothing == 'choose') {
         //$nothing = get_string('choose') .'...';
-        $nothing = get_string('choose', 'elis_program');
+        $nothing = get_string('choose', 'local_elisprogram');
     }
 
     $attributes = ($script) ? 'onchange="'. $script .'"' : '';
@@ -324,13 +323,13 @@ function cm_determine_access($uid = false) {
 
     //require_once($CFG->dirroot . '/curriculum/lib/cluster.class.php');
 
-    if (has_capability('elis/program:manage', $context)) {
+    if (has_capability('local/elisprogram:manage', $context)) {
         return 'admin';
-    //} else if (has_capability('elis/program:viewreports', $context)) {
+    //} else if (has_capability('local/elisprogram:viewreports', $context)) {
     //    return 'reviewer';
-    //} else if (has_capability('elis/program:viewgroupreports', $context)) {
+    //} else if (has_capability('local/elisprogram:viewgroupreports', $context)) {
     //    return 'groupreviewer';
-    } else if (has_capability('elis/program:viewownreports', $context)){
+    } else if (has_capability('local/elisprogram:viewownreports', $context)){
         return 'student';
     }
 }

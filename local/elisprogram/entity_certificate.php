@@ -10,16 +10,15 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
- * Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
@@ -28,7 +27,7 @@
  * Generates a PDF certificate corresponding to a particular curriculum assignment.
  */
 require_once(dirname(__FILE__).'/../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('deprecatedlib.php')); // cm_get_crlmuserid()
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/course.class.php'));
@@ -49,7 +48,7 @@ $student = new user($cmuserid);
 $student->load();
 
 if (empty($student->id)) {
-    return get_string('studentnotfound', 'elis_program');
+    return get_string('studentnotfound', 'local_elisprogram');
 }
 
 // Retrieve the certificate settings record
@@ -60,7 +59,7 @@ $certsettingrec->load();
 if (empty($certsettingrec->id) and !empty($certsettingrec->disable)) {
     // Passing hard coded error code to disallow administrators from changing them to
     // custom strings
-    echo get_string('errorfindingcertsetting', 'elis_program', 'Error 11');
+    echo get_string('errorfindingcertsetting', 'local_elisprogram', 'Error 11');
 }
 
 // Retrieve the certificate issued record
@@ -71,7 +70,7 @@ $certissuedrec->load();
 if (empty($certissuedrec->id) and !empty($certissuedrec->disable)) {
     // Passing hard coded error code to disallow administrators from changing them to
     // custom strings
-    echo get_string('errorfindingcertissued', 'elis_program', 'Error 22');
+    echo get_string('errorfindingcertissued', 'local_elisprogram', 'Error 22');
 }
 
 // Set the border, seal and template filenames and other info
@@ -87,5 +86,5 @@ $params = certificate_get_entity_metadata($certsettingrec, $certissuedrec, $stud
 if (!empty($params)) {
     certificate_output_entity_completion($params, $borderimage, $sealimage, $template);
 } else {
-    echo get_string('errorfindingcertsetting', 'elis_program', 'Error 33');
+    echo get_string('errorfindingcertsetting', 'local_elisprogram', 'Error 33');
 }

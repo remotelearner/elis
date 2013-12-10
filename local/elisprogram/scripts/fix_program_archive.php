@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,4 +33,4 @@ define('CLI_SCRIPT', true);
 require_once(dirname(__FILE__) .'/../lib/setup.php');
 require_once(elispm::file('plugins/archive/db/install.php'));
 
-xmldb_pmplugins_archive_install();
+xmldb_elisprogram_archive_install();

@@ -1,9 +1,7 @@
 <?php
 /**
- * Common page class for role assignments
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2010 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -38,7 +35,7 @@ require_once elispm::lib('page.class.php');
 require_once elispm::file('form/resultsform.class.php');
 
 abstract class enginepage extends pm_page {
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     public $data_class = 'resultsengine';
     public $child_data_class = 'resultsengineaction';
@@ -65,7 +62,7 @@ abstract class enginepage extends pm_page {
      * @return bool True if the user has permission to use the edit action
      */
     public function can_do_edit() {
-        return has_capability('elis/program:'.$this->type.'_edit', $this->get_context());
+        return has_capability('local/elisprogram:'.$this->type.'_edit', $this->get_context());
     }
 
     /**
@@ -92,7 +89,7 @@ abstract class enginepage extends pm_page {
      * @return bool True if the user has permission to use the default action
      */
     function can_do_default() {
-        return has_capability('elis/program:'.$this->type.'_view', $this->get_context());
+        return has_capability('local/elisprogram:'.$this->type.'_view', $this->get_context());
     }
 
     /**
@@ -585,7 +582,7 @@ class course_enginepage extends enginepage {
      * @return bool True if the user has permission to use the default action
      */
     function can_do_default() {
-        return has_capability('elis/program:course_view', $this->get_context());
+        return has_capability('local/elisprogram:course_view', $this->get_context());
     }
 
     /**
@@ -594,7 +591,7 @@ class course_enginepage extends enginepage {
      * @return bool True if the user has permission to use the edit actions
      */
     public function can_do_edit() {
-        return has_capability('elis/program:course_edit', $this->get_context());
+        return has_capability('local/elisprogram:course_edit', $this->get_context());
     }
 }
 

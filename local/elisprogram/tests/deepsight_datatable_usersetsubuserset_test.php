@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,7 +26,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('data/userset.class.php'));
@@ -119,7 +119,7 @@ class deepsight_datatable_usersetsubuserset_available_mock extends deepsight_dat
 
 /**
  * Tests usersetsubuserset datatable functions.
- * @group elis_program
+ * @group local_elisprogram
  * @group deepsight
  */
 class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable_searchresults_test {
@@ -197,7 +197,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
                                 $this->get_search_result_row($this->resultscsv, 6),
                         ),
                 ),
-                // 4: Test table shows only subsets user has elis/program:userset_view permission on.
+                // 4: Test table shows only subsets user has local/elisprogram:userset_view permission on.
                 array(
                         array('userset' => array(2, 3)),
                         1,
@@ -212,7 +212,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
      * Performs the following tests for the assigned list
      *   - Shows nothing when no usersets with parent exist.
      *   - Shows correct subsets.
-     *   - Shows only subsets user has elis/program:userset_view permission on.
+     *   - Shows only subsets user has local/elisprogram:userset_view permission on.
      *
      * @dataProvider dataprovider_assigned_shows_correct_subsets
      * @param array $permissions An array of information specifying the contexts to assign the associate permission on.
@@ -228,7 +228,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
         $USER = $this->setup_permissions_test();
 
         // Set up permissions.
-        $perm = 'elis/program:userset_view';
+        $perm = 'local/elisprogram:userset_view';
         foreach ($permissions as $contexttype => $ids) {
             if ($contexttype === 'system') {
                 $this->give_permission_for_context($USER->id, $perm, get_context_instance(CONTEXT_SYSTEM));
@@ -298,7 +298,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
                             $this->get_search_result_row($this->resultscsv, 6),
                         ),
                 ),
-                // 3: Only shows usersets which the current user has elis/program:userset_edit permissions on.
+                // 3: Only shows usersets which the current user has local/elisprogram:userset_edit permissions on.
                 array(
                         array('userset' => array(2, 6)),
                         3,
@@ -317,7 +317,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
      *   - DOES show grandchild and beyond subsets.
      *   - Doesn't show ancestor usersets.
      *   - Doesn't show current userset.
-     *   - Only shows usersets which the current user has elis/program:userset_edit permissions on.
+     *   - Only shows usersets which the current user has local/elisprogram:userset_edit permissions on.
      *
      * @dataProvider dataprovider_available_shows_correct_usersets
      * @param array $permissions An array of information specifying the contexts to assign the associate permission on.
@@ -338,7 +338,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
         }
 
         // Set up permissions.
-        $perm = 'elis/program:userset_edit';
+        $perm = 'local/elisprogram:userset_edit';
         foreach ($permissions as $contexttype => $ids) {
             if ($contexttype === 'system') {
                 $this->give_permission_for_context($USER->id, $perm, get_context_instance(CONTEXT_SYSTEM));

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -59,7 +58,7 @@ abstract class managementpage extends pm_page {
 
     public function can_do_default() {
         $context = $this->context;
-        return has_capability('elis/program:manage', $context);
+        return has_capability('local/elisprogram:manage', $context);
     }
 
     /**
@@ -98,7 +97,7 @@ abstract class managementpage extends pm_page {
             $returnurl = $CFG->wwwroot.$returnurl;
         }
 
-        redirect($returnurl, get_string('notice_'.get_class($obj).'_deleted', 'elis_program', $obj->to_object()));
+        redirect($returnurl, get_string('notice_'.get_class($obj).'_deleted', 'local_elisprogram', $obj->to_object()));
     }
 
     /**
@@ -125,7 +124,7 @@ abstract class managementpage extends pm_page {
         global $OUTPUT;
 
         $obj->load(); // force load, so that the confirmation notice has something to display
-        $message = get_string('confirm_delete_'.get_class($obj), 'elis_program', $obj->to_object());
+        $message = get_string('confirm_delete_'.get_class($obj), 'local_elisprogram', $obj->to_object());
 
         $target_page = $this->get_new_page(array('action' => 'view', 'id' => $obj->id, 'sesskey' => sesskey()), true);
         $no_url = $target_page->url;
@@ -154,7 +153,7 @@ abstract class managementpage extends pm_page {
             $match[] = "{$alpha}___";
         }
         $matchstring = implode(", ", $match);
-        echo get_string('no_items_matching', 'elis_program', $matchstring);
+        echo get_string('no_items_matching', 'local_elisprogram', $matchstring);
     }
 
 
@@ -227,7 +226,7 @@ abstract class managementpage extends pm_page {
         $target_page = $this->get_new_page(array('action' => 'add'), true);
         $url = $target_page->url;
 
-        echo html_writer::tag('div', $OUTPUT->single_button($url, get_string("add_{$this->data_class}",'elis_program'), 'get'), array('style' => 'text-align: center'));
+        echo html_writer::tag('div', $OUTPUT->single_button($url, get_string("add_{$this->data_class}",'local_elisprogram'), 'get'), array('style' => 'text-align: center'));
     }
 
     /**
@@ -248,7 +247,7 @@ abstract class managementpage extends pm_page {
         $target_page = $this->get_new_page(array('action' => 'delete', 'id' => $id), true);
         $url = $target_page->url;
 
-        echo html_writer::tag('div', $OUTPUT->single_button($url, get_string('delete_'.get_class($obj),'elis_program'), 'get'), array('style' => 'text-align: center'));
+        echo html_writer::tag('div', $OUTPUT->single_button($url, get_string('delete_'.get_class($obj),'local_elisprogram'), 'get'), array('style' => 'text-align: center'));
     }
 
     /**
@@ -277,7 +276,7 @@ abstract class managementpage extends pm_page {
     public function print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=false, $searchflag=false) {
         $sparam = new stdClass;
         $sparam->num = $numitems;
-        echo html_writer::tag('div', get_string("num_{$this->data_class}_found", 'elis_program', $sparam) /*, array('style' => 'float: right;') */);
+        echo html_writer::tag('div', get_string("num_{$this->data_class}_found", 'local_elisprogram', $sparam) /*, array('style' => 'float: right;') */);
 
         if($alphaflag) {
             $this->print_alpha();
@@ -494,7 +493,7 @@ abstract class managementpage extends pm_page {
                     $iconattrs = array(
                         'title' => $tab['name'],
                         'alt' => $tab['name'],
-                        'src' => $OUTPUT->pix_url($tab['image'], 'elis_program')
+                        'src' => $OUTPUT->pix_url($tab['image'], 'local_elisprogram')
                     );
                     $icon = html_writer::empty_tag('img', $iconattrs);
                     $buttons[] = html_writer::link($target->url, $icon, array('class' => 'managementicon'));
@@ -522,7 +521,7 @@ abstract class managementpage extends pm_page {
         $this->build_navbar_default($who);
 
         $url = $this->get_new_page(array('action' => 'add'), true)->url;
-        $who->navbar->add(get_string("add_{$this->data_class}", 'elis_program'), $url);
+        $who->navbar->add(get_string("add_{$this->data_class}", 'local_elisprogram'), $url);
     }
 
     function build_navbar_edit($who = null) {
@@ -553,7 +552,7 @@ abstract class managementpage extends pm_page {
         $params = array_merge(array('action' => 'view', 'id' => $id),
                               $extra_params);
         $url = $this->get_new_page($params, true)->url; // TBD: who->
-        $who->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null, new pix_icon('user', '', 'elis_program'));
+        $who->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null, new pix_icon('user', '', 'local_elisprogram'));
     }
 
     public function build_navbar_default($who = null, $addparent = true, $params = array()) {
@@ -564,11 +563,11 @@ abstract class managementpage extends pm_page {
             parent::build_navbar_default($who, $addparent = true, $params = array());
         }
         $url = $this->get_new_page($params, true)->url; // TBD: who->
-        $who->navbar->add(get_string("manage_{$this->data_class}", 'elis_program'), $url);
+        $who->navbar->add(get_string("manage_{$this->data_class}", 'local_elisprogram'), $url);
     }
 
     public function get_page_title_default() {
-        return get_string("manage_{$this->data_class}", 'elis_program');
+        return get_string("manage_{$this->data_class}", 'local_elisprogram');
     }
 
     public function get_page_title_view() {
@@ -643,7 +642,7 @@ class management_page_table extends display_table {
         }
 
         $this->page = $page;
-        $this->display_date_item = new display_date_item(get_string('pm_date_format', 'elis_program'));
+        $this->display_date_item = new display_date_item(get_string('pm_date_format', 'local_elisprogram'));
 
         $target = $page->get_new_page($params, true);
         parent::__construct($items, $columns + array('_buttons' => array('sortable' => false, 'wrapped' => false, 'align' => 'center')),
@@ -676,7 +675,7 @@ class management_page_table extends display_table {
         if ($item->starttimehour >= 25 || $item->starttimeminute >= 61) {
             return '-';
         } else {
-            if(empty(elis::$config->elis_program->time_format_12h)) {
+            if(empty(elis::$config->local_elisprogram->time_format_12h)) {
                 return sprintf('%02d:%02d', $item->starttimehour, $item->starttimeminute);
             } else {
                 if($item->starttimehour / 12 > 1) {
@@ -696,7 +695,7 @@ class management_page_table extends display_table {
         if ($item->endtimehour >= 25 || $item->endtimeminute >= 61) {
             return '-';
         } else {
-            if(empty(elis::$config->elis_program->time_format_12h)) {
+            if(empty(elis::$config->local_elisprogram->time_format_12h)) {
                 return sprintf('%02d:%02d', $item->endtimehour, $item->endtimeminute);
             } else {
                 if($item->endtimehour / 12 > 1) {

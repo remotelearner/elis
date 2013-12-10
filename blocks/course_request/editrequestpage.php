@@ -26,9 +26,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot .'/elis/program/accesslib.php');
-// require_once($CFG->dirroot .'/elis/program/lib/setup.php');
-require_once($CFG->dirroot .'/elis/program/lib/page.class.php');
+require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+// require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/page.class.php');
 require_once('request_form.php');
 
 class EditRequestPage extends pm_page {
@@ -84,7 +84,7 @@ class EditRequestPage extends pm_page {
             $redir = true;
         } else if ($submitted_data = data_submitted()) {
             // adding a field for a context level
-            require_once($CFG->dirroot .'/elis/program/lib/contexts.php');
+            require_once($CFG->dirroot.'/local/elisprogram/lib/contexts.php');
 
             // the context levels we are checking for new fields at
             $contextlevels = array(CONTEXT_ELIS_COURSE, CONTEXT_ELIS_CLASS);

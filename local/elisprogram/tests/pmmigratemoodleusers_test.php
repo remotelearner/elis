@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('lib.php'));
@@ -35,7 +35,7 @@ require_once(elispm::lib('data/usermoodle.class.php'));
 /**
  * Class for testing that the pm_migrate_moodle_users function correctly auto-assigns idnumbers and delegates to synchronization
  * functionality
- * @group elis_program
+ * @group local_elisprogram
  */
 class pmmigratemoodleusers_testcase extends elis_database_test {
 
@@ -79,7 +79,7 @@ class pmmigratemoodleusers_testcase extends elis_database_test {
         global $DB;
 
         // Make sure the config is not enabling the functionality.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         foreach ($users as $user) {
@@ -110,7 +110,7 @@ class pmmigratemoodleusers_testcase extends elis_database_test {
         global $DB;
 
         // Make sure the config is not enabling the functionality.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         foreach ($users as $i => $user) {
@@ -140,7 +140,7 @@ class pmmigratemoodleusers_testcase extends elis_database_test {
         global $DB;
 
         // Enable functionality via the settong.
-        set_config('auto_assign_user_idnumber', 1, 'elis_program');
+        set_config('auto_assign_user_idnumber', 1, 'local_elisprogram');
         elis::$config = new elis_config();
 
         foreach ($users as $user) {
@@ -171,7 +171,7 @@ class pmmigratemoodleusers_testcase extends elis_database_test {
         global $DB;
 
         // Enable functionality via the settong.
-        set_config('auto_assign_user_idnumber', 1, 'elis_program');
+        set_config('auto_assign_user_idnumber', 1, 'local_elisprogram');
         elis::$config = new elis_config();
 
         foreach ($users as $i => $user) {
@@ -201,7 +201,7 @@ class pmmigratemoodleusers_testcase extends elis_database_test {
         global $DB;
 
         // Make sure the config is not enabling the functionality.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         foreach ($users as $user) {
@@ -228,7 +228,7 @@ class pmmigratemoodleusers_testcase extends elis_database_test {
         // NOTE: this test does not specifically depend on the userid parameter but is a valuable sanity check.
 
         // Make sure the config is not enabling the functionality.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         foreach ($users as $i => $user) {

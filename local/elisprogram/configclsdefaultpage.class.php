@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -34,16 +33,16 @@ class configclsdefaultpage extends pm_page {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:config', $context) || has_capability('elis/program:manage', $context);
+        return has_capability('local/elisprogram:config', $context) || has_capability('local/elisprogram:manage', $context);
     }
 
     function build_navbar_default($who = null) {
         parent::build_navbar_default($who);
-        $this->navbar->add(get_string('defaultcls', 'elis_program'), $this->url);
+        $this->navbar->add(get_string('defaultcls', 'local_elisprogram'), $this->url);
     }
 
     function get_title_default() {
-        return get_string('defaultcls', 'elis_program');
+        return get_string('defaultcls', 'local_elisprogram');
     }
 
     function _config_set_value($configdata, $key, $default = null) {
@@ -61,7 +60,7 @@ class configclsdefaultpage extends pm_page {
         require_once(elispm::file('form/configclsdefaultform.class.php'));
 
         $configform = new configclsdefaultform('index.php?s=dftcls&section=admn', $this);
-        $configform->set_data(elis::$config->elis_program);
+        $configform->set_data(elis::$config->local_elisprogram);
 
         if ($configdata = $configform->get_data()) {
             if (isset($configdata->clsdftstarttime)) {

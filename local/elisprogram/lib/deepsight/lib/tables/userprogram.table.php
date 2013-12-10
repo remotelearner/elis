@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -44,7 +44,7 @@ class deepsight_datatable_userprogram_base extends deepsight_datatable_program {
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
         return $deps;
     }
 
@@ -71,8 +71,8 @@ class deepsight_datatable_userprogram_assigned extends deepsight_datatable_userp
      * @return array An array of deepsight_filter objects that will be available.
      */
     protected function get_filters() {
-        $langcreditsrecv = get_string('credits_rec', 'elis_program');
-        $langdatecompleted = get_string('date_completed', 'elis_program');
+        $langcreditsrecv = get_string('credits_rec', 'local_elisprogram');
+        $langdatecompleted = get_string('date_completed', 'local_elisprogram');
 
         $filters = parent::get_filters();
 
@@ -111,7 +111,7 @@ class deepsight_datatable_userprogram_assigned extends deepsight_datatable_userp
      */
     protected function get_column_labels(array $filters) {
         $labels = parent::get_column_labels($filters);
-        $labels['numcourses'] = get_string('num_courses', 'elis_program');
+        $labels['numcourses'] = get_string('num_courses', 'local_elisprogram');
         return $labels;
     }
 

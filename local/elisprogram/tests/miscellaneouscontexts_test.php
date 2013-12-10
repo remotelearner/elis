@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,18 +25,18 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once(elispm::lib('data/pmclass.class.php'));
-require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+require_once(elispm::file('enrol/userset/moodleprofile/userset_profile.class.php'));
 
 /**
  * Test miscellaneous usages of ELIS contexts. Initially done as part of Moodle 2.2 support.
- * @group elis_program
+ * @group local_elisprogram
  */
 class miscellaneouscontexts_testcase extends elis_database_test {
 
@@ -45,7 +45,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function setup_usersets() {
         $dataset = $this->createCsvDataSet(array(
-            userset::TABLE => elis::component_file('program', 'tests/fixtures/userset.csv'),
+            userset::TABLE => elispm::file('tests/fixtures/userset.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -55,7 +55,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function setup_curriculum() {
         $dataset = $this->createCsvDataSet(array(
-            curriculum::TABLE => elis::component_file('program', 'tests/fixtures/curriculum.csv'),
+            curriculum::TABLE => elispm::file('tests/fixtures/curriculum.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -65,7 +65,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function setup_curriculumcourse() {
         $dataset = $this->createCsvDataSet(array(
-            curriculumcourse::TABLE => elis::component_file('program', 'tests/fixtures/curriculum_course.csv'),
+            curriculumcourse::TABLE => elispm::file('tests/fixtures/curriculum_course.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -75,7 +75,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function setup_curriculumstudent() {
         $dataset = $this->createCsvDataSet(array(
-            curriculumstudent::TABLE => elis::component_file('program', 'tests/fixtures/curriculum_student.csv'),
+            curriculumstudent::TABLE => elispm::file('tests/fixtures/curriculum_student.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -85,9 +85,9 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function setup_users() {
         $dataset = $this->createCsvDataSet(array(
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            usermoodle::TABLE => elis::component_file('program', 'tests/fixtures/usermoodle.csv'),
-            'user' => elis::component_file('program', 'tests/fixtures/mdluser.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            usermoodle::TABLE => elispm::file('tests/fixtures/usermoodle.csv'),
+            'user' => elispm::file('tests/fixtures/mdluser.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -97,7 +97,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function setup_usercustomfields() {
         $dataset = $this->createCsvDataSet(array(
-            field::TABLE => elis::component_file('program', 'tests/fixtures/user_field.csv'),
+            field::TABLE => elispm::file('tests/fixtures/user_field.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -107,7 +107,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function setup_courses() {
         $dataset = $this->createCsvDataSet(array(
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -117,7 +117,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function setup_classes() {
         $dataset = $this->createCsvDataSet(array(
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -223,7 +223,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
     }
 
     /**
-     * Tests elis/program/scripts/fix_cluster_orphans.php
+     * Tests local/elisprogram/scripts/fix_cluster_orphans.php
      */
     public function test_fixclusterorphans() {
         global $DB;
@@ -234,7 +234,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
 
         // Run.
         try {
-            require_once(elis::file('program/scripts/fix_cluster_orphans.php'));
+            require_once(elis::file('elisprogram/scripts/fix_cluster_orphans.php'));
         } catch (Exception $e) {
             if ($e->getMessage() !== 'Constant CLI_SCRIPT already defined') {
                 throw new $e;
@@ -246,7 +246,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Tests contexts in track data object.
      *
      * Covers:
-     * elis/program/lib/data/track.class.php:291
+     * local/elisprogram/lib/data/track.class.php:291
      */
     public function test_deletetrack () {
         $this->setup_curriculum();
@@ -271,37 +271,37 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Tests contexts in userset data object.
      *
      * Covers:
-     * elis/program/lib/data/userset.class.php:334
-     * elis/program/lib/data/userset.class.php:453
-     * elis/program/lib/data/userset.class.php:561
-     * elis/program/lib/data/userset.class.php:595
-     * elis/program/lib/data/userset.class.php:616
-     * elis/program/lib/data/userset.class.php:721
-     * elis/program/lib/data/userset.class.php:755
-     * elis/program/lib/data/userset.class.php:847
-     * elis/program/lib/data/userset.class.php:901
+     * local/elisprogram/lib/data/userset.class.php:334
+     * local/elisprogram/lib/data/userset.class.php:453
+     * local/elisprogram/lib/data/userset.class.php:561
+     * local/elisprogram/lib/data/userset.class.php:595
+     * local/elisprogram/lib/data/userset.class.php:616
+     * local/elisprogram/lib/data/userset.class.php:721
+     * local/elisprogram/lib/data/userset.class.php:755
+     * local/elisprogram/lib/data/userset.class.php:847
+     * local/elisprogram/lib/data/userset.class.php:901
      */
     public function test_usersetcontexts() {
         global $USER, $DB;
-        require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
-        require_once(elispm::file('plugins/userset_classification/lib.php'));
+        require_once(elispm::file('plugins/usetclassify/usersetclassification.class.php'));
+        require_once(elispm::file('plugins/usetclassify/lib.php'));
 
         $this->setup_users();
         $this->setup_usersets();
 
-        // TEST elis/program/lib/data/userset.class.php:334.
+        // TEST local/elisprogram/lib/data/userset.class.php:334.
         $res = userset::get_allowed_clusters(1);
 
-        // TEST elis/program/lib/data/userset.class.php:453.
+        // TEST local/elisprogram/lib/data/userset.class.php:453.
         $ussfilter = new usersubset_filter('id', new field_filter('id', 1));
         $res = $ussfilter->get_sql();
 
         // TEST
-        // elis/program/lib/data/userset.class.php:561
-        // elis/program/lib/data/userset.class.php:595
-        // elis/program/lib/data/userset.class.php:616
-        // elis/program/lib/data/userset.class.php:721
-        // elis/program/lib/data/userset.class.php:755.
+        // local/elisprogram/lib/data/userset.class.php:561
+        // local/elisprogram/lib/data/userset.class.php:595
+        // local/elisprogram/lib/data/userset.class.php:616
+        // local/elisprogram/lib/data/userset.class.php:721
+        // local/elisprogram/lib/data/userset.class.php:755.
         $field = new field(array('shortname' => USERSET_CLASSIFICATION_FIELD));
         $field->load();
         $userset = $this->create_userset($field);
@@ -317,7 +317,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
         $rc = new stdClass;
         $rc->contextid = $usersetcontext->id;
         $rc->roleid = $roleid;
-        $rc->capability = 'elis/program:userset_view';
+        $rc->capability = 'local/elisprogram:userset_view';
         $rc->permission = 1;
         $rc->timemodified = time();
         $rc->modifierid = 0;
@@ -325,7 +325,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
         $rc = new stdClass;
         $rc->contextid = $usersetcontext->id;
         $rc->roleid = $roleid;
-        $rc->capability = 'elis/program:userset_enrol_userset_user';
+        $rc->capability = 'local/elisprogram:userset_enrol_userset_user';
         $rc->permission = 1;
         $rc->timemodified = time();
         $rc->modifierid = 0;
@@ -345,7 +345,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
         $clst->save();
 
         // Get cluster listing.
-        $capability = 'elis/program:userset_view';
+        $capability = 'local/elisprogram:userset_view';
         $contexts = get_contexts_by_capability_for_user('cluster', $capability, 100);
         $extrafilters = array(
             'contexts' => $contexts,
@@ -356,10 +356,10 @@ class miscellaneouscontexts_testcase extends elis_database_test {
 
         $res = cluster_count_records('', '', $extrafilters);
 
-        // TEST elis/program/lib/data/userset.class.php:847.
+        // TEST local/elisprogram/lib/data/userset.class.php:847.
         cluster_get_non_child_clusters(1);
 
-        // TEST elis/program/lib/data/userset.class.php:901.
+        // TEST local/elisprogram/lib/data/userset.class.php:901.
         cluster_get_possible_sub_clusters(1);
 
         $this->setUser(null);
@@ -369,10 +369,10 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Tests contexts in user data object.
      *
      * Covers:
-     * elis/program/lib/data/user.class.php:169
-     * elis/program/lib/data/user.class.php:673
-     * elis/program/lib/data/user.class.php:1081
-     * elis/program/lib/data/user.class.php:1291
+     * local/elisprogram/lib/data/user.class.php:169
+     * local/elisprogram/lib/data/user.class.php:673
+     * local/elisprogram/lib/data/user.class.php:1081
+     * local/elisprogram/lib/data/user.class.php:1291
      */
     public function test_usercontexts() {
         global $DB;
@@ -401,7 +401,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Tests contexts in course data object.
      *
      * Covers:
-     * elis/program/lib/data/course.class.php:619
+     * local/elisprogram/lib/data/course.class.php:619
      */
     public function test_coursecontexts() {
         $this->setup_curriculum();
@@ -415,7 +415,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Tests contexts in pmclass data object.
      *
      * Covers:
-     * elis/program/lib/data/pmclass.class.php:259
+     * local/elisprogram/lib/data/pmclass.class.php:259
      */
     public function test_classcontexts() {
         $this->setup_curriculum();
@@ -431,7 +431,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Tests contexts in curriculum data object.
      *
      * Covers:
-     * elis/program/lib/data/curriculum.class.php:109
+     * local/elisprogram/lib/data/curriculum.class.php:109
      */
     public function test_curriculumcontexts() {
         $this->setup_curriculum();
@@ -443,15 +443,15 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Test contexts in notifications.
      *
      * Covers:
-     * elis/program/lib/notifications.php:616
-     * elis/program/lib/notifications.php:617
+     * local/elisprogram/lib/notifications.php:616
+     * local/elisprogram/lib/notifications.php:617
      */
     public function test_notifications() {
         global $DB;
         $this->setup_users();
         context_helper::reset_caches();
 
-        elis::$config->elis_program->notify_classenrol_user = true;
+        elis::$config->local_elisprogram->notify_classenrol_user = true;
 
         $rolesctx = $DB->get_records('role_context_levels', array('contextlevel' => CONTEXT_ELIS_PROGRAM));
         foreach ($rolesctx as $rolectx) {
@@ -475,11 +475,11 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Test contexts in usersetclassification data object.
      *
      * Covers:
-     * elis/program/plugins/userset_classification/usersetclassification.class.php:132
+     * local/elisprogram/plugins/usetclassify/usersetclassification.class.php:132
      */
     public function test_usersetclassification() {
-        require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
-        require_once(elispm::file('plugins/userset_classification/lib.php'));
+        require_once(elispm::file('plugins/usetclassify/usersetclassification.class.php'));
+        require_once(elispm::file('plugins/usetclassify/lib.php'));
 
         $cat = $this->create_field_category(CONTEXT_ELIS_USERSET);
         $field = $this->create_field(USERSET_CLASSIFICATION_FIELD, $cat, CONTEXT_ELIS_USERSET);
@@ -492,16 +492,16 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Test contexts in enrolment_role_sync
      *
      * Covers:
-     * elis/program/plugins/enrolment_role_sync/lib.php:101
-     * elis/program/plugins/enrolment_role_sync/lib.php:150
+     * local/elisprogram/plugins/enrolrolesync/lib.php:101
+     * local/elisprogram/plugins/enrolrolesync/lib.php:150
      */
     public function test_enrolrolesync() {
-        require_once(elispm::file('plugins/enrolment_role_sync/lib.php'));
+        require_once(elispm::file('plugins/enrolrolesync/lib.php'));
 
-        set_config('student_role', 9, 'pmplugins_enrolment_role_sync');
+        set_config('student_role', 9, 'elisprogram_enrolrolesync');
         enrolment_role_sync::student_sync_role_set();
 
-        set_config('instructor_role', 9, 'pmplugins_enrolment_role_sync');
+        set_config('instructor_role', 9, 'elisprogram_enrolrolesync');
         enrolment_role_sync::instructor_sync_role_set();
     }
 
@@ -509,10 +509,10 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Test contexts in userset_display_priority_append_sort_data
      *
      * Covers:
-     * elis/program/plugins/userset_display_priority/lib.php:43
+     * local/elisprogram/plugins/usetdisppriority/lib.php:43
      */
     public function test_usersetdisplaypriority() {
-        require_once(elispm::file('plugins/userset_display_priority/lib.php'));
+        require_once(elispm::file('plugins/usetdisppriority/lib.php'));
         $select = '';
         $join = '';
         userset_display_priority_append_sort_data('id', $select, $join);
@@ -522,13 +522,13 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      * Test contexts for userset_groups
      *
      * Covers:
-     * elis/program/plugins/userset_groups/lib.php:643
-     * elis/program/plugins/userset_groups/lib.php:308
-     * elis/program/plugins/userset_groups/lib.php:601
+     * local/elisprogram/plugins/usetgroups/lib.php:643
+     * local/elisprogram/plugins/usetgroups/lib.php:308
+     * local/elisprogram/plugins/usetgroups/lib.php:601
      */
     public function test_usersetgroups() {
         global $DB;
-        set_config('userset_groupings', true, 'pmplugins_userset_groups');
+        set_config('userset_groupings', true, 'elisprogram_usetgroups');
 
         $field = new field(array('shortname' => 'userset_groupings'));
         $field->load();

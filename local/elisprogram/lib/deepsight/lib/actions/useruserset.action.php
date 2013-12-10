@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -24,7 +24,7 @@
  *
  */
 
-require_once(elis::plugin_file('usersetenrol_manual', 'lib.php'));
+require_once(elis::plugin_file('usetenrol_manual', 'lib.php'));
 
 /**
  * An action to assign usersets to a user.
@@ -44,16 +44,16 @@ class deepsight_action_useruserset_assign extends deepsight_action_confirm {
         parent::__construct($DB, $name);
 
         $langelements = new stdClass;
-        $langelements->baseelement = strtolower(get_string('user', 'elis_program'));
-        $langelements->actionelement = strtolower(get_string('cluster', 'elis_program'));
+        $langelements->baseelement = strtolower(get_string('user', 'local_elisprogram'));
+        $langelements->actionelement = strtolower(get_string('cluster', 'local_elisprogram'));
         $this->descsingle = (!empty($descsingle))
-                ? $descsingle : get_string('ds_action_assign_confirm', 'elis_program', $langelements);
+                ? $descsingle : get_string('ds_action_assign_confirm', 'local_elisprogram', $langelements);
 
         $langelements = new stdClass;
-        $langelements->baseelement = strtolower(get_string('user', 'elis_program'));
-        $langelements->actionelement = strtolower(get_string('clusters', 'elis_program'));
+        $langelements->baseelement = strtolower(get_string('user', 'local_elisprogram'));
+        $langelements->actionelement = strtolower(get_string('clusters', 'local_elisprogram'));
         $this->descmultiple = (!empty($descmultiple))
-                ? $descmultiple : get_string('ds_action_assign_confirm_multi', 'elis_program', $langelements);
+                ? $descmultiple : get_string('ds_action_assign_confirm_multi', 'local_elisprogram', $langelements);
     }
 
     /**
@@ -70,8 +70,8 @@ class deepsight_action_useruserset_assign extends deepsight_action_confirm {
 
         // Permissions.
         $upage = new userpage();
-        if ($upage->_has_capability('elis/program:user_view', $userid) !== true) {
-            return array('result' => 'fail', 'msg' => get_string('not_permitted', 'elis_program'));
+        if ($upage->_has_capability('local/elisprogram:user_view', $userid) !== true) {
+            return array('result' => 'fail', 'msg' => get_string('not_permitted', 'local_elisprogram'));
         }
 
         foreach ($elements as $usersetid => $label) {
@@ -107,19 +107,19 @@ class deepsight_action_useruserset_unassign extends deepsight_action_confirm {
      */
     public function __construct(moodle_database &$DB, $name, $descsingle='', $descmultiple='') {
         parent::__construct($DB, $name);
-        $this->label = ucwords(get_string('unassign', 'elis_program'));
+        $this->label = ucwords(get_string('unassign', 'local_elisprogram'));
 
         $langelements = new stdClass;
-        $langelements->baseelement = strtolower(get_string('user', 'elis_program'));
-        $langelements->actionelement = strtolower(get_string('cluster', 'elis_program'));
+        $langelements->baseelement = strtolower(get_string('user', 'local_elisprogram'));
+        $langelements->actionelement = strtolower(get_string('cluster', 'local_elisprogram'));
         $this->descsingle = (!empty($descsingle))
-                ? $descsingle : get_string('ds_action_unassign_confirm', 'elis_program', $langelements);
+                ? $descsingle : get_string('ds_action_unassign_confirm', 'local_elisprogram', $langelements);
 
         $langelements = new stdClass;
-        $langelements->baseelement = strtolower(get_string('user', 'elis_program'));
-        $langelements->actionelement = strtolower(get_string('clusters', 'elis_program'));
+        $langelements->baseelement = strtolower(get_string('user', 'local_elisprogram'));
+        $langelements->actionelement = strtolower(get_string('clusters', 'local_elisprogram'));
         $this->descmultiple = (!empty($descmultiple))
-                ? $descmultiple : get_string('ds_action_unassign_confirm_multi', 'elis_program', $langelements);
+                ? $descmultiple : get_string('ds_action_unassign_confirm_multi', 'local_elisprogram', $langelements);
     }
 
     /**
@@ -135,8 +135,8 @@ class deepsight_action_useruserset_unassign extends deepsight_action_confirm {
 
         // Permissions.
         $upage = new userpage();
-        if ($upage->_has_capability('elis/program:user_view', $userid) !== true) {
-            return array('result' => 'fail', 'msg' => get_string('not_permitted', 'elis_program'));
+        if ($upage->_has_capability('local/elisprogram:user_view', $userid) !== true) {
+            return array('result' => 'fail', 'msg' => get_string('not_permitted', 'local_elisprogram'));
         }
 
         foreach ($elements as $usersetid => $label) {

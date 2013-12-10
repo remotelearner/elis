@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -50,8 +50,8 @@ class deepsight_datatable_instructor_base extends deepsight_datatable_user {
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_instructor_assignedit.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_instructor_assignedit.js';
         return $deps;
     }
 
@@ -79,10 +79,10 @@ class deepsight_datatable_instructor_assigned extends deepsight_datatable_instru
     protected function get_filters() {
         $filters = parent::get_filters();
 
-        $langasstime = get_string('instructor_assignment', 'elis_program');
+        $langasstime = get_string('instructor_assignment', 'local_elisprogram');
         $filters[] = new deepsight_filter_date($this->DB, 'assigntime', $langasstime, array('ins.assigntime' => $langasstime));
 
-        $langcmptime = get_string('instructor_completion', 'elis_program');
+        $langcmptime = get_string('instructor_completion', 'local_elisprogram');
         $filters[] = new deepsight_filter_date($this->DB, 'completetime', $langcmptime, array('ins.completetime' => $langcmptime));
 
         return $filters;
@@ -191,7 +191,7 @@ class deepsight_datatable_instructor_available extends deepsight_datatable_instr
 
         // TODO: Ugly, this needs to be overhauled.
         $cpage = new pmclasspage();
-        if (!$cpage->_has_capability('elis/program:assign_class_instructor', $this->classid)) {
+        if (!$cpage->_has_capability('local/elisprogram:assign_class_instructor', $this->classid)) {
             // Perform SQL filtering for the more "conditional" capability.
             $allowedclusters = instructor::get_allowed_clusters($this->classid);
             if (empty($allowedclusters)) {

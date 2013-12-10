@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
-require_once(elis::file('program/healthpage.class.php'));
+require_once(elis::file('elisprogram/healthpage.class.php'));
 require_once(elis::plugin_file('eliscoreplugins_user_activity', 'health.php'));
 require_once(elis::plugin_file('eliscoreplugins_user_activity', 'etl.php'));
 
 /**
  * Test health checks.
- * @group elis_program
+ * @group local_elisprogram
  */
 class user_activity_health_testcase extends elis_database_test {
 
@@ -45,7 +45,7 @@ class user_activity_health_testcase extends elis_database_test {
         global $DB;
 
         $dataset = $this->createCsvDataSet(array(
-            'log' => elis::file('program/tests/fixtures/log_data.csv')
+            'log' => elis::file('elisprogram/tests/fixtures/log_data.csv')
         ));
         $this->loadDataSet($dataset);
 
@@ -76,7 +76,7 @@ class user_activity_health_testcase extends elis_database_test {
         global $DB;
 
         $dataset = $this->createCsvDataSet(array(
-            'log' => elis::file('program/tests/fixtures/mdl_log_elis7845_1500.csv')
+            'log' => elis::file('elisprogram/tests/fixtures/mdl_log_elis7845_1500.csv')
         ));
         $this->loadDataSet($dataset);
 
@@ -142,6 +142,6 @@ class user_activity_health_testcase extends elis_database_test {
         $DB->insert_record('user_info_data', $record);
 
         $duplicateprofilecheck = new duplicate_moodle_profile();
-        $this->assertEquals(get_string('health_dupmoodleprofiledesc', 'elis_program', 3), $duplicateprofilecheck->description());
+        $this->assertEquals(get_string('health_dupmoodleprofiledesc', 'local_elisprogram', 3), $duplicateprofilecheck->description());
     }
 }

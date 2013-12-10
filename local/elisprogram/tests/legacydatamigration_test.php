@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,7 +25,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data objects.
 require_once(elispm::lib('data/curriculum.class.php'));
@@ -39,7 +39,7 @@ require_once($CFG->dirroot.'/admin/roles/lib.php');
 
 /**
  * Test migrating legacy data.
- * @group elis_program
+ * @group local_elisprogram
  */
 class legacydatamigration_testcase extends elis_database_test {
 
@@ -48,13 +48,13 @@ class legacydatamigration_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            field::TABLE => elis::component_file('program', 'tests/fixtures/user_field.csv'),
-            field_owner::TABLE => elis::component_file('program', 'tests/fixtures/user_field_owner.csv'),
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcourse.csv'),
-            curriculum::TABLE => elis::component_file('program', 'tests/fixtures/curriculum.csv'),
-            'crlm_environment' => elis::component_file('program', 'tests/fixtures/environment.csv'),
-            'crlm_tag' => elis::component_file('program', 'tests/fixtures/tag.csv'),
-            'crlm_tag_instance' => elis::component_file('program', 'tests/fixtures/tag_instance.csv'),
+            field::TABLE => elispm::file('tests/fixtures/user_field.csv'),
+            field_owner::TABLE => elispm::file('tests/fixtures/user_field_owner.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
+            curriculum::TABLE => elispm::file('tests/fixtures/curriculum.csv'),
+            'crlm_environment' => elispm::file('tests/fixtures/environment.csv'),
+            'crlm_tag' => elispm::file('tests/fixtures/tag.csv'),
+            'crlm_tag_instance' => elispm::file('tests/fixtures/tag_instance.csv'),
         ));
         $this->loadDataSet($dataset);
     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -83,12 +82,12 @@ class curriculumpage extends managementpage {
         //check the standard capability
         // TODO: Ugly, this needs to be overhauled
         $cpage = new curriculumpage();
-        if($cpage->_has_capability('elis/program:program_enrol', $curriculumid)) {
+        if($cpage->_has_capability('local/elisprogram:program_enrol', $curriculumid)) {
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:program_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:program_enrol_userset_user', $USER->id);
 
         //get the clusters and check the context against them
         $clusters = clustercurriculum::get_clusters($curriculumid);
@@ -130,29 +129,29 @@ class curriculumpage extends managementpage {
         $id = $this->optional_param('id', 0, PARAM_INT);
         $track_params = ($id) ? array('parent' => $id) : array();
         $this->tabs = array(
-        array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'elis_program'), 'showtab' => true),
-        array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
-        array('tab_id' => 'curriculumstudentpage', 'page' => 'curriculumstudentpage', 'name' => get_string('users', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
-        array('tab_id' => 'curriculumclusterpage', 'page' => 'curriculumclusterpage', 'name' => get_string('clusters', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
-        array('tab_id' => 'curriculumcoursepage', 'page' => 'curriculumcoursepage', 'name' => get_string('courses', 'elis_program') , 'showtab' => true, 'showbutton' => true, 'image' => 'course'),
+        array('tab_id' => 'view', 'page' => get_class($this), 'params' => array('action' => 'view'), 'name' => get_string('detail', 'local_elisprogram'), 'showtab' => true),
+        array('tab_id' => 'edit', 'page' => get_class($this), 'params' => array('action' => 'edit'), 'name' => get_string('edit', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'edit'),
+        array('tab_id' => 'curriculumstudentpage', 'page' => 'curriculumstudentpage', 'name' => get_string('users', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'user'),
+        array('tab_id' => 'curriculumclusterpage', 'page' => 'curriculumclusterpage', 'name' => get_string('clusters', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'cluster'),
+        array('tab_id' => 'curriculumcoursepage', 'page' => 'curriculumcoursepage', 'name' => get_string('courses', 'local_elisprogram') , 'showtab' => true, 'showbutton' => true, 'image' => 'course'),
         //allow users to view the tracks associated with this curriculum
-        array('tab_id' => 'trackpage', 'page' => 'trackpage', 'params' => $track_params, 'name' => get_string('tracks', 'elis_program'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
+        array('tab_id' => 'trackpage', 'page' => 'trackpage', 'params' => $track_params, 'name' => get_string('tracks', 'local_elisprogram'), 'showtab' => true, 'showbutton' => true, 'image' => 'track'),
         array('tab_id' => 'curriculum_rolepage', 'page' => 'curriculum_rolepage', 'name' => get_string('roles', 'role'), 'showtab' => true, 'showbutton' => false, 'image' => 'tag'),
-        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'elis_program'), 'showbutton' => true, 'image' => 'delete'),
+        array('tab_id' => 'delete', 'page' => get_class($this), 'params' => array('action' => 'delete'), 'name' => get_string('delete', 'local_elisprogram'), 'showbutton' => true, 'image' => 'delete'),
         );
 
     }
 
     function can_do_view() {
-        return $this->_has_capability('elis/program:program_view');
+        return $this->_has_capability('local/elisprogram:program_view');
     }
 
     function can_do_edit() {
-        return $this->_has_capability('elis/program:program_edit');
+        return $this->_has_capability('local/elisprogram:program_edit');
     }
 
     function can_do_delete() {
-        return $this->_has_capability('elis/program:program_delete');
+        return $this->_has_capability('local/elisprogram:program_delete');
     }
 
     function can_do_confirm() {
@@ -161,11 +160,11 @@ class curriculumpage extends managementpage {
 
     function can_do_add() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:program_create', $context);
+        return has_capability('local/elisprogram:program_create', $context);
     }
 
     function can_do_default() {
-        $contexts = curriculumpage::get_contexts('elis/program:program_view');
+        $contexts = curriculumpage::get_contexts('local/elisprogram:program_view');
         return !$contexts->is_empty();
     }
 
@@ -182,11 +181,11 @@ class curriculumpage extends managementpage {
 
         // Define columns
         $columns = array(
-            'name'        => array('header' => get_string('curriculum_name', 'elis_program')),
-            'description' => array('header' => get_string('description', 'elis_program')),
-            'reqcredits'  => array('header' => get_string('curriculum_reqcredits', 'elis_program')),
-            'courses'     => array('header' => get_string('courses', 'elis_program')),
-            'priority'    => array('header' => get_string('priority', 'elis_program'))
+            'name'        => array('header' => get_string('curriculum_name', 'local_elisprogram')),
+            'description' => array('header' => get_string('description', 'local_elisprogram')),
+            'reqcredits'  => array('header' => get_string('curriculum_reqcredits', 'local_elisprogram')),
+            'courses'     => array('header' => get_string('courses', 'local_elisprogram')),
+            'priority'    => array('header' => get_string('priority', 'local_elisprogram'))
         );
 
         if($dir !== 'DESC') {
@@ -197,11 +196,11 @@ class curriculumpage extends managementpage {
         }
 
         // Get list of users
-        $items    = curriculum_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, curriculumpage::get_contexts('elis/program:program_view'));
-        $numitems = curriculum_count_records($namesearch, $alpha, curriculumpage::get_contexts('elis/program:program_view'));
+        $items    = curriculum_get_listing($sort, $dir, $page*$perpage, $perpage, $namesearch, $alpha, curriculumpage::get_contexts('local/elisprogram:program_view'));
+        $numitems = curriculum_count_records($namesearch, $alpha, curriculumpage::get_contexts('local/elisprogram:program_view'));
 
-        curriculumpage::get_contexts('elis/program:program_edit');
-        curriculumpage::get_contexts('elis/program:program_delete');
+        curriculumpage::get_contexts('local/elisprogram:program_edit');
+        curriculumpage::get_contexts('local/elisprogram:program_delete');
 
         $this->print_list_view($items, $numitems, $columns, $filter=null, $alphaflag=true, $searchflag=true);
     }
@@ -219,14 +218,14 @@ class curriculumpage extends managementpage {
         global $DB, $USER;
 
         //make sure a valid role is set
-        if(!empty(elis::$config->elis_program->default_curriculum_role_id) && $DB->record_exists('role', array('id' => elis::$config->elis_program->default_curriculum_role_id))) {
+        if(!empty(elis::$config->local_elisprogram->default_curriculum_role_id) && $DB->record_exists('role', array('id' => elis::$config->local_elisprogram->default_curriculum_role_id))) {
 
             //get the context instance for capability checking
             $context_instance = context_elis_program::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
-            if (!has_capability('elis/program:program_edit', $context_instance)) {
-                role_assign(elis::$config->elis_program->default_curriculum_role_id, $USER->id, $context_instance->id);
+            if (!has_capability('local/elisprogram:program_edit', $context_instance)) {
+                role_assign(elis::$config->local_elisprogram->default_curriculum_role_id, $USER->id, $context_instance->id);
             }
         }
     }
@@ -262,7 +261,7 @@ class curriculumforcoursepage extends curriculumpage {
 
     function can_do_default() {
         $context = get_context_instance(CONTEXT_SYSTEM);
-        return has_capability('elis/program:program_create', $context);
+        return has_capability('local/elisprogram:program_create', $context);
         // FIXME: check permissions on the desired course too
     }
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,7 +26,7 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(dirname(__FILE__).'/other/deepsight_testlib.php');
 
 require_once(elispm::lib('deepsightpage.class.php'));
@@ -131,7 +131,7 @@ class deepsight_datatable_usertrack_available_mock extends deepsight_datatable_u
 
 /**
  * Tests usertrack datatable functions.
- * @group elis_program
+ * @group local_elisprogram
  * @group deepsight
  */
 class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchresults_test {
@@ -252,7 +252,7 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:track_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', get_context_instance(CONTEXT_SYSTEM));
 
         // Construct test table.
         $table = new deepsight_datatable_usertrack_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
@@ -350,7 +350,7 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'elis/program:track_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', get_context_instance(CONTEXT_SYSTEM));
 
         foreach ($associations as $association) {
             $usertrack = new usertrack($association);
@@ -409,10 +409,10 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
 
     /**
      * Test available table shows only tracks the user has permission to enrol into based on the
-     * elis/program:track_enrol permissions on the track.
+     * local/elisprogram:track_enrol permissions on the track.
      *
      * @dataProvider dataprovider_available_permissions_track_enrol
-     * @param array $trackstoallow An array of track IDs to assign the elis/program:track_enrol permission at.
+     * @param array $trackstoallow An array of track IDs to assign the local/elisprogram:track_enrol permission at.
      * @param int $tableuserid The ID of the user we're managing.
      * @param array $expectedresults The expected page of results.
      * @param int $expectedtotal The expected number of total results.
@@ -425,7 +425,7 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
         // Set up permissions.
         $USER = $this->setup_permissions_test();
         foreach ($trackstoallow as $trackid) {
-            $this->give_permission_for_context($USER->id, 'elis/program:track_enrol', context_elis_track::instance($trackid));
+            $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', context_elis_track::instance($trackid));
         }
 
         // Construct test table.
@@ -652,10 +652,10 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
 
     /**
      * Test available table shows only tracks the user has permission to enrol into based on
-     * elis/program:track_enrol_userset_user permission on a parent userset.
+     * local/elisprogram:track_enrol_userset_user permission on a parent userset.
      *
      * @dataProvider dataprovider_available_permissions_track_enrol_userset_user
-     * @param array $usersetidsforperm An array of userset IDs to assign the elis/program:track_enrol_userset_user on.
+     * @param array $usersetidsforperm An array of userset IDs to assign the local/elisprogram:track_enrol_userset_user on.
      * @param array $clusterassignments An array of arrays of parameters to construct clusterassignments with.
      * @param array $clustertracks An array of arrays of parameters to construct clustertracks with.
      * @param int $tableuserid The id of the user to manage associations for.
@@ -674,7 +674,7 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $capability = 'elis/program:track_enrol_userset_user';
+        $capability = 'local/elisprogram:track_enrol_userset_user';
         foreach ($usersetidsforperm as $usersetid) {
             $this->give_permission_for_context($USER->id, $capability, context_elis_userset::instance($usersetid));
         }

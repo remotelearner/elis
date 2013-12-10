@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(dirname(__FILE__).'/../../../../config.php');
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elis::lib('data/data_object.class.php');
 require_once elis::lib('table.class.php');
 require_once elispm::lib('lib.php');
@@ -49,7 +48,7 @@ define ('STUSTATUS_PASSED',      2);
 
 class student extends elis_data_object {
     const TABLE = STUTABLE;
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     const STUSTATUS_NOTCOMPLETE = 0;
     const STUSTATUS_FAILED = 1;
@@ -319,9 +318,9 @@ class student extends elis_data_object {
                 }
             }
         } else {
-            $sturole = get_config('pmplugins_enrolment_role_sync', 'student_role');
+            $sturole = get_config('elisprogram_enrolrolesync', 'student_role');
             // ELIS-3397: must still trigger events for notifications
-            $sturole = get_config('pmplugins_enrolment_role_sync', 'student_role');
+            $sturole = get_config('elisprogram_enrolrolesync', 'student_role');
             $ra = new stdClass();
             $ra->roleid       = !empty($sturole)
                                 ? $sturole
@@ -420,9 +419,9 @@ class student extends elis_data_object {
             events_trigger('crlm_class_completed', $this);
 
             // Does the user receive a notification?
-            $sendtouser       = elis::$config->elis_program->notify_classcompleted_user;
-            $sendtorole       = elis::$config->elis_program->notify_classcompleted_role;
-            $sendtosupervisor = elis::$config->elis_program->notify_classcompleted_supervisor;
+            $sendtouser       = elis::$config->local_elisprogram->notify_classcompleted_user;
+            $sendtorole       = elis::$config->local_elisprogram->notify_classcompleted_role;
+            $sendtosupervisor = elis::$config->local_elisprogram->notify_classcompleted_supervisor;
 
             // Make sure this is a valid user.
             $enroluser = new user($this->userid);
@@ -436,8 +435,8 @@ class student extends elis_data_object {
             $message = new notification();
 
             // Set up the text of the message
-            $text = empty(elis::$config->elis_program->notify_classcompleted_message) ?
-                    get_string('notifyclasscompletedmessagedef', self::LANG_FILE) : elis::$config->elis_program->notify_classcompleted_message;
+            $text = empty(elis::$config->local_elisprogram->notify_classcompleted_message) ?
+                    get_string('notifyclasscompletedmessagedef', self::LANG_FILE) : elis::$config->local_elisprogram->notify_classcompleted_message;
             $search = array('%%userenrolname%%', '%%classname%%');
 
             $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
@@ -467,14 +466,14 @@ class student extends elis_data_object {
             $users = array();
             if ($sendtorole) {
                 // Get all users with the notify_classcompleted capability.
-                if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classcomplete')) {
+                if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_classcomplete')) {
                     $users = $users + $roleusers;
                 }
             }
 
             if ($sendtosupervisor) {
                 // Get parent-context users.
-                if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'elis/program:notify_classcomplete')) {
+                if ($supervisors = pm_get_users_by_capability('user', $this->userid, 'local/elisprogram:notify_classcomplete')) {
                     $users = $users + $supervisors;
                 }
             }
@@ -639,7 +638,7 @@ class student extends elis_data_object {
             $users = $this->get_users_avail($sort, $dir, $page * $perpage, $perpage, $namesearch, $alpha);
             $usercount = $this->count_users_avail($namesearch, $alpha); // TBD
 
-            pmalphabox(new moodle_url('/elis/program/index.php', // TBD
+            pmalphabox(new moodle_url('/local/elisprogram/index.php', // TBD
                                array('s' => 'stu', 'section' => 'curr',
                                      'action' => 'add', 'id' => $classid,
                                      'search' => $namesearch, 'sort' => $sort,
@@ -776,7 +775,7 @@ class student extends elis_data_object {
 
         if (!empty($newarr)) { // TBD: $newarr or $table
             if(empty($this->id)) {
-                $PAGE->requires->js('/elis/program/js/classform.js');
+                $PAGE->requires->js('/local/elisprogram/js/classform.js');
                 echo '<input type="button" onclick="checkbox_select(true,\'[enrol]\')" value="'.get_string('selectall').'" /> ';
                 echo '<input type="button" onclick="checkbox_select(false,\'[enrol]\')" value="'.get_string('deselectall').'" /> ';
             }
@@ -1025,7 +1024,7 @@ class student extends elis_data_object {
 
             }
 
-            pmalphabox(new moodle_url('/elis/program/index.php',
+            pmalphabox(new moodle_url('/local/elisprogram/index.php',
                                array('s' => 'stu', 'section' => 'curr',
                                      'action' => 'bulkedit', 'id' => $classid,
                                      'class' => $classid, 'perpage' => $perpage,
@@ -1059,7 +1058,7 @@ class student extends elis_data_object {
             $newarr = array();
             // $table->width = "100%"; // TBD
             $pmclass = new pmclass($classid);
-            if (empty(elis::$config->elis_program->force_unenrol_in_moodle)) {
+            if (empty(elis::$config->local_elisprogram->force_unenrol_in_moodle)) {
                 $mcourse = $pmclass->get_moodle_course_id();
                 $ctx = $mcourse ? get_context_instance(CONTEXT_COURSE, $mcourse) : 0;
             }
@@ -1219,9 +1218,9 @@ class student extends elis_data_object {
 
         if (!empty($newarr)) { // TBD: $newarr or $table?
             if (empty($this->id)) {
-                $PAGE->requires->js('/elis/program/js/classform_bulkedit.js');
+                $PAGE->requires->js('/local/elisprogram/js/classform_bulkedit.js');
                 $numselected_allpages = (!empty($SESSION->associationpage[$pagename]) ? count($SESSION->associationpage[$pagename]) : 0);
-                $str_numchanged_allpages = get_string('numchanged_allpages', 'elis_program',
+                $str_numchanged_allpages = get_string('numchanged_allpages', 'local_elisprogram',
                                                        array('num' => '<span id="numselected_allpages">'.$numselected_allpages.'</span>'));
                 echo '<div style="display:inline-block;width:100%">';
                 echo '<span style="float:right;font-weight:bold">'.$str_numchanged_allpages.'</span>';
@@ -1630,7 +1629,7 @@ class student extends elis_data_object {
         $where   = 'stu.classid = :clsid ';
         $params['clsid'] = $classid;
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where .= ' AND usr.inactive = 0 ';
         }
 
@@ -1689,7 +1688,7 @@ class student extends elis_data_object {
         $where   = 'stu.completestatusid = '.STUSTATUS_NOTCOMPLETE.' AND stu.classid = :clsid ';
         $params['clsid']= $classid;
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where .= ' AND usr.inactive = 0 ';
         }
 
@@ -1749,7 +1748,7 @@ class student extends elis_data_object {
             $params['lastname_startswith'] = "{$alpha}%";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where[] = 'usr.inactive = 0';
         }
 
@@ -1801,7 +1800,7 @@ class student extends elis_data_object {
             $params['lastname_startswith'] = "{$alpha}%";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where .= ' AND usr.inactive = 0 ';
         }
 
@@ -1840,7 +1839,7 @@ class student extends elis_data_object {
         // TODO: Ugly, this needs to be overhauled
         $cpage = new pmclasspage();
 
-        if (!$cpage->_has_capability('elis/program:class_enrol', $this->classid)) {
+        if (!$cpage->_has_capability('local/elisprogram:class_enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
@@ -1902,7 +1901,7 @@ class student extends elis_data_object {
             $params['lastname_startswith'] = "{$alpha}%";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where .= ' AND usr.inactive = 0 ';
         }
 
@@ -1939,7 +1938,7 @@ class student extends elis_data_object {
         // TODO: Ugly, this needs to be overhauled
         $cpage = new pmclasspage();
 
-        if (!$cpage->_has_capability('elis/program:class_enrol', $this->classid)) {
+        if (!$cpage->_has_capability('local/elisprogram:class_enrol', $this->classid)) {
             //perform SQL filtering for the more "conditional" capability
 
             $allowed_clusters = pmclass::get_allowed_clusters($this->classid);
@@ -2012,7 +2011,7 @@ class student extends elis_data_object {
         $where .= (!empty($where) ? ' AND ' : '') . 'classid = :clsid ';
         $params['clsid'] = $this->classid;
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where .= ' AND usr.inactive = 0';
         }
         $where = "WHERE $where ";
@@ -2086,7 +2085,7 @@ class student extends elis_data_object {
 
         $where .= (!empty($where) ? ' AND ' : '') . 'classid = :clsid ';
         $params['clsid'] = $this->classid;
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where .= 'AND usr.inactive = 0';
         }
         $where = "WHERE $where ";
@@ -2130,9 +2129,9 @@ class student extends elis_data_object {
         require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
-        $sendtouser       = elis::$config->elis_program->notify_classnotstarted_user;
-        $sendtorole       = elis::$config->elis_program->notify_classnotstarted_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_classnotstarted_supervisor;
+        $sendtouser       = elis::$config->local_elisprogram->notify_classnotstarted_user;
+        $sendtorole       = elis::$config->local_elisprogram->notify_classnotstarted_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_classnotstarted_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -2155,9 +2154,9 @@ class student extends elis_data_object {
         $message = new notification();
 
         /// Set up the text of the message
-        $text = empty(elis::$config->elis_program->notify_classnotstarted_message) ?
+        $text = empty(elis::$config->local_elisprogram->notify_classnotstarted_message) ?
                     get_string('notifyclassnotstartedmessagedef', self::LANG_FILE) :
-                    elis::$config->elis_program->notify_classnotstarted_message;
+                    elis::$config->local_elisprogram->notify_classnotstarted_message;
         $search = array('%%userenrolname%%', '%%classname%%', '%%coursename%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
         $user = new user($pmuser);
@@ -2182,14 +2181,14 @@ class student extends elis_data_object {
 
         if ($sendtorole) {
             /// Get all users with the notify_classnotstart capability.
-            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classnotstart')) {
+            if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_classnotstart')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $student->userid, 'elis/program:notify_classnotstart')) {
+            if ($supervisors = pm_get_users_by_capability('user', $student->userid, 'local/elisprogram:notify_classnotstart')) {
                 $users = $users + $supervisors;
             }
         }
@@ -2216,9 +2215,9 @@ class student extends elis_data_object {
         require_once elispm::lib('notifications.php');
 
         /// Does the user receive a notification?
-        $sendtouser = elis::$config->elis_program->notify_classnotcompleted_user;
-        $sendtorole = elis::$config->elis_program->notify_classnotcompleted_role;
-        $sendtosupervisor = elis::$config->elis_program->notify_classnotcompleted_supervisor;
+        $sendtouser = elis::$config->local_elisprogram->notify_classnotcompleted_user;
+        $sendtorole = elis::$config->local_elisprogram->notify_classnotcompleted_role;
+        $sendtosupervisor = elis::$config->local_elisprogram->notify_classnotcompleted_supervisor;
 
         /// If nobody receives a notification, we're done.
         if (!$sendtouser && !$sendtorole && !$sendtosupervisor) {
@@ -2241,9 +2240,9 @@ class student extends elis_data_object {
         $message = new notification();
 
         /// Set up the text of the message
-        $text = empty(elis::$config->elis_program->notify_classnotcompleted_message) ?
+        $text = empty(elis::$config->local_elisprogram->notify_classnotcompleted_message) ?
                     get_string('notifyclassnotcompletedmessagedef', self::LANG_FILE) :
-                    elis::$config->elis_program->notify_classnotcompleted_message;
+                    elis::$config->local_elisprogram->notify_classnotcompleted_message;
         $search = array('%%userenrolname%%', '%%classname%%', '%%coursename%%');
         $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
         $user = new user($pmuser);
@@ -2266,14 +2265,14 @@ class student extends elis_data_object {
 
         if ($sendtorole) {
             /// Get all users with the notify_classnotcomplete capability.
-            if ($roleusers = get_users_by_capability($context, 'elis/program:notify_classnotcomplete')) {
+            if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_classnotcomplete')) {
                 $users = $users + $roleusers;
             }
         }
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'elis/program:notify_classnotcomplete')) {
+            if ($supervisors = pm_get_users_by_capability('user', $user->id, 'local/elisprogram:notify_classnotcomplete')) {
                 $users = $users + $supervisors;
             }
         }
@@ -2305,13 +2304,13 @@ class student extends elis_data_object {
         if (!pmclasspage::can_enrol_into_class($classid)) {
             //the users who satisfty this condition are a superset of those who can manage associations
             return false;
-        } else if ($cpage->_has_capability('elis/program:class_enrol', $classid)) {
+        } else if ($cpage->_has_capability('local/elisprogram:class_enrol', $classid)) {
             //current user has the direct capability
             return true;
         }
 
         //get the context for the "indirect" capability
-        $context = pm_context_set::for_user_with_capability('cluster', 'elis/program:class_enrol_userset_user', $USER->id);
+        $context = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:class_enrol_userset_user', $USER->id);
 
         $allowed_clusters = array();
         $allowed_clusters = pmclass::get_allowed_clusters($classid);
@@ -2348,7 +2347,7 @@ class pmclass_enrolment_limit_validation_exception extends Exception {
 
 class student_grade extends elis_data_object {
     const TABLE = GRDTABLE;
-    const LANG_FILE = 'elis_program';
+    const LANG_FILE = 'local_elisprogram';
 
     var $verbose_name = 'student_grade'; // TBD
 
@@ -2604,7 +2603,7 @@ function student_get_listing($classid, $sort='name', $dir='ASC', $startrec=0, $p
         $params['lastname_startswith'] = "{$alpha}%";
     }
 
-    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+    if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
         $where .= ' AND usr.inactive = 0 ';
     }
 
@@ -2654,7 +2653,7 @@ function student_count_records($classid, $namesearch = '', $alpha = '') {
         $params['lastname_startswith'] = "{$alpha}%";
     }
 
-    if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+    if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
         $where .= ' AND usr.inactive = 0 ';
     }
 

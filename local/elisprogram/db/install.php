@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-function xmldb_elis_program_install() {
+function xmldb_local_elisprogram_install() {
     global $CFG;
 
     require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
-    require_once($CFG->dirroot.'/elis/program/lib/lib.php');
+    require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php');
 
     //make sure the site has exactly one curr admin block instance
     //that is viewable everywhere
     block_curr_admin_create_instance();
 
     // make sure that the manager role can be assigned to all PM context levels
-    update_capabilities('elis_program'); // load context levels
+    update_capabilities('local_elisprogram'); // load context levels
     pm_ensure_role_assignable('manager');
     pm_ensure_role_assignable('curriculumadmin');
 

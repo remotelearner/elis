@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="elis/program" VERSION="20111018" COMMENT="XMLDB file for Moodle ELIS Program Manager"
+<XMLDB PATH="local/elisprogram" VERSION="20111018" COMMENT="XMLDB file for Moodle ELIS Program Manager"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >

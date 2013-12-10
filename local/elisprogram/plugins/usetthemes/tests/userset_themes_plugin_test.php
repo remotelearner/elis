@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    pmplugins_userset_themes
+ * @package    elisprogram_usetthemes
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../eliscore/test_config.php');
 global $CFG;
 
 // Libs.
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
-require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+require_once(elis::file('eliscore/fields/moodle_profile/custom_fields.php'));
 
 /**
  * Test userset themes plugin.
- * @group pmplugins_userset_themes
- * @group elis_program
+ * @group elisprogram_usetthemes
+ * @group local_elisprogram
  */
 class usersetthemes_testcase extends elis_database_test {
     /**
@@ -46,7 +46,7 @@ class usersetthemes_testcase extends elis_database_test {
 
         require_once(dirname(__FILE__).'/../db/install.php');
 
-        $this->assertTrue(xmldb_pmplugins_userset_themes_install());
+        $this->assertTrue(xmldb_elisprogram_usetthemes_install());
 
         // Check the "group" field and owner.
         $field = $DB->get_record(field::TABLE, array('shortname' => '_elis_userset_themepriority'));

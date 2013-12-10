@@ -1,9 +1,7 @@
 <?php
 /**
- * Health check for ELIS.  Based heavily on /admin/health.php.
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -48,7 +45,7 @@ class healthpage extends pm_page {
     function build_navbar_default($who = null) {
         global $CFG, $PAGE;
 
-        $this->navbar->add(get_string('learningplan', 'elis_program'), "{$CFG->wwwroot}/elis/program/");
+        $this->navbar->add(get_string('learningplan', 'local_elisprogram'), "{$CFG->wwwroot}/local/elisprogram/");
         $baseurl = $this->url;
         $baseurl->remove_all_params();
         $this->navbar->add(get_string('pluginname', 'tool_health'),
@@ -78,7 +75,7 @@ class healthpage extends pm_page {
         $healthclasses = $core_health_checks;
 
         //include health classes from other files
-        $plugin_types = array('eliscoreplugins', 'pmplugins');
+        $plugin_types = array('eliscore', 'elisprogram');
 
         foreach ($plugin_types as $plugin_type) {
             $plugins = get_plugin_list($plugin_type);
@@ -95,7 +92,7 @@ class healthpage extends pm_page {
         }
 
         if ($verbose) {
-            echo get_string('health_checking', 'elis_program');
+            echo get_string('health_checking', 'local_elisprogram');
         }
         foreach ($healthclasses as $classname) {
             $problem = new $classname;
@@ -153,7 +150,7 @@ class healthpage extends pm_page {
         $classname = $this->required_param('problem', PARAM_SAFEDIR);
 
         //import files needed for other health classes
-        $plugin_types = array('eliscoreplugins', 'pmplugins');
+        $plugin_types = array('eliscore', 'elisprogram');
 
         foreach ($plugin_types as $plugin_type) {
             $plugins = get_plugin_list($plugin_type);
@@ -244,13 +241,13 @@ class health_duplicate_enrolments extends crlm_health_check_base {
         return healthpage::SEVERITY_CRITICAL;
     }
     function title() {
-        return get_string('health_duplicate', 'elis_program');
+        return get_string('health_duplicate', 'local_elisprogram');
     }
     function description() {
-        return get_string('health_duplicatedesc', 'elis_program', $this->count);
+        return get_string('health_duplicatedesc', 'local_elisprogram', $this->count);
     }
     function solution() {
-        $msg = get_string('health_duplicatesoln', 'elis_program');
+        $msg = get_string('health_duplicatesoln', 'local_elisprogram');
         return $msg;
     }
 }
@@ -277,18 +274,18 @@ class health_stale_cm_class_moodle extends crlm_health_check_base {
         return healthpage::SEVERITY_CRITICAL;
     }
     function title() {
-        return get_string('health_stale', 'elis_program');
+        return get_string('health_stale', 'local_elisprogram');
     }
     function description() {
         global $CFG;
-        return get_string('health_staledesc', 'elis_program',
+        return get_string('health_staledesc', 'local_elisprogram',
                    array('count' => $this->count,
                          'table' => $CFG->prefix . classmoodlecourse::TABLE));
     }
     function solution() {
         global $CFG;
 
-        $msg = get_string('health_stalesoln', 'elis_program').
+        $msg = get_string('health_stalesoln', 'local_elisprogram').
                 "<br/> USE {$CFG->dbname}; <br/>".
                 " DELETE FROM {$CFG->prefix}". classmoodlecourse::TABLE ." WHERE classid NOT IN (
                 SELECT id FROM {$CFG->prefix}". pmclass::TABLE ." );";
@@ -318,18 +315,18 @@ class health_curriculum_course extends crlm_health_check_base {
         return healthpage::SEVERITY_CRITICAL;
     }
     function title() {
-        return get_string('health_curriculum', 'elis_program');
+        return get_string('health_curriculum', 'local_elisprogram');
     }
     function description() {
         global $CFG;
-        return get_string('health_curriculumdesc', 'elis_program',
+        return get_string('health_curriculumdesc', 'local_elisprogram',
                    array('count' => $this->count,
                          'table' => $CFG->prefix . curriculumcourse::TABLE));
     }
     function solution() {
         global $CFG;
 
-        $msg = get_string('health_curriculumsoln', 'elis_program').
+        $msg = get_string('health_curriculumsoln', 'local_elisprogram').
                 "<br/> USE {$CFG->dbname}; <br/>".
                 "DELETE FROM {$CFG->prefix}". curriculumcourse::TABLE ." WHERE courseid NOT IN (
                  SELECT id FROM {$CFG->prefix}". course::TABLE ." );";
@@ -393,18 +390,18 @@ class health_user_sync extends crlm_health_check_base {
         return healthpage::SEVERITY_CRITICAL;
     }
     function title() {
-        return get_string('health_user_sync', 'elis_program');
+        return get_string('health_user_sync', 'local_elisprogram');
     }
     function description() {
         $msg = '';
         if ($this->count > 0) {
-            $msg = get_string('health_user_syncdesc', 'elis_program', $this->count);
+            $msg = get_string('health_user_syncdesc', 'local_elisprogram', $this->count);
         }
         if ($this->dupids > 0) {
             if (!empty($msg)) {
                 $msg .= "<br/>\n";
             }
-            $msg .= get_string('health_user_dupiddesc', 'elis_program', $this->dupids);
+            $msg .= get_string('health_user_dupiddesc', 'local_elisprogram', $this->dupids);
         }
         return $msg;
     }
@@ -413,14 +410,14 @@ class health_user_sync extends crlm_health_check_base {
 
         $msg = '';
         if ($this->dupids > 0) {
-            $msg = get_string('health_user_dupidsoln', 'elis_program');
+            $msg = get_string('health_user_dupidsoln', 'local_elisprogram');
         }
         if ($this->count > $this->dupids) {
             // ELIS-3963: Only run migrate script if more mismatches then dups
             if (!empty($msg)) {
                 $msg .= "<br/>\n";
             }
-            $msg .= get_string('health_user_syncsoln', 'elis_program', $CFG->wwwroot);
+            $msg .= get_string('health_user_syncsoln', 'local_elisprogram', $CFG->wwwroot);
         }
         return $msg;
     }
@@ -459,7 +456,7 @@ class cluster_orphans_check extends crlm_health_check_base {
     }
 
     function title() {
-        return get_string('health_cluster_orphans', 'elis_program');
+        return get_string('health_cluster_orphans', 'local_elisprogram');
     }
 
     function severity() {
@@ -468,13 +465,13 @@ class cluster_orphans_check extends crlm_health_check_base {
 
     function description() {
         if (count($this->parentBad) > 0) {
-            $msg = get_string('health_cluster_orphansdesc', 'elis_program', array('count'=>count($this->parentBad)));
+            $msg = get_string('health_cluster_orphansdesc', 'local_elisprogram', array('count'=>count($this->parentBad)));
             foreach ($this->parentBad as $parentName) {
                 $msg .= '<li>'.$parentName.'</li>';
             }
             $msg .= '</ul>';
         } else {
-            $msg =  get_string('health_cluster_orphansdescnone', 'elis_program'); // We should not reach here but put in just in case
+            $msg =  get_string('health_cluster_orphansdescnone', 'local_elisprogram'); // We should not reach here but put in just in case
         }
 
         return $msg;
@@ -482,7 +479,7 @@ class cluster_orphans_check extends crlm_health_check_base {
 
     function solution() {
         global $CFG;
-        $msg = get_string('health_cluster_orphanssoln', 'elis_program', $CFG->dirroot);
+        $msg = get_string('health_cluster_orphanssoln', 'local_elisprogram', $CFG->dirroot);
         return $msg;
     }
 }
@@ -522,7 +519,7 @@ class track_classes_check extends crlm_health_check_base {
     }
 
     function title() {
-        return get_string('health_trackcheck', 'elis_program');
+        return get_string('health_trackcheck', 'local_elisprogram');
     }
 
     function severity() {
@@ -530,14 +527,14 @@ class track_classes_check extends crlm_health_check_base {
     }
 
     function description() {
-        $msg = get_string('health_trackcheckdesc', 'elis_program', count($this->unattachedClasses));
+        $msg = get_string('health_trackcheckdesc', 'local_elisprogram', count($this->unattachedClasses));
 
         return $msg;
     }
 
     function solution() {
         global $CFG;
-        $msg = get_string('health_trackchecksoln', 'elis_program', $CFG->wwwroot);
+        $msg = get_string('health_trackchecksoln', 'local_elisprogram', $CFG->wwwroot);
         return $msg;
     }
 }
@@ -553,7 +550,7 @@ class completion_export_check extends crlm_health_check_base {
     }
 
     function title() {
-        return get_string('health_completion', 'elis_program');
+        return get_string('health_completion', 'local_elisprogram');
     }
 
     function severity() {
@@ -561,12 +558,12 @@ class completion_export_check extends crlm_health_check_base {
     }
 
     function description() {
-        return get_string('health_completiondesc', 'elis_program');
+        return get_string('health_completiondesc', 'local_elisprogram');
     }
 
     function solution() {
         global $CFG;
-        return get_string('health_completionsoln', 'elis_program', $CFG);
+        return get_string('health_completionsoln', 'local_elisprogram', $CFG);
     }
 }
 
@@ -575,7 +572,7 @@ class completion_export_check extends crlm_health_check_base {
  */
 class cron_lastruntimes_check extends crlm_health_check_base {
     private $blocks = array(); // empty array for none; 'curr_admin' ?
-    private $plugins = array(); // TBD: 'elis_program', 'elis_core' ?
+    private $plugins = array(); // TBD: 'local_elisprogram', 'elis_core' ?
 
     function exists() {
         global $DB;
@@ -600,7 +597,7 @@ class cron_lastruntimes_check extends crlm_health_check_base {
     }
 
     function title() {
-        return get_string('health_cron_title', 'elis_program');
+        return get_string('health_cron_title', 'local_elisprogram');
     }
 
     function severity() {
@@ -616,8 +613,8 @@ class cron_lastruntimes_check extends crlm_health_check_base {
             if ($lastcron < $threshold) {
                 $a = new stdClass;
                 $a->name = $block;
-                $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
-                $description .= get_string('health_cron_block', 'elis_program', $a);
+                $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'local_elisprogram');
+                $description .= get_string('health_cron_block', 'local_elisprogram', $a);
             }
         }
         foreach ($this->plugins as $plugin) {
@@ -625,20 +622,20 @@ class cron_lastruntimes_check extends crlm_health_check_base {
             if ($lastcron < $threshold) {
                 $a = new stdClass;
                 $a->name = $plugin;
-                $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'elis_program');
-                $description .= get_string('health_cron_plugin', 'elis_program', $a);
+                $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'local_elisprogram');
+                $description .= get_string('health_cron_plugin', 'local_elisprogram', $a);
             }
         }
         $lasteliscron = $DB->get_field('elis_scheduled_tasks', 'MAX(lastruntime)', array());
         if ($lasteliscron < $threshold) {
-            $lastcron = $lasteliscron ? userdate($lasteliscron) : get_string('cron_notrun', 'elis_program');
-            $description .= get_string('health_cron_elis', 'elis_program', $lastcron);
+            $lastcron = $lasteliscron ? userdate($lasteliscron) : get_string('cron_notrun', 'local_elisprogram');
+            $description .= get_string('health_cron_elis', 'local_elisprogram', $lastcron);
         }
         return $description;
     }
 
     function solution() {
-        return get_string('health_cron_soln', 'elis_program');
+        return get_string('health_cron_soln', 'local_elisprogram');
     }
 }
 
@@ -662,7 +659,7 @@ class duplicate_moodle_profile extends crlm_health_check_base {
         return healthpage::SEVERITY_ANNOYANCE;
     }
     function title() {
-        return get_string('health_dupmoodleprofile', 'elis_program');
+        return get_string('health_dupmoodleprofile', 'local_elisprogram');
     }
     function description() {
         $count = 0;
@@ -670,11 +667,11 @@ class duplicate_moodle_profile extends crlm_health_check_base {
             $count += $dup->dup;
         }
         $this->counts->close();
-        return get_string('health_dupmoodleprofiledesc', 'elis_program', $count);
+        return get_string('health_dupmoodleprofiledesc', 'local_elisprogram', $count);
     }
     function solution() {
         global $CFG;
-        return get_string('health_dupmoodleprofilesoln', 'elis_program', $CFG->dirroot);
+        return get_string('health_dupmoodleprofilesoln', 'local_elisprogram', $CFG->dirroot);
     }
 }
 
@@ -685,7 +682,7 @@ class dangling_completion_locks extends crlm_health_check_base {
     function __construct() {
         global $CFG, $DB;
 
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once elispm::lib('data/student.class.php');
 
         // Check for unlocked, passed completion scores which are not associated with a valid Moodle grade item
@@ -736,15 +733,15 @@ class dangling_completion_locks extends crlm_health_check_base {
     }
 
     function title() {
-        return get_string('health_danglingcompletionlocks','elis_program');
+        return get_string('health_danglingcompletionlocks','local_elisprogram');
     }
 
     function description() {
-        return get_string('health_danglingcompletionlocksdesc','elis_program', $this->count);
+        return get_string('health_danglingcompletionlocksdesc','local_elisprogram', $this->count);
     }
 
     function solution() {
-        $msg = get_string('health_danglingcompletionlockssoln','elis_program');
+        $msg = get_string('health_danglingcompletionlockssoln','local_elisprogram');
         return $msg;
     }
 }
@@ -766,13 +763,13 @@ class duplicate_course_los extends crlm_health_check_base {
         return healthpage::SEVERITY_SIGNIFICANT; // ANNOYANCE ???
     }
     function title() {
-        return get_string('health_dupcourselos', 'elis_program');
+        return get_string('health_dupcourselos', 'local_elisprogram');
     }
     function description() {
-        return get_string('health_dupcourselosdesc', 'elis_program');
+        return get_string('health_dupcourselosdesc', 'local_elisprogram');
     }
     function solution() {
-        return get_string('health_dupcourselossoln', 'elis_program');
+        return get_string('health_dupcourselossoln', 'local_elisprogram');
     }
 }
 

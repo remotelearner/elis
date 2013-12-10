@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -26,7 +26,7 @@
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
 
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Data classes.
 require_once(elispm::lib('data/course.class.php'));
@@ -34,7 +34,7 @@ require_once(elispm::lib('data/course.class.php'));
 /**
  * Class for testing that automatic class completion, based on grade and
  * learning objectives, works
- * @group elis_program
+ * @group local_elisprogram
  */
 class autoclasscompletion_testcase extends elis_database_test {
 
@@ -43,12 +43,12 @@ class autoclasscompletion_testcase extends elis_database_test {
      */
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            user::TABLE => elis::component_file('program', 'tests/fixtures/pmuser.csv'),
-            course::TABLE => elis::component_file('program', 'tests/fixtures/pmcompletioncourse.csv'),
-            pmclass::TABLE => elis::component_file('program', 'tests/fixtures/pmclass.csv'),
-            student::TABLE => elis::component_file('program', 'tests/fixtures/completionstudent.csv'),
-            coursecompletion::TABLE => elis::component_file('program', 'tests/fixtures/course_completion.csv'),
-            student_grade::TABLE => elis::component_file('program', 'tests/fixtures/class_graded.csv'),
+            user::TABLE => elispm::file('tests/fixtures/pmuser.csv'),
+            course::TABLE => elispm::file('tests/fixtures/pmcompletioncourse.csv'),
+            pmclass::TABLE => elispm::file('tests/fixtures/pmclass.csv'),
+            student::TABLE => elispm::file('tests/fixtures/completionstudent.csv'),
+            coursecompletion::TABLE => elispm::file('tests/fixtures/course_completion.csv'),
+            student_grade::TABLE => elispm::file('tests/fixtures/class_graded.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -58,7 +58,7 @@ class autoclasscompletion_testcase extends elis_database_test {
      */
     public function test_autoclasscompletion_respectsrequiredstatus() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('lib.php'));
 
         // Load our data.
@@ -91,7 +91,7 @@ class autoclasscompletion_testcase extends elis_database_test {
      */
     public function test_enrolment_with_invalid_classid() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('lib.php'));
 
         $this->load_csv_data();

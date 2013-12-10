@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,11 +25,11 @@
 
 require_once(dirname(__FILE__).'/../../core/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::file('rolepage.class.php'));
-require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+require_once(elispm::file('enrol/userset/moodleprofile/userset_profile.class.php'));
 require_once(elispm::lib('data/clusterassignment.class.php'));
 require_once(elispm::lib('data/user.class.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
@@ -52,7 +52,7 @@ class accessible_cluster_rolepage extends cluster_rolepage {
 
 /**
  * Test class for testing special ELIS roles functionality.
- * @group elis_program
+ * @group local_elisprogram
  */
 class roles_testcase extends elis_database_test {
 
@@ -104,7 +104,7 @@ class roles_testcase extends elis_database_test {
         $permissionsroleid = create_role('permissionsrole', 'permissionsrole', 'permissionsrole');
         // Enable the appropriate capabilities.
         assign_capability('moodle/role:assign', CAP_ALLOW, $permissionsroleid, $systemcontext->id);
-        assign_capability('elis/program:userset_role_assign_userset_users', CAP_ALLOW, $permissionsroleid, $systemcontext->id);
+        assign_capability('local/elisprogram:userset_role_assign_userset_users', CAP_ALLOW, $permissionsroleid, $systemcontext->id);
 
         // Perform the role assignment.
         $moodleuserid = $DB->get_field('user', 'id', array('username' => 'assigning'));
@@ -143,7 +143,7 @@ class roles_testcase extends elis_database_test {
         accesslib_clear_all_caches(true);
 
         // Create a user record so that Moodle and PM ids don't match by fluke.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
         create_user_record('bogususer', 'Bogususer!0');
 
@@ -184,7 +184,7 @@ class roles_testcase extends elis_database_test {
         $permissionsroleid = create_role('permissionsrole', 'permissionsrole', 'permissionsrole');
         // Enable the appropriate capabilities.
         assign_capability('moodle/role:assign', CAP_ALLOW, $permissionsroleid, $systemcontext->id);
-        assign_capability('elis/program:userset_role_assign_userset_users', CAP_ALLOW, $permissionsroleid,
+        assign_capability('local/elisprogram:userset_role_assign_userset_users', CAP_ALLOW, $permissionsroleid,
                           $systemcontext->id);
 
         // Perform the role assignment.
@@ -220,7 +220,7 @@ class roles_testcase extends elis_database_test {
      *         'shortname' => 'role_short_name',
      *         'name'      => 'role_name',
      *         'contexts'  => array(contextlevels), // assignable context levels
-     *         'caps'      => array('elis/program:config' => CAP_ALLOW, ...) // CAPS
+     *         'caps'      => array('local/elisprogram:config' => CAP_ALLOW, ...) // CAPS
      *     ), ... ),
      *     array(passedcontextlevels), // contextlevel array to pass to pm_get_select_roles_for_contexts() as 2nd param
      *     array(expectedrolesarray) // expected associative array: roleshortname => rolename
@@ -232,7 +232,7 @@ class roles_testcase extends elis_database_test {
             'shortname' => 'SystemRole',
             'name'      => '', // Intentionally blank!
             'contexts'  => array(CONTEXT_SYSTEM),
-            'caps'      => array('elis/program:config' => CAP_ALLOW)
+            'caps'      => array('local/elisprogram:config' => CAP_ALLOW)
         );
         $mdlcrsrole = array(
             'shortname' => 'MoodleCourseRole',
@@ -244,31 +244,31 @@ class roles_testcase extends elis_database_test {
             'shortname' => 'elisclassrole',
             'name'      => 'ELIS Class Instance Role',
             'contexts'  => array(CONTEXT_ELIS_CLASS),
-            'caps'      => array('elis/program:class_edit' => CAP_ALLOW)
+            'caps'      => array('local/elisprogram:class_edit' => CAP_ALLOW)
         );
         $usrole = array(
             'shortname' => 'elisusrole',
             'name'      => 'ELIS Userset Role',
             'contexts'  => array(CONTEXT_ELIS_USERSET),
-            'caps'      => array('elis/program:userset_view' => CAP_ALLOW)
+            'caps'      => array('local/elisprogram:userset_view' => CAP_ALLOW)
         );
         $prgrole = array(
             'shortname' => 'elisprgrole',
             'name'      => 'ELIS Program Role',
             'contexts'  => array(CONTEXT_ELIS_PROGRAM),
-            'caps'      => array('elis/program:program_view' => CAP_ALLOW)
+            'caps'      => array('local/elisprogram:program_view' => CAP_ALLOW)
         );
         $trkrole = array(
             'shortname' => 'elistrkrole',
             'name'      => 'ELIS Track Role',
             'contexts'  => array(CONTEXT_ELIS_TRACK),
-            'caps'      => array('elis/program:track_view' => CAP_ALLOW)
+            'caps'      => array('local/elisprogram:track_view' => CAP_ALLOW)
         );
         $multirole = array(
             'shortname' => 'multirole',
             'name'      => 'Multi-Role',
             'contexts'  => array(CONTEXT_SYSTEM, CONTEXT_ELIS_COURSE, CONTEXT_ELIS_USERSET, CONTEXT_ELIS_TRACK),
-            'caps'      => array('elis/program:user_view' => CAP_ALLOW)
+            'caps'      => array('local/elisprogram:user_view' => CAP_ALLOW)
         );
         return array(
             array(
@@ -321,7 +321,7 @@ class roles_testcase extends elis_database_test {
     }
 
     /**
-     * Method to test function /elis/program/lib/lib.php::pm_get_select_roles_for_contexts()
+     * Method to test function /local/elisprogram/lib/lib.php::pm_get_select_roles_for_contexts()
      * part of ELIS-8341
      * @param array $testroles array of role 'objects' to create
      * @param array $passedcontexts  array of contexts to pass to function under  test

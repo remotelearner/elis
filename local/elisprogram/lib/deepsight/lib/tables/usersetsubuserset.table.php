@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis_program
+ * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -50,8 +50,8 @@ class deepsight_datatable_usersetsubuserset_base extends deepsight_datatable_use
      */
     public function get_js_dependencies() {
         $deps = parent::get_js_dependencies();
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_confirm.js';
-        $deps[] = '/elis/program/lib/deepsight/js/actions/deepsight_action_link.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_confirm.js';
+        $deps[] = '/local/elisprogram/lib/deepsight/js/actions/deepsight_action_link.js';
         return $deps;
     }
 
@@ -79,32 +79,32 @@ class deepsight_datatable_usersetsubuserset_assigned extends deepsight_datatable
     public function get_actions() {
         $actions = parent::get_actions();
 
-        $langedit = get_string('edit', 'elis_program');
+        $langedit = get_string('edit', 'local_elisprogram');
         $actions[] = new deepsight_action_usersetsubuserset_editlink($this->DB, 'usersetsubuserset_editlink', $langedit);
 
-        $langtracks = get_string('tracks', 'elis_program');
+        $langtracks = get_string('tracks', 'local_elisprogram');
         $actions[] = new deepsight_action_usersetsubuserset_trackslink($this->DB, 'usersetsubuserset_trackslink', $langtracks);
 
-        $langusers = get_string('users', 'elis_program');
+        $langusers = get_string('users', 'local_elisprogram');
         $actions[] = new deepsight_action_usersetsubuserset_userslink($this->DB, 'usersetsubuserset_userslink', $langusers);
 
-        $langpgms = get_string('curricula', 'elis_program');
+        $langpgms = get_string('curricula', 'local_elisprogram');
         $actions[] = new deepsight_action_usersetsubuserset_programslink($this->DB, 'usersetsubuserset_programslink', $langpgms);
 
-        $langdelete = get_string('delete', 'elis_program');
+        $langdelete = get_string('delete', 'local_elisprogram');
         $actions[] = new deepsight_action_usersetsubuserset_deletelink($this->DB, 'usersetsubuserset_deletelink', $langdelete);
 
         return $actions;
     }
 
     /**
-     * Restrict assigned list to usersets the user has elis/program:userset_view permissions on.
+     * Restrict assigned list to usersets the user has local/elisprogram:userset_view permissions on.
      * @return array An array consisting of additional WHERE conditions, and parameters.
      */
     protected function get_filter_sql_permissions() {
         global $USER;
         $ctxlevel = 'cluster';
-        $perm = 'elis/program:userset_view';
+        $perm = 'local/elisprogram:userset_view';
         $additionalfilters = array();
         $additionalparams = array();
         $associatectxs = pm_context_set::for_user_with_capability($ctxlevel, $perm, $USER->id);
@@ -186,13 +186,13 @@ class deepsight_datatable_usersetsubuserset_available extends deepsight_datatabl
     }
 
     /**
-     * Restrict assigned list to usersets the user has elis/program:userset_view permissions on.
+     * Restrict assigned list to usersets the user has local/elisprogram:userset_view permissions on.
      * @return array An array consisting of additional WHERE conditions, and parameters.
      */
     protected function get_filter_sql_permissions() {
         global $USER;
         $ctxlevel = 'cluster';
-        $perm = 'elis/program:userset_edit';
+        $perm = 'local/elisprogram:userset_edit';
         $additionalfilters = array();
         $additionalparams = array();
         $associatectxs = pm_context_set::for_user_with_capability($ctxlevel, $perm, $USER->id);

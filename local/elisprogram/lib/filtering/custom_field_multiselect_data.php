@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/user/filters/lib.php');
-//require_once($CFG->dirroot .'/elis/program/lib/filtering/custom_field_multiselect.php');
+//require_once($CFG->dirroot .'/local/elisprogram/lib/filtering/custom_field_multiselect.php');
 
 /**
  * Generic filter based on a list of values.
