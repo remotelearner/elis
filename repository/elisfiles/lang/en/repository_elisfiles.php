@@ -18,9 +18,9 @@
 /**
  * Strings for component 'repository_alfresco', language 'en', branch 'MOODLE_20_STABLE'
  *
- * @package   repository_elis_files
- * @copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package    repository_elisfiles
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -90,7 +90,7 @@ $string['configpasswordlessusersync'] = 'Your site contains users with an authen
                                         'In order for those users to be able to properly use this plug-in from Moodle, they '.
                                         'need to have Alfresco accounts created with a generated password. You can do this '.
                                         'automatically by running the <em>np_user_sync.php</em> script within the '.
-                                        '<pre>repository/elis_files directory</pre>';
+                                        '<pre>repository/elisfiles directory</pre>';
 $string['configuserquota'] = 'Set the default value for how much storage space all Moodle users on Alfresco can use.  ' .
                              '<b>Select Unlimited for unlimited storage space.</b>';
 $string['configurecategoryfilter'] = 'Configure category filter';
@@ -128,17 +128,17 @@ $string['detailview'] = 'View details';
 $string['description'] = 'Connect to the Alfresco document management system repository.';
 $string['done'] = 'done';
 $string['elisfilesnotinstalled'] = '<b>ELIS Files must be configured and saved first</b>';
-$string['elis_files:view'] = 'View ELIS Files Repository';
-$string['elis_files:createsitecontent'] = 'Create site-level content';
-$string['elis_files:viewsitecontent'] = 'View site-level content';
-$string['elis_files:createsharedcontent'] = 'Create shared content';
-$string['elis_files:viewsharedcontent'] = 'View shared content';
-$string['elis_files:createcoursecontent'] = 'Create course-level content';
-$string['elis_files:viewcoursecontent'] = 'View course-level content';
-$string['elis_files:createowncontent'] = 'Create personal content';
-$string['elis_files:viewowncontent'] = 'View personal content';
-$string['elis_files:createusersetcontent'] = 'Create shared userset content';
-$string['elis_files:viewusersetcontent'] = 'View shared userset content';
+$string['elisfiles:view'] = 'View ELIS Files Repository';
+$string['elisfiles:createsitecontent'] = 'Create site-level content';
+$string['elisfiles:viewsitecontent'] = 'View site-level content';
+$string['elisfiles:createsharedcontent'] = 'Create shared content';
+$string['elisfiles:viewsharedcontent'] = 'View shared content';
+$string['elisfiles:createcoursecontent'] = 'Create course-level content';
+$string['elisfiles:viewcoursecontent'] = 'View course-level content';
+$string['elisfiles:createowncontent'] = 'Create personal content';
+$string['elisfiles:viewowncontent'] = 'View personal content';
+$string['elisfiles:createusersetcontent'] = 'Create shared userset content';
+$string['elisfiles:viewusersetcontent'] = 'View shared userset content';
 $string['elis_files_category_filter'] = 'Choose the categories available when filtering search results';
 $string['elis_files_default_admin_username'] = 'Default: moodleadmin';
 $string['elis_files_default_alfresco_version'] = 'Default: None';

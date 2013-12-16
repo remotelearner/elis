@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,33 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 global $CFG;
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php');
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
+require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib/ELIS_files.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 }
-require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
+require_once($CFG->dirroot.'/repository/elisfiles/tests/constants.php');
 
 /**
  * Mock class that allows us to not run back-end Alfresco calls when we can avoid them
  * @author brendan
  */
-class repository_elis_files_mock extends repository_elis_files {
+class repository_elisfiles_mock extends repository_elisfiles {
     /** @var string $type this property is required otherwise a bunch of phpunit tests will fail */
-    public $type = 'repository_elis_files';
+    public $type = 'repository_elisfiles';
 
     /*
      * Calculate the 'top' of the breadcrumb and then call the requested get_parent_path method
@@ -226,9 +226,9 @@ class mock_ELIS_files extends ELIS_files {
 
 /**
  * Class to test permissions
- * @group repository_elis_files
+ * @group repository_elisfiles
  */
-class repository_elis_files_permissions_testcase extends elis_database_test {
+class repository_elisfiles_permissions_testcase extends elis_database_test {
     /** @var array $createduuids test uuids */
     protected $createduuids = array();
 
@@ -245,7 +245,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_permissions_test_data.xml'));
 
         // Check if Alfresco is enabled, configured and running first.
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
         }
     }
@@ -310,8 +310,8 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      */
     public function shared_browsing_capability_provider() {
         return array(
-                array('repository/elis_files:viewsharedcontent'),
-                array('repository/elis_files:createsharedcontent')
+                array('repository/elisfiles:viewsharedcontent'),
+                array('repository/elisfiles:createsharedcontent')
         );
     }
 
@@ -342,7 +342,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         role_assign($roleid, $USER->id, $context->id);
 
         // Set default browsing location to "shared"
-        $config = get_config('elis_files');
+        $config = get_config('elisfiles');
         $config->default_browse = ELIS_FILES_BROWSE_SHARED_FILES;
 
         $elisfiles = repository_factory::factory();
@@ -367,8 +367,8 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      */
     public function site_capability_provider() {
         return array(
-            array('repository/elis_files:viewsitecontent'),
-            array('repository/elis_files:createsitecontent')
+            array('repository/elisfiles:viewsitecontent'),
+            array('repository/elisfiles:createsitecontent')
         );
     }
 
@@ -379,9 +379,9 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      */
     public function user_capability_provider() {
         return array(
-            array('repository/elis_files:viewsitecontent'),
-            array('repository/elis_files:createsitecontent'),
-            array('repository/elis_files:createowncontent'),
+            array('repository/elisfiles:viewsitecontent'),
+            array('repository/elisfiles:createsitecontent'),
+            array('repository/elisfiles:createowncontent'),
         );
     }
 
@@ -403,8 +403,8 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
+        $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
+                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
 
         $this->setUser(100);
         // Set the username to the fixed value get_info will return for title
@@ -433,9 +433,9 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      */
     public function course_capability_provider() {
         return array(
-                array('repository/elis_files:viewsitecontent'),
-                array('repository/elis_files:createsitecontent'),
-                array('repository/elis_files:createcoursecontent'),
+                array('repository/elisfiles:viewsitecontent'),
+                array('repository/elisfiles:createsitecontent'),
+                array('repository/elisfiles:createcoursecontent'),
         );
     }
 
@@ -457,15 +457,15 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
+        $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
+                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
 
         $courseid = 99;
 
         $mapping = new stdClass;
         $mapping->courseid = $courseid;
         $mapping->uuid = 'testcuuid';
-        $DB->insert_record('elis_files_course_store', $mapping);
+        $DB->insert_record('repository_elisfiles_course', $mapping);
 
         $this->setUser(100);
 
@@ -490,9 +490,9 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      */
     public function userset_capability_provider() {
         return array(
-                array('repository/elis_files:viewsitecontent'),
-                array('repository/elis_files:createsitecontent'),
-                array('repository/elis_files:createusersetcontent'),
+                array('repository/elisfiles:viewsitecontent'),
+                array('repository/elisfiles:createsitecontent'),
+                array('repository/elisfiles:createusersetcontent'),
         );
     }
 
@@ -521,8 +521,8 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
+        $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
+                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
 
         $userset = new userset(array(
             'name' => 'testusersetname'
@@ -532,7 +532,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         $mapping = new stdClass;
         $mapping->usersetid = $userset->id;
         $mapping->uuid = 'testouuid';
-        $DB->insert_record('elis_files_userset_store', $mapping);
+        $DB->insert_record('repository_elisfiles_userset', $mapping);
 
         $this->setUser(100);
 
@@ -558,9 +558,9 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      */
     public function shared_capability_provider() {
         return array(
-                array('repository/elis_files:viewsitecontent'),
-                array('repository/elis_files:createsitecontent'),
-                array('repository/elis_files:createsharedcontent'),
+                array('repository/elisfiles:viewsitecontent'),
+                array('repository/elisfiles:createsitecontent'),
+                array('repository/elisfiles:createsharedcontent'),
         );
     }
 
@@ -582,8 +582,8 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
+        $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
+                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
 
         $this->setUser(100);
         $roleid = $this->assign_role_capability($capability);
@@ -619,8 +619,8 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Setup
-        $repo = @new repository_elis_files_mock('repository_elis_files', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
+        $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
+                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
 
         $this->setUser(100);
         $roleid = $this->assign_role_capability($capability);
@@ -674,13 +674,13 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         // Validation: should have site, shared, and user files
         $this->assertEquals(3, count($options));
 
-        $sitefileslabel = get_string('repositorysitefiles', 'repository_elis_files');
+        $sitefileslabel = get_string('repositorysitefiles', 'repository_elisfiles');
         $this->assertEquals($sitefileslabel, $options[0]['name']);
 
-        $sharedfileslabel = get_string('repositoryserverfiles', 'repository_elis_files');
+        $sharedfileslabel = get_string('repositoryserverfiles', 'repository_elisfiles');
         $this->assertEquals($sharedfileslabel, $options[1]['name']);
 
-        $userfileslabel = get_string('repositoryuserfiles', 'repository_elis_files');
+        $userfileslabel = get_string('repositoryuserfiles', 'repository_elisfiles');
         $this->assertEquals($userfileslabel, $options[2]['name']);
     }
 
@@ -721,13 +721,13 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         // Validation: should have site, shared, and user files
         $this->assertEquals(3, count($options));
 
-        $sitefileslabel = get_string('repositorycoursefiles', 'repository_elis_files');
+        $sitefileslabel = get_string('repositorycoursefiles', 'repository_elisfiles');
         $this->assertEquals($sitefileslabel, $options[0]['name']);
 
-        $sharedfileslabel = get_string('repositoryserverfiles', 'repository_elis_files');
+        $sharedfileslabel = get_string('repositoryserverfiles', 'repository_elisfiles');
         $this->assertEquals($sharedfileslabel, $options[1]['name']);
 
-        $userfileslabel = get_string('repositoryuserfiles', 'repository_elis_files');
+        $userfileslabel = get_string('repositoryuserfiles', 'repository_elisfiles');
         $this->assertEquals($userfileslabel, $options[2]['name']);
     }
 
@@ -739,10 +739,10 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
      */
     public function userset_folders_provider() {
         return array(
-                array('repository/elis_files:viewsitecontent', false, array('testusersetname')),
-                array('repository/elis_files:viewsitecontent', true, array()),
-                array('repository/elis_files:createsitecontent', false, array('testusersetname')),
-                array('repository/elis_files:createsitecontent', true, array('testusersetname'))
+                array('repository/elisfiles:viewsitecontent', false, array('testusersetname')),
+                array('repository/elisfiles:viewsitecontent', true, array()),
+                array('repository/elisfiles:createsitecontent', false, array('testusersetname')),
+                array('repository/elisfiles:createsitecontent', true, array('testusersetname'))
         );
     }
 
@@ -767,7 +767,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         global $DB, $USER;
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/userset.class.php'));
-        require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
+        require_once(elispm::file('plugins/usetclassify/usersetclassification.class.php'));
         require_once(elispm::file('accesslib.php'));
 
         // Make sure the test user is not mistaken for a site admin or guest
@@ -798,7 +798,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
 
         // Assign the "view userset content" role to the test user
         $usersetcontext = context_elis_userset::instance($userset->id);
-        $roleid = $this->assign_role_capability('repository/elis_files:viewusersetcontent', 100);
+        $roleid = $this->assign_role_capability('repository/elisfiles:viewusersetcontent', 100);
         role_assign($roleid, $USER->id, $usersetcontext->id);
 
         // Obtain the set of userset folders
@@ -825,21 +825,21 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
     public function get_repository_location_provider() {
         return array(
                 // course
-                array(true, false, false, false, 'repository/elis_files:viewsitecontent'),
-                array(true, false, false, false, 'repository/elis_files:createsitecontent'),
-                array(true, false, false, false, 'repository/elis_files:createcoursecontent'),
+                array(true, false, false, false, 'repository/elisfiles:viewsitecontent'),
+                array(true, false, false, false, 'repository/elisfiles:createsitecontent'),
+                array(true, false, false, false, 'repository/elisfiles:createcoursecontent'),
                 // shared
-                array(false, true, false, false, 'repository/elis_files:viewsitecontent'),
-                array(false, true, false, false, 'repository/elis_files:createsitecontent'),
-                array(false, true, false, false, 'repository/elis_files:createsharedcontent'),
+                array(false, true, false, false, 'repository/elisfiles:viewsitecontent'),
+                array(false, true, false, false, 'repository/elisfiles:createsitecontent'),
+                array(false, true, false, false, 'repository/elisfiles:createsharedcontent'),
                 // userset
-                array(false, false, true, false, 'repository/elis_files:viewsitecontent'),
-                array(false, false, true, false, 'repository/elis_files:createsitecontent'),
-                array(false, false, true, false, 'repository/elis_files:createusersetcontent'),
+                array(false, false, true, false, 'repository/elisfiles:viewsitecontent'),
+                array(false, false, true, false, 'repository/elisfiles:createsitecontent'),
+                array(false, false, true, false, 'repository/elisfiles:createusersetcontent'),
                 // own
-                array(false, false, false, true, 'repository/elis_files:viewsitecontent'),
-                array(false, false, false, true, 'repository/elis_files:createsitecontent'),
-                array(false, false, false, true, 'repository/elis_files:createowncontent')
+                array(false, false, false, true, 'repository/elisfiles:viewsitecontent'),
+                array(false, false, false, true, 'repository/elisfiles:createsitecontent'),
+                array(false, false, false, true, 'repository/elisfiles:createowncontent')
         );
     }
 
@@ -892,7 +892,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
             $mapping = new stdClass;
             $mapping->courseid = $cid;
             $uuid = $mapping->uuid = 'courseuuid';
-            $DB->insert_record('elis_files_course_store', $mapping);
+            $DB->insert_record('repository_elisfiles_course', $mapping);
         }
 
         if ($shared) {
@@ -910,7 +910,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
             $mapping = new stdClass;
             $oid = $mapping->usersetid = $userset->id;
             $uuid = $mapping->uuid = 'usersetuuid';
-            $DB->insert_record('elis_files_userset_store', $mapping);
+            $DB->insert_record('repository_elisfiles_userset', $mapping);
         }
 
         if ($own) {
@@ -987,7 +987,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         $coursemapping = new stdClass;
         $coursemapping->courseid = $courseid;
         $coursemapping->uuid = 'courseuuid';
-        $DB->insert_record('elis_files_course_store', $coursemapping);
+        $DB->insert_record('repository_elisfiles_course', $coursemapping);
 
         $elisfiles = new mock_ELIS_Files();
 
@@ -1001,7 +1001,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
 
         foreach ($settingoptions as $settingoption => $expecteduuid) {
             // Set default browsing location to the appropriate setting value
-            $config = get_config('elis_files');
+            $config = get_config('elisfiles');
             $config->default_browse = $settingoption;
 
             $elisfiles->process_config($config);
@@ -1064,7 +1064,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
 
         // Setup
         $this->setUser(100);
-        $roleid = $this->assign_role_capability('repository/elis_files:createsitecontent');
+        $roleid = $this->assign_role_capability('repository/elisfiles:createsitecontent');
 
         // Assign the test role to the test user
         $context = context_system::instance();
@@ -1086,7 +1086,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
             $mapping = new stdClass;
             $mapping->courseid = $id;
             $mapping->uuid = 'testuuid';
-            $DB->insert_record('elis_files_course_store', $mapping);
+            $DB->insert_record('repository_elisfiles_course', $mapping);
         }
 
         if ($userset) {
@@ -1100,7 +1100,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
             $mapping = new stdClass;
             $oid = $mapping->usersetid = $userset->id;
             $uuid = $mapping->uuid = 'testuuid';
-            $DB->insert_record('elis_files_userset_store', $mapping);
+            $DB->insert_record('repository_elisfiles_userset', $mapping);
         }
 
         if ($own) {
@@ -1111,11 +1111,11 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         $sql = 'SELECT i.name, i.typeid, r.type
                   FROM {repository} r, {repository_instances} i
                  WHERE r.type = ? AND i.typeid = r.id';
-        $repository = $DB->get_record_sql($sql, array('elis_files'));
-        $repo = new repository_elis_files('elis_files', context_user::instance($USER->id), array(
+        $repository = $DB->get_record_sql($sql, array('elisfiles'));
+        $repo = new repository_elisfiles('elisfiles', context_user::instance($USER->id), array(
             'ajax' => false,
             'name' => $repository->name,
-            'type' => 'elis_files'
+            'type' => 'elisfiles'
         ));
         $haspermission = $repo->check_editing_permissions($id, $shared, $oid, $uuid, $userid);
 
@@ -1161,7 +1161,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteadmins', '');
         set_config('siteguest', '');
         // Use a fixed capability
-        $capability = 'repository/elis_files:createusersetcontent';
+        $capability = 'repository/elisfiles:createusersetcontent';
 
         // unset the repo to avoid the is_siteadmin problem in the factory class
         unset($SESSION->repo);
@@ -1175,20 +1175,20 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         role_assign($roleid, $USER->id, $context->id);
 
         // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
+        if (file_exists($CFG->dirroot.'/repository/elisfiles/')) {
             // RL: ELIS files: Alfresco
             $data = null;
             $listing = null;
             $sql = 'SELECT i.name, i.typeid, r.type
                       FROM {repository} r, {repository_instances} i
                      WHERE r.type = ? AND i.typeid = r.id';
-            $repository = $DB->get_record_sql($sql, array('elis_files'));
+            $repository = $DB->get_record_sql($sql, array('elisfiles'));
             if ($repository) {
                 try {
-                    $repo = new repository_elis_files('elis_files', context_system::instance(), array(
+                    $repo = new repository_elisfiles('elisfiles', context_system::instance(), array(
                         'ajax' => false,
                         'name' => $repository->name,
-                        'type' => 'elis_files'
+                        'type' => 'elisfiles'
                     ));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
@@ -1201,7 +1201,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         }
 
         // Explicitly set the file transfer method to web services
-        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
+        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elisfiles');
 
         $userset = new userset(array(
             'name' => 'elisunittestuserset'
@@ -1220,7 +1220,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
             $this->createduuids[] = $currentuuid;
         }
 
-        $filename = $CFG->dirroot.'/repository/elis_files/tests/'.TEST_PREFIX.'file.txt';
+        $filename = $CFG->dirroot.'/repository/elisfiles/tests/'.TEST_PREFIX.'file.txt';
         // upload a file to this folder
         $response = $this->call_upload_file($repo, '', $filename, $currentuuid);
         // FTP was failing, but this is a good check to keep in
@@ -1255,7 +1255,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         set_config('siteadmins', '');
         set_config('siteguest', '');
         // Use a fixed capability
-        $capability = 'repository/elis_files:createcoursecontent';
+        $capability = 'repository/elisfiles:createcoursecontent';
 
         // unset the repo to avoid the is_siteadmin problem in the factory class
         unset($SESSION->repo);
@@ -1263,18 +1263,18 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         $courseid = 99;
 
         // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
+        if (file_exists($CFG->dirroot.'/repository/elisfiles/')) {
             // RL: ELIS files: Alfresco
             $data = null;
             $listing = null;
             $sql = 'SELECT i.name, i.typeid, r.type
                       FROM {repository} r, {repository_instances} i
                      WHERE r.type = ? AND i.typeid = r.id';
-            $repository = $DB->get_record_sql($sql, array('elis_files'));
+            $repository = $DB->get_record_sql($sql, array('elisfiles'));
             if ($repository) {
                 try {
-                    $repo = new repository_elis_files('elis_files', context_system::instance(),
-                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
+                    $repo = new repository_elisfiles('elisfiles', context_system::instance(),
+                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
                 }
@@ -1286,7 +1286,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
         }
 
         // Explicitly set the file transfer method to web services
-        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
+        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elisfiles');
 
         // use test course id
         $currentuuid = $repo->elis_files->get_course_store($courseid);
@@ -1308,7 +1308,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
             $this->createduuids[] = $currentuuid;
         }
 
-        $filename = $CFG->dirroot.'/repository/elis_files/tests/'.TEST_PREFIX.'file.txt';
+        $filename = $CFG->dirroot.'/repository/elisfiles/tests/'.TEST_PREFIX.'file.txt';
         // upload a file to this folder
         $response = $this->call_upload_file($repo, '', $filename, $currentuuid);
         // FTP was failing, but this is a good check to keep in
@@ -1342,7 +1342,7 @@ class repository_elis_files_permissions_testcase extends elis_database_test {
 
         // Setup
         $this->setUser(100);
-        $capability = 'repository/elis_files:viewsitecontent';
+        $capability = 'repository/elisfiles:viewsitecontent';
         $roleid = $this->assign_role_capability($capability);
 
         // Assign the test role to the test user

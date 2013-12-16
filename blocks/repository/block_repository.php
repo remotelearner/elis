@@ -19,11 +19,11 @@
  * @package    block_repository
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once($CFG->dirroot. '/repository/elis_files/lib/lib.php');
+require_once($CFG->dirroot. '/repository/elisfiles/lib/lib.php');
 
 class block_repository extends block_base {
 
@@ -51,18 +51,18 @@ class block_repository extends block_base {
         }
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
-        if (!isloggedin() || !file_exists($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php')) {
+        if (!isloggedin() || !file_exists($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php')) {
             return $this->content;
         }
 
-        require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
+        require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
 
         if (!$repo = repository_factory::factory()) {
             return $this->content;
         }
 
         // Get the ELIS Files plugin configuration values
-        $pcfg = get_config('elis_files');
+        $pcfg = get_config('elisfiles');
 
         $username = $USER->username == 'admin' ? $pcfg->admin_username : $USER->username;
         $username = $repo->alfresco_username_fix($username);
@@ -80,8 +80,8 @@ class block_repository extends block_base {
             }
 
             // We must include the tenant portion of the username here.
-            if (($tenantname = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-                $username .= substr(elis::$config->elis_files->server_username, $tenantname);
+            if (($tenantname = strpos(elis::$config->elisfiles->server_username, '@')) > 0) {
+                $username .= substr(elis::$config->elisfiles->server_username, $tenantname);
                 $hastenant = true;
             }
 
@@ -108,8 +108,8 @@ class block_repository extends block_base {
 
         // If there is no content and the current user can actually modify the site settings, display some text
         // in the block explaining what is happening.
-        if (empty($content) && has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
-            $url     = $CFG->wwwroot.'/admin/repository.php?action=edit&amp;repos=elis_files&amp;sesskey='. sesskey();
+        if (empty($content) && has_capability('moodle/site:config', context_system::instance())) {
+            $url     = $CFG->wwwroot.'/admin/repository.php?action=edit&amp;repos=elisfiles&amp;sesskey='.sesskey();
             $content = get_string('alfresconotconfigured', 'block_repository', $url);
         }
 

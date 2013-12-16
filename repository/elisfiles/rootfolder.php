@@ -4,7 +4,7 @@
  * user to select a folder name, passing the path value back to a calling form.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,26 +19,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage File system
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once dirname(dirname(dirname(__FILE__))) . '/config.php';
-require_once dirname(dirname(__FILE__)). '/lib.php';
-require_once dirname(__FILE__) . '/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
-require_once dirname(__FILE__) . '/ELIS_files_factory.class.php';
+require_once(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/../lib.php');
+require_once(dirname(__FILE__).'/lib/HTML_TreeMenu-1.2.0/TreeMenu.php');
+require_once(dirname(__FILE__).'/ELIS_files_factory.class.php');
 
 require_login(SITEID, false);
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 $PAGE->set_context($context);
 require_capability('moodle/site:config', $context);
 
 //    if (!isadmin()) {
-if (!has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
+if (!has_capability('moodle/site:config', $context)) {
     redirect($CFG->wwwroot);
 }
 
@@ -53,10 +52,8 @@ $password = required_param('password', PARAM_NOTAGS);
 $choose   = required_param('choose', PARAM_FILE);
 
 if (!$repo = repository_factory::factory()) {
-    print_error('couldnotcreaterepositoryobject', 'repository_elis_files');
+    print_error('couldnotcreaterepositoryobject', 'repository_elisfiles');
 }
-
-
 
 $icon  = 'folder.gif';
 $eicon = 'folder-expanded.gif';
@@ -69,14 +66,14 @@ if ($nodes = $repo->make_root_folder_select_tree()) {
 }
 
 $treemenu = new HTML_TreeMenu_DHTML($menu, array(
-    'images' => $CFG->wwwroot . '/repository/elis_files/lib/HTML_TreeMenu-1.2.0/images'
+    'images' => $CFG->wwwroot . '/repository/elisfiles/lib/HTML_TreeMenu-1.2.0/images'
 ));
 
-$strrootfolder = get_string('chooserootfolder', 'repository_elis_files');
+$strrootfolder = get_string('chooserootfolder', 'repository_elisfiles');
 
-$PAGE->requires->js('/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
+$PAGE->requires->js('/repository/elisfiles/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
 
-$url = new moodle_url('/repository/elis_files/rootfolder.php');
+$url = new moodle_url('/repository/elisfiles/rootfolder.php');
 $PAGE->set_url($url);
 
 $PAGE->set_title($strrootfolder);
@@ -114,7 +111,7 @@ if (count($chooseparts) == 2) {
 }
 echo $OUTPUT->box_start();
 //print_simple_box_start('center', '75%');
-echo $OUTPUT->heading(get_string('chooserootfolder', 'repository_elis_files'));
+echo $OUTPUT->heading(get_string('chooserootfolder', 'repository_elisfiles'));
 
 $treemenu->printMenu();
 echo $OUTPUT->box_end();

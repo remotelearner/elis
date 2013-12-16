@@ -3,7 +3,7 @@
  * General elis_files-related API stuff.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,11 +18,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage File system
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -39,7 +38,7 @@
 function elis_files_get_category_filter() {
     global $CFG, $DB;
 
-    $catfilter_serialized  = get_config('elis_files', 'catfilter');
+    $catfilter_serialized  = get_config('elisfiles', 'catfilter');
 
     if ($catfilter = unserialize($catfilter_serialized)) {
         $updated = array();
@@ -47,7 +46,7 @@ function elis_files_get_category_filter() {
 
     /// Make sure all the selected categories actually exist in the DB.
         foreach ($catfilter as $cat) {
-            if ($DB->record_exists('elis_files_categories', array('id'=> $cat))) {
+            if ($DB->record_exists('repository_elisfiles_cats', array('id'=> $cat))) {
                 $updated[] = $cat;
             } else {
                 $changed = true;
@@ -56,7 +55,7 @@ function elis_files_get_category_filter() {
 
     /// Update and store any changes.
         if ($changed) {
-            set_config('catfilter', implode(',', $updated), 'elis_files');
+            set_config('catfilter', implode(',', $updated), 'elisfiles');
             $catfilter = $updated;
         }
     } else {
@@ -86,7 +85,7 @@ function elis_files_make_category_tree() {
 
     foreach ($catlist as $cat) {
         do {
-            if ($cdb = $DB->get_record('elis_files_categories', array('id'=> $cat))) {
+            if ($cdb = $DB->get_record('repository_elisfiles_cats', array('id'=> $cat))) {
                 if (!array_key_exists($cdb->id, $cats)) {
                     $cats[$cdb->id] = $cdb;
                 }

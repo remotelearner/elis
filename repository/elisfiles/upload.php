@@ -4,7 +4,7 @@
  * Works in conjunction with Valums fileuploader.js
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage File system
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -171,14 +170,14 @@ class qqFileUploader {
                     foreach ($dir->files as $file) {
                         if ($file->title == $filename) {
                             // found an existing file with the same name
-                            return get_string('erroruploadduplicatefilename', 'repository_elis_files', $filename);
+                            return get_string('erroruploadduplicatefilename', 'repository_elisfiles', $filename);
                         }
                     }
                 }
             }
         } else {
             // this is unlikely but possible
-            return get_string('errorupload', 'repository_elis_files');
+            return get_string('errorupload', 'repository_elisfiles');
         }
 
         // file not already found, so ok to upload
@@ -241,10 +240,10 @@ class qqFileUploader {
                 $a->current = round($quotadata->current / 1048576 * 10, 1) / 10 . get_string('sizemb');
                 $a->max     = round($quotadata->quota / 1048576 * 10, 1) / 10 . get_string('sizemb');
 
-                return array('error' => get_string('erroruploadquotasize', 'repository_elis_files', $a));
+                return array('error' => get_string('erroruploadquotasize', 'repository_elisfiles', $a));
             } else {
                 //non-specific error message
-                return array('error' => get_string('erroruploadquota', 'repository_elis_files'));
+                return array('error' => get_string('erroruploadquota', 'repository_elisfiles'));
             }
         }
 
@@ -257,19 +256,19 @@ class qqFileUploader {
         if ($this->file->save($uploadDirectory . $filename)) {
             return array('success'=>true);
         } else {
-            $config = get_config('elis_files');
+            $config = get_config('elisfiles');
 
             // ELIS-4982 -- If FTP is enabled, check that the port is set correctly
             if ($config->file_transfer_method == ELIS_FILES_XFER_FTP) {
                 // Attempt to make a connection to the FTP server
                 $uri = parse_url($config->server_host);
                 if (ftp_connect($uri['host'], $config->ftp_port, 5) === false) {
-                    return array('error' => get_string('errorftpinvalidport', 'repository_elis_files', $uri['host'].':'.$config->ftp_port));
+                    return array('error' => get_string('errorftpinvalidport', 'repository_elisfiles', $uri['host'].':'.$config->ftp_port));
                 }
             }
 
             // Unknown error occurred
-            return array('error' => get_string('errorupload', 'repository_elis_files'));
+            return array('error' => get_string('errorupload', 'repository_elisfiles'));
         }
 
     }

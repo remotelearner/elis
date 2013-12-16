@@ -16,11 +16,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * repository_elis_files class
+ * repository_elisfiles class
  * This is a class used to browse files from alfresco
  *
  * @since      2.0
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -49,7 +49,7 @@ defined('ELIS_FILES_XFER_FTP') || define('ELIS_FILES_XFER_FTP', 'ftp');
 defined('ELIS_FILES_CURL_CONNECT_TIMEOUT') || define('ELIS_FILES_CURL_CONNECT_TIMEOUT', '3');
 defined('ELIS_FILES_CURL_RESPONSE_TIMEOUT') || define('ELIS_FILES_CURL_RESPONSE_TIMEOUT', '0');
 
-class repository_elis_files extends repository {
+class repository_elisfiles extends repository {
     private $ticket = null;
     private $user_session = null; // probably don't need this
     private $store = null;
@@ -60,7 +60,7 @@ class repository_elis_files extends repository {
     public function __construct($repositoryid, $context = SYSCONTEXTID, $options = array()) {
         global $SESSION, $CFG, $DB, $PAGE;
         if (!is_numeric($repositoryid)) {
-            // ELIS-8550: were constructing these with repositoryid = 'elis_files'
+            // ELIS-8550: were constructing these with repositoryid = 'elisfiles'
             $sql = 'SELECT MIN(ri.id)
                       FROM {repository} r
                       JOIN {repository_instances} ri
@@ -75,19 +75,19 @@ class repository_elis_files extends repository {
         if (is_object($context)) {
             $this->context = $context;
         } else {
-            $this->context = get_context_instance_by_id($context);
+            $this->context = context::instance_by_id($context);
         }
 
         /// ELIS files class
         $this->elis_files = repository_factory::factory();
-        $this->config = get_config('elis_files');
+        $this->config = get_config('elisfiles');
         $this->current_node = null;
 
         // jQuery files required for file picker - just for this repository
-        $PAGE->requires->js('/repository/elis_files/js/jquery-1.6.2.min.js');
-        $PAGE->requires->js('/repository/elis_files/js/jquery-ui-1.8.16.custom.min.js');
-        $PAGE->requires->js('/repository/elis_files/js/fileuploader.js');
-        $PAGE->requires->js('/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
+        $PAGE->requires->js('/repository/elisfiles/js/jquery-1.6.2.min.js');
+        $PAGE->requires->js('/repository/elisfiles/js/jquery-ui-1.8.16.custom.min.js');
+        $PAGE->requires->js('/repository/elisfiles/js/fileuploader.js');
+        $PAGE->requires->js('/repository/elisfiles/lib/HTML_TreeMenu-1.2.0/TreeMenu.js', true);
     }
 
     private function get_url($node) {
@@ -139,7 +139,7 @@ class repository_elis_files extends repository {
     static function encode_path_uuids($parent_path, $uuid) {
         //TODO: add some way to encode the parent path items, if needed later
         global $CFG;
-        require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+        require_once($CFG->dirroot.'/repository/elisfiles/lib.php');
 
         $result = array();
 
@@ -149,7 +149,7 @@ class repository_elis_files extends repository {
         }
 
         // Add the encoded version of the current node
-        $result[] = repository_elis_files::build_encodedpath($uuid, 0, 0, 0, false);
+        $result[] = repository_elisfiles::build_encodedpath($uuid, 0, 0, 0, false);
 
         return $result;
     }
@@ -177,24 +177,24 @@ class repository_elis_files extends repository {
             $child_canedit = $this->check_editing_permissions(SITEID, true, 0, $child->uuid, 0);
         } else if ($uuid == $this->elis_files->uhomesuid) {
             // Transition down into a user's space
-            require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+            require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
             if ($userid = elis_files_folder_to_userid($child->title)) {
                 $child_canedit = $this->check_editing_permissions(SITEID, false, 0, $child->uuid, $userid);
             }
         } else if ($uuid == $this->elis_files->cuuid) {
             // Transition down into a course's space
-            if ($courseid = $DB->get_field('elis_files_course_store', 'courseid', array('uuid' => $child->uuid))) {
+            if ($courseid = $DB->get_field('repository_elisfiles_course', 'courseid', array('uuid' => $child->uuid))) {
                 if ($DB->record_exists('course', array('id' => $courseid))) {
                     $child_canedit = $this->check_editing_permissions($courseid, false, 0, $child->uuid, 0);
                 }
             }
         } else if ($uuid == $this->elis_files->ouuid) {
-            if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-                require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+                require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
                 require_once(elispm::lib('data/userset.class.php'));
 
                 // Transition down into a user set's space
-                if ($usersetid = $DB->get_field('elis_files_userset_store', 'usersetid', array('uuid' => $child->uuid))) {
+                if ($usersetid = $DB->get_field('repository_elisfiles_userset', 'usersetid', array('uuid' => $child->uuid))) {
                     if ($DB->record_exists(userset::TABLE, array('id' => $usersetid))) {
                         $child_canedit = $this->check_editing_permissions(SITEID, false, $usersetid, $child->uuid, 0);
                     }
@@ -295,11 +295,11 @@ class repository_elis_files extends repository {
         // Return an array of optional columns from file list to include in the details view
         // Icon and filename are always displayed
         $ret['detailcols'] = array(array('field'=>'created',
-                                         'title'=>get_string('datecreated','repository_elis_files')),
+                                         'title'=>get_string('datecreated','repository_elisfiles')),
                                    array('field'=>'modified',
-                                         'title'=>get_string('datemodified','repository_elis_files')),
+                                         'title'=>get_string('datemodified','repository_elisfiles')),
                                    array('field'=>'owner',
-                                         'title'=>get_string('modifiedby','repository_elis_files'))
+                                         'title'=>get_string('modifiedby','repository_elisfiles'))
                              );
 
         // Set permissible browsing locations
@@ -325,7 +325,7 @@ class repository_elis_files extends repository {
 
         // NOTE: do NOT put 'ELIS Files' in path anymore, 'Company Home' will be
         // ... replaced with 'ELIS Files' in this->prepare_fm_listing()
-        //$return_path[]= array('name'=>get_string('pluginname', 'repository_elis_files'), 'path'=>'');
+        //$return_path[]= array('name'=>get_string('pluginname', 'repository_elisfiles'), 'path'=>'');
         $ret['path'] = $return_path;
 
         $this->current_node = $this->elis_files->get_info($uuid);
@@ -343,11 +343,11 @@ class repository_elis_files extends repository {
             $folder_name = !empty($prev_node->title) ? $prev_node->title : '';
             $check_uuid = $check_node->uuid;
             if ($check_uuid == $this->elis_files->cuuid) {
-                $cid = $DB->get_field('elis_files_course_store',
+                $cid = $DB->get_field('repository_elisfiles_course',
                                       'courseid',
                                       array('uuid' => $prev_node->uuid));
             } else if ($check_uuid == $this->elis_files->ouuid) {
-                $oid = $DB->get_field('elis_files_userset_store',
+                $oid = $DB->get_field('repository_elisfiles_userset',
                                       'usersetid',
                                       array('uuid' => $prev_node->uuid));
             } else if ($check_uuid == $this->elis_files->suuid) {
@@ -416,11 +416,11 @@ class repository_elis_files extends repository {
                         $folder_name = !empty($prev_node->title)
                                        ? $prev_node->title : '';
                         if ($check_uuid == $this->elis_files->cuuid) {
-                            $cid = $DB->get_field('elis_files_course_store',
+                            $cid = $DB->get_field('repository_elisfiles_course',
                                                   'courseid',
                                                   array('uuid' => $prev_node->uuid));
                         } else if ($check_uuid == $this->elis_files->ouuid) {
-                            $oid = $DB->get_field('elis_files_userset_store',
+                            $oid = $DB->get_field('repository_elisfiles_userset',
                                                   'usersetid',
                                                   array('uuid' => $prev_node->uuid));
                         } else if ($check_uuid == $this->elis_files->suuid) {
@@ -447,7 +447,7 @@ class repository_elis_files extends repository {
                 $child_canedit = $this->can_edit_child($uuid, $child, $canedit);
 
                 $ret['list'][] = array('title' => $child->title,
-                        'path' => repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
+                        'path' => repository_elisfiles::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
                         'name' => $child->title,
                         'thumbnail' => $OUTPUT->pix_url('f/folder-64') . '',
                         'author' => $owner,
@@ -472,7 +472,7 @@ class repository_elis_files extends repository {
                 $modified = isset($info->modified) ? $info->modified : '';
                 $owner = isset($info->owner) ? $info->owner : '';
                 $ret['list'][] = array('title' => $child->title,
-                        'path' => repository_elis_files::build_encodedpath($child->uuid, $p_uid, $p_cid, $p_oid, $p_shared),
+                        'path' => repository_elisfiles::build_encodedpath($child->uuid, $p_uid, $p_cid, $p_oid, $p_shared),
                         'thumbnail' => $OUTPUT->pix_url(file_extension_icon($child->title, 90))->out(false),
                         'size' => $filesize,
                         'author' => $owner,
@@ -608,7 +608,7 @@ class repository_elis_files extends repository {
 //                             'uid'=>(int)$uid);
 //            $encodedpath = base64_encode(serialize($params));
             $return[] = array('title'=>$child->title,
-                    'path'      => repository_elis_files::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
+                    'path'      => repository_elisfiles::build_encodedpath($child->uuid, $uid, $cid, $oid, $shared),
                     'name'      => $child->title,
                     'thumbnail' => $OUTPUT->pix_url('f/folder-32') . '',
                     'created'   => '',
@@ -623,19 +623,19 @@ class repository_elis_files extends repository {
     public function print_search() {
         global $CFG, $DB;
 
-//        require_once $CFG->dirroot.'/repository/elis_files/renderer.php';
+//        require_once $CFG->dirroot.'/repository/elisfiles/renderer.php';
 //        //reset the page template
 //        // we need to send filepicker templates to the browser just once
-//        $fprenderer = $PAGE->get_renderer('repository', 'elis_files');
+//        $fprenderer = $PAGE->get_renderer('repository', 'elisfiles');
 
-        require_once $CFG->dirroot.'/repository/elis_files/lib/ELIS_files.php';
-        require_once $CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php';
-        require_once $CFG->dirroot.'/repository/elis_files/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
-        require_once $CFG->dirroot.'/repository/elis_files/tree_menu_lib.php';
+        require_once $CFG->dirroot.'/repository/elisfiles/lib/ELIS_files.php';
+        require_once $CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php';
+        require_once $CFG->dirroot.'/repository/elisfiles/lib/HTML_TreeMenu-1.2.0/TreeMenu.php';
+        require_once $CFG->dirroot.'/repository/elisfiles/tree_menu_lib.php';
 
-        $str = get_string('searchforfilesinrepository', 'repository_elis_files');
+        $str = ''; // BJB140106: WAS get_string('searchforfilesinrepository', 'repository_elisfiles');
 
-//        $renderer = $PAGE->get_renderer('repository', 'elis_files');
+//        $renderer = $PAGE->get_renderer('repository', 'elisfiles');
 //        $str .= $renderer->repository_default_searchform();
         $str .= parent::print_search();
 
@@ -656,7 +656,7 @@ class repository_elis_files extends repository {
         $str = '<div><input type="hidden" id="parentuuid" name="parentuuid" value="'.$parentuuid.'">';
 
         // display list of files to delete...
-        $str .= '<div>'.get_string('deletecheckfiles','repository_elis_files').'</div>';
+        $str .= '<div>'.get_string('deletecheckfiles','repository_elisfiles').'</div>';
         $filelist = array();
 
         $str .= self::printfilelist($files_array, $filelist);
@@ -673,7 +673,7 @@ class repository_elis_files extends repository {
             }
             if ($DB->record_exists('files', array('filename'=> $clean_name))) {
                 // Warn user that they are deleting a resource that is used...
-                $str .= '<p>'.get_string('warningdeleteresource', 'repository_elis_files', $clean_name).'</p>';
+                $str .= '<p>'.get_string('warningdeleteresource', 'repository_elisfiles', $clean_name).'</p>';
             }
         }
         $str .= '</div>';
@@ -729,17 +729,17 @@ class repository_elis_files extends repository {
     public function print_upload_popup() {
         global $CFG;
 
-        $str = '<p><b>'.get_string('uploadingtiptitle', 'repository_elis_files').'</b></p>
-                <p>'.get_string('uploadingtiptext', 'repository_elis_files').'</p>
+        $str = '<p><b>'.get_string('uploadingtiptitle', 'repository_elisfiles').'</b></p>
+                <p>'.get_string('uploadingtiptext', 'repository_elisfiles').'</p>
                 <div id="progressbar"></div>
                 <table style="border-style:none; padding:5px;">
                     <tr>
                         <td>
-                            <a id="uploadButton" href="javascript:void(0);"><input type="button" value="'.get_string('selectfiles', 'repository_elis_files').'" /></a>
+                            <a id="uploadButton" href="javascript:void(0);"><input type="button" value="'.get_string('selectfiles', 'repository_elisfiles').'" /></a>
                             <div id="file-uploader"></div>
                         </td>
                         <td>
-                            <a id="uploadCloseButton" href="javascript:void(0);"><input type="button" value="'.get_string('close', 'repository_elis_files').'" /></a>
+                            <a id="uploadCloseButton" href="javascript:void(0);"><input type="button" value="'.get_string('close', 'repository_elisfiles').'" /></a>
                         </td>
                     </tr>
                 </table>';
@@ -785,7 +785,7 @@ class repository_elis_files extends repository {
             foreach ($categories as $category) {
                 //TODO: search based on UUID rather than title
                 // current side-effect is that duplicate titles will be matched
-                if ($categorytitle = $DB->get_field('elis_files_categories', 'title', array('id' => $category))) {
+                if ($categorytitle = $DB->get_field('repository_elisfiles_cats', 'title', array('id' => $category))) {
                     $cattitle = elis_files_ISO_9075_map($categorytitle);
                     $category_query_tokens[] = 'PATH:"/cm:generalclassifiable//cm:'.$cattitle.'//member"';
                 }
@@ -814,7 +814,7 @@ class repository_elis_files extends repository {
      */
     function search($search_text, $page = 1, $categories = NULL) {
         global $CFG, $COURSE, $OUTPUT, $USER;
-        require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+        require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
 
         $ret = array();
         $shared = 0;
@@ -855,11 +855,11 @@ class repository_elis_files extends repository {
         $ret['canedit'] = $canedit;
 
         $ret['detailcols'] = array(array('field'=>'created',
-                                         'title'=>get_string('datecreated','repository_elis_files')),
+                                         'title'=>get_string('datecreated','repository_elisfiles')),
                                    array('field'=>'modified',
-                                         'title'=>get_string('datemodified','repository_elis_files')),
+                                         'title'=>get_string('datemodified','repository_elisfiles')),
                                    array('field'=>'owner',
-                                         'title'=>get_string('modifiedby','repository_elis_files'))
+                                         'title'=>get_string('modifiedby','repository_elisfiles'))
                              );
         $ret['dynload'] = true;
         $ret['nologin'] = true;
@@ -952,105 +952,105 @@ class repository_elis_files extends repository {
      * Add Plugin settings input to Moodle form
      * @param object $mform
      */
-    public static function type_config_form($mform, $classname = 'repository_elis_files') {
+    public static function type_config_form($mform, $classname = 'repository_elisfiles') {
         global $DB, $CFG, $SESSION, $OUTPUT;
 
         parent::type_config_form($mform);
 
-        $mform->addElement('text', 'server_host', get_string('serverurl', 'repository_elis_files'), array('size' => '40'));
+        $mform->addElement('text', 'server_host', get_string('serverurl', 'repository_elisfiles'), array('size' => '40'));
         $mform->setDefault('server_host', 'http://localhost');
         $mform->setType('server_host', PARAM_TEXT);
-        $mform->addElement('static', 'server_host_default', '', get_string('elis_files_default_server_host', 'repository_elis_files'));
-        $mform->addElement('static', 'server_host_intro', '', get_string('elis_files_server_host', 'repository_elis_files'));
+        $mform->addElement('static', 'server_host_default', '', get_string('elis_files_default_server_host', 'repository_elisfiles'));
+        $mform->addElement('static', 'server_host_intro', '', get_string('elis_files_server_host', 'repository_elisfiles'));
         $mform->addRule('server_host', get_string('required'), 'required', null, 'client');
 
-        $mform->addElement('text', 'server_port', get_string('serverport', 'repository_elis_files'), array('size' => '30'));
-        $mform->addElement('static', 'server_port_default', '', get_string('elis_files_default_server_port', 'repository_elis_files'));
-        $mform->addElement('static', 'server_port_intro', '', get_string('elis_files_server_port', 'repository_elis_files'));
+        $mform->addElement('text', 'server_port', get_string('serverport', 'repository_elisfiles'), array('size' => '30'));
+        $mform->addElement('static', 'server_port_default', '', get_string('elis_files_default_server_port', 'repository_elisfiles'));
+        $mform->addElement('static', 'server_port_intro', '', get_string('elis_files_server_port', 'repository_elisfiles'));
 
         $mform->addRule('server_port', get_string('required'), 'required', null, 'client');
         $mform->setDefault('server_port', '8080');
         $mform->setType('server_port', PARAM_INT);
 
-        $mform->addElement('text', 'server_username', get_string('serverusername', 'repository_elis_files'), array('size' => '30'));
-        $mform->addElement('static', 'server_username_default', '', get_string('elis_files_default_server_username', 'repository_elis_files'));
-        $mform->addElement('static', 'server_username_intro', '', get_string('elis_files_server_username', 'repository_elis_files'));
+        $mform->addElement('text', 'server_username', get_string('serverusername', 'repository_elisfiles'), array('size' => '30'));
+        $mform->addElement('static', 'server_username_default', '', get_string('elis_files_default_server_username', 'repository_elisfiles'));
+        $mform->addElement('static', 'server_username_intro', '', get_string('elis_files_server_username', 'repository_elisfiles'));
         $mform->addRule('server_username', get_string('required'), 'required', null, 'client');
         $mform->setType('server_username', PARAM_TEXT);
 
-        $mform->addElement('passwordunmask', 'server_password', get_string('serverpassword', 'repository_elis_files'), array('size' => '30'));
-        $mform->addElement('static', 'server_password_intro', '', get_string('elis_files_server_password', 'repository_elis_files'));
+        $mform->addElement('passwordunmask', 'server_password', get_string('serverpassword', 'repository_elisfiles'), array('size' => '30'));
+        $mform->addElement('static', 'server_password_intro', '', get_string('elis_files_server_password', 'repository_elisfiles'));
         $mform->addRule('server_password', get_string('required'), 'required', null, 'client');
         $mform->setType('server_password', PARAM_TEXT);
 
         $options = array(
-            ELIS_FILES_XFER_WS  => get_string('webservices', 'repository_elis_files'),
-            ELIS_FILES_XFER_FTP => get_string('ftp', 'repository_elis_files')
+            ELIS_FILES_XFER_WS  => get_string('webservices', 'repository_elisfiles'),
+            ELIS_FILES_XFER_FTP => get_string('ftp', 'repository_elisfiles')
         );
 
-        $mform->addElement('select', 'file_transfer_method', get_string('filetransfermethod', 'repository_elis_files'), $options);
+        $mform->addElement('select', 'file_transfer_method', get_string('filetransfermethod', 'repository_elisfiles'), $options);
         $mform->setDefault('file_transfer_method', ELIS_FILES_XFER_FTP);
-        $mform->addElement('static', 'file_transfer_method_default', '', get_string('filetransfermethoddefault', 'repository_elis_files'));
-        $mform->addElement('static', 'file_transfer_method_desc', '', get_string('filetransfermethoddesc', 'repository_elis_files'));
+        $mform->addElement('static', 'file_transfer_method_default', '', get_string('filetransfermethoddefault', 'repository_elisfiles'));
+        $mform->addElement('static', 'file_transfer_method_desc', '', get_string('filetransfermethoddesc', 'repository_elisfiles'));
 
         // Add a green checkmark if FTP connection works, red X on failure
         // (only if transfer method is set to ftp)
         $ftp_indicator = self::get_ftp_config_indicator();
-        $mform->addElement('text', 'ftp_port', get_string('ftpport', 'repository_elis_files'), array('size' => '30'));
+        $mform->addElement('text', 'ftp_port', get_string('ftpport', 'repository_elisfiles'), array('size' => '30'));
         $mform->setDefault('ftp_port', '21');
         $mform->setType('ftp_port', PARAM_INT);
-        $mform->addElement('static', 'ftp_port_default', '', $ftp_indicator.'&nbsp'.get_string('ftpportdefault', 'repository_elis_files'));
-        $mform->addElement('static', 'ftp_port_desc', '', get_string('ftpportdesc', 'repository_elis_files'));
+        $mform->addElement('static', 'ftp_port_default', '', $ftp_indicator.'&nbsp'.get_string('ftpportdefault', 'repository_elisfiles'));
+        $mform->addElement('static', 'ftp_port_desc', '', get_string('ftpportdesc', 'repository_elisfiles'));
 
-        $mform->addElement('text', 'connect_timeout', get_string('connecttimeout', 'repository_elis_files'), array('size' => '10'));
+        $mform->addElement('text', 'connect_timeout', get_string('connecttimeout', 'repository_elisfiles'), array('size' => '10'));
         $mform->setType('connect_timeout', PARAM_INT);
         $mform->setDefault('connect_timeout', ELIS_FILES_CURL_CONNECT_TIMEOUT);
-        $mform->addElement('static', 'connect_timeout_default', '', get_string('connecttimeoutdefault', 'repository_elis_files', ELIS_FILES_CURL_CONNECT_TIMEOUT));
-        $mform->addElement('static', 'connect_timeout_desc', '', get_string('connecttimeoutdesc', 'repository_elis_files'));
+        $mform->addElement('static', 'connect_timeout_default', '', get_string('connecttimeoutdefault', 'repository_elisfiles', ELIS_FILES_CURL_CONNECT_TIMEOUT));
+        $mform->addElement('static', 'connect_timeout_desc', '', get_string('connecttimeoutdesc', 'repository_elisfiles'));
 
-        $mform->addElement('text', 'response_timeout', get_string('responsetimeout', 'repository_elis_files'), array('size' => '10'));
+        $mform->addElement('text', 'response_timeout', get_string('responsetimeout', 'repository_elisfiles'), array('size' => '10'));
         $mform->setType('response_timeout', PARAM_INT);
         $mform->setDefault('response_timeout', ELIS_FILES_CURL_RESPONSE_TIMEOUT);
-        $mform->addElement('static', 'response_timeout_default', '', get_string('responsetimeoutdefault', 'repository_elis_files', ELIS_FILES_CURL_RESPONSE_TIMEOUT));
-        $mform->addElement('static', 'response_timeout_desc', '', get_string('responsetimeoutdesc', 'repository_elis_files'));
+        $mform->addElement('static', 'response_timeout_default', '', get_string('responsetimeoutdefault', 'repository_elisfiles', ELIS_FILES_CURL_RESPONSE_TIMEOUT));
+        $mform->addElement('static', 'response_timeout_desc', '', get_string('responsetimeoutdesc', 'repository_elisfiles'));
 
         // Check for installed categories table or display 'plugin not yet installed'
-        if ($DB->get_manager()->table_exists('elis_files_categories')) {
+        if ($DB->get_manager()->table_exists('repository_elisfiles_cats')) {
         // Need to check for settings to be saved
             $popup_settings ="height=400,width=500,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
-            $url = $CFG->wwwroot .'/repository/elis_files/config-categories.php';
+            $url = $CFG->wwwroot .'/repository/elisfiles/config-categories.php';
             $jsondata = array('url'=>$url,'name'=>'config_categories','options'=>$popup_settings);
             $jsondata = json_encode($jsondata);
-            $title = get_string('configurecategoryfilter', 'repository_elis_files');
+            $title = get_string('configurecategoryfilter', 'repository_elisfiles');
 
             $button = "<input type='button' value='".$title."' alt='".$title."' title='".$title."' onclick='return openpopup(null,$jsondata);'>";
-            $mform->addElement('static', 'category_filter', get_string('categoryfilter', 'repository_elis_files'), $button);
-            $mform->addElement('static', 'category_filter_intro', '', get_string('elis_files_category_filter', 'repository_elis_files'));
+            $mform->addElement('static', 'category_filter', get_string('categoryfilter', 'repository_elisfiles'), $button);
+            $mform->addElement('static', 'category_filter_intro', '', get_string('elis_files_category_filter', 'repository_elisfiles'));
         } else {
-            $mform->addElement('static', 'category_filter_intro', get_string('categoryfilter', 'repository_elis_files'), get_string('elisfilesnotinstalled', 'repository_elis_files'));
+            $mform->addElement('static', 'category_filter_intro', get_string('categoryfilter', 'repository_elisfiles'), get_string('elisfilesnotinstalled', 'repository_elisfiles'));
         }
 
         $popup_settings = "height=480,width=640,top=0,left=0,menubar=0,location=0,scrollbars,resizable,toolbar,status,directories=0,fullscreen=0,dependent";
 
-        $root_folder = get_config('elis_files', 'root_folder');
+        $root_folder = get_config('elisfiles', 'root_folder');
         $button = self::output_root_folder_html($root_folder);
 
         $rootfolderarray=array();
-        $rootfolderarray[] = $mform->createElement('text', 'root_folder', get_string('rootfolder', 'repository_elis_files'), array('size' => '30'));
-        $rootfolderarray[] = $mform->createElement('button', 'root_folder_popup', get_string('chooserootfolder', 'repository_elis_files'), $button);
+        $rootfolderarray[] = $mform->createElement('text', 'root_folder', get_string('rootfolder', 'repository_elisfiles'), array('size' => '30'));
+        $rootfolderarray[] = $mform->createElement('button', 'root_folder_popup', get_string('chooserootfolder', 'repository_elisfiles'), $button);
 
-        $mform->addGroup($rootfolderarray, 'rootfolderar', get_string('rootfolder', 'repository_elis_files'), array(' '), false);
+        $mform->addGroup($rootfolderarray, 'rootfolderar', get_string('rootfolder', 'repository_elisfiles'), array(' '), false);
         $mform->setDefault('root_folder', '/moodle');
         $mform->setType('root_folder', PARAM_TEXT);
 
         // Add checkmark if get root folder works, or whatever...
         $valid = self::root_folder_is_valid($root_folder);
-        $mform->addElement('static', 'root_folder_default', '', $valid.'&nbsp;'.get_string('elis_files_default_root_folder', 'repository_elis_files'));
-        $mform->addElement('static', 'root_folder_intro', '', get_string('elis_files_root_folder', 'repository_elis_files'));
+        $mform->addElement('static', 'root_folder_default', '', $valid.'&nbsp;'.get_string('elis_files_default_root_folder', 'repository_elisfiles'));
+        $mform->addElement('static', 'root_folder_intro', '', get_string('elis_files_root_folder', 'repository_elisfiles'));
 
         // Cache time is retrieved from the common cache time and displayed here
-        $mform->addElement('text', 'cache_time', get_string('cachetime', 'repository_elis_files'), array('size' => '10'));
-        $mform->addElement('static', 'cache_time_default', '', get_string('elis_files_default_cache_time', 'repository_elis_files'));
+        $mform->addElement('text', 'cache_time', get_string('cachetime', 'repository_elisfiles'), array('size' => '10'));
+        $mform->addElement('static', 'cache_time_default', '', get_string('elis_files_default_cache_time', 'repository_elisfiles'));
         $mform->setDefault('cache_time', $CFG->repositorycacheexpire);
         $mform->setType('cache_time', PARAM_INT);
         $mform->freeze('cache_time');
@@ -1073,9 +1073,9 @@ class repository_elis_files extends repository {
 
         foreach ($sizelist as $sizebytes) {
             if ($sizebytes == '') {
-                $filesize[$sizebytes] = get_string('quotanotset', 'repository_elis_files');;
+                $filesize[$sizebytes] = get_string('quotanotset', 'repository_elisfiles');;
             } else if ($sizebytes == -1 ) {
-                $filesize[$sizebytes] = get_string('quotaunlimited', 'repository_elis_files');
+                $filesize[$sizebytes] = get_string('quotaunlimited', 'repository_elisfiles');
             } else {
                 $filesize[$sizebytes] = display_size($sizebytes);
             }
@@ -1083,32 +1083,32 @@ class repository_elis_files extends repository {
 
         krsort($filesize, SORT_NUMERIC);
 
-        $mform->addElement('select', 'user_quota', get_string('userquota', 'repository_elis_files'), $filesize);
+        $mform->addElement('select', 'user_quota', get_string('userquota', 'repository_elisfiles'), $filesize);
         $mform->setDefault('user_quota', '');
-        $mform->addElement('static', 'user_quota_default', '', get_string('elis_files_default_user_quota', 'repository_elis_files'));
-        $mform->addElement('static', 'user_quota_intro', '', get_string('configuserquota', 'repository_elis_files'));
+        $mform->addElement('static', 'user_quota_default', '', get_string('elis_files_default_user_quota', 'repository_elisfiles'));
+        $mform->addElement('static', 'user_quota_intro', '', get_string('configuserquota', 'repository_elisfiles'));
 
         // Add a toggle to control whether we will delete a user's home directory in Alfresco when their account is deleted.
         $options = array(1 => get_string('yes'), '' => get_string('no'));
 
-        $mform->addElement('select', 'deleteuserdir', get_string('deleteuserdir', 'repository_elis_files'), $options);
+        $mform->addElement('select', 'deleteuserdir', get_string('deleteuserdir', 'repository_elisfiles'), $options);
         $mform->setDefault('deleteuserdir', '');
-        $mform->addElement('static', 'deleteuserdir_default', '', get_string('elis_files_default_deleteuserdir', 'repository_elis_files'));
-        $mform->addElement('static', 'deleteuserdir_intro', '', get_string('configdeleteuserdir', 'repository_elis_files'));
+        $mform->addElement('static', 'deleteuserdir_default', '', get_string('elis_files_default_deleteuserdir', 'repository_elisfiles'));
+        $mform->addElement('static', 'deleteuserdir_intro', '', get_string('configdeleteuserdir', 'repository_elisfiles'));
 
         // Menu setting about choosing the default location where users will end up if they don't have a previous file
         // browsing location saved.
         $options = array(
-            ELIS_FILES_BROWSE_SITE_FILES   => get_string('repositorysitefiles', 'repository_elis_files'),
-            ELIS_FILES_BROWSE_COURSE_FILES => get_string('repositorycoursefiles', 'repository_elis_files'),
-            ELIS_FILES_BROWSE_USER_FILES   => get_string('repositoryuserfiles', 'repository_elis_files'),
-            ELIS_FILES_BROWSE_SHARED_FILES => get_string('repositorysharedfiles', 'repository_elis_files')
+            ELIS_FILES_BROWSE_SITE_FILES   => get_string('repositorysitefiles', 'repository_elisfiles'),
+            ELIS_FILES_BROWSE_COURSE_FILES => get_string('repositorycoursefiles', 'repository_elisfiles'),
+            ELIS_FILES_BROWSE_USER_FILES   => get_string('repositoryuserfiles', 'repository_elisfiles'),
+            ELIS_FILES_BROWSE_SHARED_FILES => get_string('repositorysharedfiles', 'repository_elisfiles')
         );
 
-        $mform->addElement('select', 'default_browse', get_string('defaultfilebrowsinglocation', 'repository_elis_files'), $options);
+        $mform->addElement('select', 'default_browse', get_string('defaultfilebrowsinglocation', 'repository_elisfiles'), $options);
         $mform->setDefault('default_browse', ELIS_FILES_BROWSE_USER_FILES);
-        $mform->addElement('static', 'default_browse_default', '', get_string('elis_files_default_default_browse', 'repository_elis_files'));
-        $mform->addElement('static', 'default_browse_intro', '', get_string('configdefaultfilebrowsinglocation', 'repository_elis_files'));
+        $mform->addElement('static', 'default_browse_default', '', get_string('elis_files_default_default_browse', 'repository_elisfiles'));
+        $mform->addElement('static', 'default_browse_intro', '', get_string('configdefaultfilebrowsinglocation', 'repository_elisfiles'));
 
         // Display menu option about overriding the Moodle 'admin' account when creating an Alfresco user account.
 
@@ -1116,22 +1116,22 @@ class repository_elis_files extends repository {
         $hasadmin = $DB->record_exists('user', array('username'   => 'admin',
                                                      'mnethostid' => $CFG->mnet_localhost_id));
 
-        $admin_username = trim(get_config('elis_files', 'admin_username'));
+        $admin_username = trim(get_config('elisfiles', 'admin_username'));
         if (empty($admin_username)) {
             $adminusername = 'moodleadmin';
-            set_config('admin_username', $adminusername, 'elis_files');
+            set_config('admin_username', $adminusername, 'elisfiles');
         } else {
             $adminusername = $admin_username;
         }
 
         // Only proceed here if the Alfresco plug-in is actually enabled.
-        if (self::is_repo_visible('elis_files')) {
+        if (self::is_repo_visible('elisfiles')) {
             if ($repo = repository_factory::factory()) {
                 if (elis_files_get_home_directory($adminusername) == false) {
-                    $mform->addElement('text', 'admin_username', get_string('adminusername', 'repository_elis_files'), array('size' => '30'));
+                    $mform->addElement('text', 'admin_username', get_string('adminusername', 'repository_elisfiles'), array('size' => '30'));
                     $mform->setType('admin_username', PARAM_TEXT);
-                    $mform->addElement('static', 'admin_username_default', '', get_string('elis_files_default_admin_username', 'repository_elis_files'));
-                    $mform->addElement('static', 'admin_username_intro', '', get_string('configadminusername', 'repository_elis_files'));
+                    $mform->addElement('static', 'admin_username_default', '', get_string('elis_files_default_admin_username', 'repository_elisfiles'));
+                    $mform->addElement('static', 'admin_username_intro', '', get_string('configadminusername', 'repository_elisfiles'));
                 } else {
                     // Added to prevent an empty value from being stored in the database on form submit
                     $mform->addElement('hidden', 'admin_username', $adminusername);
@@ -1144,11 +1144,11 @@ class repository_elis_files extends repository {
                         $a->username = $adminusername;
                         $a->url      = $CFG->wwwroot . '/user/editadvanced.php?id=' . $userid . '&amp;course=' . SITEID;
 
-                        $mform->addElement('static', 'admin_username_intro', get_string('adminusername', 'repository_elis_files'),
-                                           get_string('configadminusernameconflict', 'repository_elis_files', $a));
+                        $mform->addElement('static', 'admin_username_intro', get_string('adminusername', 'repository_elisfiles'),
+                                           get_string('configadminusernameconflict', 'repository_elisfiles', $a));
                     } else {
-                        $mform->addElement('static', 'admin_username_intro', get_string('adminusername', 'repository_elis_files'),
-                                           get_string('configadminusernameset', 'repository_elis_files', $adminusername));
+                        $mform->addElement('static', 'admin_username_intro', get_string('adminusername', 'repository_elisfiles'),
+                                           get_string('configadminusernameset', 'repository_elisfiles', $adminusername));
                     }
                 }
             }
@@ -1180,8 +1180,8 @@ class repository_elis_files extends repository {
 
                 if ($DB->record_exists_select('user', $select, $params)) {
                     $mform->addElement('html', '<br />');
-                    $mform->addElement('html', '<dl class="healthissues notice"><dt>'.get_string('passwordlessusersync', 'repository_elis_files').
-                                    '</dt> <dd>'.get_string('configpasswordlessusersync', 'repository_elis_files').'</dd></dl>');
+                    $mform->addElement('html', '<dl class="healthissues notice"><dt>'.get_string('passwordlessusersync', 'repository_elisfiles').
+                                    '</dt> <dd>'.get_string('configpasswordlessusersync', 'repository_elisfiles').'</dd></dl>');
                 }
             }
         }
@@ -1225,10 +1225,10 @@ class repository_elis_files extends repository {
             if (!empty($puuid) && !$uid && !$cid && !$oid && !$shared) {
                 // No flags set check if we need to set them
                 if ($puuid == $this->elis_files->cuuid) {
-                    $_cid = $DB->get_field('elis_files_course_store', 'courseid',
+                    $_cid = $DB->get_field('repository_elisfiles_course', 'courseid',
                                           array('uuid' => $folder['uuid']));
                 } else if ($puuid == $this->elis_files->ouuid) {
-                    $_oid = $DB->get_field('elis_files_userset_store', 'usersetid',
+                    $_oid = $DB->get_field('repository_elisfiles_userset', 'usersetid',
                                           array('uuid' => $folder['uuid']));
                 } else if ($puuid == $this->elis_files->suuid) {
                     $_shared = true;
@@ -1237,7 +1237,7 @@ class repository_elis_files extends repository {
                 }
             }
             $entry = array();
-            $entry['filepath'] = repository_elis_files::build_encodedpath($folder['uuid'], $_uid, $_cid, $_oid, $_shared);
+            $entry['filepath'] = repository_elisfiles::build_encodedpath($folder['uuid'], $_uid, $_cid, $_oid, $_shared);
             $entry['textpath'] = $path .'/'. $folder['name'];
             $entry['fullname'] = $folder['name'];
             $entry['id'] = $folder['uuid']; // TBD
@@ -1273,9 +1273,9 @@ class repository_elis_files extends repository {
         }
 
         if (is_array($listing) && !empty($listing['parent']) && !empty($listing['parent']->uuid)) {
-            $parent = repository_elis_files::build_encodedpath($listing['parent']->uuid);
+            $parent = repository_elisfiles::build_encodedpath($listing['parent']->uuid);
         } else if (is_object($listing) && !empty($listing->parent) && !empty($listing->parent->uuid)) {
-            $parent = repository_elis_files::build_encodedpath($listing->parent->uuid);
+            $parent = repository_elisfiles::build_encodedpath($listing->parent->uuid);
         }
 
         $defaultfoldericon = $OUTPUT->pix_url(file_folder_icon(64))->out(false);
@@ -1316,7 +1316,7 @@ class repository_elis_files extends repository {
                     }
                 }
                 if ($pathname == $this->elis_files->get_root()->title) {
-                    $pathname = get_string('repository', 'repository_elis_files');
+                    $pathname = get_string('repository', 'repository_elisfiles');
                     if (is_array($path[$i])) {
                         $path[$i]['name'] = $pathname;
                     } else {
@@ -1407,7 +1407,7 @@ class repository_elis_files extends repository {
             if (isset($file['source'])) {
                 $file['url'] = $this->get_link($file['source']);
             }
-            //error_log("/repository/elis_files/lib.php::prepare_listing(): filepath = {$textpath}");
+            //error_log("/repository/elisfiles/lib.php::prepare_listing(): filepath = {$textpath}");
             $file['textpath'] = $textpath; // TBD
             if (!isset($file['mimetype']) && !$isfolder && $filename) {
                 $file['mimetype'] = get_mimetype_description(array('filename' => $filename));
@@ -1448,12 +1448,12 @@ class repository_elis_files extends repository {
             var_dump($folders);
             $tmp = ob_get_contents();
             ob_end_clean();
-            error_log("/repository/elis_files/lib.php::prepare_fm_listing(): folders = {$tmp}");
+            error_log("/repository/elisfiles/lib.php::prepare_fm_listing(): folders = {$tmp}");
             ob_start();
             var_dump($foldertree);
             $tmp = ob_get_contents();
             ob_end_clean();
-            error_log("/repository/elis_files/lib.php::prepare_fm_listing(): foldertree = {$tmp}");
+            error_log("/repository/elisfiles/lib.php::prepare_fm_listing(): foldertree = {$tmp}");
         }
 
         if (is_array($listing)) {
@@ -1470,7 +1470,7 @@ class repository_elis_files extends repository {
     private static function output_root_folder_html($data, $query = '') {
         global $CFG, $PAGE;
 
-        $PAGE->requires->js('/repository/elis_files/rootfolder.js');
+        $PAGE->requires->js('/repository/elisfiles/rootfolder.js');
 
         $repoisup = false;
 
@@ -1489,7 +1489,7 @@ class repository_elis_files extends repository {
         $inputs = '<div class="form-file defaultsnext"><input type="text" size="48" id="' . $id .
                   '" name="' . $name . '" value="' . s($data) . '" /> <input type="button" ' .
                   'onclick="return chooseRootFolder(document.getElementById(\'mform1\'));" value="' .
-                  get_string('chooserootfolder', 'repository_elis_files') . '" name="' . $name .
+                  get_string('chooserootfolder', 'repository_elisfiles') . '" name="' . $name .
                   '"' . (!$repoisup ? ' disabled="disabled"' : '') .' /></div>';
 
         return $inputs;
@@ -1528,7 +1528,7 @@ class repository_elis_files extends repository {
      *                empty string if not applicable
      */
     private static function get_ftp_config_indicator() {
-        $config = get_config('elis_files');
+        $config = get_config('elisfiles');
 
         $result = '';
 
@@ -1582,13 +1582,13 @@ class repository_elis_files extends repository {
      * @return bool
      */
     public static function plugin_init() {
-        if (get_config('elis_files', 'file_transfer_method') == ELIS_FILES_XFER_FTP && !function_exists('ftp_connect')) {
-            print_error('ftpmustbeenabled', 'repository_elis_files');
+        if (get_config('elisfiles', 'file_transfer_method') == ELIS_FILES_XFER_FTP && !function_exists('ftp_connect')) {
+            print_error('ftpmustbeenabled', 'repository_elisfiles');
             return false;
         }
 
-        if (get_config('elis_files', 'file_transfer_method') == ELIS_FILES_XFER_WS && !function_exists('curl_init')) {
-            print_error('curlmustbeenabled', 'repository_elis_files');
+        if (get_config('elisfiles', 'file_transfer_method') == ELIS_FILES_XFER_WS && !function_exists('curl_init')) {
+            print_error('curlmustbeenabled', 'repository_elisfiles');
             return false;
         }
 
@@ -1642,7 +1642,7 @@ class repository_elis_files extends repository {
      * @return string
      */
     public function get_reference_details($reference, $filestatus = 0) {
-        //error_log("repository/elis_files/lib.php::get_reference_details({$reference}, {$filestatus})");
+        //error_log("repository/elisfiles/lib.php::get_reference_details({$reference}, {$filestatus})");
         return $this->get_link($reference);
     }
 
@@ -1728,37 +1728,37 @@ class repository_elis_files extends repository {
             $userset_context = context_elis_userset::instance($oid);
         }
         if ($id == SITEID) {
-            $context = get_context_instance(CONTEXT_SYSTEM);
+            $context = context_system::instance();
         } else {
-            $context = get_context_instance(CONTEXT_COURSE, $id);
+            $context = context_course::instance($id);
         }
         // Get the non context based permissions
-        $capabilities = array('repository/elis_files:createowncontent'=> false,
-                              'repository/elis_files:createsharedcontent'=> false);
+        $capabilities = array('repository/elisfiles:createowncontent'=> false,
+                              'repository/elisfiles:createsharedcontent'=> false);
         $this->elis_files->get_other_capabilities($USER, $capabilities);
         $canedit = false;
 
         $syscontext = context_system::instance();
-        $site_files_permission = has_capability('repository/elis_files:createsitecontent', $syscontext);
+        $site_files_permission = has_capability('repository/elisfiles:createsitecontent', $syscontext);
 
         if (empty($userid) && empty($shared) && empty($oid)) {
             $has_permission = $site_files_permission ||
-                              $id == SITEID && has_capability('repository/elis_files:createsitecontent', $context) ||
-                              $id != SITEID && has_capability('repository/elis_files:createcoursecontent', $context);
+                              $id == SITEID && has_capability('repository/elisfiles:createsitecontent', $context) ||
+                              $id != SITEID && has_capability('repository/elisfiles:createcoursecontent', $context);
             if ($has_permission) {
                 $canedit = true;
             }
         } else if (empty($userid) && $shared == true) {
             $canedit = $site_files_permission ||
-                       $capabilities['repository/elis_files:createsharedcontent'];
+                       $capabilities['repository/elisfiles:createsharedcontent'];
         } else {
             if (($USER->id == $userid) && empty($oid)) {
                 $canedit = $site_files_permission ||
-                           $capabilities['repository/elis_files:createowncontent'];
+                           $capabilities['repository/elisfiles:createowncontent'];
             } else {
-                if (has_capability('repository/elis_files:createsitecontent', $context, $USER->id)) {
+                if (has_capability('repository/elisfiles:createsitecontent', $context, $USER->id)) {
                     $canedit = true;
-                } else if (!empty($oid) && has_capability('repository/elis_files:createusersetcontent', $userset_context)) {
+                } else if (!empty($oid) && has_capability('repository/elisfiles:createusersetcontent', $userset_context)) {
                     $canedit = true;
                 }
             }
@@ -1785,37 +1785,37 @@ class repository_elis_files extends repository {
             $userset_context = context_elis_userset::instance($oid);
         }
         if ($id == SITEID) {
-            $context = get_context_instance(CONTEXT_SYSTEM);
+            $context = context_system::instance();
         } else {
-            $context = get_context_instance(CONTEXT_COURSE, $id);
+            $context = context_course::instance($id);
         }
         // Get the non context based permissions
-        $capabilities = array('repository/elis_files:viewowncontent'=> false,
-                              'repository/elis_files:viewsharedcontent'=> false);
+        $capabilities = array('repository/elisfiles:viewowncontent'=> false,
+                              'repository/elisfiles:viewsharedcontent'=> false);
         $this->elis_files->get_other_capabilities($USER, $capabilities);
         $canview = false;
 
         $syscontext = context_system::instance();
-        $site_files_permission = has_capability('repository/elis_files:viewsitecontent', $syscontext);
+        $site_files_permission = has_capability('repository/elisfiles:viewsitecontent', $syscontext);
 
         if (empty($userid) && empty($shared) && empty($oid)) {
             $has_permission = $site_files_permission ||
-                              $id == SITEID && has_capability('repository/elis_files:viewsitecontent', $context) ||
-                              $id != SITEID && has_capability('repository/elis_files:viewcoursecontent', $context);
+                              $id == SITEID && has_capability('repository/elisfiles:viewsitecontent', $context) ||
+                              $id != SITEID && has_capability('repository/elisfiles:viewcoursecontent', $context);
             if ($has_permission) {
                 $canview = true;
             }
         } else if (empty($userid) && $shared == true) {
             $canview = $site_files_permission ||
-                       $capabilities['repository/elis_files:viewsharedcontent'];
+                       $capabilities['repository/elisfiles:viewsharedcontent'];
         } else {
             if (($USER->id == $userid) && empty($oid)) {
                 $canview = $site_files_permission ||
-                           $capabilities['repository/elis_files:viewowncontent'];
+                           $capabilities['repository/elisfiles:viewowncontent'];
             } else {
-                if (has_capability('repository/elis_files:viewsitecontent', $context, $USER->id)) {
+                if (has_capability('repository/elisfiles:viewsitecontent', $context, $USER->id)) {
                     $canview = true;
-                } else if (!empty($oid) && has_capability('repository/elis_files:viewusersetcontent', $userset_context)) {
+                } else if (!empty($oid) && has_capability('repository/elisfiles:viewusersetcontent', $userset_context)) {
                     $canview = true;
                 }
             }
@@ -1974,10 +1974,10 @@ class repository_elis_files extends repository {
         $tree = array();
 
         // fetch all the categories
-        $fulltree = $DB->get_records('elis_files_categories');
+        $fulltree = $DB->get_records('repository_elisfiles_cats');
 
         // fetch the selected categories from config
-        $catfilter_serialized = get_config('elis_files', 'catfilter');
+        $catfilter_serialized = get_config('elisfiles', 'catfilter');
 
         if ($catfilter = unserialize($catfilter_serialized)) {
             // build the new filtered tree

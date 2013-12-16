@@ -1,8 +1,7 @@
 <?php
 /**
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2009 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository
- * @subpackage elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2010 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  */
 
 
 $capabilities = array(
 
-    'repository/elis_files:view' => array(
+    'repository/elisfiles:view' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_MODULE,
         'archetypes' => array(
             'user' => CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:view'
     ),
-    'repository/elis_files:createsitecontent' => array(
+    'repository/elisfiles:createsitecontent' => array(
 
         'riskbitmask' => RISK_XSS| RISK_DATALOSS,
 
@@ -42,18 +41,20 @@ $capabilities = array(
         'contextlevel' => CONTEXT_SYSTEM,
         'legacy' => array(
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:createsitecontent'
     ),
 
-    'repository/elis_files:viewsitecontent' => array(
+    'repository/elisfiles:viewsitecontent' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'legacy' => array(
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:viewsitecontent'
     ),
 
-    'repository/elis_files:createsharedcontent' => array(
+    'repository/elisfiles:createsharedcontent' => array(
 
         'riskbitmask' => RISK_XSS| RISK_DATALOSS,
 
@@ -63,21 +64,23 @@ $capabilities = array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:createsharedcontent'
     ),
 
-    'repository/elis_files:viewsharedcontent' => array(
+    'repository/elisfiles:viewsharedcontent' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'legacy' => array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:viewsharedcontent'
     ),
 
 
-    'repository/elis_files:createcoursecontent' => array(
+    'repository/elisfiles:createcoursecontent' => array(
 
         'riskbitmask' => RISK_XSS| RISK_DATALOSS,
 
@@ -87,40 +90,44 @@ $capabilities = array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:createcoursecontent'
     ),
 
-    'repository/elis_files:viewcoursecontent' => array(
+    'repository/elisfiles:viewcoursecontent' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
         'legacy' => array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:viewcoursecontent'
     ),
 
-    'repository/elis_files:createowncontent' => array(
+    'repository/elisfiles:createowncontent' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
         'legacy' => array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:createowncontent'
     ),
 
-    'repository/elis_files:viewowncontent' => array(
+    'repository/elisfiles:viewowncontent' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'legacy' => array(
             'editingteacher' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:viewowncontent'
     ),
 
-    'repository/elis_files:createusersetcontent' => array(
+    'repository/elisfiles:createusersetcontent' => array(
 
         'riskbitmask' => RISK_XSS| RISK_DATALOSS,
 
@@ -128,14 +135,16 @@ $capabilities = array(
         'contextlevel' => CONTEXT_SYSTEM,
         'legacy' => array(
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:createusersetcontent'
     ),
 
-    'repository/elis_files:viewusersetcontent' => array(
+    'repository/elisfiles:viewusersetcontent' => array(
         'captype' => 'read',
         'contextlevel' => CONTEXT_SYSTEM,
         'legacy' => array(
             'manager'=> CAP_ALLOW
-        )
+        ),
+        'clonepermissionsfrom' => 'repository/elis_files:viewusersetcontent'
     )
 );

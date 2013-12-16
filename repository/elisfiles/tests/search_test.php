@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 global $CFG;
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
-require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elisfiles/tests/constants.php');
 
 /**
  * Class to test search
- * @group repository_elis_files
+ * @group repository_elisfiles
  */
-class repository_elis_files_search_testcase extends elis_database_test {
+class repository_elisfiles_search_testcase extends elis_database_test {
     /**
      * This function loads data into the PHPUnit tables for testing.
      */
@@ -49,7 +49,7 @@ class repository_elis_files_search_testcase extends elis_database_test {
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
 
         // Check if Alfresco is enabled, configured and running first.
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
         }
     }
@@ -90,18 +90,18 @@ class repository_elis_files_search_testcase extends elis_database_test {
         global $CFG, $DB;
 
         // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
+        if (file_exists($CFG->dirroot.'/repository/elisfiles/')) {
             // RL: ELIS files: Alfresco
             $data = null;
             $listing = null;
             $sql = 'SELECT i.name, i.typeid, r.type
                       FROM {repository} r, {repository_instances} i
                      WHERE r.type = ? AND i.typeid = r.id';
-            $repository = $DB->get_record_sql($sql, array('elis_files'));
+            $repository = $DB->get_record_sql($sql, array('elisfiles'));
             if ($repository) {
                 try {
-                    $repo = new repository_elis_files('elis_files', context_system::instance(),
-                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elis_files'));
+                    $repo = new repository_elisfiles('elisfiles', context_system::instance(),
+                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
                 } catch (Exception $e) {
                     $this->markTestSkipped();
                 }

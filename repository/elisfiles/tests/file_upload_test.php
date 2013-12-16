@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -27,18 +27,18 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
+require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/tests/constants.php');
 
 /**
  * Class for testing the uploading of files
- * @group repository_elis_files
+ * @group repository_elisfiles
  */
-class repository_elis_files_file_upload_testcase extends elis_database_test {
+class repository_elisfiles_file_upload_testcase extends elis_database_test {
     /**
      * This function create a temp file used by other tests.
      * @uses $CFG
@@ -157,11 +157,11 @@ class repository_elis_files_file_upload_testcase extends elis_database_test {
         $this->markTestSkipped('Not necessary to test incremental file sizes at this time.');
 
         // Check if Alfresco is enabled, configured and running first
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped();
         }
 
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped('Repository not configured or enabled');
         }
 
@@ -184,12 +184,12 @@ class repository_elis_files_file_upload_testcase extends elis_database_test {
         $this->setup_test_data_xml();
 
         // Check if Alfresco is enabled, configured and running first
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped();
         }
 
         // Explicitly set the file transfer method to Web Services
-        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
+        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elisfiles');
 
         $filename = $this->generate_temp_file(1);
 
@@ -209,12 +209,12 @@ class repository_elis_files_file_upload_testcase extends elis_database_test {
         $this->setup_test_data_xml();
 
         // Check if Alfresco is enabled, configured and running first
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped();
         }
 
         // Explicitly set the file transfer method to FTP
-        set_config('file_transfer_method', ELIS_FILES_XFER_FTP, 'elis_files');
+        set_config('file_transfer_method', ELIS_FILES_XFER_FTP, 'elisfiles');
 
         $targets = array(
                 $repo->root->uuid,
@@ -262,7 +262,7 @@ class repository_elis_files_file_upload_testcase extends elis_database_test {
         $this->setup_test_data_xml();
 
         // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot.'/repository/elis_files/')) {
+        if (file_exists($CFG->dirroot.'/repository/elisfiles/')) {
             // RL: ELIS files: Alfresco
             $data = null;
             $listing = null;
@@ -270,14 +270,14 @@ class repository_elis_files_file_upload_testcase extends elis_database_test {
                       FROM {repository} r, {repository_instances} i
                      WHERE r.type = ? AND i.typeid = r.id';
 
-            $repository = $DB->get_record_sql($sql, array('elis_files'));
+            $repository = $DB->get_record_sql($sql, array('elisfiles'));
 
             if ($repository) {
                 try {
-                    $repo = new repository_elis_files('elis_files', get_context_instance(CONTEXT_SYSTEM),
+                    $repo = new repository_elisfiles('elisfiles', context_system::instance(),
                             array('ajax' => false,
                                   'name' => $repository->name,
-                                  'type' => 'elis_files'
+                                  'type' => 'elisfiles'
                             )
                     );
                 } catch (Exception $e) {
@@ -291,12 +291,12 @@ class repository_elis_files_file_upload_testcase extends elis_database_test {
         }
 
         // Explicitly set the file transfer method to Web Services
-        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elis_files');
+        set_config('file_transfer_method', ELIS_FILES_XFER_WS, 'elisfiles');
 
         // Handle the no extension test case
         $extension = ($extension == 'EMPTY') ? '' : '.'.$extension;
 
-        $filename = $CFG->dirroot.'/repository/elis_files/tests/'.FILE_NAME_PREFIX.$extension;
+        $filename = $CFG->dirroot.'/repository/elisfiles/tests/'.FILE_NAME_PREFIX.$extension;
         $response = $this->call_upload_file($repo, '', $filename, $repo->elis_files->root->uuid);
 
         // Download the file and compare contents

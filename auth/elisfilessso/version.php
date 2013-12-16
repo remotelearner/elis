@@ -16,24 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_repository
+ * @package    auth_elisfilessso
  * @author     Remote-Learner.net Inc
- * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc (http://www.remote-learner.net)
+ *
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-$capabilities = array(
-    'block/repository:addinstance' => array(
-        'riskbitmask' => RISK_SPAM | RISK_XSS,
-        'captype' => 'write',
-        'contextlevel' => CONTEXT_BLOCK,
-        'archetypes' => array(
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
-
-        'clonepermissionsfrom' => 'moodle/my:manageblocks'
-    ),
-);
+$plugin->version = 2013121601;
+$plugin->release = '2.6.0.0 (Build: 20131216)';

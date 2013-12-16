@@ -3,7 +3,7 @@
  * Example test form for Alfresco file manager.
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -27,7 +27,7 @@
 require_once(dirname(__FILE__) .'/../../../../config.php');
 global $CFG, $OUTPUT, $PAGE, $USER;
 
-require_once("{$CFG->dirroot}/repository/elis_files/lib.php");
+require_once("{$CFG->dirroot}/repository/elisfiles/lib.php");
 require_once($CFG->dirroot .'/lib/formslib.php');
 require_once('./alfresco_filemanager.php');
 
@@ -39,13 +39,13 @@ class alfreso_test_form extends moodleform {
         $mform = & $this->_form;
         $ret = array('locations' => array('course' => 'course'));
         $sql = 'SELECT i.name, i.typeid, r.type FROM {repository} r, {repository_instances} i WHERE r.type=? AND i.typeid=r.id';
-        $repository = $DB->get_record_sql($sql, array('elis_files'));
+        $repository = $DB->get_record_sql($sql, array('elisfiles'));
         if ($repository) {
             try {
-                $repo = new repository_elis_files('elis_files', get_context_instance(CONTEXT_USER, $USER->id), array(
+                $repo = new repository_elisfiles('elisfiles', context_user::instance($USER->id), array(
                     'ajax' => false,
                     'name' => $repository->name,
-                    'type' => 'elis_files')
+                    'type' => 'elisfiles')
                 );
                 if (!empty($repo)) {
                     $ret = $repo->get_listing();
@@ -83,15 +83,15 @@ class alfreso_test_form extends moodleform {
 
 }
 
-$context = get_context_instance(CONTEXT_USER, $USER->id);
+$context = context_user::instance($USER->id);
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('mydashboard');
 $PAGE->set_pagetype('user-files');
 $PAGE->set_heading('<b>Alfresco File Manager</b>');
-$PAGE->set_url('/repository/elis_files/lib/form/testform.php');
+$PAGE->set_url('/repository/elisfiles/lib/form/testform.php');
 
 $data = new stdClass;
-$data->returnurl = new moodle_url('/repository/elis_files/lib/form/testform.php');
+$data->returnurl = new moodle_url('/repository/elisfiles/lib/form/testform.php');
 $options = array('subdirs'=>1, 'maxbytes'=>$CFG->userquota, 'maxfiles'=>-1, 'accepted_types'=>'*');
 $data = file_prepare_standard_filemanager($data, 'files', $options, $context, 'user', 'private', 0);
 

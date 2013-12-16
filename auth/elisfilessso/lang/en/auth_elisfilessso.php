@@ -19,7 +19,7 @@
  * Strings for component 'auth_cas', language 'en', branch 'MOODLE_20_STABLE'
  *
  * @package   auth_elisfilessso
- * @copyright 2011
+ * @copyright 2013
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 $string['auth_elisfilesssodescription'] = 'This plug-in allows automatic creation of user accounts on an ELIS Files ' .

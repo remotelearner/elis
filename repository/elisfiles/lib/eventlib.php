@@ -3,7 +3,7 @@
  * Library of functions for the event handlers
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    reposutory
- * @subpackage elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 
-require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
 
 
 /**
@@ -38,7 +37,7 @@ require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php'
  */
 function elis_files_user_deleted($user) {
     // Only proceed here if the Alfresco plug-in is actually enabled.
-    if (!$repo = repository_factory::factory('elis_files')) {
+    if (!$repo = repository_factory::factory('elisfiles')) {
         return true;
     }
 
@@ -57,7 +56,7 @@ function elis_files_course_deleted($course) {
     global $DB;
 
     if (isset($course->id)) {
-        $DB->delete_records('elis_files_course_store', array('courseid' => $course->id));
+        $DB->delete_records('repository_elisfiles_course', array('courseid' => $course->id));
     }
 
     return true;
@@ -73,7 +72,7 @@ function elis_files_userset_deleted($id) {
     global $DB;
 
     if (!empty($id)) {
-        $DB->delete_records('elis_files_userset_store', array('usersetid' => $id));
+        $DB->delete_records('repository_elisfiles_userset', array('usersetid' => $id));
     }
 
     return true;
@@ -91,7 +90,7 @@ function elis_files_role_unassigned($ra) {
 
     // Only proceed here if we have valid userid,contextid & the Alfresco plug-in is actually enabled.
     if (empty($ra->userid) || empty($ra->contextid) ||
-        !($repo = repository_factory::factory('elis_files'))) {
+        !($repo = repository_factory::factory('elisfiles'))) {
         return true;
     }
 
@@ -125,10 +124,10 @@ function elis_files_role_unassigned($ra) {
     }
 
     foreach ($courses as $course) {
-        $context = get_context_instance(CONTEXT_COURSE, $course->id);
+        $context = context_course::instance($course->id);
 
-        if (!has_capability('repository/elis_files:viewcoursecontent', $context, $ra->userid, false) &&
-            !has_capability('repository/elis_files:createcoursecontent', $context, $ra->userid, false)) {
+        if (!has_capability('repository/elisfiles:viewcoursecontent', $context, $ra->userid, false) &&
+            !has_capability('repository/elisfiles:createcoursecontent', $context, $ra->userid, false)) {
 
             if ($uuid = $repo->get_course_store($course->id)) {
                 // Look for Alfresco capabilities in this context for this user and assign permissions as required.
@@ -151,7 +150,7 @@ function elis_files_role_unassigned($ra) {
         $params = array(
             'roleid'     => $ra->roleid,
             'permission' => CAP_ALLOW,
-            'capability' => 'repository/elis_files:createsitecontent'
+            'capability' => 'repository/elisfiles:createsitecontent'
         );
 
         if ($DB->record_exists('role_capabilities', $params)) {
@@ -165,7 +164,7 @@ function elis_files_role_unassigned($ra) {
 
             $params = array(
                 'userid' => $ra->userid,
-                'cap'    => 'repository/elis_files:createsitecontent',
+                'cap'    => 'repository/elisfiles:createsitecontent',
                 'perm'   => CAP_ALLOW
             );
 
@@ -181,7 +180,7 @@ function elis_files_role_unassigned($ra) {
         $params = array(
     	    'roleid'     => $ra->roleid,
     	    'permission' => CAP_ALLOW,
-            'capability' => 'repository/elis_files:viewsitecontent'
+            'capability' => 'repository/elisfiles:viewsitecontent'
         );
 
         if ($DB->record_exists('role_capabilities', $params)) {
@@ -195,7 +194,7 @@ function elis_files_role_unassigned($ra) {
 
             $params = array(
                 'userid' => $ra->userid,
-                'cap'    => 'repository/elis_files:viewsitecontent',
+                'cap'    => 'repository/elisfiles:viewsitecontent',
                 'perm'   => CAP_ALLOW
             );
 
@@ -215,7 +214,7 @@ function elis_files_role_unassigned($ra) {
     $params = array(
         'roleid'     => $ra->roleid,
         'permission' => CAP_ALLOW,
-        'capability' => 'repository/elis_files:createsharedcontent'
+        'capability' => 'repository/elisfiles:createsharedcontent'
     );
 
     if ($DB->record_exists('role_capabilities', $params)) {
@@ -229,7 +228,7 @@ function elis_files_role_unassigned($ra) {
 
         $params = array(
             'userid' => $ra->userid,
-            'cap'    => 'repository/elis_files:createsharedcontent',
+            'cap'    => 'repository/elisfiles:createsharedcontent',
             'perm'   => CAP_ALLOW
         );
 
@@ -245,7 +244,7 @@ function elis_files_role_unassigned($ra) {
     $params = array(
         'roleid'     => $ra->roleid,
         'permission' => CAP_ALLOW,
-        'capability' => 'repository/elis_files:viewsharedcontent'
+        'capability' => 'repository/elisfiles:viewsharedcontent'
     );
 
     if ($DB->record_exists('role_capabilities', $params)) {
@@ -259,7 +258,7 @@ function elis_files_role_unassigned($ra) {
 
         $params = array(
             'userid' => $ra->userid,
-            'cap'    => 'repository/elis_files:viewsharedcontent',
+            'cap'    => 'repository/elisfiles:viewsharedcontent',
             'perm'   => CAP_ALLOW
         );
 
@@ -288,7 +287,7 @@ function elis_files_userset_assigned($usersetinfo) {
 
     // Only proceed here if we have valid userid, clusterid & the Alfresco plug-in is actually enabled.
     if (empty($usersetinfo->userid) || empty($usersetinfo->clusterid) ||
-        !($repo = repository_factory::factory('elis_files'))) {
+        !($repo = repository_factory::factory('elisfiles'))) {
         return true;
     }
 
@@ -303,11 +302,11 @@ function elis_files_userset_assigned($usersetinfo) {
         return true;
     }
 
-    if (!file_exists(elispm::file('plugins/userset_classification/usersetclassification.class.php'))) {
+    if (!file_exists(elispm::file('plugins/usetclassify/usersetclassification.class.php'))) {
         return true;
     }
 
-    require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
+    require_once(elispm::file('plugins/usetclassify/usersetclassification.class.php'));
 
     // Get the extra user set data and ensure it is present before proceeding.
     $usersetdata = usersetclassification::get_for_cluster($userset);
@@ -342,8 +341,8 @@ function elis_files_userset_assigned($usersetinfo) {
     $params = array(
         'contextid' => $context->id,
         'userid'    => $muser->id,
-        'cap1'      => 'repository/elis_files:createusersetcontent',
-        'cap2'      => 'elis/program:userset_enrol'
+        'cap1'      => 'repository/elisfiles:createusersetcontent',
+        'cap2'      => 'local/elisprogram:userset_enrol'
     );
 
     // Check if the user has the the editing capability for the Alfresco organization shared
@@ -392,7 +391,7 @@ function elis_files_userset_deassigned($usersetinfo) {
 
     // Only proceed here if we have valid userid,clusterid & the Alfresco plug-in is actually enabled.
     if (empty($usersetinfo->userid) || empty($usersetinfo->clusterid) ||
-        !($repo = repository_factory::factory('elis_files'))) {
+        !($repo = repository_factory::factory('elisfiles'))) {
         return true;
     }
 
@@ -403,15 +402,15 @@ function elis_files_userset_deassigned($usersetinfo) {
         return true;
     }
 
-    if (!$userset = $DB->get_record('crlm_cluster', array('id' => $usersetinfo->clusterid))) {
+    if (!($userset = $DB->get_record('crlm_cluster', array('id' => $usersetinfo->clusterid)))) {
         return true;
     }
 
-    if (!file_exists(elispm::file('plugins/userset_classification/usersetclassification.class.php'))) {
+    if (!file_exists(elispm::file('plugins/usetclassify/usersetclassification.class.php'))) {
         return true;
     }
 
-    require_once(elispm::file('plugins/userset_classification/usersetclassification.class.php'));
+    require_once(elispm::file('plugins/usetclassify/usersetclassification.class.php'));
 
     // Get the extra user set data and ensure it is present before proceeding.
     $usersetdata = usersetclassification::get_for_cluster($userset);
@@ -446,8 +445,8 @@ function elis_files_userset_deassigned($usersetinfo) {
     $params = array(
         'contextid' => $context->id,
         'userid'    => $muser->id,
-        'cap1'      => 'repository/elis_files:createusersetcontent',
-        'cap2'      => 'elis/program:userset_enrol'
+        'cap1'      => 'repository/elisfiles:createusersetcontent',
+        'cap2'      => 'local/elisprogram:userset_enrol'
     );
 
     // Check if the user has a specific role assignment on the user set context with the editing capability
@@ -466,6 +465,7 @@ function elis_files_userset_deassigned($usersetinfo) {
 
     // Remove all permissions for this user on the organization shared space.
     } else if ($permissions = elis_files_get_permissions($uuid, $muser->username)) {
+        require_once(elispm::lib('data/clusterassignment.class.php'));
         foreach ($permissions as $permission) {
             // Do not remove view permissions if this user still actually has a user set membership.
             $params = array(
@@ -473,7 +473,7 @@ function elis_files_userset_deassigned($usersetinfo) {
                 'clusterid' => $userset->id
             );
 
-            if ($permission == ELIS_FILES_ROLE_CONSUMER && $DB->record_exists('crlm_usercluster', $params)) {
+            if ($permission == ELIS_FILES_ROLE_CONSUMER && $DB->record_exists(clusterassignment::TABLE, $params)) {
                 continue;
             }
 
@@ -495,7 +495,7 @@ function elis_files_user_created($user) {
     global $CFG;
 
     // Only proceed here if the Alfresco plug-in is actually enabled.
-    if (!($repo = repository_factory::factory('elis_files')) || !$repo->is_configured() || !$repo->verify_setup()) {
+    if (!($repo = repository_factory::factory('elisfiles')) || !$repo->is_configured() || !$repo->verify_setup()) {
         //error_log("elis_files_user_created(): Alfresco NOT enabled!");
     } else {
         // create a random password for certain authentications

@@ -3,7 +3,7 @@
  * Alfresco CMIS REST interface API for Alfresco version 3.2 / 3.4
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  *
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once dirname(__FILE__). '/ELIS_files.php';
-require_once dirname(__FILE__). '/../ELIS_files_factory.class.php';
-require_once dirname(dirname(dirname(dirname(__FILE__)))). '/elis/core/lib/setup.php';
-require_once dirname(__FILE__) . '/cmis-php/cmis_repository_wrapper.php';
+require_once(dirname(__FILE__).'/ELIS_files.php');
+require_once(dirname(__FILE__).'/../ELIS_files_factory.class.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/lib/setup.php');
+require_once(dirname(__FILE__).'/cmis-php/cmis_repository_wrapper.php');
 require_once(dirname(__FILE__).'/elis_files_logger.class.php');
 
 /**
@@ -43,7 +43,7 @@ function elis_files_request($uri, $username = '') {
 
     if (ELIS_FILES_DEBUG_TRACE) print_object('$uri: ' . $uri.' username: '.$username);
     if (!$response = elis_files_utils_invoke_service($uri, 'ticket', array(), 'GET', array(), $username)) {
-//        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
+//        debugging(get_string('couldnotaccessserviceat', 'repository_elisfiles', $uri), DEBUG_DEVELOPER);
         if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response);
     }
 
@@ -157,14 +157,14 @@ function display_msg($msg, $details = '', $type = 'error') {
         $details = addcslashes($details, "'");
         $details = preg_replace("/\n/", '', $details);
         $details = preg_replace("|/alfresco/images/logo/AlfrescoLogo32.png|",
-                                '/repository/elis_files/pix/icon.png',
+                                '/repository/elisfiles/pix/icon.png',
                                 $details);
     }
     $output = $OUTPUT->box_start("generalbox {$type} boxaligncenter boxwidthwide", 'notice'); // TBD
     $output .= $msg;
     if (!empty($details)) {
         $output .= '<p align="right"><input type="button" value="'.
-                   get_string('details', 'repository_elis_files') .
+                   get_string('details', 'repository_elisfiles') .
                    '" onclick="toggle_msgdetails();" /></p>'
                    .'<div id="msgdetails" style="overflow:auto;overflow-y:hidden;-ms-overflow-y:hidden"></div>';
         $output .= "
@@ -193,9 +193,9 @@ function RLsimpleXMLelement($resp, $displayerrors = false) {
         ($lastentry = strrpos($resp, "<entry>")) !== false) {
         $details = substr($resp, $preend + 7, -7);
         $resp = substr($resp, 0, $lastentry - 1) ."\n</feed>";
-        error_log("repository/elis_files/lib/lib.php:: WARNING - Alfresco Server Error: {$details}");
+        error_log("repository/elisfiles/lib/lib.php:: WARNING - Alfresco Server Error: {$details}");
         if ($displayerrors) {
-            display_msg(get_string('incompletequeryresponse', 'repository_elis_files'),
+            display_msg(get_string('incompletequeryresponse', 'repository_elisfiles'),
                         $details);
         }
     }
@@ -204,9 +204,9 @@ function RLsimpleXMLelement($resp, $displayerrors = false) {
     try {
         $sxml = new SimpleXMLElement($resp);
     } catch (Exception $e) {
-        error_log("repository/elis_files/lib/lib.php:: WARNING - Alfresco Server Error: BAD XML => {$details}");
+        error_log("repository/elisfiles/lib/lib.php:: WARNING - Alfresco Server Error: BAD XML => {$details}");
         if ($displayerrors) {
-            display_msg(get_string('badqueryresponse', 'repository_elis_files'),
+            display_msg(get_string('badqueryresponse', 'repository_elisfiles'),
                         $details);
         }
         return false;
@@ -427,18 +427,18 @@ function elis_files_read_dir($uuid = '', $useadmin = true) {
  * @return string The base URL.
  */
 function elis_files_base_url() {
-    if (!isset(elis::$config->elis_files->server_host)) {
+    if (!isset(elis::$config->elisfiles->server_host)) {
         return '';
     }
 
-    $repourl = elis::$config->elis_files->server_host;
+    $repourl = elis::$config->elisfiles->server_host;
 
     if ($repourl[strlen($repourl) - 1] == '/') {
         $repourl = substr($repourl, 0, strlen($repourl) - 1);
     }
 
-    if (!empty(elis::$config->elis_files->server_port)) {
-        $repourl .= ':' . elis::$config->elis_files->server_port;
+    if (!empty(elis::$config->elisfiles->server_port)) {
+        $repourl .= ':' . elis::$config->elisfiles->server_port;
     }
 
     $repourl .= '/alfresco/s';
@@ -618,7 +618,7 @@ function elis_files_delete($uuid, $recursive = false, $repo = NULL) {
     // Ensure that we set the configured admin user to be the owner of the deleted file before deleting.
     // This is to prevent the user's Alfresco account from having space incorrectly attributed to it.
     // ELIS-1102
-    elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elis_files->server_username);
+    elis_files_request('/moodle/nodeowner/' . $uuid . '?username=' . elis::$config->elisfiles->server_username);
 
     if (ELIS_files::is_version('3.2')) {
         return (true === elis_files_send(elis_files_get_uri($uuid, 'delete'), array(), 'DELETE'));
@@ -715,8 +715,8 @@ function elis_files_create_dir($name, $uuid, $description = '', $useadmin = true
     $response = elis_files_utils_invoke_service($uri, 'basic', $header, 'CUSTOM-POST', $data, $username);
 
     if ($response === false) {
-//        debugging(get_string('couldnotaccessserviceat', 'repository_elis_files', $uri), DEBUG_DEVELOPER);
-        error_log('elis_files_create_dir(): '. get_string('couldnotaccessserviceat', 'repository_elis_files', $uri));
+//        debugging(get_string('couldnotaccessserviceat', 'repository_elisfiles', $uri), DEBUG_DEVELOPER);
+        error_log('elis_files_create_dir(): '. get_string('couldnotaccessserviceat', 'repository_elisfiles', $uri));
         return false;
     }
 
@@ -844,7 +844,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         return false;
     }
 
-    if (!$repo = repository_factory::factory('elis_files')) {
+    if (!$repo = repository_factory::factory('elisfiles')) {
         return false;
     }
 
@@ -856,7 +856,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
         $uuid = $repo->get_root()->uuid;
     }
 
-    $xfermethod = get_config('elis_files', 'file_transfer_method');
+    $xfermethod = get_config('elisfiles', 'file_transfer_method');
     switch ($xfermethod) {
         case ELIS_FILES_XFER_WS:
             return elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid, $useadmin, $repo);
@@ -913,7 +913,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
 
     // Create the repository object
     if (empty($repo) &&
-        !($repo = repository_factory::factory('elis_files'))) {
+        !($repo = repository_factory::factory('elisfiles'))) {
         return false;
     }
 
@@ -922,7 +922,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         $dir = rtrim(dirname($filepath), '/');
         $upfile = "{$dir}/{$filename}";
         if (!@rename($filepath, $upfile)) {
-            error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed renaming '{$filepath}' to '{$upfile}'");
+            error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed renaming '{$filepath}' to '{$upfile}'");
             $logger->signal_error(ELIS_FILES_ERROR_WS);
             return false;
         }
@@ -957,7 +957,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         var_dump($response);
         $tmp = ob_get_contents();
         ob_end_clean();
-        error_log('/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed '. ($overwrite ? 'updating' : 'creating') ." node: response = {$tmp}");
+        error_log('/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed '. ($overwrite ? 'updating' : 'creating') ." node: response = {$tmp}");
         $logger->signal_error(ELIS_FILES_ERROR_WS);
         return false;
     }
@@ -973,7 +973,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         //var_dump($sxml);
         //$tmp = ob_get_contents();
         //ob_end_clean();
-        //error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): INFO: sxml = {$tmp}");
+        //error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): INFO: sxml = {$tmp}");
         if (!empty($sxml->node->uuid)) {
             $properties->uuid = $sxml->node->uuid;
         }
@@ -986,7 +986,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         var_dump($sxml);
         $tmp = ob_get_contents();
         ob_end_clean();
-        error_log("/repository/elis_files/lib/lib.php::elis_files_upload_ws(): Failed getting node data: XML = {$tmp}");
+        error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed getting node data: XML = {$tmp}");
         $logger->signal_error(ELIS_FILES_ERROR_WS);
         return false;
     }
@@ -1016,7 +1016,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
 function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid = '', $useadmin = true) {
     global $USER;
 
-    $config = get_config('elis_files');
+    $config = get_config('elisfiles');
 
     // Obtain the logger object in a clean state, in case we need it
     $logger = elis_files_logger::instance();
@@ -1195,7 +1195,7 @@ function elis_files_query($statement, $searchAllVersions = false, $includeAllowa
     try {
         $sxml = new SimpleXMLElement($response);
     } catch (Exception $e) {
-        debugging(get_string('badxmlreturn', 'repository_elis_files') . "\n\n$response", DEBUG_DEVELOPER);
+        debugging(get_string('badxmlreturn', 'repository_elisfiles') . "\n\n$response", DEBUG_DEVELOPER);
         return false;
     }
     */
@@ -1341,7 +1341,7 @@ function elis_files_get_categories() {
 function elis_files_get_config() {
     global $CFG;
 
-    require_once($CFG->dirroot . '/repository/elis_files/ELIS_files_factory.class.php');
+    require_once($CFG->dirroot . '/repository/elisfiles/ELIS_files_factory.class.php');
 
     if (!$repo = repository_factory::factory()) {
         return false;
@@ -1379,12 +1379,12 @@ function elis_files_process_folder_structure($sxml, $check_permissions = false, 
     $params = array(
         'ajax' => false,
         'name' => '',
-        'type' =>'elis_files'
+        'type' =>'elisfiles'
     );
 
     // Create the repository object
     if ($repo == NULL) {
-        $repo = new repository_elis_files('elis_files', SYSCONTEXTID, $params);
+        $repo = new repository_elisfiles('elisfiles', SYSCONTEXTID, $params);
     }
 
     if (!empty($sxml->folder)) {
@@ -1403,7 +1403,7 @@ function elis_files_process_folder_structure($sxml, $check_permissions = false, 
                     $params = array(
                         'uuid' => "$folder->uuid"
                     );
-                    $tempcourseid = $DB->get_field('elis_files_course_store', 'courseid', $params);
+                    $tempcourseid = $DB->get_field('repository_elisfiles_course', 'courseid', $params);
                     if ($tempcourseid) {
                         $node_courseid = $tempcourseid;
                     }
@@ -1420,7 +1420,7 @@ function elis_files_process_folder_structure($sxml, $check_permissions = false, 
                     $params = array(
                         'uuid' => "$folder->uuid"
                     );
-                    $node_oid = $DB->get_field('elis_files_userset_store', 'usersetid', $params);
+                    $node_oid = $DB->get_field('repository_elisfiles_userset', 'usersetid', $params);
                 }
 
                 // The user id if we are at the node for the curent user, or an empty
@@ -1949,8 +1949,8 @@ function elis_files_create_user($user, $password = '') {
         $newuser['password'] = $password;
     }
 
-    if (!empty(elis::$config->elis_files->user_quota)) {
-        $newuser['quota'] = elis::$config->elis_files->user_quota;
+    if (!empty(elis::$config->elisfiles->user_quota)) {
+        $newuser['quota'] = elis::$config->elisfiles->user_quota;
     }
 
     if (!$response = elis_files_send('/moodle/createuser', $newuser, 'POST')) {
@@ -2539,14 +2539,14 @@ function elis_files_utils_get_auth_headers($username = '') {
         $user = $username;
         $pass = 'password';
     } else {
-        $user = elis::$config->elis_files->server_username;
-        $pass = elis::$config->elis_files->server_password;
+        $user = elis::$config->elisfiles->server_username;
+        $pass = elis::$config->elisfiles->server_password;
     }
 
     // We must include the tenant portion of the username here if it is not already included.
-    if ($user != elis::$config->elis_files->server_username) {
-        if (($tenantpos = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-            $tenantname = substr(elis::$config->elis_files->server_username, $tenantpos);
+    if ($user != elis::$config->elisfiles->server_username) {
+        if (($tenantpos = strpos(elis::$config->elisfiles->server_username, '@')) > 0) {
+            $tenantname = substr(elis::$config->elisfiles->server_username, $tenantpos);
 
             if (strpos($user, $tenantname) === false) {
                 $user .= $tenantname;
@@ -2579,18 +2579,18 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
         $user = $username;
         $pass = 'password';
     } else {
-        if (!isset(elis::$config->elis_files->server_username) || !isset(elis::$config->elis_files->server_password)) {
+        if (!isset(elis::$config->elisfiles->server_username) || !isset(elis::$config->elisfiles->server_password)) {
             return false;
         }
 
-        $user = elis::$config->elis_files->server_username;
-        $pass = elis::$config->elis_files->server_password;
+        $user = elis::$config->elisfiles->server_username;
+        $pass = elis::$config->elisfiles->server_password;
     }
 
     // We must include the tenant portion of the username here if it is not already included.
-    if ($user != elis::$config->elis_files->server_username) {
-        if (($tenantpos = strpos(elis::$config->elis_files->server_username, '@')) > 0) {
-            $tenantname = substr(elis::$config->elis_files->server_username, $tenantpos);
+    if ($user != elis::$config->elisfiles->server_username) {
+        if (($tenantpos = strpos(elis::$config->elisfiles->server_username, '@')) > 0) {
+            $tenantname = substr(elis::$config->elisfiles->server_username, $tenantpos);
 
             if (strpos($user, $tenantname) === false) {
                 $user .= $tenantname;
@@ -2639,13 +2639,13 @@ function elis_files_utils_get_ticket($op = 'norefresh', $username = '') {
         } else {
             return false;
 
-            debugging(get_string('errorreceivedfromendpoint', 'repository_elis_files') .
+            debugging(get_string('errorreceivedfromendpoint', 'repository_elisfiles') .
                       (!empty($response->code) ? $response->code . ' ' : ' ') .
                       $response->error, DEBUG_DEVELOPER);
         }
 
         if ($alf_ticket == '') {
-            debug(get_string('unabletoauthenticatewithendpoint', 'repository_elis_files'), DEBUG_DEVELOPER);
+            debug(get_string('unabletoauthenticatewithendpoint', 'repository_elisfiles'), DEBUG_DEVELOPER);
         }
 
         $_SESSION['elis_files_ticket']   = $alf_ticket;
@@ -2701,9 +2701,9 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
                                            'array(), ' . $method . ', $data, ' . $username . ', ' . $retry . ')');
 
     // We must include the tenant portion of the username here if it is not already included.
-//    if ($username != $CFG->repository_elis_files_server_username) {
-//        if (($tenantpos = strpos($CFG->repository_elis_files_server_username, '@')) > 0) {
-//            $tenantname = substr($CFG->repository_elis_files_server_username, $tenantpos);
+//    if ($username != $CFG->repository_elisfiles_server_username) {
+//        if (($tenantpos = strpos($CFG->repository_elisfiles_server_username, '@')) > 0) {
+//            $tenantname = substr($CFG->repository_elisfiles_server_username, $tenantpos);
 //
 //            if (strpos($username, $tenantname) === false) {
 //                $username .= $tenantname;
@@ -2730,7 +2730,7 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
                 $a = new stdClass;
                 $a->serviceurl = $serviceurl;
                 $a->code       = $response2->code;
-                if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elis_files', $a));
+                if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elisfiles', $a));
                 if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
 
                 return false;
@@ -2746,7 +2746,7 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
             $a = new stdClass;
             $a->serviceurl = $serviceurl;
             $a->code       = $response2->code;
-            if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elis_files', $a));
+            if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elisfiles', $a));
             if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
 
             return false;
@@ -2755,7 +2755,7 @@ function elis_files_utils_invoke_service($serviceurl, $op = 'ticket', $headers =
         $a = new stdClass;
         $a->serviceurl = $serviceurl;
         $a->code       = $response->code;
-        if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elis_files', $a) .
+        if (ELIS_FILES_DEBUG_TRACE) print_object(get_string('failedtoinvokeservice', 'repository_elisfiles', $a) .
                                                (!empty($response->error) ? ' ' . $response->error : ''));
         if (ELIS_FILES_DEBUG_TRACE && $CFG->debug == DEBUG_DEVELOPER) print_object($response->data);
 
@@ -2805,8 +2805,8 @@ function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers =
     curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
 
     if ($auth == 'basic') {
-        $user = elis::$config->elis_files->server_username;
-        $pass = elis::$config->elis_files->server_password;
+        $user = elis::$config->elisfiles->server_username;
+        $pass = elis::$config->elisfiles->server_password;
 
         curl_setopt($session, CURLOPT_USERPWD, "$user:$pass");
     }
@@ -2859,12 +2859,12 @@ function elis_files_utils_http_request($serviceurl, $auth = 'ticket', $headers =
 function elis_files_transform_username($username) {
     global $CFG, $USER;
 
-    $tenantpos = strpos(elis::$config->elis_files->server_username, '@');
+    $tenantpos = strpos(elis::$config->elisfiles->server_username, '@');
     if ($username == 'admin' || empty($USER->username) || $USER->username == $username ||
         (($atpos = strpos($username, '@')) !== false &&
           ($tenantpos === false ||
            strcmp(substr($username, $atpos),
-                  substr(elis::$config->elis_files->server_username, $tenantpos))))
+                  substr(elis::$config->elisfiles->server_username, $tenantpos))))
        || ($atpos === false && $tenantpos !== false)) {
 
         // Fix username
@@ -2872,11 +2872,11 @@ function elis_files_transform_username($username) {
 
         // So that we don't conflict with the default Alfresco admin account.
         $username = ($username == 'admin')
-                    ? elis::$config->elis_files->admin_username : $username;
+                    ? elis::$config->elisfiles->admin_username : $username;
 
         // We must include the tenant portion of the username here.
         if ($tenantpos > 0) {
-            $username .= substr(elis::$config->elis_files->server_username, $tenantpos);
+            $username .= substr(elis::$config->elisfiles->server_username, $tenantpos);
         }
     }
     return $username;
@@ -2899,7 +2899,7 @@ function elis_files_folder_to_userid($folder) {
     // Folder contain _AT_ instead of @
     $username = str_replace('_AT_', '@', $folder);
 
-    if ($username == elis::$config->elis_files->admin_username) {
+    if ($username == elis::$config->elisfiles->admin_username) {
         // This user is the Alfresco administrator
         $username = 'admin';
     }
@@ -2953,7 +2953,7 @@ function elis_files_node_path($uuid, $path = '') {
  */
 function elis_files_get_current_path_for_course($courseid, $default = false) {
     global $CFG, $DB, $USER;
-    require_once($CFG->dirroot.'/repository/elis_files/lib.php');
+    require_once($CFG->dirroot.'/repository/elisfiles/lib.php');
 
     // Default to the Moodle area
     $currentpath = '/';
@@ -2965,7 +2965,7 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
             WHERE r.type = ?
             AND i.typeid = r.id';
 
-    $repository = $DB->get_record_sql($sql, array('elis_files'), IGNORE_MISSING);
+    $repository = $DB->get_record_sql($sql, array('elisfiles'), IGNORE_MISSING);
 
     if ($repository) {
         // Initialize repository plugin
@@ -2974,9 +2974,9 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
             $options = array(
                 'ajax' => false,
                 'name' => $repository->name,
-                'type' => 'elis_files'
+                'type' => 'elisfiles'
             );
-            $repo = new repository_elis_files('elis_files', $ctx, $options);
+            $repo = new repository_elisfiles('elisfiles', $ctx, $options);
 
             if (!empty($repo->elis_files)) {
                 // TBD: Is the following required???
@@ -2996,12 +2996,12 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
 
                 if ($uuid != false) {
                     // Encode the UUID
-                    $currentpath = repository_elis_files::build_encodedpath($uuid, $uid, $cid, $oid, $shared);
+                    $currentpath = repository_elisfiles::build_encodedpath($uuid, $uid, $cid, $oid, $shared);
                 }
             }
         } catch (Exception $e) {
             // The parent "repository" class may throw exceptions
-            error_log("/repository/elis_files/lib/lib.php::elis_files_get_current_path_for_course({$courseid}): Exception: ". $e->getMessage());
+            error_log("/repository/elisfiles/lib/lib.php::elis_files_get_current_path_for_course({$courseid}): Exception: ". $e->getMessage());
         }
     }
 
@@ -3106,11 +3106,13 @@ function elis_files_ISO_9075_map($categorytitle) {
  * @param resource $session A cURL session
  */
 function elis_files_set_curl_timeouts(&$session) {
-    $connecttimeout = get_config('elis_files', 'connect_timeout');
+    global $CFG;
+    require_once(dirname(__FILE__).'/../lib.php');
+    $connecttimeout = get_config('elisfiles', 'connect_timeout');
     $connecttimeout = !empty($connecttimeout) ? (int)$connecttimeout : ELIS_FILES_CURL_CONNECT_TIMEOUT;
     curl_setopt($session, CURLOPT_CONNECTTIMEOUT, $connecttimeout);
 
-    $responsetimeout = get_config('elis_files', 'response_timeout');
+    $responsetimeout = get_config('elisfiles', 'response_timeout');
     $responsetimeout = !empty($responsetimeout) ? (int)$responsetimeout : ELIS_FILES_CURL_RESPONSE_TIMEOUT;
     curl_setopt($session, CURLOPT_TIMEOUT, $responsetimeout);
 }

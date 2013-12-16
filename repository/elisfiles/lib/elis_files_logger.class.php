@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package
- * @subpackage
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -82,20 +81,20 @@ class elis_files_logger {
     public function get_error_message() {
         switch ($this->state) {
             case ELIS_FILES_ERROR_FTP:
-                $config = get_config('elis_files');
+                $config = get_config('elisfiles');
 
                 $uri = parse_url($config->server_host);
                 $a = $uri['host'].':'.$config->ftp_port;
 
-                return get_string('errorftpinvalidport', 'repository_elis_files', $a);
+                return get_string('errorftpinvalidport', 'repository_elisfiles', $a);
                 break;
             case ELIS_FILES_ERROR_WS:
-                return get_string('errorupload', 'repository_elis_files');
+                return get_string('errorupload', 'repository_elisfiles');
                 break;
             case ELIS_FILES_ERROR_UPLOAD_PERMS:
                 // Insufficient permissions to upload
                 // TODO: use a more specific error message?
-                return get_string('errorupload', 'repository_elis_files');
+                return get_string('errorupload', 'repository_elisfiles');
                 break;
         }
 

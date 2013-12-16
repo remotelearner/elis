@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -27,16 +27,16 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
+require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
 
 /**
  * Tests Node XML
- * @group repository_elis_files
+ * @group repository_elisfiles
  */
-class repository_elis_files_file_node_xml_testcase extends elis_database_test {
+class repository_elisfiles_file_node_xml_testcase extends elis_database_test {
     /**
      * A function to return initial node setup data
      * @return object initial file node data
@@ -303,7 +303,7 @@ class repository_elis_files_file_node_xml_testcase extends elis_database_test {
 
         $dom = new DOMDocument();
         // load into dom
-        $dom->load($CFG->dirroot.'/repository/elis_files/tests/folderresponse.xml');
+        $dom->load($CFG->dirroot.'/repository/elisfiles/tests/folderresponse.xml');
         if (!$dom) {
             echo '********************** Error while parsing the folder';
             exit;
@@ -320,7 +320,7 @@ class repository_elis_files_file_node_xml_testcase extends elis_database_test {
 
         $dom = new DOMDocument();
         // load into dom
-        $dom->load($CFG->dirroot.'/repository/elis_files/tests/fileresponse.xml');
+        $dom->load($CFG->dirroot.'/repository/elisfiles/tests/fileresponse.xml');
         if (!$dom) {
             echo '********************** Error while parsing the file';
             exit;

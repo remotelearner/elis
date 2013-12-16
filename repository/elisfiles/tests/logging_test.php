@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -27,18 +27,18 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib/elis_files_logger.class.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
-require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib/elis_files_logger.class.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elisfiles/tests/constants.php');
 
 /**
  * Class for testing the ELIS Files logging object and its related functionality
- * @group repository_elis_files
+ * @group repository_elisfiles
  */
-class repository_elis_files_logging_testcase extends elis_database_test {
+class repository_elisfiles_logging_testcase extends elis_database_test {
     /**
      * This function loads data into the PHPUnit tables for testing
      */
@@ -50,7 +50,7 @@ class repository_elis_files_logging_testcase extends elis_database_test {
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
 
         // Check if Alfresco is enabled, configured and running first.
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
         }
     }
@@ -75,13 +75,13 @@ class repository_elis_files_logging_testcase extends elis_database_test {
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
-        $config = get_config('elis_files');
+        $config = get_config('elisfiles');
 
         $uri = parse_url($config->server_host);
         $a = $uri['host'].':'.$config->ftp_port;
 
         $errorcode = ELIS_FILES_ERROR_FTP;
-        $expectedstring = get_string('errorftpinvalidport', 'repository_elis_files', $a);
+        $expectedstring = get_string('errorftpinvalidport', 'repository_elisfiles', $a);
 
         // Get the logger into an error state
         $logger = elis_files_logger::instance();

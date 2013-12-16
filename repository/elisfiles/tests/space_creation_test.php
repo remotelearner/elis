@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,28 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    repository_elis_files
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 global $CFG;
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 require_once($CFG->dirroot.'/course/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
-require_once($CFG->dirroot.'/repository/elis_files/lib/lib.php');
-require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
-require_once($CFG->dirroot.'/repository/elis_files/tests/constants.php');
+require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
+require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
+require_once($CFG->dirroot.'/repository/elisfiles/tests/constants.php');
+require_once($CFG->dirroot.'/repository/elisfiles/tests/constants.php');
 
 /**
  * Class to test space creation
- * @group repository_elis_files
+ * @group repository_elisfiles
  */
-class repository_elis_files_space_creation_testcase extends elis_database_test {
+class repository_elisfiles_space_creation_testcase extends elis_database_test {
     /** @var int $categoryid The course category we are creating our test courses within */
     public $categoryid;
 
@@ -56,7 +56,7 @@ class repository_elis_files_space_creation_testcase extends elis_database_test {
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
 
         // Check if Alfresco is enabled, configured and running first.
-        if (!$repo = repository_factory::factory('elis_files')) {
+        if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped('Could not connect to alfresco with supplied credentials. Please try again.');
         }
     }
@@ -72,8 +72,8 @@ class repository_elis_files_space_creation_testcase extends elis_database_test {
         $this->setAdminUser();
         $this->categoryid = 1;
 
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
             self::$haspm = true;
         }
     }
@@ -157,21 +157,21 @@ class repository_elis_files_space_creation_testcase extends elis_database_test {
         $courseid = $this->setup_test_course($checkchar, CHAR_POS_L);
         $uuid = $repo->get_course_store($courseid);
         $this->assertNotEquals(false, $uuid, '$course->shortname = "'.$DB->get_field('course', 'shortname', array('id' => $courseid)));
-        $this->assertTrue($DB->record_exists('elis_files_course_store', array('courseid' => $courseid, 'uuid' => $uuid)));
+        $this->assertTrue($DB->record_exists('repository_elisfiles_course', array('courseid' => $courseid, 'uuid' => $uuid)));
         $repo->delete($uuid);
 
         // Test with the special character in the middle of the course->shortname property
         $courseid = $this->setup_test_course($checkchar, CHAR_POS_M);
         $uuid = $repo->get_course_store($courseid);
         $this->assertNotEquals(false, $uuid, '$course->shortname = "'.$DB->get_field('course', 'shortname', array('id' => $courseid)));
-        $this->assertTrue($DB->record_exists('elis_files_course_store', array('courseid' => $courseid, 'uuid' => $uuid)));
+        $this->assertTrue($DB->record_exists('repository_elisfiles_course', array('courseid' => $courseid, 'uuid' => $uuid)));
         $repo->delete($uuid);
 
         // Test with the special character at the end of the course->shortname property
         $courseid = $this->setup_test_course($checkchar, CHAR_POS_R);
         $uuid = $repo->get_course_store($courseid);
         $this->assertNotEquals(false, $uuid, '$course->shortname = "'.$DB->get_field('course', 'shortname', array('id' => $courseid)));
-        $this->assertTrue($DB->record_exists('elis_files_course_store', array('courseid' => $courseid, 'uuid' => $uuid)));
+        $this->assertTrue($DB->record_exists('repository_elisfiles_course', array('courseid' => $courseid, 'uuid' => $uuid)));
         $repo->delete($uuid);
     }
 
@@ -192,27 +192,27 @@ class repository_elis_files_space_creation_testcase extends elis_database_test {
 
         global $DB;
 
-        $repo = repository_factory::factory('elis_files');
+        $repo = repository_factory::factory('elisfiles');
 
         // Test with the special character at the beginning of the userset->name property
         $usersetid = $this->setup_test_userset($checkchar, CHAR_POS_L);
         $uuid = $repo->get_userset_store($usersetid);
         $this->assertNotEquals(false, $uuid, '$userset->name = "'.$DB->get_field(userset::TABLE, 'name', array('id' => $usersetid)).'"');
-        $this->assertTrue($DB->record_exists('elis_files_userset_store', array('usersetid' => $usersetid, 'uuid' => $uuid)));
+        $this->assertTrue($DB->record_exists('repository_elisfiles_userset', array('usersetid' => $usersetid, 'uuid' => $uuid)));
         $repo->delete($uuid);
 
         // Test with the special character in the middle of the userset->name property
         $usersetid = $this->setup_test_userset($checkchar, CHAR_POS_M);
         $uuid = $repo->get_userset_store($usersetid);
         $this->assertNotEquals(false, $uuid, '$userset->name = "'.$DB->get_field(userset::TABLE, 'name', array('id' => $usersetid)).'"');
-        $this->assertTrue($DB->record_exists('elis_files_userset_store', array('usersetid' => $usersetid, 'uuid' => $uuid)));
+        $this->assertTrue($DB->record_exists('repository_elisfiles_userset', array('usersetid' => $usersetid, 'uuid' => $uuid)));
         $repo->delete($uuid);
 
         // Test with the special character at the end of the userset->name property
         $usersetid = $this->setup_test_userset($checkchar, CHAR_POS_R);
         $uuid = $repo->get_userset_store($usersetid);
         $this->assertNotEquals(false, $uuid, '$userset->name = "'.$DB->get_field(userset::TABLE, 'name', array('id' => $usersetid)).'"');
-        $this->assertTrue($DB->record_exists('elis_files_userset_store', array('usersetid' => $usersetid, 'uuid' => $uuid)));
+        $this->assertTrue($DB->record_exists('repository_elisfiles_userset', array('usersetid' => $usersetid, 'uuid' => $uuid)));
         $repo->delete($uuid);
     }
 
@@ -227,7 +227,7 @@ class repository_elis_files_space_creation_testcase extends elis_database_test {
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
-        $repo = repository_factory::factory('elis_files');
+        $repo = repository_factory::factory('elisfiles');
 
         $userset = new userset(array('name' => 'testuserset'));
         $userset->save();

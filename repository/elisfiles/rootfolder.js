@@ -1,6 +1,6 @@
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage File system
+ * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -40,7 +39,7 @@ function chooseRootFolder(obj) {
     queryString += "&username=" + escape(obj.id_server_username.value);
     queryString += "&password=" + escape(obj.id_server_password.value);
     queryString += "&choose=id_root_folder";
-    urlString = '/repository/elis_files/rootfolder.php?'  + queryString;
+    urlString = '/repository/elisfiles/rootfolder.php?'  + queryString;
 
     var myData = { url: urlString, name: "rootfolder", scrollbars: "yes",resizable: "no", width: "640",height: "480" };
 

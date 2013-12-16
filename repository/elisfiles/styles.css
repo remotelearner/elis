@@ -301,7 +301,7 @@
 .ui-progressbar .ui-progressbar-value {
     margin: -1px;
     height:22px;
-    background: url(../repository/elis_files/css/images/pbar-ani.gif) repeat-x scroll 0 0 transparent;
+    background: url(../repository/elisfiles/css/images/pbar-ani.gif) repeat-x scroll 0 0 transparent;
 }
 
 .qq-uploader { position:relative; width: 100%;}

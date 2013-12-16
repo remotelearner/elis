@@ -3,7 +3,7 @@
  * ELIS Files SSO authentication plugin
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    auth
- * @subpackage elisfilessso
+ * @package    auth_elisfilessso
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote Learner.net Inc (http://www.remote-learner.net)
  *
  */
-
-
 
 if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
 }
 
-
 require_once($CFG->libdir.'/authlib.php');
-
 
 /**
  * ELIS Files SSO authentication plugin.
@@ -49,7 +44,7 @@ class auth_plugin_elisfilessso extends auth_plugin_base {
 
         $this->authtype = 'elisfilessso';
         $this->config   = get_config('auth/elisfilessso');
-        $this->isactive = file_exists($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
+        $this->isactive = file_exists($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
     }
 
 
@@ -145,7 +140,7 @@ class auth_plugin_elisfilessso extends auth_plugin_base {
         if (!$this->isactive) {
             echo $OUTPUT->heading(get_string('elisfilesnotfound', 'auth_elisfilessso'));
         } else {
-            $url = $CFG->wwwroot.'/admin/repository.php?action=edit&amp;repos=elis_files&amp;sesskey='. sesskey();
+            $url = $CFG->wwwroot.'/admin/repository.php?action=edit&amp;repos=elisfiles&amp;sesskey='.sesskey();
 
             // TODO:  Have it link directly to the edit page if enabled, otherwise this will do...
             echo $OUTPUT->heading(get_string('configureelisfileshere', 'auth_elisfilessso', $url));
@@ -187,7 +182,7 @@ class auth_plugin_elisfilessso extends auth_plugin_base {
             return;
         }
 
-        require_once($CFG->dirroot.'/repository/elis_files/ELIS_files_factory.class.php');
+        require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
 
         if (!$repo = repository_factory::factory()) {
             return;
