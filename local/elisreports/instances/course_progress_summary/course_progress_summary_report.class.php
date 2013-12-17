@@ -416,7 +416,7 @@ class course_progress_summary_report extends table_report {
             foreach ($filter_params as $custom_course_id) {
                 $custom_course_field = new field($custom_course_id);
                 if ($custom_course_field->multivalued) {
-                    $context = local_elisprogram_context_course::instance($record->courseid);
+                    $context = \local_elisprogram\context\course::instance($record->courseid);
                     $field_data = "custom_data_{$custom_course_id}";
                     $record->$field_data = '';
                     $datarecs = field_data::get_for_context_and_field($context, $custom_course_field, false);

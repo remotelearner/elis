@@ -844,7 +844,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         //configured user custom fields
         if (!empty($this->_userfieldids)) {
             //only need to obtain the user information once
-            $user = local_elisprogram_context_user::instance($datum->userid);
+            $user = \local_elisprogram\context\user::instance($datum->userid);
 
             //add a row for each field
             foreach ($this->_userfieldids as $userfieldid) {
@@ -1160,7 +1160,7 @@ class user_class_completion_details_report extends user_class_completion_report 
         $levels = array();
         $no_custom_fields = true;
         foreach (array('curriculum', 'course', 'class') as $entity) {
-            $level = local_eliscore_context_helper::get_level_from_name($entity);
+            $level = \local_eliscore\context\helper::get_level_from_name($entity);
             if ($level) {
                 $levels[] = $level;
                 $no_custom_fields = false;

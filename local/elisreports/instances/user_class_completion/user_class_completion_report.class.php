@@ -496,7 +496,7 @@ class user_class_completion_report extends table_report {
                 if ($active && (substr($field, 0, 7) == 'custom_')) {
                     $fieldid = substr($field, 7);
                     //store the context level that's represented by this field
-                    $level = local_eliscore_context_helper::get_level_from_name($type);
+                    $level = \local_eliscore\context\helper::get_level_from_name($type);
                     if (!$DB->record_exists(field_contextlevel::TABLE, array(
                         'fieldid'      => $fieldid,
                         'contextlevel' => $level))) {
@@ -692,7 +692,7 @@ class user_class_completion_report extends table_report {
      */
 
         // Get the legacy context names mapped to the context level values
-        $contextlevelnames = array_flip(local_eliscore_context_helper::get_legacy_levels());
+        $contextlevelnames = array_flip(\local_eliscore\context\helper::get_legacy_levels());
 
         $contextlevel = '';
         $contextname  = '';
