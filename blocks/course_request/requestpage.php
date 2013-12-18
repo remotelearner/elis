@@ -140,7 +140,7 @@ class RequestPage extends pm_page {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/local/elisprogram/lib/contexts.php');
 
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevel_name);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevel_name);
 
         $select = "requestid = ? AND contextlevel = ?";
         // Add any custom field data from the request to this class now.
@@ -266,7 +266,7 @@ class RequestPage extends pm_page {
 
                     // do the course role assignment, if applicable
                     if (!empty($CFG->block_course_request_course_role)) {
-                        if ($context = context_elis_course::instance($newcourse->id)) {
+                        if ($context = \local_elisprogram\context\course::instance($newcourse->id)) {
                             // TBD: role_assign() now throws exceptions!
                             $result = role_assign($CFG->block_course_request_course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
                         }
@@ -313,7 +313,7 @@ class RequestPage extends pm_page {
                 // assign role to requester in the newly created class
                 if (!empty($newclass->id)) {
                     if (isset($CFG->block_course_request_class_role) && $CFG->block_course_request_class_role) {
-                        $context = context_elis_class::instance($newclass->id);
+                        $context = \local_elisprogram\context\pmclass::instance($newclass->id);
                         // TBD: role_assign() now throws exceptions!
                         role_assign($CFG->block_course_request_class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
                     }

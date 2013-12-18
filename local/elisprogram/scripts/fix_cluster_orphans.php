@@ -59,7 +59,7 @@ foreach ($clusters as $clusid => $clusdata) {
             $result = $DB->update_record(userset::TABLE, $newclusdata);
 
             // Blank out the depth and path for associated records and child records in context table
-            $cluster_context_instance = context_elis_userset::instance($clusid);
+            $cluster_context_instance = \local_elisprogram\context\userset::instance($clusid);
             $instance_id = $cluster_context_instance->id;
             $sql = "UPDATE {context}
                        SET depth = 0, path = NULL

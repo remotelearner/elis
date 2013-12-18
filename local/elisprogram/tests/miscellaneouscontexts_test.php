@@ -164,7 +164,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
      */
     protected function create_field_category($context) {
         $data = new stdClass;
-        $data->name = context_elis_helper::get_class_for_level($context).' Test';
+        $data->name = \local_eliscore\context\helper::get_class_for_level($context).' Test';
 
         $category = new field_category($data);
         $category->save();
@@ -313,7 +313,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
         }
 
         // Add userset_view capability to our role.
-        $usersetcontext = context_elis_userset::instance($userset->id);
+        $usersetcontext = \local_elisprogram\context\userset::instance($userset->id);
         $rc = new stdClass;
         $rc->contextid = $usersetcontext->id;
         $rc->roleid = $roleid;
@@ -465,7 +465,7 @@ class miscellaneouscontexts_testcase extends elis_database_test {
 
         // Get specific context.
         $cur = $this->create_curriculum();
-        $context = context_elis_program::instance($cur->id);
+        $context = \local_elisprogram\context\program::instance($cur->id);
 
         // Assign role.
         $raid = role_assign($roleid, $muser->id, $context);

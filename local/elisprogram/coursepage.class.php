@@ -448,7 +448,7 @@ class coursepage extends managementpage {
         if(!empty(elis::$config->local_elisprogram->default_course_role_id) && $DB->record_exists('role', array('id' => elis::$config->local_elisprogram->default_course_role_id))) {
 
             //get the context instance for capability checking
-            $context_instance = context_elis_course::instance($cm_entity->id);
+            $context_instance = \local_elisprogram\context\course::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
             if (!has_capability('local/elisprogram:course_edit', $context_instance)) {

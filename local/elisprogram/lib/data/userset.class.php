@@ -112,7 +112,7 @@ class userset extends data_object_with_custom_fields {
 
             //delete this cluster's context
             //get a new context instance,
-            $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+            $contextclass = \local_eliscore\context\helper::get_class_for_level(CONTEXT_ELIS_USERSET);
             $userset_context = $contextclass::instance($this->id);
             $userset_context->delete();
 
@@ -127,7 +127,7 @@ class userset extends data_object_with_custom_fields {
         $promote_ids = array();
 
         /// Figure out all the sub-clusters
-        $cluster_context_instance = context_elis_userset::instance($this->id);
+        $cluster_context_instance = \local_elisprogram\context\userset::instance($this->id);
         $instance_id = $cluster_context_instance->id;
         $instance_path = $cluster_context_instance->path;
         $children = userset::find(new join_filter('id', 'context', 'instanceid',
@@ -168,7 +168,7 @@ class userset extends data_object_with_custom_fields {
                         WHERE contextlevel=? AND instanceid=?";
                 $this->_db->execute($sql, array(CONTEXT_ELIS_USERSET, $child->id));
             }
-            context_elis_helper::build_all_paths(false, array(CONTEXT_ELIS_USERSET)); // Re-build the context table for all sub-clusters
+            \local_eliscore\context\helper::build_all_paths(false, array(CONTEXT_ELIS_USERSET)); // Re-build the context table for all sub-clusters
         }
 
         return $result;
@@ -211,7 +211,7 @@ class userset extends data_object_with_custom_fields {
         parent::save();
 
         if (isset($old) && $this->parent != $old->parent) {
-            $cluster_context_instance = context_elis_userset::instance($this->id);
+            $cluster_context_instance = \local_elisprogram\context\userset::instance($this->id);
 
             // find all subclusters and adjust their depth
             $delta_depth = $this->depth - $old->depth;
@@ -232,7 +232,7 @@ class userset extends data_object_with_custom_fields {
             $this->_db->execute($sql, array($cluster_context_instance->id, "{$cluster_context_instance->path}/%"));
 
             // Rebuild any blanked out records in context table
-            context_elis_helper::build_all_paths(false, array(CONTEXT_ELIS_USERSET));
+            \local_eliscore\context\helper::build_all_paths(false, array(CONTEXT_ELIS_USERSET));
         }
 
         $plugins = get_plugin_list(self::ENROL_PLUGIN_TYPE);
@@ -337,7 +337,7 @@ class userset extends data_object_with_custom_fields {
         global $USER, $DB;
 
         //get the clusters and check the context against them
-        $cluster_context_instance = context_elis_userset::instance($clusterid);
+        $cluster_context_instance = \local_elisprogram\context\userset::instance($clusterid);
 
         // ELIS-3848 -- Use named parameters otherwise array += array doesn't work correctly
         $path = $DB->sql_concat('ctxt.path', ':pathwildcard');
@@ -850,7 +850,7 @@ function cluster_get_non_child_clusters($target_cluster_id, $contexts = null) {
     $return = array(0=>get_string('userset_top_level','local_elisprogram'));
 
     if (!empty($target_cluster_id)) {
-        $cluster_context_instance = context_elis_userset::instance($target_cluster_id);
+        $cluster_context_instance = \local_elisprogram\context\userset::instance($target_cluster_id);
         $target_cluster_path = $cluster_context_instance->path;
     } else {
         // provide a dummy id and path that won't match anything
@@ -901,7 +901,7 @@ function cluster_get_possible_sub_clusters($target_cluster_id, $contexts = null)
         return array();
     }
 
-    $cluster_context_instance = context_elis_userset::instance($target_cluster_id);
+    $cluster_context_instance = \local_elisprogram\context\userset::instance($target_cluster_id);
     // get parent contexts as a comma-separated list of context IDs
     $parent_contexts = explode('/', substr($cluster_context_instance->path,1));
     list($EQUAL, $params) = $DB->get_in_or_equal($parent_contexts, SQL_PARAMS_NAMED, 'param0000', false);

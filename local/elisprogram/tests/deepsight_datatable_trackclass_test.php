@@ -530,7 +530,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
                         case 'class':
-                            $context = context_elis_class::instance($contextinstanceid);
+                            $context = \local_elisprogram\context\pmclass::instance($contextinstanceid);
                             break;
                     }
                     $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', $context);

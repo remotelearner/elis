@@ -85,7 +85,7 @@ class courserequestapprovepage extends pm_page {
 
         require_once($CFG->dirroot.'/local/elisprogram/lib/contexts.php');
 
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevel_name);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevel_name);
         if ($fields = field::get_for_context_level($contextlevel)) {
             foreach ($fields as $field) {
                 $key = "field_{$field->shortname}";
@@ -327,7 +327,7 @@ class courserequestapprovepage extends pm_page {
 
             // do the course role assignment, if applicable
             if (!empty($CFG->block_course_request_course_role)) {
-                if ($context = context_elis_course::instance($newcourse->id)) {
+                if ($context = \local_elisprogram\context\course::instance($newcourse->id)) {
                     role_assign($CFG->block_course_request_course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
                 }
             }
@@ -383,7 +383,7 @@ class courserequestapprovepage extends pm_page {
 
             // assign role to requester in the newly created class
             if (!empty($CFG->block_course_request_class_role)) {
-                $context = context_elis_class::instance($newclass->id);
+                $context = \local_elisprogram\context\pmclass::instance($newclass->id);
                 role_assign($CFG->block_course_request_class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
             }
 
@@ -714,7 +714,7 @@ class pending_request_approve_form extends create_form {
         global $DB;
         $mform =& $this->_form;
 
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevel_name);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevel_name);
 
         $fields = $DB->get_records('block_course_request_fields', array('contextlevel' => $contextlevel));
         $fields = $fields ? $fields : array();

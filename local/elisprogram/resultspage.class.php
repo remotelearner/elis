@@ -544,7 +544,7 @@ class course_enginepage extends enginepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $this->set_context(context_elis_course::instance($id));
+            $this->set_context(\local_elisprogram\context\course::instance($id));
         }
         return $this->context;
     }
@@ -615,7 +615,7 @@ class class_enginepage extends enginepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $this->set_context(context_elis_class::instance($id));
+            $this->set_context(\local_elisprogram\context\pmclass::instance($id));
         }
         return $this->context;
     }

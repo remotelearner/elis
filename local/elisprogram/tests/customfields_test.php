@@ -92,7 +92,7 @@ class curriculumcustomfields_testcase extends elis_database_test {
      */
     protected function create_field_category($context) {
         $data = new stdClass;
-        $data->name = context_elis_helper::get_class_for_level($context).' Test';
+        $data->name = \local_eliscore\context\helper::get_class_for_level($context).' Test';
 
         $category = new field_category($data);
         $category->save();
@@ -113,7 +113,7 @@ class curriculumcustomfields_testcase extends elis_database_test {
      */
     protected function create_field(field_category &$cat, $context) {
         $data = new stdClass;
-        $data->shortname = context_elis_helper::get_class_for_level($context).'_testfield';
+        $data->shortname = \local_eliscore\context\helper::get_class_for_level($context).'_testfield';
         $data->name = ' Test Field';
         $data->categoryid = $cat->id;
         $data->description = 'Test Field';
@@ -496,7 +496,7 @@ class curriculumcustomfields_testcase extends elis_database_test {
      * ELIS-4797: Test Various Custom Field Operations
      */
     public function test_customfieldoperations() {
-        $contextlevels = context_elis_helper::get_legacy_levels();
+        $contextlevels = \local_eliscore\context\helper::get_legacy_levels();
         foreach ($contextlevels as $ctxname => $ctxlvl) {
 
             $category = $this->create_field_category($ctxlvl);
@@ -554,7 +554,7 @@ class curriculumcustomfields_testcase extends elis_database_test {
         // Get a form.
         $frm = new test_moodleform();
 
-        $contextlevels = context_elis_helper::get_legacy_levels();
+        $contextlevels = \local_eliscore\context\helper::get_legacy_levels();
         foreach ($contextlevels as $ctxname => $ctxlvl) {
             $category = $this->create_field_category($ctxlvl);
             $field = $this->create_field($category, $ctxlvl);

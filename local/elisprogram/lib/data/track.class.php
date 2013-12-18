@@ -293,7 +293,7 @@ class track extends data_object_with_custom_fields {
         parent::delete();
 
         //Delete this leve's context
-        $context = context_elis_track::instance($this->id);
+        $context = \local_elisprogram\context\track::instance($this->id);
         $context->delete();
     }
 

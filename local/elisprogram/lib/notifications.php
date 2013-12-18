@@ -481,7 +481,7 @@ function pm_assign_student_from_mdl($eventdata) {
 
     // If not, try checking to see if this is a custom ELIS context
     if (!$context) {
-        $context = context_elis::instance_by_id($eventdata->contextid, IGNORE_MISSING);
+        $context = \local_eliscore\context\base::instance_by_id($eventdata->contextid, IGNORE_MISSING);
     }
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
@@ -576,7 +576,7 @@ function pm_notify_role_assign_handler($eventdata){
 
     // If not, try checking to see if this is a custom ELIS context
     if (!$context) {
-        $context = context_elis::instance_by_id($eventdata->contextid, IGNORE_MISSING);
+        $context = \local_eliscore\context\base::instance_by_id($eventdata->contextid, IGNORE_MISSING);
     }
 
     /// We get all context assigns, so check that this is a class. If not, we're done.

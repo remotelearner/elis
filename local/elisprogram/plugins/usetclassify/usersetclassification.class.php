@@ -125,7 +125,7 @@ class usersetclassification extends elis_data_object {
             $cluster = $cluster->id;
         }
 
-        $context = context_elis_userset::instance($cluster);
+        $context = \local_elisprogram\context\userset::instance($cluster);
         $value = field_data::get_for_context_and_field($context, USERSET_CLASSIFICATION_FIELD);
         if (isset($value) && $value->valid()) {
             $value = $value->current();

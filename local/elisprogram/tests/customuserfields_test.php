@@ -59,7 +59,7 @@ class usercustomfields_testcase extends elis_database_test {
         $this->loadDataSet($dataset);
 
         // Load field data next (we need the user context ID and context level).
-        $usercontext = context_elis_user::instance(103);
+        $usercontext = \local_elisprogram\context\user::instance(103);
 
         $dataset = $this->createCsvDataSet(array(
             field_contextlevel::TABLE => elispm::file('tests/fixtures/user_field_contextlevel.csv'),

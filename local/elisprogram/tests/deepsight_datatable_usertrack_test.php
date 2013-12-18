@@ -425,7 +425,7 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
         // Set up permissions.
         $USER = $this->setup_permissions_test();
         foreach ($trackstoallow as $trackid) {
-            $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', context_elis_track::instance($trackid));
+            $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', \local_elisprogram\context\track::instance($trackid));
         }
 
         // Construct test table.
@@ -676,7 +676,7 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
         $USER = $this->setup_permissions_test();
         $capability = 'local/elisprogram:track_enrol_userset_user';
         foreach ($usersetidsforperm as $usersetid) {
-            $this->give_permission_for_context($USER->id, $capability, context_elis_userset::instance($usersetid));
+            $this->give_permission_for_context($USER->id, $capability, \local_elisprogram\context\userset::instance($usersetid));
         }
 
         // Create clusterassignments.

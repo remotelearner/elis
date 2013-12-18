@@ -48,7 +48,7 @@ class pm_moodle_user_to_pm_testcase extends elis_database_test {
      */
     protected function set_up_elis_field_category() {
         $data = new stdClass;
-        $data->name = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USER).' Test';
+        $data->name = \local_eliscore\context\helper::get_class_for_level(CONTEXT_ELIS_USER).' Test';
         $category = new field_category($data);
         $category->save();
 

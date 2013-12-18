@@ -463,7 +463,7 @@ class curriculum_rolepage extends rolepage {
     protected function get_context() {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
-            $context_instance = context_elis_program::instance($id);
+            $context_instance = \local_elisprogram\context\program::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -488,7 +488,7 @@ class track_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_instance = context_elis_track::instance($id);
+            $context_instance = \local_elisprogram\context\track::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -516,7 +516,7 @@ class course_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_instance = context_elis_course::instance($id);
+            $context_instance = \local_elisprogram\context\course::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -541,7 +541,7 @@ class class_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_instance = context_elis_class::instance($id);
+            $context_instance = \local_elisprogram\context\pmclass::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -566,7 +566,7 @@ class user_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_instance = context_elis_user::instance($id);
+            $context_instance = \local_elisprogram\context\user::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;
@@ -591,7 +591,7 @@ class cluster_rolepage extends rolepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $context_instance = context_elis_userset::instance($id);
+            $context_instance = \local_elisprogram\context\userset::instance($id);
             $this->set_context($context_instance);
         }
         return $this->context;

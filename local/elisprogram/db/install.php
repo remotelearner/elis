@@ -29,6 +29,15 @@ function xmldb_local_elisprogram_install() {
     require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
     require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php');
 
+    // Install custom context levels.
+     \local_eliscore\context\helper::set_custom_levels(\local_elisprogram\context\contextinfo::get_contextinfo());
+     \local_eliscore\context\helper::install_custom_levels();
+
+    // Initialize custom context levels.
+    context_helper::reset_levels();
+    \local_eliscore\context\helper::reset_levels();
+    \local_eliscore\context\helper::init_levels();
+
     //make sure the site has exactly one curr admin block instance
     //that is viewable everywhere
     block_curr_admin_create_instance();

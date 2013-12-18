@@ -357,10 +357,10 @@ class deepsight_datatable_trackuser_testcase extends deepsight_datatable_searchr
                     $permcontext = get_context_instance(CONTEXT_SYSTEM);
                     break;
                 case 'program':
-                    $permcontext = context_elis_program::instance($id);
+                    $permcontext = \local_elisprogram\context\program::instance($id);
                     break;
                 case 'track':
-                    $permcontext = context_elis_track::instance($id);
+                    $permcontext = \local_elisprogram\context\track::instance($id);
                     break;
             }
             $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', $permcontext);
@@ -650,7 +650,7 @@ class deepsight_datatable_trackuser_testcase extends deepsight_datatable_searchr
         $USER = $this->setup_permissions_test();
         $capability = 'local/elisprogram:track_enrol_userset_user';
         foreach ($usersetidsforperm as $usersetid) {
-            $this->give_permission_for_context($USER->id, $capability, context_elis_userset::instance($usersetid));
+            $this->give_permission_for_context($USER->id, $capability, \local_elisprogram\context\userset::instance($usersetid));
         }
 
         // Create clusterassignments.

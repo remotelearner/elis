@@ -523,7 +523,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                 // 2: Test local/elisprogram:assign_class_instructor at the class level returns everything.
                 array(
                         array(
-                            'local/elisprogram:assign_class_instructor' => array('class' => array(5))
+                            'local/elisprogram:assign_class_instructor' => array('pmclass' => array(5))
                         ),
                         array(),
                         array(),
@@ -538,7 +538,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                 // 3: Test local/elisprogram:assign_class_instructor at the wrong class level returns nothing.
                 array(
                         array(
-                            'local/elisprogram:assign_class_instructor' => array('class' => array(6))
+                            'local/elisprogram:assign_class_instructor' => array('pmclass' => array(6))
                         ),
                         array(),
                         array(),
@@ -716,7 +716,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
                     $this->give_permission_for_context($USER->id, $perm, get_context_instance(CONTEXT_SYSTEM));
                 } else {
                     foreach ($ids as $id) {
-                        $ctxclass = 'context_elis_'.$level;
+                        $ctxclass = '\local_elisprogram\context\\'.$level;
                         $ctx = $ctxclass::instance($id);
                         $this->give_permission_for_context($USER->id, $perm, $ctx);
                     }

@@ -91,7 +91,7 @@ class roleassignments_testcase extends elis_database_test {
 
         // Get specific context.
         $cur = new curriculum(1);
-        $context = context_elis_program::instance($cur->id);
+        $context = \local_elisprogram\context\program::instance($cur->id);
 
         // Assign role.
         $this->assertGreaterThan(0, role_assign($roleid, $muser->id, $context->id));
@@ -116,7 +116,7 @@ class roleassignments_testcase extends elis_database_test {
 
         // Get specific context.
         $trk = new track(1);
-        $context = context_elis_track::instance($trk->id);
+        $context = \local_elisprogram\context\track::instance($trk->id);
 
         // Assign role.
         $this->assertGreaterThan(0, role_assign($roleid, $muser->id, $context->id));
@@ -140,7 +140,7 @@ class roleassignments_testcase extends elis_database_test {
 
         // Get specific context.
         $crs = new course(100);
-        $context = context_elis_course::instance($crs->id);
+        $context = \local_elisprogram\context\course::instance($crs->id);
 
         // Assign role.
         $this->assertGreaterThan(0, role_assign($roleid, $muser->id, $context->id));
@@ -166,7 +166,7 @@ class roleassignments_testcase extends elis_database_test {
 
         // Get specific context.
         $cls = new pmclass(100);
-        $context = context_elis_class::instance($cls->id);
+        $context = \local_elisprogram\context\pmclass::instance($cls->id);
 
         // Assign role.
         $this->assertGreaterThan(0, role_assign($roleid, $muser->id, $context->id));
@@ -190,7 +190,7 @@ class roleassignments_testcase extends elis_database_test {
         $muser = $user->get_moodleuser();
 
         // Get specific context.
-        $context = context_elis_user::instance($user->id);
+        $context = \local_elisprogram\context\user::instance($user->id);
 
         // Assign role.
         $this->assertGreaterThan(0, role_assign($roleid, $muser->id, $context->id));
@@ -215,7 +215,7 @@ class roleassignments_testcase extends elis_database_test {
 
         // Get specific context.
         $usrset = new userset(1);
-        $context = context_elis_userset::instance($usrset->id);
+        $context = \local_elisprogram\context\userset::instance($usrset->id);
 
         // Assign role.
         $this->assertGreaterThan(0, role_assign($roleid, $muser->id, $context->id));
@@ -235,12 +235,12 @@ class roleassignments_testcase extends elis_database_test {
             CONTEXT_COURSE => get_string('course'),
             CONTEXT_MODULE => get_string('activitymodule'),
             CONTEXT_BLOCK => get_string('block'),
-            1001 => get_string('curriculum', 'local_elisprogram'),
-            1002 => get_string('track', 'local_elisprogram'),
-            1003 => get_string('course', 'local_elisprogram'),
-            1004 => get_string('class', 'local_elisprogram'),
-            1005 => get_string('context_level_user', 'local_elisprogram'),
-            1006 => get_string('cluster', 'local_elisprogram')
+            11 => get_string('curriculum', 'local_elisprogram'),
+            12 => get_string('track', 'local_elisprogram'),
+            13 => get_string('course', 'local_elisprogram'),
+            14 => get_string('class', 'local_elisprogram'),
+            15 => get_string('context_level_user', 'local_elisprogram'),
+            16 => get_string('cluster', 'local_elisprogram')
         );
 
         $this->assertEquals($allcontextlevels, $roletable->get_all_context_levels());
@@ -255,7 +255,7 @@ class roleassignments_testcase extends elis_database_test {
         // This test needs to have the role_context_levels table completely empty before beginning.
         $DB->delete_records('role_context_levels');
 
-        $contextlevels = context_elis_helper::get_all_levels();
+        $contextlevels = \local_eliscore\context\helper::get_all_levels();
 
         $managerroleid      = $DB->get_field('role', 'id', array('shortname' => 'manager'));
         $programadminroleid = $DB->get_field('role', 'id', array('shortname' => 'curriculumadmin'));
@@ -303,7 +303,7 @@ class roleassignments_testcase extends elis_database_test {
         $pmclass = new pmclass(100);
 
         $role    = $DB->get_record('role', array('shortname' => 'student'));
-        $context = context_elis_class::instance($pmclass->id);
+        $context = \local_elisprogram\context\pmclass::instance($pmclass->id);
         $sink = $this->redirectMessages();
         $roleassignresult = role_assign($role->id, $testuser->id, $context->id);
         $this->assertGreaterThan(0, $roleassignresult);

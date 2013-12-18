@@ -226,7 +226,7 @@ class deepsight_datatable_usersetsubuserset_available extends deepsight_datatabl
         $filterparams[] = $this->usersetid;
 
         // Prevent all ancestor usersets from appearing.
-        $usersetctx = context_elis_userset::instance($this->usersetid);
+        $usersetctx = \local_elisprogram\context\userset::instance($this->usersetid);
         $parentctxs = explode('/', substr($usersetctx->path, 1));
         list($parentctxsfilter, $parentctxfilterparams) = $DB->get_in_or_equal($parentctxs, SQL_PARAMS_QM, '', false);
         if (!empty($parentctxsfilter)) {

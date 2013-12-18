@@ -316,7 +316,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
         }
 
         foreach ($this->sections as $group => $section) {
-            $ctxtlvl = context_elis_helper::get_level_from_name($section['name']);
+            $ctxtlvl = \local_eliscore\context\helper::get_level_from_name($section['name']);
 
             $this->sections[$group]['contextlevel'] = $ctxtlvl;
 

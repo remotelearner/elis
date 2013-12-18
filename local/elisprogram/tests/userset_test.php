@@ -114,7 +114,7 @@ class userset_testcase extends elis_database_test {
 
         accesslib_clear_all_caches(true);
         // Make sure all the contexts are created, so that we can find the children.
-        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+        $contextclass = \local_eliscore\context\helper::get_class_for_level(CONTEXT_ELIS_USERSET);
         for ($i = 1; $i <= 4; $i++) {
             $clustercontextinstance = $contextclass::instance($i);
         }
@@ -141,7 +141,7 @@ class userset_testcase extends elis_database_test {
         accesslib_clear_all_caches(true);
         // Make sure all the contexts are created, so that we can find the children.
         for ($i = 1; $i <= 4; $i++) {
-            $clustercontextinstance = context_elis_userset::instance($i);
+            $clustercontextinstance = \local_elisprogram\context\userset::instance($i);
         }
 
         // Delete a record.
@@ -197,7 +197,7 @@ class userset_testcase extends elis_database_test {
         $syscontext->mark_dirty();
 
         // Assign a test user a role within the parent userset.
-        $context = context_elis_userset::instance(1);
+        $context = \local_elisprogram\context\userset::instance(1);
         role_assign($testrole->id, 100, $context->id);
         $context->mark_dirty();
 
@@ -240,11 +240,11 @@ class userset_testcase extends elis_database_test {
         $syscontext->mark_dirty();
 
         // Assign a test user a role within the parent userset.
-        $context = context_elis_userset::instance(1);
+        $context = \local_elisprogram\context\userset::instance(1);
         role_assign($testrole->id, 100, $context->id);
 
         // Assign a test user a role within the sub-sub-userset.
-        $ctx2 = context_elis_userset::instance(4);
+        $ctx2 = \local_elisprogram\context\userset::instance(4);
         role_assign($testrole->id, 100, $ctx2->id);
 
         // Switch to testuser.

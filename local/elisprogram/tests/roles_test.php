@@ -198,7 +198,7 @@ class roles_testcase extends elis_database_test {
         $roleid = create_role('targetrole', 'targetrole', 'targetrole');
 
         // Assign the both users to the userset role.
-        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+        $contextclass = \local_eliscore\context\helper::get_class_for_level(CONTEXT_ELIS_USERSET);
         $usersetcontext = $contextclass::instance($userset->id);
         role_assign($roleid, $moodleuserid, $usersetcontext->id);
         $moodleuserid = $DB->get_field('user', 'id', array('username' => 'assigned'));

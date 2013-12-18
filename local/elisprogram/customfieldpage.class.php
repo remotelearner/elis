@@ -49,14 +49,14 @@ class customfieldpage extends pm_page {
         global $CFG, $DB, $OUTPUT;
         $level = $this->required_param('level', PARAM_ACTION);
 
-        if (!$ctxlvl = context_elis_helper::get_level_from_name($level)) {
+        if (!$ctxlvl = \local_eliscore\context\helper::get_level_from_name($level)) {
             print_error('invalid_context_level', 'local_elisprogram');
         }
 
         $tmppage = new moodle_url($this->url);
         $tabs = array();
 
-        $contextlevels = context_elis_helper::get_legacy_levels();
+        $contextlevels = \local_eliscore\context\helper::get_legacy_levels();
         foreach($contextlevels as $contextlevel => $val) {
             $tmppage->param('level', $contextlevel);
             $tabs[] = new tabobject($contextlevel, $tmppage->out(), get_string($contextlevel, 'local_elisprogram'));
@@ -207,7 +207,7 @@ class customfieldpage extends pm_page {
         require_once elispm::file('form/fieldcategoryform.class.php');
 
         $level = $this->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_elis_helper::get_level_from_name($level);
+        $ctxlvl = \local_eliscore\context\helper::get_level_from_name($level);
         if (!$ctxlvl) {
             print_error('invalid_context_level', 'local_elisprogram');
         }
@@ -288,7 +288,7 @@ class customfieldpage extends pm_page {
         global $CFG, $DB;
 
         $level = $this->required_param('level', PARAM_ACTION);
-        $ctxlvl = context_elis_helper::get_level_from_name($level);
+        $ctxlvl = \local_eliscore\context\helper::get_level_from_name($level);
         if (!$ctxlvl) {
             print_error('invalid_context_level', 'local_elisprogram');
         }

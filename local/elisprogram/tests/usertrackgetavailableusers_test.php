@@ -353,7 +353,7 @@ class trackassignmentgetavailableusers_testcase extends elis_database_test {
         // Perform the role necessary assignment.
         $moodleuser = $DB->get_record('user', array('username' => 'activeuser'));
         // Make sure all the contexts are created, so that we can find the children.
-        $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+        $contextclass = \local_eliscore\context\helper::get_class_for_level(CONTEXT_ELIS_USERSET);
         $instance     = $contextclass::instance($userset->id);
         role_assign($roleid, $moodleuser->id, $instance->id);
 

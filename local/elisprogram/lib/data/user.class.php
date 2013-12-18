@@ -162,7 +162,7 @@ class user extends data_object_with_custom_fields {
 
             parent::delete();
 
-            $context = context_elis_user::instance($this->id);
+            $context = \local_elisprogram\context\user::instance($this->id);
             $context->delete();
         }
     }
@@ -704,7 +704,7 @@ class user extends data_object_with_custom_fields {
             //^pre-ELIS-3615 WAS: if ($usercurs = curriculumstudent::get_curricula($this->id)) {
             foreach ($usercurs as $usercur) {
                 // Check if this curricula is set as archived and whether we want to display it
-                $crlm_context = context_elis_program::instance($usercur->curid);
+                $crlm_context = \local_elisprogram\context\program::instance($usercur->curid);
                 $data_array = field_data::get_for_context_and_field($crlm_context, $archive_var);
                 $crlm_archived = 0;
                 if (!empty($data_array) && is_object($data_array->rs) && !empty($data_array->rs)) {

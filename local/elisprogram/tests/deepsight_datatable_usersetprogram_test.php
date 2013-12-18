@@ -447,7 +447,7 @@ class deepsight_datatable_usersetprogram_testcase extends deepsight_datatable_se
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
                         case 'program':
-                            $context = context_elis_program::instance($contextinstanceid);
+                            $context = \local_elisprogram\context\program::instance($contextinstanceid);
                             break;
                     }
                     $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', $context);

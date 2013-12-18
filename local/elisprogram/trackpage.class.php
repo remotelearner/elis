@@ -116,7 +116,7 @@ class trackpage extends managementpage {
         if ($cached !== null) {
             return $cached;
         }
-        $context = context_elis_track::instance($id);
+        $context = \local_elisprogram\context\track::instance($id);
         return has_capability($capability, $context);
     }
 
@@ -348,7 +348,7 @@ class trackpage extends managementpage {
         if(!empty(elis::$config->local_elisprogram->default_track_role_id) && $DB->record_exists('role', array('id' => elis::$config->local_elisprogram->default_track_role_id))) {
 
             //get the context instance for capability checking
-            $context_instance = context_elis_track::instance($cm_entity->id);
+            $context_instance = \local_elisprogram\context\track::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
             if(!has_capability('local/elisprogram:track_edit', $context_instance)) {

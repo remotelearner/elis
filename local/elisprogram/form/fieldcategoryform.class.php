@@ -57,7 +57,7 @@ class fieldcategoryform extends cmform {
         global $DB;
         $errors = array();
         $level = required_param('level', PARAM_ACTION);
-        $ctxlvl = context_elis_helper::get_level_from_name($level);
+        $ctxlvl = \local_eliscore\context\helper::get_level_from_name($level);
         if (!empty($ctxlvl)) {
             $sql = 'SELECT cat.id
                 FROM {local_eliscore_field_cats} cat

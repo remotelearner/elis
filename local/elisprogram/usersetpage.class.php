@@ -224,7 +224,7 @@ class usersetpage extends managementpage {
         if ($cached !== null) {
             return $cached;
         }
-        $context = context_elis_userset::instance($id);
+        $context = \local_elisprogram\context\userset::instance($id);
         return has_capability($capability, $context);
     }
 
@@ -334,7 +334,7 @@ class usersetpage extends managementpage {
     function can_do_subcluster() {
         //obtain the contexts where editing is allowed for the subcluster
         $subclusterid = $this->required_param('subclusterid', PARAM_INT);
-        $context = context_elis_userset::instance($subclusterid);
+        $context = \local_elisprogram\context\userset::instance($subclusterid);
 
         //make sure editing is allowed on both clusters
         return $this->_has_capability('local/elisprogram:userset_edit') && has_capability('local/elisprogram:userset_edit', $context);
@@ -354,7 +354,7 @@ class usersetpage extends managementpage {
                 : $this->optional_param('parent', 0, PARAM_INT);
 
         if ($parent) {
-            $context = context_elis_userset::instance($parent);
+            $context = \local_elisprogram\context\userset::instance($parent);
         } else {
             $context = get_context_instance(CONTEXT_SYSTEM);
         }
@@ -443,7 +443,7 @@ class usersetpage extends managementpage {
         // add cluster hierarchy if cluster defined
         $id = $this->optional_param('id', 0, PARAM_INT);
         if ($id) {
-            $context = context_elis_userset::instance($id);
+            $context = \local_elisprogram\context\userset::instance($id);
             $ancestorids = substr(str_replace('/',',',$context->path),3);
             $sql = "SELECT cluster.*
                     FROM {context} ctx
@@ -611,7 +611,7 @@ class usersetpage extends managementpage {
             $a = new stdClass;
             $a->name = $obj;
             $a->subclusters = $count;
-            $context = context_elis_userset::instance($obj->id);
+            $context = \local_elisprogram\context\userset::instance($obj->id);
             $like = $DB->sql_like('path', '?');
             $a->descendants = $DB->count_records_select('context',$DB->sql_like('path', '?'), array("{$context->path}/%")) - $a->subclusters;
             print_string($a->descendants ? 'confirm_delete_with_usersubsets_and_descendants' : 'confirm_delete_with_usersubsets', 'local_elisprogram', array('name'=>$obj->name, 'subclusters'=>$count));
@@ -690,7 +690,7 @@ class usersetpage extends managementpage {
            && $DB->record_exists('role', array('id' => elis::$config->local_elisprogram->default_cluster_role_id))) {
 
             //get the context instance for capability checking
-            $context_instance = context_elis_userset::instance($cm_entity->id);
+            $context_instance = \local_elisprogram\context\userset::instance($cm_entity->id);
 
             //assign the appropriate role if the user does not have the edit capability
             if (!has_capability('local/elisprogram:userset_edit', $context_instance)) {

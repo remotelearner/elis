@@ -62,7 +62,7 @@ class user_testcase extends elis_database_test {
         $this->loadDataSet($dataset);
 
         // Initialize user context.
-        $usercontext = context_elis_user::instance(103);
+        $usercontext = \local_elisprogram\context\user::instance(103);
 
         // Load field data next (we need the user context ID and context level).
         $dataset = $this->createCsvDataSet(array(
@@ -257,7 +257,7 @@ class user_testcase extends elis_database_test {
                 $DB->get_recordset(field_data_char::TABLE, null, '', 'contextid, fieldid, data')));
         $result->addTable(new moodle_recordset_phpunit_datatable(field_data_text::TABLE,
                 $DB->get_recordset(field_data_text::TABLE, null, '', 'contextid, fieldid, data')));
-        $usercontext = context_elis_user::instance(103);
+        $usercontext = \local_elisprogram\context\user::instance(103);
         $dataset = new PHPUnit_Extensions_Database_DataSet_CsvDataSet();
         $dataset->addTable(field_data_int::TABLE, elispm::file('tests/fixtures/user_field_data_int.csv'));
         $dataset->addTable(field_data_char::TABLE, elispm::file('tests/fixtures/user_field_data_char.csv'));

@@ -87,7 +87,7 @@ class deepsight_datatable_testcase extends elis_database_test {
 
         // Set up contexts.
         for ($i=1; $i<=6; $i++) {
-            $ctx = context_elis_userset::instance($i);
+            $ctx = \local_elisprogram\context\userset::instance($i);
         }
 
         accesslib_clear_all_caches(true);

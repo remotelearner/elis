@@ -108,7 +108,7 @@ class curriculum extends data_object_with_custom_fields {
         parent::delete();
 
         //clean up the curriculum context instance
-        $context = context_elis_program::instance($this->id);
+        $context = \local_elisprogram\context\program::instance($this->id);
         $context->delete();
     }
 

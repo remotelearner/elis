@@ -63,7 +63,7 @@ class customfieldform extends cmform {
         $form->setType('name', PARAM_MULTILANG);
 
         $level = $this->_customdata['level'];
-        $ctxlvl = context_elis_helper::get_level_from_name($level);
+        $ctxlvl = \local_eliscore\context\helper::get_level_from_name($level);
         $categories = field_category::get_for_context_level($ctxlvl);
         $choices = array();
         foreach ($categories as $category) {
@@ -366,7 +366,7 @@ class customfieldform extends cmform {
         } else {
             // Check for duplicate shortnames
             $level = $this->_customdata['level'];
-            $contextlevel = context_elis_helper::get_level_from_name($level);
+            $contextlevel = \local_eliscore\context\helper::get_level_from_name($level);
             if (!$contextlevel) {
                 print_error('invalid_context_level', 'local_elisprogram');
             }

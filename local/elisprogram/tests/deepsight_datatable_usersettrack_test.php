@@ -457,7 +457,7 @@ class deepsight_datatable_usersettrack_testcase extends deepsight_datatable_sear
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
                         case 'track':
-                            $context = context_elis_track::instance($contextinstanceid);
+                            $context = \local_elisprogram\context\track::instance($contextinstanceid);
                             break;
                     }
                     $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', $context);

@@ -133,16 +133,16 @@ class pm_accesslib_testcase extends elis_database_test {
     }
 
     /**
-     * Test the get_child_contexts() function of context_elis_program
+     * Test the get_child_contexts() function of \local_elisprogram\context\program
      */
     public function test_program_child_contexts() {
         $this->fixture_program_track();
 
-        $ctx = context_elis_program::instance(1);
+        $ctx = \local_elisprogram\context\program::instance(1);
         $children = $ctx->get_child_contexts();
         $count = 0;
         foreach ($children as $child) {
-            $this->assertTrue(($child instanceof context_elis_track));
+            $this->assertTrue(($child instanceof \local_elisprogram\context\track));
             $this->assertEquals(1, $child->instanceid);
             $count++;
             break;
@@ -151,12 +151,12 @@ class pm_accesslib_testcase extends elis_database_test {
     }
 
     /**
-     * Test the get_child_contexts() function of context_elis_track
+     * Test the get_child_contexts() function of \local_elisprogram\context\track
      */
     public function test_track_child_contexts() {
         $this->fixture_program_track();
 
-        $ctx = context_elis_track::instance(1);
+        $ctx = \local_elisprogram\context\track::instance(1);
         $children = $ctx->get_child_contexts();
         $count = 0;
         foreach ($children as $child) {
@@ -166,16 +166,16 @@ class pm_accesslib_testcase extends elis_database_test {
     }
 
     /**
-     * Test the get_child_contexts() function of context_elis_course
+     * Test the get_child_contexts() function of \local_elisprogram\context\course
      */
     public function test_course_child_contexts() {
         $this->fixture_course_class();
 
-        $ctx = context_elis_course::instance(100);
+        $ctx = \local_elisprogram\context\course::instance(100);
         $children = $ctx->get_child_contexts();
         $count = 0;
         foreach ($children as $child) {
-            $this->assertTrue(($child instanceof context_elis_class));
+            $this->assertTrue(($child instanceof \local_elisprogram\context\pmclass));
             $this->assertEquals(100, $child->instanceid);
             $count++;
             break;
@@ -184,12 +184,12 @@ class pm_accesslib_testcase extends elis_database_test {
     }
 
     /**
-     * Test the get_child_contexts() function of context_elis_class
+     * Test the get_child_contexts() function of \local_elisprogram\context\pmclass
      */
     public function test_pmclass_child_contexts() {
         $this->fixture_course_class();
 
-        $ctx = context_elis_class::instance(100);
+        $ctx = \local_elisprogram\context\pmclass::instance(100);
         $children = $ctx->get_child_contexts();
         $count = 0;
         foreach ($children as $child) {
@@ -199,7 +199,7 @@ class pm_accesslib_testcase extends elis_database_test {
     }
 
     /**
-     * Test the get_child_contexts() function of context_elis_userset
+     * Test the get_child_contexts() function of \local_elisprogram\context\userset
      */
     public function test_userset_child_contexts() {
         $this->fixture_userset();
@@ -212,12 +212,12 @@ class pm_accesslib_testcase extends elis_database_test {
         );
 
         foreach ($expected as $parentid => $childids) {
-            $ctx = context_elis_userset::instance($parentid);
+            $ctx = \local_elisprogram\context\userset::instance($parentid);
             $children = $ctx->get_child_contexts();
             $count = 0;
             foreach ($children as $child) {
                 if (!empty($childids)) {
-                    $this->assertTrue(($child instanceof context_elis_userset));
+                    $this->assertTrue(($child instanceof \local_elisprogram\context\userset));
                     $this->assertContains($child->instanceid, $childids);
                 }
                 $count++;

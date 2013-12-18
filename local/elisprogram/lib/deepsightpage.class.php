@@ -83,10 +83,10 @@ abstract class deepsightpage extends pm_page {
 
     /**
      * Get the context of the current track.
-     * @return context_elis_track The current track context object.
+     * @return \local_elisprogram\context\track The current track context object.
      */
     protected function get_context() {
-        $contextclass = 'context_elis_'.$this->contextlevel;
+        $contextclass = '\local_elisprogram\context\\'.$this->contextlevel;
         if ($this->contextlevel !== 'system' && class_exists($contextclass)) {
             $id = $this->required_param('id', PARAM_INT);
             return $contextclass::instance($id);

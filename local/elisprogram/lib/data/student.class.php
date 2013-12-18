@@ -325,7 +325,7 @@ class student extends elis_data_object {
             $ra->roleid       = !empty($sturole)
                                 ? $sturole
                                 : $DB->get_field('role', 'id', array('shortname' => 'student'));
-            $ra->contextid    = context_elis_class::instance($this->classid)->id;
+            $ra->contextid    = \local_elisprogram\context\pmclass::instance($this->classid)->id;
             $ra->userid       = cm_get_moodleuserid($this->userid);
             $ra->component    = 'enrol_elis';
             $ra->timemodified = time();

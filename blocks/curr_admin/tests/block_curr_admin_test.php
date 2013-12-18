@@ -107,7 +107,7 @@ class block_curr_admin_testcase extends elis_database_test {
         $testcls3->load();
 
         // Assign testuser new role in one Class Instance.
-        $context = context_elis_class::instance($testcls2->id);
+        $context = \local_elisprogram\context\pmclass::instance($testcls2->id);
         role_assign($testrole->id, $testmuser->id, $context->id);
 
         // Switch to testuser.

@@ -236,7 +236,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
                         case 'userset':
-                            $context = context_elis_userset::instance($contextinstanceid);
+                            $context = \local_elisprogram\context\userset::instance($contextinstanceid);
                             break;
                     }
                     $this->give_permission_for_context($USER->id, $perm, $context);
@@ -334,7 +334,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
 
         // Set up contexts.
         for ($i = 1; $i <= 6; $i++) {
-            $ctx = context_elis_userset::instance($i);
+            $ctx = \local_elisprogram\context\userset::instance($i);
         }
 
         // Set up permissions.
@@ -346,7 +346,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
                         case 'userset':
-                            $context = context_elis_userset::instance($contextinstanceid);
+                            $context = \local_elisprogram\context\userset::instance($contextinstanceid);
                             break;
                     }
                     $this->give_permission_for_context($USER->id, $perm, $context);

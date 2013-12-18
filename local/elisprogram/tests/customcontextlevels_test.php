@@ -141,7 +141,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->initprogram();
         $newobj->save();
 
-        $context = context_elis_program::instance($newobj->id);
+        $context = \local_elisprogram\context\program::instance($newobj->id);
 
         // Validate that a context record was actually created with correct values.
         $this->assertGreaterThan(0, $context->id);
@@ -165,7 +165,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->inittrack($program->id);
         $newobj->save();
 
-        $context = context_elis_track::instance($newobj->id);
+        $context = \local_elisprogram\context\track::instance($newobj->id);
 
         // Validate that a context record was actually created with correct values.
         $this->assertGreaterThan(0, $context->id);
@@ -173,7 +173,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $this->assertEquals($newobj->id, $context->instanceid);
 
         // Create the context path to validate this in the returned context object.
-        $pctx = context_elis_program::instance($program->id);
+        $pctx = \local_elisprogram\context\program::instance($program->id);
         $path = '/'.SYSCONTEXTID.'/'.$pctx->id.'/'.$context->id;
 
         $this->assertEquals($path, $context->path);
@@ -187,7 +187,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->initcourse();
         $newobj->save();
 
-        $context = context_elis_course::instance($newobj->id);
+        $context = \local_elisprogram\context\course::instance($newobj->id);
 
         // Validate that a context record was actually created with correct values.
         $this->assertGreaterThan(0, $context->id);
@@ -211,7 +211,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->initclass($course->id);
         $newobj->save();
 
-        $context = context_elis_class::instance($newobj->id);
+        $context = \local_elisprogram\context\pmclass::instance($newobj->id);
 
         // Validate that a context record was actually created with correct values.
         $this->assertGreaterThan(0, $context->id);
@@ -219,7 +219,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $this->assertEquals($newobj->id, $context->instanceid);
 
         // Create the context path to validate this in the returned context object.
-        $cctx = context_elis_course::instance($course->id);
+        $cctx = \local_elisprogram\context\course::instance($course->id);
         $path = '/'.SYSCONTEXTID.'/'.$cctx->id.'/'.$context->id;
 
         $this->assertEquals($path, $context->path);
@@ -233,7 +233,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->inituser();
         $newobj->save();
 
-        $context = context_elis_user::instance($newobj->id);
+        $context = \local_elisprogram\context\user::instance($newobj->id);
 
         // Validate that a context record was actually created with correct values.
         $this->assertGreaterThan(0, $context->id);
@@ -254,7 +254,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->inituserset();
         $newobj->save();
 
-        $context = context_elis_userset::instance($newobj->id);
+        $context = \local_elisprogram\context\userset::instance($newobj->id);
 
         // Validate that a context record was actually created with correct values.
         $this->assertGreaterThan(0, $context->id);
@@ -275,7 +275,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->inituserset();
         $newobj->save();
 
-        $ctx1 = context_elis_userset::instance($newobj->id);
+        $ctx1 = \local_elisprogram\context\userset::instance($newobj->id);
 
         $data = array(
             'name'    => 'Test Sub User Set 1A',
@@ -286,7 +286,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $subuserset = new userset($data);
         $subuserset->save();
 
-        $context = context_elis_userset::instance($subuserset->id);
+        $context = \local_elisprogram\context\userset::instance($subuserset->id);
 
         // Validate that a context record was actually created with correct values.
         $this->assertGreaterThan(0, $context->id);
@@ -307,7 +307,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->inituserset();
         $newobj->save();
 
-        $ctx1 = context_elis_userset::instance($newobj->id);
+        $ctx1 = \local_elisprogram\context\userset::instance($newobj->id);
 
         $data = array(
             'name'    => 'Test Sub User Set 1A',
@@ -322,7 +322,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $subuserset->parent = 0;
         $subuserset->save();
 
-        $context = context_elis_userset::instance($subuserset->id);
+        $context = \local_elisprogram\context\userset::instance($subuserset->id);
 
         // Validate that the current state of the context record is valid.
         $this->assertGreaterThan(0, $context->id);
@@ -349,7 +349,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $secondparent = new userset(array('name' => 'Second Parent'));
         $secondparent->save();
 
-        $ctx1 = context_elis_userset::instance($secondparent->id);
+        $ctx1 = \local_elisprogram\context\userset::instance($secondparent->id);
 
         $data = array(
             'name'    => 'Test Sub User Set 1A',
@@ -364,7 +364,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $subuserset->parent = $secondparent->id;
         $subuserset->save();
 
-        $context = context_elis_userset::instance($subuserset->id);
+        $context = \local_elisprogram\context\userset::instance($subuserset->id);
 
         // Validate that the curent state of the context record is valid.
         $this->assertGreaterThan(0, $context->id);
@@ -386,7 +386,7 @@ class customcontextlevels_testcase extends elis_database_test {
         $newobj = $this->inituserset();
         $newobj->save();
 
-        $ctx1 = context_elis_userset::instance($newobj->id);
+        $ctx1 = \local_elisprogram\context\userset::instance($newobj->id);
 
         $data = array(
             'name'    => 'Test Sub User Set 1A',
@@ -400,7 +400,7 @@ class customcontextlevels_testcase extends elis_database_test {
         // Delete the parent user set, promoting the sub-user-set.
         $newobj->delete();
 
-        $context = context_elis_userset::instance($subuserset->id);
+        $context = \local_elisprogram\context\userset::instance($subuserset->id);
 
         // Validate that the curent state of the context record is valid.
         $this->assertGreaterThan(0, $context->id);

@@ -650,7 +650,7 @@ class course extends data_object_with_custom_fields {
         coursecompletion::delete_records($filter, $this->_db);
         parent::delete();
 
-        $context = context_elis_course::instance($this->id);
+        $context = \local_elisprogram\context\course::instance($this->id);
         $context->delete();
     }
 

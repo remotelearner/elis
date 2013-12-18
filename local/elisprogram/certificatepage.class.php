@@ -332,7 +332,7 @@ class course_certificatepage extends certificatepage {
         if (!isset($this->context)) {
             $id = $this->required_param('id', PARAM_INT);
 
-            $contextinstance = context_elis_course::instance($id);
+            $contextinstance = \local_elisprogram\context\course::instance($id);
             $this->set_context($contextinstance);
         }
         return $this->context;

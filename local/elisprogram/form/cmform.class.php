@@ -59,18 +59,18 @@ class cmform extends moodleform {
         if (isset($this->_customdata['obj'])) {
             if(isset($this->_customdata['obj']->id)) {
                 // Use the current (existing) entity's context instance
-                $contextlevel = context_elis_helper::get_level_from_name($entity);
-                $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                $contextlevel = \local_eliscore\context\helper::get_level_from_name($entity);
+                $contextclass = \local_eliscore\context\helper::get_class_for_level($contextlevel);
                 $context      = $contextclass::instance($this->_customdata['obj']->id);
             } else if (isset($this->_customdata['obj']->parent) && $parententity != '') {
                 // ELIS-6498 -- Specify the parent entity type to get the correct parent context instance as we are
                 // adding a new "child" entity
-                $contextlevel = context_elis_helper::get_level_from_name($parententity);
-                $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                $contextlevel = \local_eliscore\context\helper::get_level_from_name($parententity);
+                $contextclass = \local_eliscore\context\helper::get_class_for_level($contextlevel);
                 $context      = $contextclass::instance($this->_customdata['obj']->parent);
             } else if (isset($this->_customdata['obj']->courseid) && $parententity == 'course') {
                 // ELIS-6498 -- Special handling of the course -> class hierarchy is required here
-                $context = context_elis_course::instance($this->_customdata['obj']->courseid);
+                $context = \local_elisprogram\context\course::instance($this->_customdata['obj']->courseid);
             } else {
                 $context = context_system::instance();
             }
@@ -104,11 +104,11 @@ class cmform extends moodleform {
     function validate_custom_fields($data, $eliscontext) {
         $errors = array();
 
-        $contextlevel = context_elis_helper::get_level_from_name($eliscontext);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($eliscontext);
         $fields = field::get_for_context_level($contextlevel);
         $fields = $fields ? $fields : array();
         if (!empty($data['id'])) {
-            $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+            $contextclass = \local_eliscore\context\helper::get_class_for_level($contextlevel);
             $context     = $contextclass::instance($data['id']);
             $contextid = $context->id;
         } else {

@@ -172,7 +172,7 @@ class generalized_filter_custom_field_multiselect_values extends generalized_fil
     function check_for_custom_fields($field_type) {
 
         // Get custom course fields by context level
-        $context = context_elis_helper::get_level_from_name($field_type);
+        $context = \local_eliscore\context\helper::get_level_from_name($field_type);
         $fields = field::get_for_context_level($context);
         $fields = $fields ? $fields : array();
         $testfields = array();

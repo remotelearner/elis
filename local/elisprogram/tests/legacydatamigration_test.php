@@ -106,7 +106,7 @@ class legacydatamigration_testcase extends elis_database_test {
         $field = $DB->get_record(field::TABLE, array('shortname' => '_19upgrade_curriculum_tags'));
         $this->assertGreaterThan(0, $field->id);
 
-        $context = context_elis_program::instance($program->id);
+        $context = \local_elisprogram\context\program::instance($program->id);
         $this->assertTrue($DB->record_exists(field_data_char::TABLE, array('contextid' => $context->id, 'fieldid' => $field->id)));
     }
 
@@ -135,7 +135,7 @@ class legacydatamigration_testcase extends elis_database_test {
         $field = $DB->get_record(field::TABLE, array('shortname' => '_19upgrade_course_environment'));
         $this->assertGreaterThan(0, $field->id);
 
-        $context = context_elis_course::instance($course->id);
+        $context = \local_elisprogram\context\course::instance($course->id);
         $this->assertTrue($DB->record_exists(field_data_char::TABLE, array('contextid' => $context->id, 'fieldid' => $field->id)));
     }
 }

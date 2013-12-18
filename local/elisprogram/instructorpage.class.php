@@ -70,7 +70,7 @@ class instructorpage extends deepsightpage {
     /**
      * @var string The context level of the parent association.
      */
-    protected $contextlevel = 'class';
+    protected $contextlevel = 'pmclass';
 
     /**
      * Construct the assigned datatable.

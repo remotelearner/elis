@@ -99,8 +99,8 @@ class pm_context_set {
         // find all contexts at the given context level where the user has a direct
         // role assignment
 
-        $ctxlevel = context_elis_helper::get_level_from_name($contextlevel);
-        $ctxclass = context_elis_helper::get_class_for_level($ctxlevel);
+        $ctxlevel = \local_eliscore\context\helper::get_level_from_name($contextlevel);
+        $ctxclass = \local_eliscore\context\helper::get_class_for_level($ctxlevel);
 
         $sql = "SELECT c.id, c.instanceid
                   FROM {role_assignments} ra
@@ -224,7 +224,7 @@ class pm_context_set {
             $where[] = new in_list_filter($idfieldname, $this->contexts['cluster']);
             // cross fingers and hope that the user doesn't have too many clusters
             foreach ($this->contexts['cluster'] as $cluster) {
-                $context = context_elis_userset::instance($cluster);
+                $context = \local_elisprogram\context\userset::instance($cluster);
                 $pattern = $context->path . '/%';
                 $where[] = new join_filter($idfieldname, 'context', 'instanceid',
                                            new AND_filter(array(new field_filter('path', $pattern, field_filter::LIKE),
@@ -320,7 +320,7 @@ class pm_context_set {
     function _cluster_allowed($id) {
         global $DB;
         if (isset($this->contexts['cluster'])) {
-            $context = context_elis_userset::instance($id);
+            $context = \local_elisprogram\context\userset::instance($id);
             $ancestorids = substr(str_replace('/',',',$context->path),1);
             $select = "id IN ($ancestorids)
                    AND instanceid IN (".implode(',',$this->contexts['cluster']).")
@@ -381,7 +381,7 @@ function pm_get_users_by_capability($contextlevel, $instance_id, $capability) {
                                              'class' => array('track'),
                                              'user' => array('cluster'));
 
-    $ctxclass = context_elis_helper::get_class_for_level(context_elis_helper::get_level_from_name($contextlevel));
+    $ctxclass = \local_eliscore\context\helper::get_class_for_level(\local_eliscore\context\helper::get_level_from_name($contextlevel));
 
     $context = $ctxclass::instance($instance_id);
     $users = get_users_by_capability($context, $capability);

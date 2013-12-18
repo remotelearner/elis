@@ -1631,8 +1631,8 @@ function pm_migrate_tags() {
     foreach ($contextlevels as $instancetype => $contextname) {
 
         //calculate the context level integer
-        $contextlevel = context_elis_helper::get_level_from_name($contextname);
-            $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextname);
+            $contextclass = \local_eliscore\context\helper::get_class_for_level($contextlevel);
 
         //make sure one or more tags are used at the current context level
         if ($DB->record_exists('local_elisprogram_tag_inst', array('instancetype' => $instancetype))) {
@@ -1720,8 +1720,8 @@ function pm_migrate_tags() {
                     if ($field = $DB->get_record(field::TABLE, array('shortname' => "_19upgrade_{$contextname}_tag_data_{$tagname}"))) {
                         $field = new field($field->id);
 
-                        $contextlevel = context_elis_helper::get_level_from_name($contextname);
-                        $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextname);
+                        $contextclass = \local_eliscore\context\helper::get_class_for_level($contextlevel);
                         $context     = $contextclass::instance($record->instanceid);
 
                         field_data::set_for_context_and_field($context, $field, $record->data);
@@ -1763,7 +1763,7 @@ function pm_migrate_environments() {
     foreach ($contextlevels as $instancetable => $contextname) {
 
         //calculate the context level integer
-        $contextlevel = context_elis_helper::get_level_from_name($contextname);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextname);
 
         //make sure one or more environments are used at the current context level
         $select = 'environmentid != 0';
@@ -1800,8 +1800,8 @@ function pm_migrate_environments() {
                     WHERE environmentid != 0";
             if ($records = $DB->get_recordset_sql($sql)) {
                 foreach ($records as $record) {
-                    $contextlevel = context_elis_helper::get_level_from_name($contextname);
-                    $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+                    $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextname);
+                    $contextclass = \local_eliscore\context\helper::get_class_for_level($contextlevel);
                     $context     = $contextclass::instance($record->id);
 
                     $environmentid = $environment_lookup[$record->environmentid];
@@ -1836,7 +1836,7 @@ function pm_ensure_role_assignable($role) {
         $rcl = new stdClass;
         $rcl->roleid = $roleid;
 
-        foreach (context_elis_helper::get_all_levels() as $ctxlevel => $ctxclass) {
+        foreach (\local_eliscore\context\helper::get_all_levels() as $ctxlevel => $ctxclass) {
             $rcl->contextlevel = $ctxlevel;
             if (!$DB->record_exists('role_context_levels', array('roleid' => $roleid, 'contextlevel' => $ctxlevel))) {
                 $DB->insert_record('role_context_levels', $rcl);
@@ -2456,7 +2456,7 @@ function pm_fix_orphaned_fields() {
 
     $misc_cat = get_string('misc_category','local_elisprogram');
     //set up context array
-    $context_array = context_elis_helper::get_all_levels();
+    $context_array = \local_eliscore\context\helper::get_all_levels();
     foreach ($context_array as $contextlevel=>$contextname) {
 
         //find all fields with non existant category assignments

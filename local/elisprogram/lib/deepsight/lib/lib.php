@@ -1750,7 +1750,7 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
      */
     public static function get_userset_subsets($usersetid, $includeparent = true) {
         global $DB;
-        $parentctx = context_elis_userset::instance($usersetid);
+        $parentctx = \local_elisprogram\context\userset::instance($usersetid);
         if (empty($parentctx)) {
             return array();
         }
@@ -1788,7 +1788,7 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
         $elementtype2ctxlevel = array(
             'program' => 'curriculum',
             'track' => 'track',
-            'class' => 'class',
+            'class' => 'pmclass',
             'userset' => 'cluster'
         );
 
@@ -1859,7 +1859,7 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
         $elementtype2ctxlevel = array(
             'program' => 'curriculum',
             'track' => 'track',
-            'class' => 'class',
+            'class' => 'pmclass',
             'userset' => 'cluster'
         );
 

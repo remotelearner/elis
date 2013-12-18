@@ -465,7 +465,7 @@ class deepsight_datatable_programcourse_testcase extends deepsight_datatable_sea
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
                         case 'course':
-                            $context = context_elis_course::instance($contextinstanceid);
+                            $context = \local_elisprogram\context\course::instance($contextinstanceid);
                             break;
                     }
                     $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', $context);

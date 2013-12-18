@@ -83,7 +83,7 @@ class usermanagementgetsusers_testcase extends elis_database_test {
         $roleid = create_role('clusteradmin', 'clusteradmin', 'clusteradmin');
         assign_capability('local/elisprogram:user_edit', CAP_ALLOW, $roleid, $syscontext->id);
         // Assign the userset administrator an appropriate role on the userset.
-        $instance     = context_elis_userset::instance(1);
+        $instance     = \local_elisprogram\context\userset::instance(1);
         role_assign($roleid, $USER->id, $instance->id);
 
         // Assign the user to the user set.

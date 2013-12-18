@@ -387,7 +387,7 @@ function results_engine_process($class) {
                     }
 
                     /*
-                    $context = context_elis_user::instance($student->userid);
+                    $context = \local_elisprogram\context\user::instance($student->userid);
                     field_data::set_for_context_and_field($context, $userfields[$do->fieldid], $do->fielddata);
                     */
 

@@ -121,7 +121,7 @@ class pmentities_testcase extends elis_database_test {
         $page = new curriculumpage();
         $page->after_cm_entity_add($obj);
 
-        $programctx = context_elis_program::instance($obj->id);
+        $programctx = \local_elisprogram\context\program::instance($obj->id);
         $params = array('roleid' => $reid, 'userid' => $USER->id, 'contextid' => $programctx->id);
         $this->assertTrue($DB->record_exists('role_assignments', $params));
     }
@@ -157,7 +157,7 @@ class pmentities_testcase extends elis_database_test {
         $page = new trackpage();
         $page->after_cm_entity_add($obj);
 
-        $trackctx = context_elis_track::instance($obj->id);
+        $trackctx = \local_elisprogram\context\track::instance($obj->id);
         $params = array('roleid' => $reid, 'userid' => $USER->id, 'contextid' => $trackctx->id);
         $this->assertTrue($DB->record_exists('role_assignments', $params));
     }
@@ -195,7 +195,7 @@ class pmentities_testcase extends elis_database_test {
         $page = new coursepage();
         $page->after_cm_entity_add($obj);
 
-        $coursectx = context_elis_course::instance($obj->id);
+        $coursectx = \local_elisprogram\context\course::instance($obj->id);
         $params = array('roleid' => $reid, 'userid' => $USER->id, 'contextid' => $coursectx->id);
         $this->assertTrue($DB->record_exists('role_assignments', $params));
     }
@@ -233,7 +233,7 @@ class pmentities_testcase extends elis_database_test {
         $sink = $this->redirectMessages();
         $page->after_cm_entity_add($obj);
 
-        $classctx = context_elis_class::instance($obj->id);
+        $classctx = \local_elisprogram\context\pmclass::instance($obj->id);
         $params = array('roleid' => $reid, 'userid' => $USER->id, 'contextid' => $classctx->id);
         $this->assertTrue($DB->record_exists('role_assignments', $params));
     }
@@ -268,7 +268,7 @@ class pmentities_testcase extends elis_database_test {
         $page = new usersetpage();
         $page->after_cm_entity_add($obj);
 
-        $usersetctx = context_elis_userset::instance($obj->id);
+        $usersetctx = \local_elisprogram\context\userset::instance($obj->id);
         $params = array('roleid' => $reid, 'userid' => $USER->id, 'contextid' => $usersetctx->id);
         $this->assertTrue($DB->record_exists('role_assignments', $params));
     }

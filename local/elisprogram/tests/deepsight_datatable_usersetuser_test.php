@@ -349,7 +349,7 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
                     $permcontext = get_context_instance(CONTEXT_SYSTEM);
                     break;
                 case 'userset':
-                    $permcontext = context_elis_userset::instance($id);
+                    $permcontext = \local_elisprogram\context\userset::instance($id);
                     break;
             }
             $this->give_permission_for_context($USER->id, 'local/elisprogram:userset_enrol', $permcontext);
@@ -593,7 +593,7 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
 
         // Set up userset contexts.
         for ($i = 1; $i <= 6; $i++) {
-            $ctx = context_elis_userset::instance($i);
+            $ctx = \local_elisprogram\context\userset::instance($i);
         }
 
         accesslib_clear_all_caches(true);
@@ -601,7 +601,7 @@ class deepsight_datatable_usersetuser_testcase extends deepsight_datatable_searc
         // Assign capabilities.
         $capability = 'local/elisprogram:userset_enrol_userset_user';
         foreach ($usersetidsforperm as $usersetid) {
-            $this->give_permission_for_context($USER->id, $capability, context_elis_userset::instance($usersetid));
+            $this->give_permission_for_context($USER->id, $capability, \local_elisprogram\context\userset::instance($usersetid));
         }
 
         // Create clusterassignments.
