@@ -1,0 +1,2 @@
+action,email,username,idnumber,firstname,lastname,password,city,country,lang
+create,test@user.com,testusername,idnumber,testfirstname,testlastname,Testpassword!0,Waterloo,Canada,en

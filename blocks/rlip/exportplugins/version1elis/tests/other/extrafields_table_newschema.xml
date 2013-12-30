@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common Integration Point version 1 elis export plugin"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="rlipexport_version1elis_fld" COMMENT="Custom fields used by version 1 elis export plugin">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="fieldid"/>
+        <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The id of the ELIS custom field" PREVIOUS="id" NEXT="header"/>
+        <FIELD NAME="header" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The header displayed in the export file" PREVIOUS="fieldid" NEXT="fieldorder"/>
+        <FIELD NAME="fieldorder" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The order in which fields are displayed" PREVIOUS="header"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="fieldid_ix" UNIQUE="true" FIELDS="fieldid"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
