@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Move a node to a new space</shortname>
+  <description>Move a content node into a new space folder.</description>
+  <url>/moodle/movenode/{uuid}/{to}</url>
+  <format default="xml">extension</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>
