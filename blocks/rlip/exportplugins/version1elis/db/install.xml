@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common Integration Point version 1 elis export plugin"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="rlipexport_version1elis_fld" COMMENT="Custom fields used by version 1 elis export plugin">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="fieldset"/>
+        <FIELD NAME="fieldset" TYPE="char" LENGTH="127" NOTNULL="true" SEQUENCE="false" COMMENT="The extrafields set" PREVIOUS="id" NEXT="field"/>
+        <FIELD NAME="field" TYPE="char" LENGTH="127" NOTNULL="true" SEQUENCE="false" COMMENT="The field within the set" PREVIOUS="fieldset" NEXT="header"/>
+        <FIELD NAME="header" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" COMMENT="The header displayed in the export file" PREVIOUS="field" NEXT="fieldorder"/>
+        <FIELD NAME="fieldorder" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="The order in which fields are displayed" PREVIOUS="header"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="setfield_ix" UNIQUE="true" FIELDS="fieldset, field"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
