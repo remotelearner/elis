@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Rename a node</shortname>
+  <description>Find a node and rename it to the specified value.</description>
+  <url>/moodle/noderename/{uuid}</url>
+  <format default="xml" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>
