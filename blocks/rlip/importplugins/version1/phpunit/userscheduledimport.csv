@@ -1,0 +1,5 @@
+action,username,password,firstname,lastname,email,city,country
+,schedimport,schedimport!0,Sched,Import,schedimport@yahoo.com,waterloo,CA
+create,,schedimport!0,Sched,Import,schedimport@yahoo.com,waterloo,CA
+create,testsched,Testpassword-0,Test,Sched,testsched@user.com,Waterloo,CA
+create,testsched2,Testpassword-0,Test,Sched2,testsched2@user.com,Waterloo,CA
