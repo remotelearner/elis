@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Node Inherit Permissions</shortname>
+  <description>Change a node's status for inheriting the parent node permissions.</description>
+  <url>/moodle/nodeinherit/{uuid}?enabled={enabled}</url>
+  <format default="xml" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>
