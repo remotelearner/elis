@@ -1,0 +1,7 @@
+<webscript>
+  <shortname>Category listing</shortname>
+  <description>Get a list of all the defined categories</description>
+  <url>/moodle/categories</url>
+  <format default="xml">extension</format>
+  <authentication>user</authentication>
+</webscript>
