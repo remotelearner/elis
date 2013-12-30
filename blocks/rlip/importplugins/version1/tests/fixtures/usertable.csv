@@ -1,0 +1,2 @@
+id,email,mnethostid,username,idnumber,firstname,lastname,password,city,country,lang
+3,test@user.com,##MNET_LOCALHOST_ID##,testusername,idnumber,testfirstname,testlastname,Testpassword!0,Waterloo,CA,en
