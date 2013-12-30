@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 logs and scheduling"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="block_rlip_summary_logs" COMMENT="Storage for per-run errors and statistics" NEXT="block_rlip_schedule">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" COMMENT="Tracks whether the task was an import or an export" NEXT="export"/>
+        <FIELD NAME="export" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="plugin"/>
+        <FIELD NAME="plugin" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" COMMENT="Shortname of the plugin being run" PREVIOUS="export" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Id of the user running the task" PREVIOUS="plugin" NEXT="targetstarttime"/>
+        <FIELD NAME="targetstarttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The ideal scheduled start time" PREVIOUS="userid" NEXT="starttime"/>
+        <FIELD NAME="starttime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The actual start time" PREVIOUS="targetstarttime" NEXT="endtime"/>
+        <FIELD NAME="endtime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The actual end time" PREVIOUS="starttime" NEXT="filesuccesses"/>
+        <FIELD NAME="filesuccesses" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The number of successful rows processed directly from an import file" PREVIOUS="endtime" NEXT="filefailures"/>
+        <FIELD NAME="filefailures" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The number of rows that failed to be processed directly from an import file" PREVIOUS="filesuccesses" NEXT="storedsuccesses"/>
+        <FIELD NAME="storedsuccesses" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The number of successful rows processed from previously stored records" PREVIOUS="filefailures" NEXT="storedfailures"/>
+        <FIELD NAME="storedfailures" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The number of rows that failed to be processed from previously stored records" PREVIOUS="storedsuccesses" NEXT="statusmessage"/>
+        <FIELD NAME="statusmessage" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="Success / failure status message" PREVIOUS="storedfailures" NEXT="dbops"/>
+        <FIELD NAME="dbops" TYPE="int" NOTNULL="true" LENGTH="10" UNSIGNED="false" DEFAULT="-1" SEQUENCE="false" COMMENT="The number of database operations used" PREVIOUS="statusmessage" NEXT="unmetdependency"/>
+        <FIELD NAME="unmetdependency" TYPE="int" NOTNULL="true" LENGTH="10" UNSIGNED="true" SEQUENCE="false" DEFAULT="0" COMMENT="Flag to indicate that the record failed due to an unmet dependency" PREVIOUS="dbops" NEXT="logpath"/>
+        <FIELD NAME="logpath" TYPE="text" NOTNULL="false" LENGTH="medium" SEQUENCE="false" COMMENT="Path to the log file for download" PREVIOUS="unmetdependency" NEXT="entitytype"/>
+        <FIELD NAME="entitytype" TYPE="text" NOTNULL="false" LENGTH="small" SEQUENCE="false" COMMENT="The entity type imported" PREVIOUS="logpath"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="plugin_ix" UNIQUE="false" FIELDS="plugin" NEXT="userid_ix"/>
+        <INDEX NAME="userid_ix" UNIQUE="false" FIELDS="userid" PREVIOUS="plugin_ix" NEXT="targetstarttime_ix"/>
+        <INDEX NAME="targetstarttime_ix" UNIQUE="false" FIELDS="targetstarttime" PREVIOUS="userid_ix" NEXT="starttime_ix"/>
+        <INDEX NAME="starttime_ix" UNIQUE="false" FIELDS="starttime" PREVIOUS="targetstarttime_ix" NEXT="endtime_ix"/>
+        <INDEX NAME="endtime_ix" UNIQUE="false" FIELDS="endtime" PREVIOUS="starttime_ix"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="block_rlip_schedule" COMMENT="Scheduled DH imports and exports" PREVIOUS="block_rlip_summary_logs">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="schedule owner" PREVIOUS="id" NEXT="plugin"/>
+        <FIELD NAME="plugin" TYPE="char" LENGTH="63" NOTNULL="true" SEQUENCE="false" COMMENT="The DH plugin type" PREVIOUS="userid" NEXT="config"/>
+        <FIELD NAME="config" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="Serialized configuration for the scheduled task" PREVIOUS="plugin" NEXT="lastruntime"/>
+        <FIELD NAME="lastruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Mirror of elis scheduled task last runtime" PREVIOUS="config" NEXT="nextruntime"/>
+        <FIELD NAME="nextruntime" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Mirror of elis scheduled task next runtime" PREVIOUS="lastruntime"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid_idx" UNIQUE="false" FIELDS="userid" NEXT="plugin_idx"/>
+        <INDEX NAME="plugin_idx" UNIQUE="false" FIELDS="plugin" PREVIOUS="userid_idx"/>
+      </INDEXES>
+    </TABLE>
+  </TABLES>
+</XMLDB>
