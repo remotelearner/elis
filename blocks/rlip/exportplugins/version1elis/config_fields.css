@@ -1,0 +1,105 @@
+.config_form {
+    display: table;
+    width: 100%;
+}
+.config_form * {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+.config_form ul {
+    list-style: none;
+    width: 100%;
+}
+h2.config_header {
+    margin-bottom: 30px;
+}
+div.fieldsets,
+div.available_fields,
+div.active_fields {
+    display: table-cell;
+    vertical-align: top;
+}
+div.fieldsets {
+    width: 20%;
+    padding-top: 7px;
+}
+div.fieldsets ul {
+    padding-top: 3px;
+}
+div.fieldsets li {
+    text-align: right;
+    padding: 10px;
+    font-weight: bold;
+    background-color: #ddd;
+    background-color: rgba(0,0,0,0.05);
+    cursor: pointer;
+}
+div.fieldsets li:hover {
+    background-color: #ddd;
+    background-color: rgba(0,0,0,0.08);
+}
+div.fieldsets li.active {
+    border: 1px solid #777;
+    border-color: rgba(128,128,128,0.5);
+    border-width: 1px 0 1px 1px;
+    padding: 9px 11px 9px 9px;
+    background-color: #fff;
+    position: relative;
+    right: -1px;
+}
+div.available_fields {
+    width: 35%;
+    border-left: 1px solid #777;
+    border-left-color: rgba(128,128,128,0.5);
+    border-right: 1px solid #777;
+    border-right-color: rgba(128,128,128,0.5);
+    padding: 7px;
+}
+div.available_fields ul li.active {
+    display: none !important;
+}
+div.active_fields {
+    width: 35%;
+    margin-left: 5px;
+    padding: 7px;
+}
+div.active_fields ul {
+    padding-bottom: 50px;
+    min-height: 200px;
+}
+div.active_fields ul li .rename,
+div.active_fields ul li .fieldname_textbox {
+    display: inline-block;
+    margin-left: 5px;
+}
+div.active_fields ul li .remove {
+    display: inline-block;
+    float: right;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 3px;
+}
+.config_form ul.fieldlist li {
+    cursor: move;
+    border: 1px solid #777;
+    border-color: rgba(128,128,128,0.5);
+    margin: 3px 0;
+    background-color: #eee;
+    background-color: rgba(0,0,0,0.1);
+    padding: 2px 5px;
+    border-radius: 2px;
+}
+.config_form ul.fieldlist li:hover {
+    background-color: #ddd;
+    background-color: rgba(0,0,0,0.05);
+    border: 1px solid #3498DB;
+}
+.config_form ul.fieldlist li.placeholder {
+    background: none;
+    border-style: dashed;
+    color: transparent;
+}
