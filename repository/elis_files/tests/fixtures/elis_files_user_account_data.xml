@@ -1,0 +1,17 @@
+<dataset>
+    <table name="user">
+        <column>id</column>
+        <column>username</column>
+        <column>mnethostid</column>
+        <row>
+            <value>99</value>
+            <value>user@domain</value>
+            <value>1</value>
+        </row>
+        <row>
+            <value>100</value>
+            <value>user</value>
+            <value>1</value>
+        </row>
+    </table>
+</dataset>
