@@ -27,5 +27,16 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_local_elisprogram_upgrade($oldversion=0) {
+    global $DB, $CFG;
 
+    $dbman = $DB->get_manager();
+    $result = true;
+
+    // Always upon any upgrade, ensure ELIS scheduled tasks is in good health.
+    if ($result) {
+        require_once($CFG->dirroot.'/local/eliscore/lib/tasklib.php');
+        elis_tasks_update_definition('local_elisprogram');
+    }
+
+    return $result;
 }
