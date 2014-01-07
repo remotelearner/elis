@@ -554,7 +554,7 @@ function get_pm_url($baseurl = null, $extras = array()) {
 
 /**
  * New display function callback to allow HTML elements in table
- * see: /elis/core/lib/table.class.php
+ * see: /local/eliscore/lib/table.class.php
  */
 function htmltab_display_function($column, $item) {
     return isset($item->{$column}) ? $item->{$column} : '';
@@ -1201,7 +1201,7 @@ function pm_moodle_user_to_pm($mu) {
     fix_moodle_profile_fields($mu);
     $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
     $fields = $fields ? $fields : array();
-    require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
+    require_once(elis::plugin_file('elisfields_moodleprofile', 'custom_fields.php'));
     foreach ($fields as $field) {
         $field = new field($field);
         if (!moodle_profile_can_sync($field->shortname)) {

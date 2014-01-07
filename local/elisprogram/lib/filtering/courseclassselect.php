@@ -26,7 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/user/filters/lib.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/dependentselect.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/filtering/dependentselect.php');
 
 /**
  * Generic filter based on a list of values.

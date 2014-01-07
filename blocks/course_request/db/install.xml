@@ -36,7 +36,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="fieldid"/>
-        <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="elis_field" REFFIELDS="id" PREVIOUS="primary"/>
+        <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="local_eliscore_field" REFFIELDS="id" PREVIOUS="primary"/>
       </KEYS>
     </TABLE>
     <TABLE NAME="block_course_request_data" COMMENT="Keeps track of custom field values in individual course requests" PREVIOUS="block_course_request_fields">
@@ -51,7 +51,7 @@
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="requestid"/>
         <KEY NAME="requestid" TYPE="foreign" FIELDS="requestid" REFTABLE="block_course_request" REFFIELDS="id" PREVIOUS="primary" NEXT="fieldid"/>
-        <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="elis_field" REFFIELDS="id" PREVIOUS="requestid"/>
+        <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="local_eliscore_field" REFFIELDS="id" PREVIOUS="requestid"/>
       </KEYS>
     </TABLE>
   </TABLES>

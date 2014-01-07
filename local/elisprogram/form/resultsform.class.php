@@ -472,7 +472,7 @@ class cmEngineForm extends cmform {
             case 'profile':
             default:
                 $param = array('id' => $id);
-                $name = $DB->get_field('elis_field', 'name', $param);
+                $name = $DB->get_field('local_eliscore_field', 'name', $param);
 
                 break;
         }
@@ -898,7 +898,7 @@ class cmEngineForm extends cmform {
         $sql = 'SELECT rea.id, rea.minimum AS min, rea.maximum AS max, rea.fieldid AS selected,'
              .' f.name AS name, rea.fielddata as value '
              .' FROM {'.resultsengineaction::TABLE.'} rea'
-             .' RIGHT JOIN {elis_field} f ON f.id = rea.fieldid'
+             .' RIGHT JOIN {local_eliscore_field} f ON f.id = rea.fieldid'
              .' WHERE rea.resultsid = :resultsengineid AND rea.actiontype=2'
              .' ORDER BY minimum ASC';
 

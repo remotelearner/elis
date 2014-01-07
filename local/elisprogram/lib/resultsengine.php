@@ -328,7 +328,7 @@ function results_engine_process($class) {
     }
 
     foreach ($fieldids as $id) {
-        if ($record = $DB->get_record('elis_field', array('id' => $id))) {
+        if ($record = $DB->get_record('local_eliscore_field', array('id' => $id))) {
             $userfields[$id] = new field($record, null, array(), true);
         }
     }

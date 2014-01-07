@@ -23,13 +23,13 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('lib.php'));
-require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+require_once(elis::file('eliscore/fields/moodleprofile/custom_fields.php'));
 
 // Data objects.
 require_once(elis::lib('data/customfield.class.php'));
@@ -200,7 +200,7 @@ class pm_moodle_user_to_pm_testcase extends elis_database_test {
 
         // Get ELIS custom field data.
         $sql = 'SELECT *
-                  FROM {elis_field_data_text} fdt
+                  FROM {local_eliscore_fld_data_text} fdt
                   JOIN {context} ctx ON ctx.id = fdt.contextid
                  WHERE ctx.instanceid = ? AND ctx.contextlevel = ? AND fdt.fieldid = ?';
         $params = array($cu->id, CONTEXT_ELIS_USER, $fields['e']->id);

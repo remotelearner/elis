@@ -207,7 +207,7 @@ class customfieldform extends cmform {
                        'timezone' => 99, 'optional' => false)); // TBD!?!
         $form->addElement('html', '</fieldset>');
 
-        $plugins = get_list_of_plugins('elis/core/fields');
+        $plugins = get_list_of_plugins('local/eliscore/fields');
 
         foreach ($plugins as $plugin) {
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
@@ -253,7 +253,7 @@ class customfieldform extends cmform {
         }
 
         // Check for specific plugin definition_after_data functions
-        $plugins = get_list_of_plugins('elis/core/fields');
+        $plugins = get_list_of_plugins('local/eliscore/fields');
         foreach ($plugins as $plugin) {
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
                 include_once(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));
@@ -391,7 +391,7 @@ class customfieldform extends cmform {
             }
         }
 
-        $plugins = get_list_of_plugins('elis/core/fields');
+        $plugins = get_list_of_plugins('local/eliscore/fields');
 
         foreach ($plugins as $plugin) {
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {

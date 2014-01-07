@@ -23,7 +23,7 @@
  *
  */
 
-require_once($CFG->dirroot.'/elis/core/lib/filtering/autocomplete_base.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/filtering/autocomplete_base.php');
 
 class generalized_filter_autocomplete_eliswithcustomfields extends generalized_filter_autocomplete_base {
     protected $contextid;
@@ -47,8 +47,8 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
     );
 
     protected $custom_fields_data_tables = array(
-        'char' => 'elis_field_data_char',
-        'text' => 'elis_field_data_text'
+        'char' => 'local_eliscore_fld_data_char',
+        'text' => 'local_eliscore_fld_data_text'
     );
     protected $custom_fields = array();
     protected $instance_fields = array();
@@ -100,8 +100,8 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
         if (!empty($options['custom_fields']) && (is_array($options['custom_fields']) || $options['custom_fields'] === '*')) {
 
             $sql = 'SELECT f.id, f.name, f.shortname, f.datatype '
-                .'FROM {elis_field} f'
-                .' JOIN {elis_field_contextlevels} c ON c.fieldid=f.id'
+                .'FROM {local_eliscore_field} f'
+                .' JOIN {local_eliscore_field_clevels} c ON c.fieldid=f.id'
                 .' WHERE (f.datatype="char" OR f.datatype="text") AND c.contextlevel='.$options['contextlevel'];
             if (is_array($options['custom_fields'])) {
                 $ids = implode('","',$options['custom_fields']);
@@ -310,7 +310,7 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
         $configured_forced_custom_vals = $this->get_configured_forced_custom_vals();
 
         if (empty($search_custom_fields) && empty($search_instance_fields)) {
-            echo get_string('filt_autoc_no_fields_enabled','elis_core');
+            echo get_string('filt_autoc_no_fields_enabled','local_eliscore');
             die();
         }
 

@@ -23,7 +23,7 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../eliscore/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
@@ -36,7 +36,7 @@ require_once(elis::lib('data/customfield.class.php'));
 require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 require_once(elispm::lib('contexts.php'));
 require_once(elispm::lib('deprecatedlib.php'));
-require_once(elis::file('eliscore/fields/moodle_profile/custom_fields.php'));
+require_once(elis::file('eliscore/fields/moodleprofile/custom_fields.php'));
 require_once(elis::file('eliscore/fields/manual/custom_fields.php'));
 require_once(elispm::lib('filtering/autocomplete_eliswithcustomfields.php'));
 

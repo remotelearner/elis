@@ -572,7 +572,7 @@ class completion_export_check extends crlm_health_check_base {
  */
 class cron_lastruntimes_check extends crlm_health_check_base {
     private $blocks = array(); // empty array for none; 'curr_admin' ?
-    private $plugins = array(); // TBD: 'local_elisprogram', 'elis_core' ?
+    private $plugins = array(); // TBD: 'local_elisprogram', 'local_eliscore' ?
 
     function exists() {
         global $DB;
@@ -589,7 +589,7 @@ class cron_lastruntimes_check extends crlm_health_check_base {
                 return true;
             }
         }
-        $lasteliscron = $DB->get_field('elis_scheduled_tasks', 'MAX(lastruntime)', array());
+        $lasteliscron = $DB->get_field('local_eliscore_sched_tasks', 'MAX(lastruntime)', array());
         if ($lasteliscron < $threshold) {
             return true;
         }
@@ -626,7 +626,7 @@ class cron_lastruntimes_check extends crlm_health_check_base {
                 $description .= get_string('health_cron_plugin', 'local_elisprogram', $a);
             }
         }
-        $lasteliscron = $DB->get_field('elis_scheduled_tasks', 'MAX(lastruntime)', array());
+        $lasteliscron = $DB->get_field('local_eliscore_sched_tasks', 'MAX(lastruntime)', array());
         if ($lasteliscron < $threshold) {
             $lastcron = $lasteliscron ? userdate($lasteliscron) : get_string('cron_notrun', 'local_elisprogram');
             $description .= get_string('health_cron_elis', 'local_elisprogram', $lastcron);

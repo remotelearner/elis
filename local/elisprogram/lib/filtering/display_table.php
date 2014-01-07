@@ -40,7 +40,7 @@ require_once($CFG->dirroot.'/user/filters/lib.php');
  */
 class generalized_filter_display_table extends generalized_filter_type {
     protected $options;
-    protected $languagefile = 'elis_core';
+    protected $languagefile = 'local_eliscore';
     protected $help         = 'display_table';
 
 

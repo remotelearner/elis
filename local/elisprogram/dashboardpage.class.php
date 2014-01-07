@@ -37,7 +37,7 @@ require_once elispm::file('healthpage.class.php');
 class dashboardpage extends pm_page {
     // Arrays for which components last cron runtimes to include
     private $blocks = array(); // empty array for none; 'curr_admin' ?
-    private $plugins = array(); // TBD: 'local_elisprogram', 'elis_core' ?
+    private $plugins = array(); // TBD: 'local_elisprogram', 'local_eliscore' ?
 
     /**
      * Determines whether or not the current user can navigate to the
@@ -80,7 +80,7 @@ class dashboardpage extends pm_page {
             $a->lastcron = $lastcron ? userdate($lastcron) : get_string('cron_notrun', 'local_elisprogram');
             $description .= get_string('health_cron_plugin', 'local_elisprogram', $a);
         }
-        $lasteliscron = $DB->get_field('elis_scheduled_tasks', 'MAX(lastruntime)', array());
+        $lasteliscron = $DB->get_field('local_eliscore_sched_tasks', 'MAX(lastruntime)', array());
         $lastcron = $lasteliscron ? userdate($lasteliscron) : get_string('cron_notrun', 'local_elisprogram');
         $description .= get_string('health_cron_elis', 'local_elisprogram', $lastcron);
         return $description;
@@ -114,7 +114,7 @@ class dashboardpage extends pm_page {
                 echo $OUTPUT->box(html_writer::tag('p', get_string('health_check_link', 'local_elisprogram', $CFG)));
             }
             echo html_writer::tag('p', get_string('elispmversion', 'local_elisprogram', elispm::$release));
-            echo html_writer::tag('p', get_string('elisversion', 'elis_core', elis::$release));
+            echo html_writer::tag('p', get_string('elisversion', 'local_eliscore', elis::$release));
         }
 
         if ($cmuid = cm_get_crlmuserid($USER->id)) {

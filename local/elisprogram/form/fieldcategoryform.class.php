@@ -60,16 +60,16 @@ class fieldcategoryform extends cmform {
         $ctxlvl = context_elis_helper::get_level_from_name($level);
         if (!empty($ctxlvl)) {
             $sql = 'SELECT cat.id
-                FROM {elis_field_categories} cat
-                JOIN {elis_field_category_contexts} ctx ON cat.id = ctx.categoryid
+                FROM {local_eliscore_field_cats} cat
+                JOIN {local_eliscore_fld_cat_ctx} ctx ON cat.id = ctx.categoryid
                 WHERE ctx.contextlevel = ? AND cat.name=?';
             $params = array($ctxlvl,$data['name']);
             $existing_catname = $DB->get_recordset_sql($sql,$params);
             if ($existing_catname->valid() === true) {
                 $a = new stdClass;
-                $a->tablename = 'elis_field_categories';
+                $a->tablename = 'local_eliscore_field_cats';
                 $a->fields = 'name';
-                $errors['name'] = get_string('data_object_validation_unique', 'elis_core', $a);
+                $errors['name'] = get_string('data_object_validation_unique', 'local_eliscore', $a);
             }
             unset($existing_catname);
         }

@@ -28,7 +28,7 @@
  * other report operations or data accuracy.
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 

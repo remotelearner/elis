@@ -108,7 +108,7 @@ class customfieldpage extends pm_page {
                 print_string('field_no_fields_defined', 'local_elisprogram');
             } else {
                 if ($level == 'user') {
-                    require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
+                    require_once(elis::plugin_file('elisfields_moodleprofile', 'custom_fields.php'));
                     $table = new customuserfieldtable($fields, array('name' => array('header' => get_string('name')),
                                                                      'datatype' => array('header' => get_string('field_datatype', 'local_elisprogram')),
                                                                      'syncwithmoodle' => array('header' => get_string('field_syncwithmoodle', 'local_elisprogram')),
@@ -193,7 +193,7 @@ class customfieldpage extends pm_page {
             print_string('field_resyncing', 'local_elisprogram');
             $fields = field::get_for_context_level(CONTEXT_ELIS_USER);
             $fields = $fields ? $fields : array();
-            require_once(elis::plugin_file('elisfields_moodle_profile', 'custom_fields.php'));
+            require_once(elis::plugin_file('elisfields_moodleprofile', 'custom_fields.php'));
             foreach ($fields as $field) {
                 $fieldobj = new field($field);
                 sync_profile_field_with_moodle($fieldobj);
@@ -377,9 +377,9 @@ class customfieldpage extends pm_page {
                 }
             }
 
-            $plugins = get_list_of_plugins('elis/core/fields');
+            $plugins = get_list_of_plugins('local/eliscore/fields');
             foreach ($plugins as $plugin) {
-                if (is_readable($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php')) {
+                if (is_readable($CFG->dirroot.'/local/eliscore/fields/'.$plugin.'/custom_fields.php')) {
                     require_once(elis::plugin_file('elisfields_'.$plugin, 'custom_fields.php'));
                     if (function_exists("{$plugin}_field_save_form_data")) {
                         call_user_func("{$plugin}_field_save_form_data", $form, $field, $data);
@@ -469,10 +469,10 @@ class customfieldpage extends pm_page {
                         $data_array['defaultdata'] = $defaultdata;
                     }
 
-                    $plugins = get_list_of_plugins('elis/core/fields');
+                    $plugins = get_list_of_plugins('local/eliscore/fields');
                     foreach ($plugins as $plugin) {
-                        if (is_readable($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php')) {
-                            include_once($CFG->dirroot . '/elis/core/fields/' . $plugin . '/custom_fields.php');
+                        if (is_readable($CFG->dirroot.'/local/eliscore/fields/'.$plugin.'/custom_fields.php')) {
+                            include_once($CFG->dirroot.'/local/eliscore/fields/'.$plugin.'/custom_fields.php');
                             if (function_exists("{$plugin}_field_get_form_data")) {
                                 $data_array += call_user_func("{$plugin}_field_get_form_data", $form, $data);
                             }
@@ -636,8 +636,8 @@ class customuserfieldtable extends customfieldtable {
      */
     public function __construct($items, $columns, moodle_url $base_url=null, $sort_param='sort', $sortdir_param='dir', array $attributes = array()) {
         parent::__construct($items, $columns, $base_url, $sort_param, $sortdir_param, $attributes);
-        if (is_readable(elis::plugin_file("elisfields_moodle_profile",'custom_fields.php'))) {
-            include_once(elis::plugin_file("elisfields_moodle_profile",'custom_fields.php'));
+        if (is_readable(elis::plugin_file("elisfields_moodleprofile",'custom_fields.php'))) {
+            include_once(elis::plugin_file("elisfields_moodleprofile",'custom_fields.php'));
             if (function_exists('moodle_profile_can_sync')) {
                 $this->cansyncfcn = 'moodle_profile_can_sync';
             }
@@ -646,11 +646,11 @@ class customuserfieldtable extends customfieldtable {
 
     function get_item_display_syncwithmoodle($column, $item) {
         if ($item->syncwithmoodle === NULL) {
-            return get_string('field_no_sync', 'elisfields_moodle_profile');
+            return get_string('field_no_sync', 'elisfields_moodleprofile');
         } elseif ($item->syncwithmoodle == pm_moodle_profile::sync_from_moodle) {
-            $result = get_string('field_sync_from_moodle', 'elisfields_moodle_profile');
+            $result = get_string('field_sync_from_moodle', 'elisfields_moodleprofile');
         } else {
-            $result = get_string('field_sync_to_moodle', 'elisfields_moodle_profile');
+            $result = get_string('field_sync_to_moodle', 'elisfields_moodleprofile');
         }
         $cansync = true;
         if (!empty($item->mfieldid) && !empty($this->cansyncfcn)) {

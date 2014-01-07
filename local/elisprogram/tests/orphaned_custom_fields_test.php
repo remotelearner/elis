@@ -24,9 +24,9 @@
  */
 
 
-require_once(dirname(__FILE__).'/../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
 // Libs.
 require_once(elis::lib('data/customfield.class.php'));

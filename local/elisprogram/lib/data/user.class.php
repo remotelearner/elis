@@ -465,7 +465,7 @@ class user extends data_object_with_custom_fields {
             $mfields = $this->_db->get_records('user_info_field', array(), '', 'shortname');
             $fields = $fields ? $fields : array();
             $changed = false;
-            require_once elis::plugin_file('elisfields_moodle_profile','custom_fields.php');
+            require_once elis::plugin_file('elisfields_moodleprofile','custom_fields.php');
             foreach ($fields as $field) {
                 $field = new field($field);
                 if (!moodle_profile_can_sync($field->shortname)) {

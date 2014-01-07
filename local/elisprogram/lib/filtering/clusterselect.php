@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot .'/user/filters/lib.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/equalityselect.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/filtering/equalityselect.php');
 
 //needed for execution mode constants
 require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
@@ -195,7 +195,7 @@ class generalized_filter_clusterselect extends generalized_filter_equalityselect
             $operator = 'NOT IN';
         } else {
             //error call
-            print_error('invalidoperator', 'elis_core');
+            print_error('invalidoperator', 'local_eliscore');
         }
 
         return array("{$full_fieldname} $operator

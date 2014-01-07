@@ -30,7 +30,7 @@ global $CFG;
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
-require_once(elis::file('eliscore/fields/moodle_profile/custom_fields.php'));
+require_once(elis::file('eliscore/fields/moodleprofile/custom_fields.php'));
 
 /**
  * Test userset groups plugin.

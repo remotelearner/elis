@@ -32,7 +32,7 @@ require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('data/user.class.php'));
 require_once(elis::plugin_file('usetenrol_moodleprofile', 'userset_profile.class.php'));
 
-function cluster_moodle_profile_delete_for_cluster($id) {
+function cluster_moodleprofile_delete_for_cluster($id) {
     userset_profile::delete_records(new field_filter('clusterid', $id));
 }
 
@@ -43,7 +43,7 @@ function cluster_moodle_profile_delete_for_cluster($id) {
  * profile_field2 -select box
  * profile_value2 -select box corresponding to profile_field2
  */
-function cluster_moodle_profile_edit_form($form, $mform, $clusterid) {
+function cluster_moodleprofile_edit_form($form, $mform, $clusterid) {
     global $CFG, $DB, $PAGE;
 
 /// Only get--at most--two profile field associations for this cluster.
@@ -198,7 +198,7 @@ function get_moodle_profile_field_options($prof_field, $elementid, $existing_val
     return $default;
 }
 
-function userset_moodle_profile_update($cluster) {
+function userset_moodleprofile_update($cluster) {
     global $CFG, $DB;
 
     // get the "old" (existing) profile field assignment values

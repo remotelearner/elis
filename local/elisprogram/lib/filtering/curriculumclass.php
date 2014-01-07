@@ -126,10 +126,10 @@ defined('MOODLE_INTERNAL') || die();
  */
 
 require_once($CFG->dirroot .'/user/filters/lib.php'); // TBD
-require_once($CFG->dirroot .'/elis/core/lib/filtering/multifilter.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/exists_select.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/custom_field_text.php');
-require_once($CFG->dirroot .'/elis/core/lib/filtering/custom_field_select.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/filtering/multifilter.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/filtering/exists_select.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/filtering/custom_field_text.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/filtering/custom_field_select.php');
 
 /**
  * Generic userprofilematch filter class

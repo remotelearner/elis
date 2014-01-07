@@ -155,7 +155,7 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
         if (!empty($activecustomfields)) {
             $joinsql[] = 'JOIN {context} ctx ON ctx.instanceid = element.id AND ctx.contextlevel='.CONTEXT_ELIS_TRACK;
             foreach ($activecustomfields as $fieldname => $field) {
-                $customfieldjoin = 'LEFT JOIN {elis_field_data_'.$field->datatype.'} '.$fieldname.' ON ';
+                $customfieldjoin = 'LEFT JOIN {local_eliscore_fld_data_'.$field->datatype.'} '.$fieldname.' ON ';
                 $customfieldjoin .= $fieldname.'.contextid = ctx.id AND '.$fieldname.'.fieldid='.$field->id;
                 $joinsql[] = $customfieldjoin;
             }

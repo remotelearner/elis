@@ -138,7 +138,7 @@ class courserequestapprovepage extends pm_page {
         $sql = "SELECT field.shortname AS fieldshortname,
                        data.data,
                        data.multiple
-                FROM {elis_field} field
+                FROM {local_eliscore_field} field
                 JOIN {block_course_request_data} data
                   ON field.id = data.fieldid
                 WHERE data.requestid = ?";

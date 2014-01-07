@@ -29,8 +29,8 @@ require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elis::file('elisprogram/healthpage.class.php'));
-require_once(elis::plugin_file('eliscoreplugins_user_activity', 'health.php'));
-require_once(elis::plugin_file('eliscoreplugins_user_activity', 'etl.php'));
+require_once(elis::plugin_file('eliscore_etl', 'health.php'));
+require_once(elis::plugin_file('eliscore_etl', 'etl.php'));
 
 /**
  * Test health checks.
@@ -49,8 +49,8 @@ class user_activity_health_testcase extends elis_database_test {
         ));
         $this->loadDataSet($dataset);
 
-        elis::$config->eliscoreplugins_user_activity->last_run = time() - DAYSECS;
-        elis::$config->eliscoreplugins_user_activity->state = serialize(array(
+        elis::$config->eliscore_etl->last_run = time() - DAYSECS;
+        elis::$config->eliscore_etl->state = serialize(array(
             'sessiontimeout' => 300,
             'sessiontail' => 300,
             'starttime' => 1326308749,
@@ -60,7 +60,7 @@ class user_activity_health_testcase extends elis_database_test {
         $problem = new user_activity_health_empty();
         $this->assertTrue($problem->exists());
 
-        elis::$config->eliscoreplugins_user_activity->state = serialize(array(
+        elis::$config->eliscore_etl->state = serialize(array(
             'sessiontimeout' => 300,
             'sessiontail' => 300,
             'starttime' => time() - (6 * DAYSECS),
@@ -80,11 +80,11 @@ class user_activity_health_testcase extends elis_database_test {
         ));
         $this->loadDataSet($dataset);
 
-        elis::$config->eliscoreplugins_user_activity->last_run = 0;
-        elis::$config->eliscoreplugins_user_activity->state = '';
+        elis::$config->eliscore_etl->last_run = 0;
+        elis::$config->eliscore_etl->state = '';
 
         // Create existing record (NOT first)!
-        $DB->insert_record('etl_user_module_activity', (object)array(
+        $DB->insert_record('eliscore_etl_modactivity', (object)array(
             'userid' => 409,
             'courseid' => 382,
             'cmid' => 12127,
@@ -96,7 +96,7 @@ class user_activity_health_testcase extends elis_database_test {
         $prevdone = 0;
         $prevtogo = 1501;
         $prevstart = 0;
-        $etlobj = new etl_user_activity(0, false);
+        $etlobj = new eliscore_etl_useractivity(0, false);
         do {
             $realtime = time();
             ob_start();
@@ -120,8 +120,8 @@ class user_activity_health_testcase extends elis_database_test {
             $prevtogo = $recordstogo;
             $prevstart = $lasttime;
         } while (true);
-        $etluacnt = $DB->count_records('etl_user_activity');
-        $etlumacnt = $DB->count_records('etl_user_module_activity');
+        $etluacnt = $DB->count_records('eliscore_etl_useractivity');
+        $etlumacnt = $DB->count_records('eliscore_etl_modactivity');
 
         $this->assertEquals(342, $etluacnt);
         $this->assertEquals(225, $etlumacnt);

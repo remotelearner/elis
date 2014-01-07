@@ -26,7 +26,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot .'/elis/core/lib/filtering/multifilter.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/filtering/multifilter.php');
 
 /**
  * Filter that handles filtering on ELIS core user information, as well as ELIS
@@ -41,10 +41,10 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
     var $tables = array(
         'up' => array(
             'local_elisprogram_usr'            => 'u',
-            'elis_field_data_char' => 'updc',
-            'elis_field_data_int'  => 'updi',
-            'elis_field_data_num'  => 'updn',
-            'elis_field_data_text' => 'updt',
+            'local_eliscore_fld_data_char' => 'updc',
+            'local_eliscore_fld_data_int'  => 'updi',
+            'local_eliscore_fld_data_num'  => 'updn',
+            'local_eliscore_fld_data_text' => 'updt',
         )
     );
 
@@ -110,7 +110,7 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
     );
 
     //this defines the main language file
-    protected $languagefile = 'elis_core';
+    protected $languagefile = 'local_eliscore';
 
     protected $_fieldids = array();
 

@@ -1100,9 +1100,9 @@ abstract class deepsight_datatable_standard implements deepsight_datatable {
 
         // Add custom fields.
         $sql = 'SELECT field.id, field.name, field.shortname, field.datatype, owner.params
-                  FROM {elis_field} field
-                  JOIN {elis_field_contextlevels} ctx ON ctx.fieldid = field.id
-                  JOIN {elis_field_owner} owner ON owner.fieldid = field.id AND plugin = "manual"
+                  FROM {local_eliscore_field} field
+                  JOIN {local_eliscore_field_clevels} ctx ON ctx.fieldid = field.id
+                  JOIN {local_eliscore_field_owner} owner ON owner.fieldid = field.id AND plugin = "manual"
                  WHERE (field.datatype="char" OR field.datatype="text") AND ctx.contextlevel=?';
         $customfields = $this->DB->get_recordset_sql($sql, array($contextlevel));
         foreach ($customfields as $field) {

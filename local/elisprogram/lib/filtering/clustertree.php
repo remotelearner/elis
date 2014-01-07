@@ -601,7 +601,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
         /**
          * UI element setup
          */
-        require_once($CFG->dirroot .'/elis/core/lib/filtering/equalityselect.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/filtering/equalityselect.php');
 
         $choices_array = array(0 => get_string('anyvalue', 'filters'));
 

@@ -23,14 +23,14 @@
  *
  */
 
-require_once(dirname(__FILE__).'/../../core/test_config.php');
+require_once(dirname(__FILE__).'/../../eliscore/test_config.php');
 global $CFG;
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
 // Libs.
 require_once(elispm::lib('data/curriculum.class.php'));
 require_once(elis::lib('data/customfield.class.php'));
-require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+require_once(elis::file('eliscore/fields/moodleprofile/custom_fields.php'));
 require_once(elispm::lib('data/usermoodle.class.php'));
 require_once($CFG->dirroot.'/admin/roles/lib.php');
 
