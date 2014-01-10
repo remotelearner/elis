@@ -16,14 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
 
 /**
  * Original Moodle-only import
@@ -188,7 +188,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      */
     function parse_date($date) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         //make sure there are three parts
         $parts = explode('/', $date);
@@ -330,7 +330,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         global $CFG, $DB;
 
         //check config setting
-        $createorupdate = get_config('rlipimport_version1', 'createorupdate');
+        $createorupdate = get_config('dhimport_version1', 'createorupdate');
 
         if (!empty($createorupdate)) {
             //determine if any identifying fields are set
@@ -711,7 +711,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
              $select .= ' OR (idnumber = :idnumber)';
              $params['idnumber'] = $record->idnumber;
         }
-        $allowduplicateemails = get_config('rlipimport_version1', 'allowduplicateemails');
+        $allowduplicateemails = get_config('dhimport_version1', 'allowduplicateemails');
         if (empty($allowduplicateemails)) {
             $select .= ' OR (email = :email)';
             $params['email'] = $record->email;
@@ -801,13 +801,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      * @return bool Success/Failure.
      */
     public function newuseremail($user) {
-        $enabled = get_config('rlipimport_version1', 'newuseremailenabled');
+        $enabled = get_config('dhimport_version1', 'newuseremailenabled');
         if (empty($enabled)) {
             // Emails disabled.
             return false;
         }
 
-        $template = get_config('rlipimport_version1', 'newuseremailtemplate');
+        $template = get_config('dhimport_version1', 'newuseremailtemplate');
         if (empty($template)) {
             // No text set.
             return false;
@@ -818,7 +818,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        $subject = get_config('rlipimport_version1', 'newuseremailsubject');
+        $subject = get_config('dhimport_version1', 'newuseremailsubject');
         if (empty($subject) || !is_string($subject)) {
             $subject = '';
         }
@@ -1125,7 +1125,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         global $DB;
 
         //check config setting
-        $createorupdate = get_config('rlipimport_version1', 'createorupdate');
+        $createorupdate = get_config('dhimport_version1', 'createorupdate');
 
         if (!empty($createorupdate)) {
             if (isset($record->shortname) && $record->shortname !== '') {
@@ -1708,7 +1708,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         //write to the database
         if (isset($record->link)) {
             //creating from template
-            require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+            require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
             require_once(elis::lib('rollover/lib.php'));
             $courseid = $DB->get_field('course', 'id', array('shortname' => $record->link));
 
@@ -2009,12 +2009,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             //obtain the course context instance
             $contextlevel = CONTEXT_COURSE;
-            $context = get_context_instance($contextlevel, $courseid);
+            $context = context_course::instance($courseid);
             return array($contextlevel, $context);
         } else if ($record->context == 'system') {
             //obtain the system context instance
             $contextlevel = CONTEXT_SYSTEM;
-            $context = get_context_instance($contextlevel);
+            $context = context_system::instance();
             return array($contextlevel, $context, false);
         } else if ($record->context == 'coursecat') {
             //make sure category name is not ambiguous
@@ -2040,7 +2040,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             //obtain the course category context instance
             $contextlevel = CONTEXT_COURSECAT;
-            $context = get_context_instance($contextlevel, $categoryid);
+            $context = context_coursecat::instance($categoryid);
             return array($contextlevel, $context, false);
         } else if ($record->context == 'user') {
             //find existing user
@@ -2056,7 +2056,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             //obtain the user context instance
             $contextlevel = CONTEXT_USER;
-            $context = get_context_instance($contextlevel, $targetuserid);
+            $context = context_user::instance($targetuserid);
             return array($contextlevel, $context, false);
         } else {
             //currently only supporting course, system, user and category
@@ -2090,13 +2090,13 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        $enabled = get_config('rlipimport_version1', 'newenrolmentemailenabled');
+        $enabled = get_config('dhimport_version1', 'newenrolmentemailenabled');
         if (empty($enabled)) {
             // Emails disabled.
             return false;
         }
 
-        $template = get_config('rlipimport_version1', 'newenrolmentemailtemplate');
+        $template = get_config('dhimport_version1', 'newenrolmentemailtemplate');
         if (empty($template)) {
             // No text set.
             return false;
@@ -2107,12 +2107,12 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        $subject = get_config('rlipimport_version1', 'newenrolmentemailsubject');
+        $subject = get_config('dhimport_version1', 'newenrolmentemailsubject');
         if (empty($subject) || !is_string($subject)) {
             $subject = '';
         }
 
-        $from = get_config('rlipimport_version1', 'newenrolmentemailfrom');
+        $from = get_config('dhimport_version1', 'newenrolmentemailfrom');
         if ($from === 'teacher') {
             $context = context_course::instance($courseid);
             if ($users = get_users_by_capability($context, 'moodle/course:update', 'u.*', 'u.id ASC', '', '', '', '', false, true)) {
@@ -2257,7 +2257,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             $count = $DB->count_records('groups', array('name' => $record->group,
                                                         'courseid' => $context->instanceid));
 
-            $creategroups = get_config('rlipimport_version1', 'creategroupsandgroupings');
+            $creategroups = get_config('dhimport_version1', 'creategroupsandgroupings');
             if ($count > 1) {
                 //ambiguous
                 $identifier = $this->mappings['group'];
@@ -2589,7 +2589,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      */
     function apply_mapping($entity, $record) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         //mappings should already be fetched
@@ -2637,7 +2637,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      *                             or null for success.
      */
     function process_import_file($entity, $maxruntime = 0, $state = null) {
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         //store field mappings for this entity type
@@ -2654,9 +2654,9 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      *               associated [entity]_action methods are defined
      */
     function get_file_labels() {
-        return array(get_string('userfile', 'rlipimport_version1'),
-                     get_string('coursefile', 'rlipimport_version1'),
-                     get_string('enrolmentfile', 'rlipimport_version1'));
+        return array(get_string('userfile', 'dhimport_version1'),
+                     get_string('coursefile', 'dhimport_version1'),
+                     get_string('enrolmentfile', 'dhimport_version1'));
     }
 
     /**
@@ -2669,8 +2669,8 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         global $CFG;
 
         //create a link to the page for configuring field mappings
-        $displaystring = get_string('configfieldstreelink', 'rlipimport_version1');
-        $url = $CFG->wwwroot.'/blocks/rlip/importplugins/version1/config_fields.php';
+        $displaystring = get_string('configfieldstreelink', 'dhimport_version1');
+        $url = $CFG->wwwroot.'/local/datahub/importplugins/version1/config_fields.php';
         $page = new admin_externalpage("{$parentname}_fields", $displaystring, $url);
 
         //add it to the tree
@@ -2878,14 +2878,14 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
      */
     function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         $result = parent::run($targetstarttime, $lastruntime, $maxruntime, $state);
 
         if (!defined('PHPUnit_MAIN_METHOD')) {
             //not in a unit test, so send out log files in a zip
             $logids = $this->dblogger->get_log_ids();
-            rlip_send_log_emails('rlipimport_version1', $logids, $this->manual);
+            rlip_send_log_emails('dhimport_version1', $logids, $this->manual);
         }
 
         return $result;

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -24,7 +24,7 @@
 /**
  * Create user webservices method.
  */
-class block_rldh_elis_program_enrolment_create extends external_api {
+class local_datahub_elis_program_enrolment_create extends external_api {
 
     /**
      * Require ELIS dependencies if ELIS is installed, otherwise return false.
@@ -32,8 +32,9 @@ class block_rldh_elis_program_enrolment_create extends external_api {
      */
     public static function require_elis_dependencies() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+            require_once(elispm::lib('data/curriculum.class.php'));
             require_once(elispm::lib('data/curriculumstudent.class.php'));
             require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
             return true;
@@ -94,28 +95,28 @@ class block_rldh_elis_program_enrolment_create extends external_api {
         global $USER, $DB;
 
         if (static::require_elis_dependencies() !== true) {
-            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+            throw new moodle_exception('ws_function_requires_elis', 'local_datahub');
         }
 
         // Parameter validation.
         $params = self::validate_parameters(self::program_enrolment_create_parameters(), array('data' => $data));
 
         // Context validation.
-        $context = get_context_instance(CONTEXT_USER, $USER->id);
+        $context = context_user::instance($USER->id);
         self::validate_context($context);
 
         $data = (object)$data;
 
         // Parse program
-        if (empty($data->program_idnumber) || !($curid = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $data->program_idnumber)))) {
-            throw new data_object_exception('ws_program_enrolment_create_fail_invalid_program', 'block_rlip', '', $data);
+        if (empty($data->program_idnumber) || !($curid = $DB->get_field(curriculum::TABLE, 'id', array('idnumber' => $data->program_idnumber)))) {
+            throw new data_object_exception('ws_program_enrolment_create_fail_invalid_program', 'local_datahub', '', $data);
         }
 
         // Capability checking.
-        require_capability('elis/program:program_enrol', context_elis_program::instance($curid));
+        require_capability('local/elisprogram:program_enrol', \local_elisprogram\context\program::instance($curid));
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         $userparams = array();
         $userid = $importplugin->get_userid_from_record($data, '', $userparams);
@@ -134,7 +135,7 @@ class block_rldh_elis_program_enrolment_create extends external_api {
                     $a->userparams .= "{$userfield}: '{$uservalue}'";
                 }
             }
-            throw new data_object_exception('ws_program_enrolment_create_fail_invalid_user', 'block_rlip', '', $a);
+            throw new data_object_exception('ws_program_enrolment_create_fail_invalid_user', 'local_datahub', '', $a);
         }
 
         $record = new stdClass;
@@ -158,12 +159,12 @@ class block_rldh_elis_program_enrolment_create extends external_api {
         // Respond.
         if (!empty($stucur->id)) {
             return array(
-                'messagecode' => get_string('ws_program_enrolment_create_success_code', 'block_rlip'),
-                'message' => get_string('ws_program_enrolment_create_success_msg', 'block_rlip'),
+                'messagecode' => get_string('ws_program_enrolment_create_success_code', 'local_datahub'),
+                'message' => get_string('ws_program_enrolment_create_success_msg', 'local_datahub'),
                 'record' => $stucur->to_array(),
             );
         } else {
-            throw new data_object_exception('ws_program_enrolment_create_fail', 'block_rlip');
+            throw new data_object_exception('ws_program_enrolment_create_fail', 'local_datahub');
         }
     }
 

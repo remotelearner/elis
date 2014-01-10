@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1elis
+ * @package    dhexport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 require_once('../../../../config.php');
-$PAGE->requires->js('/blocks/rlip/js/jquery-1.9.1.min.js', true);
-$PAGE->requires->css('/blocks/rlip/exportplugins/version1elis/config_fields.css');
-$file = get_plugin_directory('rlipexport', 'version1elis').'/lib.php';
+$PAGE->requires->js('/local/datahub/js/jquery-1.9.1.min.js', true);
+$PAGE->requires->css('/local/datahub/exportplugins/version1elis/config_fields.css');
+$file = get_plugin_directory('dhexport', 'version1elis').'/lib.php';
 require_once($file);
 
 // Permissions checking.
 require_login();
 
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
 // Handle submitted actions.
-$baseurl = $CFG->wwwroot.'/blocks/rlip/exportplugins/version1elis/config_fields.php';
+$baseurl = $CFG->wwwroot.'/local/datahub/exportplugins/version1elis/config_fields.php';
 $data_submitted = optional_param('data_submitted', false, PARAM_INT);
 if (!empty($data_submitted)) {
     require_sesskey();
@@ -88,9 +88,9 @@ foreach ($active_fields_by_fieldset_order as $fieldsetfield) {
 }
 
 // Page header.
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('admin');
-$renderer = $PAGE->get_renderer('rlipexport_version1elis');
+$renderer = $PAGE->get_renderer('dhexport_version1elis');
 $renderer->page_setup($baseurl);
 echo $OUTPUT->header();
 

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -24,7 +24,7 @@
 /**
  * Create userset_enrolment delete webservices method.
  */
-class block_rldh_elis_userset_enrolment_delete extends external_api {
+class local_datahub_elis_userset_enrolment_delete extends external_api {
 
     /**
      * Require ELIS dependencies if ELIS is installed, otherwise return false.
@@ -32,8 +32,9 @@ class block_rldh_elis_userset_enrolment_delete extends external_api {
      */
     public static function require_elis_dependencies() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+            require_once(elispm::lib('data/userset.class.php'));
             require_once(elispm::lib('data/clusterassignment.class.php'));
             require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
             return true;
@@ -76,21 +77,21 @@ class block_rldh_elis_userset_enrolment_delete extends external_api {
         global $DB, $USER;
 
         if (static::require_elis_dependencies() !== true) {
-            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+            throw new moodle_exception('ws_function_requires_elis', 'local_datahub');
         }
 
         // Parameter validation.
         $params = self::validate_parameters(self::userset_enrolment_delete_parameters(), array('data' => $data));
 
         // Context validation.
-        $context = get_context_instance(CONTEXT_USER, $USER->id);
+        $context = context_user::instance($USER->id);
         self::validate_context($context);
 
         $data = (object)$data;
 
         // Parse Userset
-        if (empty($data->userset_name) || !($clstid = $DB->get_field('crlm_cluster', 'id', array('name' => $data->userset_name)))) {
-            throw new data_object_exception('ws_userset_enrolment_delete_fail_invalid_userset', 'block_rlip', '', $data);
+        if (empty($data->userset_name) || !($clstid = $DB->get_field(userset::TABLE, 'id', array('name' => $data->userset_name)))) {
+            throw new data_object_exception('ws_userset_enrolment_delete_fail_invalid_userset', 'local_datahub', '', $data);
         }
 
         if (empty($data->plugin)) {
@@ -98,10 +99,10 @@ class block_rldh_elis_userset_enrolment_delete extends external_api {
         }
 
         // Capability checking.
-        require_capability('elis/program:userset_enrol', context_elis_userset::instance($clstid));
+        require_capability('local/elisprogram:userset_enrol', \local_elisprogram\context\userset::instance($clstid));
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         $userparams = array();
         $userid = $importplugin->get_userid_from_record($data, '', $userparams);
@@ -120,7 +121,7 @@ class block_rldh_elis_userset_enrolment_delete extends external_api {
                     $a->userparams .= "{$userfield}: '{$uservalue}'";
                 }
             }
-            throw new data_object_exception('ws_userset_enrolment_delete_fail_invalid_user', 'block_rlip', '', $a);
+            throw new data_object_exception('ws_userset_enrolment_delete_fail_invalid_user', 'local_datahub', '', $a);
         }
 
         $id = $DB->get_field(clusterassignment::TABLE, 'id', array('clusterid' => $clstid, 'userid' => $userid, 'plugin' => $data->plugin));
@@ -129,11 +130,11 @@ class block_rldh_elis_userset_enrolment_delete extends external_api {
         if (!empty($id) && ($clstass = new clusterassignment($id))) {
             $clstass->delete();
             return array(
-                'messagecode' => get_string('ws_userset_enrolment_delete_success_code', 'block_rlip'),
-                'message' => get_string('ws_userset_enrolment_delete_success_msg', 'block_rlip'),
+                'messagecode' => get_string('ws_userset_enrolment_delete_success_code', 'local_datahub'),
+                'message' => get_string('ws_userset_enrolment_delete_success_msg', 'local_datahub'),
             );
         } else {
-            throw new data_object_exception('ws_userset_enrolment_delete_fail', 'block_rlip');
+            throw new data_object_exception('ws_userset_enrolment_delete_fail', 'local_datahub');
         }
     }
 

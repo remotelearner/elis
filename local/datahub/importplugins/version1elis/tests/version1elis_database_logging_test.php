@@ -16,24 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/file_delay.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dblogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/file_delay.class.php');
 
 /*
  * Class that provides a delay for an import
@@ -48,7 +48,7 @@ class rlipimport_version1elis_importprovider_manual_delay extends rlip_importpro
      */
     public function get_dblogger() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dblogger.class.php');
 
         // Force MANUAL.
         return new rlip_dblogger_import(true);
@@ -57,8 +57,8 @@ class rlipimport_version1elis_importprovider_manual_delay extends rlip_importpro
 
 /**
  * Class for validating database logging functionality for the Version 1 ELIS import.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
 
@@ -76,7 +76,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->email = 'testuser@email.com';
         $record->country = 'CA';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_create($record, 'bogus');
@@ -93,7 +93,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testuserupdatelogssuccessmessage() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $user = new user(array(
             'idnumber' => 'testuseridnumber',
@@ -109,7 +109,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->idnumber = 'testuseridnumber';
         $record->firstname = 'updatedtestuserfirstname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_update($record, 'bogus');
@@ -126,7 +126,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testuserdeletelogssuccessmessage() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $user = new user(array(
             'idnumber' => 'testuseridnumber',
@@ -144,7 +144,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->username = 'testuserusername';
         $record->email = 'testuser@email.com';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_delete($record, 'bogus');
@@ -167,7 +167,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->idnumber = 'testprogramidnumber';
         $record->name = 'testprogramname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_create($record, 'bogus');
@@ -184,7 +184,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testpmentityupdatelogssuccessmessage() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $program = new curriculum(array(
             'idnumber' => 'testprogramidnumber',
@@ -197,7 +197,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->idnumber = 'testprogramidnumber';
         $record->name = 'updatedtestprogramname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_update($record, 'bogus');
@@ -214,7 +214,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testpmentitydeletelogssuccessmessage() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $program = new curriculum(array(
             'idnumber' => 'testprogramidnumber',
@@ -226,7 +226,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->context = 'curriculum';
         $record->idnumber = 'testprogramidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_delete($record, 'bogus');
@@ -243,9 +243,9 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testenrolmentcreatelogssuccessmessage() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $course = new course(array(
             'name'     => 'testcoursename',
@@ -274,7 +274,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->context = 'class_testclassidnumber';
         $record->user_idnumber = 'testuseridnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create_student($record, 'bogus', 'testclassidnumber');
@@ -291,10 +291,10 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testenrolmentupdatelogssuccessmessage() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $course = new course(array(
             'name'     => 'testcoursename',
@@ -330,7 +330,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->user_idnumber = 'testuseridnumber';
         $record->completestatusid = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_update_student($record, 'bogus', 'testclassidnumber');
@@ -347,10 +347,10 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testenrolmentdeletelogssuccessmessage() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $course = new course(array(
             'name'     => 'testcoursename',
@@ -388,7 +388,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $record->user_username = 'testuserusername';
         $record->user_email = 'test@useremail.com';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->dblogger = new rlip_dblogger_import(false);
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_delete_student($record, 'bogus', 'testclassidnumber');
@@ -411,7 +411,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     private function run_user_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1elis_importprovider_mockuser($data);
@@ -429,7 +429,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     private function log_with_message_exists($message = null) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         if ($message === null) {
             $message = 'All lines from import file memoryfile were successfully processed.';
@@ -447,7 +447,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
     public function testnonwritablelogpathlogscorrectendtime() {
         global $DB;
 
-        set_config('logfilelocation', 'adirectorythatshouldnotexist', 'rlipimport_version1elis');
+        set_config('logfilelocation', 'adirectorythatshouldnotexist', 'dhimport_version1elis');
 
         $data = array(
             'action'    => 'create',
@@ -510,15 +510,15 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testmaxruntimeexceededlogscorrectendtime() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/tests/other/file_delay.class.php');
+        require_once($CFG->dirroot.'/local/datahub/tests/other/csv_delay.class.php');
+        require_once($CFG->dirroot.'/local/datahub/tests/other/file_delay.class.php');
 
-        $importfile = $CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/fixtures/userfiledelay.csv';
+        $importfile = $CFG->dirroot.'/local/datahub/importplugins/version1elis/tests/fixtures/userfiledelay.csv';
         $provider = new rlip_importprovider_file_delay($importfile, 'user');
 
         // Run the import.
         $mintime = time();
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider);
         $importplugin->run(0, 0, 1);
         $maxtime = time();
 
@@ -558,7 +558,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function testlogginglogsfailuremessage() {
         global $DB;
-        set_config('createorupdate', 0, 'rlipimport_version1elis');
+        set_config('createorupdate', 0, 'dhimport_version1elis');
 
         $data = array(
             'entity' => 'user',
@@ -599,8 +599,8 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function test_manualimportobeysmaxruntime($filename, $entity) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        require_once($CFG->dirroot.'/local/datahub/tests/other/csv_delay.class.php');
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         // Set the log file name to a fixed value.
@@ -608,7 +608,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
 
         // MUST copy file to temp area 'cause it'll be deleted after import.
         $testfile = dirname(__FILE__).'/fixtures/'.$filename;
-        $tempdir = $CFG->dataroot.'/block_rlip_phpunit/';
+        $tempdir = $CFG->dataroot.'/local_datahub_phpunit/';
         $file = $tempdir.$filename;
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
@@ -662,12 +662,12 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function test_scheduledimportobeysmaxruntime($filename, $entity, $numlines) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
-        $filepath = '/block_rlip_phpunit/';
+        $filepath = '/local_datahub_phpunit/';
         $filename = $filename;
-        set_config('schedule_files_path', $filepath, 'rlipimport_version1elis');
-        set_config($entity.'_schedule_file', $filename, 'rlipimport_version1elis');
+        set_config('schedule_files_path', $filepath, 'dhimport_version1elis');
+        set_config($entity.'_schedule_file', $filename, 'dhimport_version1elis');
 
         // Set up the test directory.
         $testdir = $CFG->dataroot.$filepath;
@@ -676,18 +676,18 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
 
         // Create the job.
         $data = array(
-            'plugin' => 'rlipimport_version1elis',
+            'plugin' => 'dhimport_version1elis',
             'period' => '5m',
-            'type' => 'rlipimport'
+            'type' => 'dhimport'
         );
         $taskid = rlip_schedule_add_job($data);
 
         // Set next runtime values to a known state.
-        $DB->execute("UPDATE {elis_scheduled_tasks} SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {local_eliscore_sched_tasks} SET nextruntime = ?", array(1));
         $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."} SET nextruntime = ?", array(1));
 
         // Run the import.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         $mintime = time();
         run_ipjob($taskname, -1);
         $maxtime = time();
@@ -699,7 +699,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         // Validation.
         $params = array(
             'export' => 0,
-            'plugin' => 'rlipimport_version1elis',
+            'plugin' => 'dhimport_version1elis',
             'targetstarttime' => 1,
             'filesuccesses' => 0,
             'filefailures' => 0,
@@ -717,7 +717,7 @@ class rlipimport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $a->filename = $filename;
         $a->recordsprocessed = 0;
         $a->totalrecords = $numlines;
-        $expectedmessage = get_string('dblogimportexceedstimelimit', 'block_rlip', $a);
+        $expectedmessage = get_string('dblogimportexceedstimelimit', 'local_datahub', $a);
         $this->assertEquals($expectedmessage, $log->statusmessage);
 
         // Validate logged start time.

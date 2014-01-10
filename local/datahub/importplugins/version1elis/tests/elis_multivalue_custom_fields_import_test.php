@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Class for validating that ELIS / PM user and entity actions support setting of multi-value custom field data.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test {
 
@@ -52,7 +52,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
      */
     private function create_test_field($contextlevelname, $datatype, $uitype, $multivalued, $options, $maxlength, $inctime) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
         // Category.
@@ -60,7 +60,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
         $fieldcategory->save();
 
         // Category contextlevel.
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevelname);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevelname);
         $fieldcategorycontextlevel = new field_category_contextlevel(array(
             'categoryid' => $fieldcategory->id,
             'contextlevel' => $contextlevel
@@ -116,7 +116,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
      */
     private function create_parent_entity($parententitytype = null, $parentrecord = null, $parentreffield = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 
         if ($parententitytype !== null && $parentrecord !== null && $parentreffield !== null) {
             require_once(elispm::lib('data/'.$parententitytype.'.class.php'));
@@ -140,15 +140,15 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
      */
     private function assert_field_values($contextlevelname, $entitytable, $customfieldtable, $fieldid, $values) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
         // Validate count.
         $this->assertEquals(count($values), $DB->count_records($customfieldtable));
 
         // Obtain instance.
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevelname);
-        $contextlevel = context_elis_helper::get_class_for_level($contextlevel);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevelname);
+        $contextlevel = \local_eliscore\context\helper::get_class_for_level($contextlevel);
         $instance = $contextlevel::instance(1);
 
         // Validate specific values.
@@ -235,7 +235,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
                                                                        $parententitytype = null, $parentrecord = null,
                                                                        $parentreffield = null, $ipparentreffield = null) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
@@ -254,7 +254,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
         $entity->reset_custom_field_list();
 
         // Run the entity create action.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
@@ -279,7 +279,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
                                                                        $parententitytype = null, $parentrecord = null,
                                                                        $parentreffield = null, $ipparentreffield = null) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
@@ -299,7 +299,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
         $record['testfieldshortname'] = '1/2/3';
 
         // Run the entity update action.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
@@ -324,7 +324,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
                                                                        $parententitytype = null, $parentrecord = null,
                                                                        $parentreffield = null, $ipparentreffield = null) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
@@ -344,7 +344,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
         $record['testfieldshortname'] = '1/2/3';
 
         // Run the entity update action.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
@@ -370,7 +370,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
                                                                                     $parentrecord = null, $parentreffield = null,
                                                                                     $ipparentreffield = null) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
@@ -387,8 +387,8 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
         $entity->set_from_data((object)array_merge($record, array('field_testfieldshortname' => array('4'))));
         $entity->save();
 
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevelname);
-        $contextlevel = context_elis_helper::get_class_for_level($contextlevel);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevelname);
+        $contextlevel = \local_eliscore\context\helper::get_class_for_level($contextlevel);
         $instance = $contextlevel::instance($entity->id);
 
         // Validate setup.
@@ -403,7 +403,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
         $record['testfieldshortname'] = '1/2/3';
 
         // Run the entity update action.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
@@ -430,7 +430,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
                                                                              $parentrecord = null, $parentreffield = null,
                                                                              $ipparentreffield = null) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
@@ -450,7 +450,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
         $temp->reset_custom_field_list();
 
         // Run the entity create action.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record($fileidentifier, (object)$record, 'bogus');
 
@@ -488,7 +488,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
      */
     public function test_multivalue_functionality_only_used_for_menu_of_choices($uitype, $data, $expected, $maxlength, $inctime) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
@@ -517,7 +517,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
             'country' => 'CA',
             'testfieldshortname' => $data
         );
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
@@ -556,7 +556,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
      */
     public function test_multivalue_field_data_supports_all_data_types_for_menu_of_choices($datatype, $data, $expected) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
@@ -581,7 +581,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
             'country' => 'CA',
             'testfieldshortname' => $data
         );
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
@@ -597,7 +597,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
      */
     public function test_multivalue_dates_not_supported() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
 
         // Set up a date/time custom field.
@@ -616,7 +616,7 @@ class elis_elis_multivalue_custom_fields_import_testcase extends rlip_elis_test 
             'country' => 'CA',
             'testfieldshortname' => 'Jan/01/Feb/02/2012'
         );
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', (object)$record, 'bogus');
 

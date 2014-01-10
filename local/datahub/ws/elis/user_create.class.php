@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -24,7 +24,7 @@
 /**
  * Create user webservices method.
  */
-class block_rldh_elis_user_create extends external_api {
+class local_datahub_elis_user_create extends external_api {
 
     /**
      * Require ELIS dependencies if ELIS is installed, otherwise return false.
@@ -32,8 +32,8 @@ class block_rldh_elis_user_create extends external_api {
      */
     public static function require_elis_dependencies() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/user.class.php'));
             require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
             return true;
@@ -204,21 +204,21 @@ class block_rldh_elis_user_create extends external_api {
         global $USER, $DB, $CFG;
 
         if (static::require_elis_dependencies() !== true) {
-            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+            throw new moodle_exception('ws_function_requires_elis', 'local_datahub');
         }
 
         // Parameter validation.
         $params = self::validate_parameters(self::user_create_parameters(), array('data' => $data));
 
         // Context validation.
-        $context = get_context_instance(CONTEXT_USER, $USER->id);
+        $context = context_user::instance($USER->id);
         self::validate_context($context);
 
         // Capability checking.
-        require_capability('elis/program:user_create', get_system_context());
+        require_capability('local/elisprogram:user_create', get_system_context());
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         // Create the user.
         $data = (object)$data;
@@ -239,7 +239,7 @@ class block_rldh_elis_user_create extends external_api {
                 $data->birthmonth = gmdate('m', $value);
                 $data->birthyear = gmdate('Y', $value);
             } else {
-                throw new moodle_exception('ws_bad_param', 'block_rlip', '', 'birthdate');
+                throw new moodle_exception('ws_bad_param', 'local_datahub', '', 'birthdate');
             }
             unset($data->birthdate);
         }
@@ -263,12 +263,12 @@ class block_rldh_elis_user_create extends external_api {
                 }
             }
             return array(
-                'messagecode' => get_string('ws_user_create_success_code', 'block_rlip'),
-                'message' => get_string('ws_user_create_success_msg', 'block_rlip'),
+                'messagecode' => get_string('ws_user_create_success_code', 'local_datahub'),
+                'message' => get_string('ws_user_create_success_msg', 'local_datahub'),
                 'record' => array_merge($userrec, $userobj),
             );
         } else {
-            throw new data_object_exception('ws_user_create_fail', 'block_rlip');
+            throw new data_object_exception('ws_user_create_fail', 'local_datahub');
         }
     }
 

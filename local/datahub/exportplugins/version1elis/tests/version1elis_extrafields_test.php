@@ -16,39 +16,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1elis
+ * @package    dhexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
 require_once(dirname(__FILE__).'/other/rlip_fileplugin_export.class.php');
 require_once(dirname(__FILE__).'/../lib.php');
-require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
 require_once(dirname(__FILE__).'/other/mock_obj.php');
 
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/user.class.php'));
     require_once(elispm::lib('data/classmoodlecourse.class.php'));
     require_once(elispm::lib('data/course.class.php'));
     require_once(elispm::lib('data/pmclass.class.php'));
     require_once(elispm::lib('data/student.class.php'));
-    require_once($CFG->dirroot.'/elis/program/accesslib.php');
+    require_once(elispm::lib('data/curriculum.class.php'));
+    require_once(elispm::lib('data/curriculumcourse.class.php'));
+    require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 }
 
 /**
  * Test the version1elis export extrafield feature.
- * @group block_rlip
- * @group rlipexport_version1elis
+ * @group local_datahub
+ * @group dhexport_version1elis
  */
 class version1elisextrafields_testcase extends rlip_elis_test {
 
@@ -129,21 +131,21 @@ class version1elisextrafields_testcase extends rlip_elis_test {
 
         $field = new field($fieldid);
         $field->load();
-        $fieldcontext = $DB->get_field('elis_field_contextlevels', 'contextlevel', array('fieldid'=>$fieldid));
+        $fieldcontext = $DB->get_field(field_contextlevel::TABLE, 'contextlevel', array('fieldid'=>$fieldid));
 
         // Obtain the PM user context.
         switch ($fieldcontext) {
             case CONTEXT_ELIS_USER:
-                $context = context_elis_user::instance(200);
+                $context = \local_elisprogram\context\user::instance(200);
                 break;
             case CONTEXT_ELIS_COURSE:
-                $context = context_elis_course::instance(200);
+                $context = \local_elisprogram\context\course::instance(200);
                 break;
             case CONTEXT_ELIS_CLASS:
-                $context = context_elis_class::instance(200);
+                $context = \local_elisprogram\context\pmclass::instance(200);
                 break;
             case CONTEXT_ELIS_PROGRAM:
-                $context = context_elis_program::instance(200);
+                $context = \local_elisprogram\context\program::instance(200);
                 break;
         }
 
@@ -189,13 +191,13 @@ class version1elisextrafields_testcase extends rlip_elis_test {
      */
     protected function get_export_data($manual = true, $targetstarttime = 0, $lastruntime = 0) {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
         // Set the incremental time delta.
-        set_config('incrementaldelta', '1d', 'rlipexport_version1elis');
+        set_config('incrementaldelta', '1d', 'dhexport_version1elis');
 
         // Plugin for file IO.
         $fileplugin = new rlip_fileplugin_export();
@@ -925,26 +927,26 @@ class version1elisextrafields_testcase extends rlip_elis_test {
 
         // Expected Headers.
         $expectedheaders = array(
-            'mi' => get_string('usermi', 'elis_program'),
-            'email' => get_string('email', 'elis_program'),
-            'email2' => get_string('email2', 'elis_program'),
-            'address' => get_string('address', 'elis_program'),
-            'address2' => get_string('address2', 'elis_program'),
+            'mi' => get_string('usermi', 'local_elisprogram'),
+            'email' => get_string('email', 'local_elisprogram'),
+            'email2' => get_string('email2', 'local_elisprogram'),
+            'address' => get_string('address', 'local_elisprogram'),
+            'address2' => get_string('address2', 'local_elisprogram'),
             'city' => get_string('city', 'moodle'),
             'state' => get_string('state', 'moodle'),
-            'postalcode' => get_string('postalcode', 'elis_program'),
-            'country' => get_string('country', 'elis_program'),
+            'postalcode' => get_string('postalcode', 'local_elisprogram'),
+            'country' => get_string('country', 'local_elisprogram'),
             'phone' => get_string('phone', 'moodle'),
-            'phone2' => get_string('phone2', 'elis_program'),
-            'fax' => get_string('fax', 'elis_program'),
-            'birthdate' => get_string('userbirthdate', 'elis_program'),
-            'gender' => get_string('usergender', 'elis_program'),
-            'language' => get_string('user_language', 'elis_program'),
-            'transfercredits' => get_string('user_transfercredits', 'elis_program'),
-            'comments' => get_string('user_comments', 'elis_program'),
-            'notes' => get_string('user_notes', 'elis_program'),
-            'timecreated' => get_string('fld_timecreated', 'elis_program'),
-            'timemodified' => get_string('fld_timemodified', 'elis_program'),
+            'phone2' => get_string('phone2', 'local_elisprogram'),
+            'fax' => get_string('fax', 'local_elisprogram'),
+            'birthdate' => get_string('userbirthdate', 'local_elisprogram'),
+            'gender' => get_string('usergender', 'local_elisprogram'),
+            'language' => get_string('user_language', 'local_elisprogram'),
+            'transfercredits' => get_string('user_transfercredits', 'local_elisprogram'),
+            'comments' => get_string('user_comments', 'local_elisprogram'),
+            'notes' => get_string('user_notes', 'local_elisprogram'),
+            'timecreated' => get_string('fld_timecreated', 'local_elisprogram'),
+            'timemodified' => get_string('fld_timemodified', 'local_elisprogram'),
         );
 
         // Add fieldset label prefix.
@@ -1011,7 +1013,7 @@ class version1elisextrafields_testcase extends rlip_elis_test {
 
         // Expected Headers.
         $expectedheaders = array(
-            'credits' => get_string('credits', 'elis_program')
+            'credits' => get_string('credits', 'local_elisprogram')
         );
 
         // Add fieldset label prefix.
@@ -1051,17 +1053,17 @@ class version1elisextrafields_testcase extends rlip_elis_test {
 
         // Expected Headers.
         $expectedheaders = array(
-            'name' => get_string('course_name', 'elis_program'),
-            'code' => get_string('course_code', 'elis_program'),
-            'syllabus' => get_string('course_syllabus', 'elis_program'),
-            'lengthdescription' => get_string('courseform:length_description', 'elis_program'),
-            'length' => get_string('courseform:duration', 'elis_program'),
-            'credits' => get_string('credits', 'elis_program'),
-            'completion_grade' => get_string('completion_grade', 'elis_program'),
-            'cost' => get_string('cost', 'elis_program'),
-            'timecreated' => get_string('timecreated', 'elis_program'),
-            'timemodified' => get_string('fld_timemodified', 'elis_program'),
-            'version' => get_string('course_version', 'elis_program')
+            'name' => get_string('course_name', 'local_elisprogram'),
+            'code' => get_string('course_code', 'local_elisprogram'),
+            'syllabus' => get_string('course_syllabus', 'local_elisprogram'),
+            'lengthdescription' => get_string('courseform:length_description', 'local_elisprogram'),
+            'length' => get_string('courseform:duration', 'local_elisprogram'),
+            'credits' => get_string('credits', 'local_elisprogram'),
+            'completion_grade' => get_string('completion_grade', 'local_elisprogram'),
+            'cost' => get_string('cost', 'local_elisprogram'),
+            'timecreated' => get_string('timecreated', 'local_elisprogram'),
+            'timemodified' => get_string('fld_timemodified', 'local_elisprogram'),
+            'version' => get_string('course_version', 'local_elisprogram')
         );
 
         // Add fieldset label prefix.
@@ -1119,13 +1121,13 @@ class version1elisextrafields_testcase extends rlip_elis_test {
 
         // Expected Headers.
         $expectedheaders = array(
-            'idnumber' => get_string('class_idnumber', 'elis_program'),
-            'startdate' => get_string('class_startdate', 'elis_program'),
-            'enddate' => get_string('class_enddate', 'elis_program'),
-            'starttime' => get_string('class_starttime', 'elis_program'),
-            'endtime' => get_string('class_endtime', 'elis_program'),
-            'maxstudents' => get_string('class_maxstudents', 'elis_program'),
-            'instructors' => get_string('instructors', 'elis_program')
+            'idnumber' => get_string('class_idnumber', 'local_elisprogram'),
+            'startdate' => get_string('class_startdate', 'local_elisprogram'),
+            'enddate' => get_string('class_enddate', 'local_elisprogram'),
+            'starttime' => get_string('class_starttime', 'local_elisprogram'),
+            'endtime' => get_string('class_endtime', 'local_elisprogram'),
+            'maxstudents' => get_string('class_maxstudents', 'local_elisprogram'),
+            'instructors' => get_string('instructors', 'local_elisprogram')
         );
 
         // Add fieldset label prefix.
@@ -1180,11 +1182,11 @@ class version1elisextrafields_testcase extends rlip_elis_test {
 
         // Expected Headers.
         $expectedheaders = array(
-            'idnumber' => get_string('curriculum_idnumber', 'elis_program'),
-            'name' => get_string('curriculum_name', 'elis_program'),
-            'description' => get_string('curriculum_description', 'elis_program'),
-            'reqcredits' => get_string('curriculum_reqcredits', 'elis_program'),
-            'curass_expires' => get_string('curass_expires', 'rlipexport_version1elis')
+            'idnumber' => get_string('curriculum_idnumber', 'local_elisprogram'),
+            'name' => get_string('curriculum_name', 'local_elisprogram'),
+            'description' => get_string('curriculum_description', 'local_elisprogram'),
+            'reqcredits' => get_string('curriculum_reqcredits', 'local_elisprogram'),
+            'curass_expires' => get_string('curass_expires', 'dhexport_version1elis')
         );
 
         // Add fieldset label prefix.
@@ -1199,7 +1201,7 @@ class version1elisextrafields_testcase extends rlip_elis_test {
             'name' => 'Test Program One',
             'description' => 'Test Program One Description',
             'reqcredits' => '4',
-            'curass_expires' => date(get_string('date_format', 'rlipexport_version1elis'), 1362114000)
+            'curass_expires' => date(get_string('date_format', 'dhexport_version1elis'), 1362114000)
         );
 
         // Basic Data.

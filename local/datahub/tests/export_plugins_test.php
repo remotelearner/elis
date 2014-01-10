@@ -16,20 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_exportplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 
 /**
  * Mock export plugin for testing exports
@@ -300,7 +300,7 @@ class rlip_exportplugin_empty extends rlip_exportplugin_base {
 
 /**
  * Class for testing the base export plugin class
- * @group block_rlip
+ * @group local_datahub
  */
 class exportplugin_testcase extends rlip_test {
 
@@ -309,8 +309,8 @@ class exportplugin_testcase extends rlip_test {
      */
     public function test_exportfilenameincorrecttempdir() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $plugin = 'test_rlipexport_version1';
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        $plugin = 'test_dhexport_version1';
         set_config('export_file', "/tmp/{$plugin}/{$plugin}.csv", $plugin);
         $exportfilename = rlip_get_export_filename($plugin, 99);
         $targetpath = $CFG->dataroot.sprintf(RLIP_EXPORT_TEMPDIR, $plugin);

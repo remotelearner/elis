@@ -16,16 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1elis
+ * @package    dhexport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_exportplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/exportplugins/version1elis/lib.php');
 require_once($CFG->dirroot.'/lib/gradelib.php');
 
 /**
@@ -69,7 +69,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
      */
     public function init($targetstarttime = 0, $lastruntime = 0) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
@@ -78,16 +78,16 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
 
         // Columns that are always displayed.
         $columns = array(
-                get_string('header_firstname', 'rlipexport_version1'),
-                get_string('header_lastname', 'rlipexport_version1'),
-                get_string('header_username', 'rlipexport_version1'),
-                get_string('header_useridnumber', 'rlipexport_version1'),
-                get_string('header_courseidnumber', 'rlipexport_version1'),
-                get_string('header_startdate', 'rlipexport_version1'),
-                get_string('header_enddate', 'rlipexport_version1'),
-                get_string('header_status', 'rlipexport_version1elis'),
-                get_string('header_grade', 'rlipexport_version1'),
-                get_string('header_letter', 'rlipexport_version1')
+                get_string('header_firstname', 'dhexport_version1'),
+                get_string('header_lastname', 'dhexport_version1'),
+                get_string('header_username', 'dhexport_version1'),
+                get_string('header_useridnumber', 'dhexport_version1'),
+                get_string('header_courseidnumber', 'dhexport_version1'),
+                get_string('header_startdate', 'dhexport_version1'),
+                get_string('header_enddate', 'dhexport_version1'),
+                get_string('header_status', 'dhexport_version1elis'),
+                get_string('header_grade', 'dhexport_version1'),
+                get_string('header_letter', 'dhexport_version1')
         );
 
         // Query parameters.
@@ -110,13 +110,13 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         $time_condition = '';
 
         // Determine if we're in incremental or non-incremental mode.
-        $nonincremental = get_config('rlipexport_version1elis', 'nonincremental');
+        $nonincremental = get_config('dhexport_version1elis', 'nonincremental');
         if (empty($nonincremental)) {
             if ($this->manual) {
                 // Manual export incremental mode.
 
                 // Get string delta.
-                $incrementaldelta = get_config('rlipexport_version1elis', 'incrementaldelta');
+                $incrementaldelta = get_config('dhexport_version1elis', 'incrementaldelta');
                 // Convert to number of seconds.
                 $numsecs = rlip_time_string_to_offset($incrementaldelta);
 
@@ -173,7 +173,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         $this->fileplugin->write($columns);
 
         // Load string to prevent calling get_string for every record.
-        $this->completestatusstring = get_string('completestatusstring', 'rlipexport_version1elis');
+        $this->completestatusstring = get_string('completestatusstring', 'dhexport_version1elis');
     }
 
     /**
@@ -263,14 +263,14 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
                 $exportpath .= trim(get_config($this->plugin, 'export_path'), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
                 $outfile = $exportpath.$exportbase;
                 if (!@rename($tempfile, $outfile)) {
-                    $errctx = '/blocks/rlip/exportplugins/version1elis/version1elis.class.php::finish()';
+                    $errctx = '/local/datahub/exportplugins/version1elis/version1elis.class.php::finish()';
                     $errstr = "Error renaming: '{$tempfile}' to '{$outfile}'";
                     error_log($errctx.' - '.$errstr);
                 }
             }
             /*
               else {
-                error_log("/blocks/rlip/exportplugins/version1elis/version1elis.class.php::finish() -
+                error_log("/local/datahub/exportplugins/version1elis/version1elis.class.php::finish() -
                             Error file: '{$tempfile}' doesn't exist!");
             }
             */
@@ -292,8 +292,8 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         global $CFG;
 
         // Create a link to the page for configuring field mappings.
-        $displaystring = get_string('configfieldstreelink', 'rlipexport_version1elis');
-        $url = $CFG->wwwroot.'/blocks/rlip/exportplugins/version1elis/config_fields.php';
+        $displaystring = get_string('configfieldstreelink', 'dhexport_version1elis');
+        $url = $CFG->wwwroot.'/local/datahub/exportplugins/version1elis/config_fields.php';
         $page = new admin_externalpage("{$parentname}_fields", $displaystring, $url);
 
         // Add it to the tree.
@@ -309,7 +309,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         global $CFG;
 
         // This plugin is only available if the PM code is present.
-        return file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
+        return file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     }
 
     /**
@@ -333,7 +333,7 @@ class rlip_exportplugin_version1elis extends rlip_exportplugin_base {
         if (!defined('PHPUnit_MAIN_METHOD')) {
             // Not in a unit test, so send out log files in a zip.
             $logids = $this->dblogger->get_log_ids();
-            rlip_send_log_emails('rlipexport_version1elis', $logids, $this->manual);
+            rlip_send_log_emails('dhexport_version1elis', $logids, $this->manual);
         }
 
         return $result;

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -24,15 +24,15 @@
  */
 
 $dirname = dirname(__FILE__);
-require_once($dirname.'/../../../elis/core/test_config.php');
+require_once($dirname.'/../../../local/eliscore/test_config.php');
 global $CFG;
 require_once($dirname.'/other/rlip_test.class.php');
 
 // Libs.
 require_once($dirname.'/../lib.php');
 require_once($CFG->libdir.'/externallib.php');
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/student.class.php'));
     require_once(elispm::lib('data/usermoodle.class.php'));
     require_once($dirname.'/../ws/elis/class_enrolment_create.class.php');
@@ -40,11 +40,11 @@ if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
 }
 
 /**
- * Tests webservice method block_rldh_elis_class_enrolment_create.
- * @group block_rlip
- * @group block_rlip_ws
+ * Tests webservice method local_datahub_elis_class_enrolment_create.
+ * @group local_datahub
+ * @group local_datahub_ws
  */
-class block_rlip_ws_elis_class_enrolment_create_testcase extends rlip_test_ws {
+class local_datahub_ws_elis_class_enrolment_create_testcase extends rlip_test_ws {
 
     /**
      * Test successful class enrolment creation.
@@ -52,10 +52,10 @@ class block_rlip_ws_elis_class_enrolment_create_testcase extends rlip_test_ws {
     public function test_success() {
         global $DB, $USER;
 
-        $this->give_permissions(array('elis/program:class_enrol'));
+        $this->give_permissions(array('local/elisprogram:class_enrol'));
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         // Create test course and class.
         $datagen = new elis_program_datagenerator($DB);
@@ -85,15 +85,15 @@ class block_rlip_ws_elis_class_enrolment_create_testcase extends rlip_test_ws {
             'completetime' => $importplugin->parse_date('May/31/2013'),
         );
 
-        $response = block_rldh_elis_class_enrolment_create::class_enrolment_create($data);
+        $response = local_datahub_elis_class_enrolment_create::class_enrolment_create($data);
 
         $this->assertNotEmpty($response);
         $this->assertInternalType('array', $response);
         $this->assertArrayHasKey('messagecode', $response);
         $this->assertArrayHasKey('message', $response);
         $this->assertArrayHasKey('record', $response);
-        $this->assertEquals(get_string('ws_class_enrolment_create_success_code', 'block_rlip'), $response['messagecode']);
-        $this->assertEquals(get_string('ws_class_enrolment_create_success_msg', 'block_rlip'), $response['message']);
+        $this->assertEquals(get_string('ws_class_enrolment_create_success_code', 'local_datahub'), $response['messagecode']);
+        $this->assertEquals(get_string('ws_class_enrolment_create_success_msg', 'local_datahub'), $response['message']);
 
         $this->assertInternalType('array', $response['record']);
         $this->assertArrayHasKey('id', $response['record']);
@@ -201,13 +201,13 @@ class block_rlip_ws_elis_class_enrolment_create_testcase extends rlip_test_ws {
     public function test_failure(array $data) {
         global $DB;
 
-        $this->give_permissions(array('elis/program:class_enrol'));
+        $this->give_permissions(array('local/elisprogram:class_enrol'));
 
         // Create test course and class.
         $datagen = new elis_program_datagenerator($DB);
         $crs = $datagen->create_course(array('idnumber' => 'TestCourse'));
         $cls = $datagen->create_pmclass(array('idnumber' => 'TestClassEnrolmentCreate', 'courseid' => $crs->id));
 
-        $response = block_rldh_elis_class_enrolment_create::class_enrolment_create($data);
+        $response = local_datahub_elis_class_enrolment_create::class_enrolment_create($data);
     }
 }

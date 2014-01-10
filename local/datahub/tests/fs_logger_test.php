@@ -16,20 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fslogger.class.php');
 
 /**
  * Mock object class to track whether a file is open
@@ -111,7 +111,7 @@ class rlip_fileplugin_trackopen extends rlip_fileplugin_base {
 
 /**
  * Class for testing the file-system logger
- * @group block_rlip
+ * @group local_datahub
  */
 class fslogger_testcase extends rlip_test {
 
@@ -254,7 +254,7 @@ class fslogger_testcase extends rlip_test {
         $fslogger->close();
 
         // Validation.
-        $format = get_string('logtimeformat', 'block_rlip');
+        $format = get_string('logtimeformat', 'local_datahub');
         $expectedline = '['.userdate($time, $format, -5.0, false).' -0500] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expectedline));
     }
@@ -310,7 +310,7 @@ class fslogger_testcase extends rlip_test {
         $fslogger->close();
 
         // Validation.
-        $format = get_string('logtimeformat', 'block_rlip');
+        $format = get_string('logtimeformat', 'local_datahub');
         $expectedline = '['.userdate($time, $format, -5.0, false).' -0500] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expectedline));
 
@@ -357,7 +357,7 @@ class fslogger_testcase extends rlip_test {
         $fslogger->close();
 
         // Validation.
-        $format = get_string('logtimeformat', 'block_rlip');
+        $format = get_string('logtimeformat', 'local_datahub');
         $expectedline = '['.userdate($time, $format, -5.0, false).' -0500] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expectedline));
 
@@ -433,7 +433,7 @@ class fslogger_testcase extends rlip_test {
         $offset = date('Z', $time) / 60 / 60;
         $offset -= date('I', $time);
         $offsetdisplay = rlip_fslogger::offset_display($offset);
-        $format = get_string('logtimeformat', 'block_rlip');
+        $format = get_string('logtimeformat', 'local_datahub');
         $expectedline = '['.userdate($time, $format, 99, false).' '.$offsetdisplay.'] Message'."\n";
         $this->assert_file_contents_equal($filename, array($expectedline));
     }
@@ -661,7 +661,7 @@ class fslogger_testcase extends rlip_test {
         $fslogger->close();
 
         // Validation.
-        $format = get_string('logtimeformat', 'block_rlip');
+        $format = get_string('logtimeformat', 'local_datahub');
         $expectedlines = array(
                 '['.userdate($time, $format, -5.0, false).' -0500] Message'."\n",
                 '['.userdate($time, $format, -5.0, false).' -0500] Message 2'."\n"
@@ -746,7 +746,7 @@ class fslogger_testcase extends rlip_test {
         $fslogger->log_success('Message', $time, 'rliptest', 10);
 
         // Validation.
-        $format = get_string('logtimeformat', 'block_rlip');
+        $format = get_string('logtimeformat', 'local_datahub');
         $expectedlines = array('['.userdate($time, $format, -5.0, false).' -0500] [rliptest line 10] Message'."\n");
         $this->assert_file_contents_equal($filename, $expectedlines);
     }
@@ -767,7 +767,7 @@ class fslogger_testcase extends rlip_test {
         $fslogger->log_failure('Message', $time, 'rliptest', 10);
 
         // Validation.
-        $format = get_string('logtimeformat', 'block_rlip');
+        $format = get_string('logtimeformat', 'local_datahub');
         $expectedlines = array('['.userdate($time, $format, -5.0, false).' -0500] [rliptest line 10] Message'."\n");
         $this->assert_file_contents_equal($filename, $expectedlines);
     }

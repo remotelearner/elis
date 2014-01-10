@@ -16,30 +16,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/file_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/delay_after_three.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/csv_delay.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/file_delay.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/delay_after_three.class.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+    require_once(elispm::lib('data/curriculum.class.php'));
+    require_once(elispm::lib('data/curriculumstudent.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+}
 
 /**
  * Test program enrolment filesystem logging
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class version1elisprogramenrolmentfslog_testcase extends rlip_elis_test {
 
@@ -62,8 +68,8 @@ class version1elisprogramenrolmentfslog_testcase extends rlip_elis_test {
      */
     protected function assert_data_produces_error($data, $expectederror, $entitytype) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Set the log file location.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
@@ -72,7 +78,7 @@ class version1elisprogramenrolmentfslog_testcase extends rlip_elis_test {
         // Run the import.
         $classname = "rlipimport_version1elis_importprovider_fslog{$entitytype}";
         $provider = new $classname($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider, null, true);
         // Suppress output for now.
         ob_start();
         $instance->run();
@@ -89,8 +95,8 @@ class version1elisprogramenrolmentfslog_testcase extends rlip_elis_test {
 
         // Get logfile name.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1elis';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhimport_version1elis';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $testfilename = $filepath.'/'.$plugintype.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         // Get most recent logfile.
 
@@ -131,7 +137,7 @@ class version1elisprogramenrolmentfslog_testcase extends rlip_elis_test {
     private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
         global $DB;
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $record = new stdClass;
@@ -260,7 +266,7 @@ class version1elisprogramenrolmentfslog_testcase extends rlip_elis_test {
         $record->curriculumid = 1;
         $record->userid = 3;
 
-        $DB->insert_record('crlm_curriculum_assignment', $record);
+        $DB->insert_record(curriculumstudent::TABLE, $record);
 
         $idnumber = $DB->get_field('user', 'idnumber', array('id' => 3));
 
@@ -298,9 +304,9 @@ class version1elisprogramenrolmentfslog_testcase extends rlip_elis_test {
 
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            'crlm_curriculum' => dirname(__FILE__).'/fixtures/programtable.csv',
+            curriculum::TABLE => dirname(__FILE__).'/fixtures/programtable.csv',
             'user' => dirname(__FILE__).'/fixtures/usertable.csv',
-            'crlm_user' => dirname(__FILE__).'/fixtures/usertable.csv',
+            user::TABLE => dirname(__FILE__).'/fixtures/usertable.csv',
         ));
         $this->loadDataSet($dataset);
     }

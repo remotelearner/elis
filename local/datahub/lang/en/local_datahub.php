@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage blocks_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -29,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['automatic'] = 'Automatic';
 $string['confirm_delete_ipjob'] = 'Are you sure to delete DH job #{$a}?';
 $string['configdisableincron'] = 'If enabled, this setting disables this plugin from running in the Moodle cron. Use this setting when running imports & exports via a separate system-level cron.';
+$string['datahub_settings'] = 'Datahub Settings';
 $string['dateformat'] = 'M/d/Y';
 $string['dblogimportexceedstimelimit'] = 'Failed importing all lines from import file {$a->filename} due to time limit exceeded. Processed {$a->recordsprocessed} of {$a->totalrecords} records.';
 $string['disableincron'] = 'Disable in Moodle cron';
@@ -78,8 +78,8 @@ $string['pluginname'] = 'Data Hub';
 $string['plugins'] = 'Data Hub plugins';
 $string['restoredefaults'] = 'Restore defaults';
 $string['rlip:addinstance'] = 'Add a new Data Hub block';
-$string['rlip_form_export_header'] = '<b>Schedule IP job for: Export</b>';
-$string['rlip_form_import_header'] = '<b>Schedule IP job for: Import</b>';
+$string['rlip_form_export_header'] = '<b>Schedule DH job for: Export</b>';
+$string['rlip_form_import_header'] = '<b>Schedule DH job for: Import</b>';
 $string['rlip_form_label'] = 'Label:';
 $string['rlip_form_label_help'] = 'Enter a unique label for your DH schedule job.';
 $string['rlip_form_period'] = 'Period:';
@@ -96,8 +96,8 @@ $string['rlip_jobs_heading_jobs'] = 'Current scheduled DH jobs for: {$a}';
 $string['rlip_jobs_heading_nojobs'] = 'There are no scheduled DH jobs for: {$a}';
 $string['rlip_jobs_heading_instructions'] = 'Click the "New job" button below to schedule an DH job.';
 $string['rlip_new_job'] = 'New job';
-$string['rlipexportplugins'] = 'Export Plugins';
-$string['rlipimportplugins'] = 'Import Plugins';
+$string['dhexportplugins'] = 'Export Plugins';
+$string['dhimportplugins'] = 'Import Plugins';
 $string['rlipmanageplugins'] = 'Manage plugins';
 $string['runnow'] = 'Run Now';
 $string['runmanually'] = 'Run manually';
@@ -120,7 +120,7 @@ $string['ws_user_update_success_code'] = 'user_updated';
 $string['ws_user_update_success_msg'] = 'User updated successfully';
 $string['ws_user_update_fail_conflictingidfields'] = 'Conflicting identifying fields received: supplied {$a} do not refer to the same user.';
 $string['ws_user_update_fail_noidfields'] = 'No valid identifying fields received';
-$string['ws_user_update_fail_idfieldsnotallowed'] = 'Identifying fields cannot be updated using this method. Please use block_rldh_elis_user_update_identifiers() instead.';
+$string['ws_user_update_fail_idfieldsnotallowed'] = 'Identifying fields cannot be updated using this method. Please use local_datahub_elis_user_update_identifiers() instead.';
 $string['ws_user_update_fail_multipleusersforidentifier'] = 'Multiple users found for field {$a}. Try another identifying field?';
 $string['ws_user_update_fail'] = 'Could not update user';
 $string['ws_user_update_identifiers_success_code'] = 'user_identfiers_updated';

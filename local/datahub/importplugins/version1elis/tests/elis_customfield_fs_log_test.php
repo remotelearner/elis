@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
 
 /**
  * Class for testing ELIS custom field validation messages.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_customfield_fs_log_testcase extends rlip_elis_test {
 
@@ -48,8 +48,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     protected function assert_data_produces_error($data, $expectederror, $entitytype) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Set the log file location.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
@@ -58,7 +58,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
         // Run the import.
         $classname = "rlipimport_version1elis_importprovider_fslog{$entitytype}";
         $provider = new $classname($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider, null, true);
         // Suppress output for now.
         ob_start();
         $instance->run();
@@ -75,8 +75,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
 
         // Get logfile name.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1elis';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhimport_version1elis';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $testfilename = $filepath.'/'.$plugintype.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         // Get most recent logfile.
 
@@ -116,7 +116,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     private function create_custom_field($contextlevel, $uitype, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
 
         // Category.
         $fieldcategory = new field_category(array('name' => 'testcategoryname'));
@@ -147,7 +147,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function create_test_program() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
         $program = new curriculum(array('name' => 'testprogramname', 'idnumber' => 'testprogramidnumber'));
         $program->save();
@@ -161,7 +161,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function create_test_course() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
         $course = new course(array(
             'name' => 'testcoursename',
@@ -195,7 +195,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
     private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
         global $DB;
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $record = new stdClass;
@@ -216,8 +216,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
         // TODO: consider removing once we have unit tests properly validating.
         // Date/time custom field imports.
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USER, 'datetime', $otherparams);
 
@@ -234,7 +234,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
 
         // Run the import.
         $provider = new rlipimport_version1elis_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider, null, true);
         // Suppress output for now.
         ob_start();
         $instance->run();
@@ -384,7 +384,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_user_create_customfield_messages($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USER, $uitype, $otherparams);
         // Create mapping record.
@@ -418,8 +418,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_user_update_customfield_message($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USER, $uitype, $otherparams);
         // Create mapping record.
@@ -460,7 +460,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_program_create_customfield_messages($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_PROGRAM, $uitype, $otherparams);
         // Create mapping record.
@@ -493,8 +493,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_program_update_customfield_message($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_PROGRAM, $uitype, $otherparams);
         // Create mapping record.
@@ -529,7 +529,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_track_create_customfield_messages($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_TRACK, $uitype, $otherparams);
         // Create mapping record.
@@ -562,8 +562,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_track_update_customfield_message($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_TRACK, $uitype, $otherparams);
         // Create mapping record.
@@ -597,7 +597,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_course_create_customfield_messages($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_COURSE, $uitype, $otherparams);
         // Create mapping record.
@@ -627,8 +627,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_course_update_customfield_message($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_COURSE, $uitype, $otherparams);
         // Create mapping record.
@@ -664,7 +664,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_class_create_customfield_messages($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_CLASS, $uitype, $otherparams);
         // Create mapping record.
@@ -697,8 +697,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_class_update_customfield_message($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_CLASS, $uitype, $otherparams);
         // Create mapping record.
@@ -732,7 +732,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_userset_create_customfield_messages($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USERSET, $uitype, $otherparams);
         // Create mapping record.
@@ -761,8 +761,8 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_userset_update_customfield_message($uitype, $value, $message, $otherparams) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USERSET, $uitype, $otherparams);
         // Create mapping record.
@@ -787,7 +787,7 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
      */
     public function test_multivalue_field_reports_first_error() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
 
         $this->create_custom_field(CONTEXT_ELIS_USER, 'menu', array('options' => '1'));
         // Create mapping record.

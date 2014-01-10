@@ -16,13 +16,13 @@
 /**
  * RLIP capabilities
  *
- * @package   block_rlip
+ * @package   local_datahub
  * @author    Tyler Bannister <tyler.bannister@remote-learner.net>
  * @copyright 2013 Remote Learner - http://www.remote-learner.net/
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 $capabilities = array(
-    'block/rlip:addinstance' => array(
+    'local/datahub:addinstance' => array(
         'riskbitmask' => RISK_SPAM | RISK_PERSONAL | RISK_XSS | RISK_DATALOSS,
 
         'captype' => 'write',

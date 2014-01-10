@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_exportplugin.class.php');
 
 /**
  * Moodle course grade export compatible with the original Moodle-only grade
@@ -52,20 +51,20 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
      */
     function init($targetstarttime = 0, $lastruntime = 0) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         //columns that are always displayed
-        $columns = array(get_string('header_firstname', 'rlipexport_version1'),
-                         get_string('header_lastname', 'rlipexport_version1'),
-                         get_string('header_username', 'rlipexport_version1'),
-                         get_string('header_useridnumber', 'rlipexport_version1'),
-                         get_string('header_courseidnumber', 'rlipexport_version1'),
-                         get_string('header_startdate', 'rlipexport_version1'),
-                         get_string('header_enddate', 'rlipexport_version1'),
-                         get_string('header_grade', 'rlipexport_version1'),
-                         get_string('header_letter', 'rlipexport_version1'));
+        $columns = array(get_string('header_firstname', 'dhexport_version1'),
+                         get_string('header_lastname', 'dhexport_version1'),
+                         get_string('header_username', 'dhexport_version1'),
+                         get_string('header_useridnumber', 'dhexport_version1'),
+                         get_string('header_courseidnumber', 'dhexport_version1'),
+                         get_string('header_startdate', 'dhexport_version1'),
+                         get_string('header_enddate', 'dhexport_version1'),
+                         get_string('header_grade', 'dhexport_version1'),
+                         get_string('header_letter', 'dhexport_version1'));
 
         //track extra SQL and parameters needed for custom fields
         $extra_select = '';
@@ -148,7 +147,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
          * Handle the "incremental" offset, if necessary
          */
         //determine if we're in incremental or non-incremental mode
-        $nonincremental = get_config('rlipexport_version1', 'nonincremental');
+        $nonincremental = get_config('dhexport_version1', 'nonincremental');
 
 
         if (empty($nonincremental)) {
@@ -156,7 +155,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
                 //manual export incremental mode
 
                 //get string delta
-                $incrementaldelta = get_config('rlipexport_version1', 'incrementaldelta');
+                $incrementaldelta = get_config('dhexport_version1', 'incrementaldelta');
                 //conver to number of seconds
                 $numsecs = rlip_time_string_to_offset($incrementaldelta);
 
@@ -211,7 +210,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         } else if ($this->datatypes[$fieldid] == 'datetime') {
             if ($value == 0) {
                 //use a marker to indicate that it's not set
-                $value = get_string('nodatemarker', 'rlipexport_version1');
+                $value = get_string('nodatemarker', 'dhexport_version1');
             } else if (!empty($this->showtime[$fieldid])) {
                 //format as a date, with time
                 $value = date('M/d/Y, h:i a', $value);
@@ -234,7 +233,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         require_once($CFG->libdir.'/gradelib.php');
 
         //obtain the standardized date format
-    	$format = get_string('dateformat', 'block_rlip');
+        $format = get_string('dateformat', 'local_datahub');
 
         //fetch the current record
         $record = $this->recordset->current();
@@ -321,12 +320,12 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
                                    DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
                 $outfile = $exportpath . $exportbase;
                 if (!@rename($tempfile, $outfile)) {
-                    error_log("/blocks/rlip/exportplugins/version1/version1.class.php::finish() - Error renaming: '{$tempfile}' to '{$outfile}'");
+                    error_log("/local/datahub/exportplugins/version1/version1.class.php::finish() - Error renaming: '{$tempfile}' to '{$outfile}'");
                 }
             }
            /*
               else {
-                error_log("/blocks/rlip/exportplugins/version1/version1.class.php::finish() - Error file: '{$tempfile}' doesn't exist!");
+                error_log("/local/datahub/exportplugins/version1/version1.class.php::finish() - Error file: '{$tempfile}' doesn't exist!");
             }
            */
         } else {
@@ -347,8 +346,8 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         global $CFG;
 
         //create a link to the page for configuring field mappings
-        $displaystring = get_string('configfieldstreelink', 'rlipexport_version1');
-        $url = $CFG->wwwroot.'/blocks/rlip/exportplugins/version1/config_fields.php';
+        $displaystring = get_string('configfieldstreelink', 'dhexport_version1');
+        $url = $CFG->wwwroot.'/local/datahub/exportplugins/version1/config_fields.php';
         $page = new admin_externalpage("{$parentname}_fields", $displaystring, $url);
 
         //add it to the tree
@@ -376,7 +375,7 @@ class rlip_exportplugin_version1 extends rlip_exportplugin_base {
         if (!defined('PHPUnit_MAIN_METHOD')) {
             //not in a unit test, so send out log files in a zip
             $logids = $this->dblogger->get_log_ids();
-            rlip_send_log_emails('rlipexport_version1', $logids, $this->manual);
+            rlip_send_log_emails('dhexport_version1', $logids, $this->manual);
         }
 
         return $result;

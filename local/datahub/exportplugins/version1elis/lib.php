@@ -16,24 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage rlipexport_version1elis
+ * @package    local_datahub
+ * @subpackage dhexport_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 require_once(dirname(__FILE__).'/../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-if (file_exists($CFG->dirroot.'/elis/program/accesslib.php')) {
-    require_once($CFG->dirroot.'/elis/program/accesslib.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/accesslib.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+    require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
     require_once(elis::lib('data/customfield.class.php'));
+    require_once(elispm::lib('data/curriculum.class.php'));
+    require_once(elispm::lib('data/curriculumcourse.class.php'));
+    require_once(elispm::lib('data/curriculumstudent.class.php'));
 }
 
 // Database table constants.
-define('RLIPEXPORT_VERSION1ELIS_FIELD_TABLE', 'rlipexport_version1elis_fld');
+define('RLIPEXPORT_VERSION1ELIS_FIELD_TABLE', 'dhexport_version1elis_fld');
 
 /**
  * Helper class that is used for configuring the Version 1 ELIS format export
@@ -69,18 +73,18 @@ class rlipexport_version1elis_config {
  */
 function rlipexport_version1elis_incrementaldelta_updatedcallback($name) {
     global $CFG;
-    require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+    require_once($CFG->dirroot.'/local/datahub/lib.php');
 
     if ($name == 's_rlipexport_version1elis_incrementaldelta') {
         // Have the right setting.
 
         // Obtain the value.
-        $time_string = get_config('rlipexport_version1elis', 'incrementaldelta');
+        $time_string = get_config('dhexport_version1elis', 'incrementaldelta');
         // Sanitize.
         $time_string = rlip_sanitize_time_string($time_string, '1d');
 
         // Flush.
-        set_config('incrementaldelta', $time_string, 'rlipexport_version1elis');
+        set_config('incrementaldelta', $time_string, 'dhexport_version1elis');
     }
 }
 
@@ -401,7 +405,7 @@ class rlipexport_version1elis_extrafields {
             static::update_config($data);
         }
 
-        redirect($baseurl, get_string('customfieldsuccessupdate', 'rlipexport_version1elis'), 1);
+        redirect($baseurl, get_string('customfieldsuccessupdate', 'dhexport_version1elis'), 1);
     }
 }
 
@@ -577,7 +581,7 @@ abstract class rlipexport_version1elis_extrafieldsetcustomfieldbase extends rlip
      */
     protected function init_multivalue_status_for_field($fieldid, $multivalued) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
         if (isset($this->customfield_multivaluestatus[$fieldid])) {
@@ -769,13 +773,13 @@ abstract class rlipexport_version1elis_extrafieldsetcustomfieldbase extends rlip
      */
     public function get_data($record) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::file('accesslib.php'));
 
         $this->init_customfield_data();
-        $date_format = get_string('date_format', 'rlipexport_version1elis');
-        $datetime_format = get_string('datetime_format', 'rlipexport_version1elis');
+        $date_format = get_string('date_format', 'dhexport_version1elis');
+        $datetime_format = get_string('datetime_format', 'dhexport_version1elis');
 
         $extra_data = array();
         foreach ($this->customfield_data as $fieldid => $fieldrec) {
@@ -793,7 +797,7 @@ abstract class rlipexport_version1elis_extrafieldsetcustomfieldbase extends rlip
 
                     // Handle multivalue fields.
                     if ($this->customfield_multivaluestatus[$field->id] !== static::MULTIVALUE_NONE) {
-                        $context = context_elis_user::instance($record->userid);
+                        $context = \local_elisprogram\context\user::instance($record->userid);
                         $data = field_data::get_for_context_and_field($context, $field);
 
                         if ($this->customfield_multivaluestatus[$field->id] == static::MULTIVALUE_ENABLED) {
@@ -812,7 +816,7 @@ abstract class rlipexport_version1elis_extrafieldsetcustomfieldbase extends rlip
                     if ($field->owners['manual']->param_control === 'datetime') {
                         if ($value == 0) {
                             // Use a marker to indicate that it's not set.
-                            $value = get_string('nodatemarker', 'rlipexport_version1elis');
+                            $value = get_string('nodatemarker', 'dhexport_version1elis');
                         } else if ($field->owners['manual']->param_inctime) {
                             // Date and time.
                             $value = date($datetime_format, $value);
@@ -854,26 +858,26 @@ class rlipexport_version1elis_extrafieldset_user extends rlipexport_version1elis
      */
     public static function get_available_fields() {
         $fields = array(
-            'mi' => get_string('usermi', 'elis_program'),
-            'email' => get_string('email', 'elis_program'),
-            'email2' => get_string('email2', 'elis_program'),
-            'address' => get_string('address', 'elis_program'),
-            'address2' => get_string('address2', 'elis_program'),
+            'mi' => get_string('usermi', 'local_elisprogram'),
+            'email' => get_string('email', 'local_elisprogram'),
+            'email2' => get_string('email2', 'local_elisprogram'),
+            'address' => get_string('address', 'local_elisprogram'),
+            'address2' => get_string('address2', 'local_elisprogram'),
             'city' => get_string('city', 'moodle'),
             'state' => get_string('state', 'moodle'),
-            'postalcode' => get_string('postalcode', 'elis_program'),
-            'country' => get_string('country', 'elis_program'),
+            'postalcode' => get_string('postalcode', 'local_elisprogram'),
+            'country' => get_string('country', 'local_elisprogram'),
             'phone' => get_string('phone', 'moodle'),
-            'phone2' => get_string('phone2', 'elis_program'),
-            'fax' => get_string('fax', 'elis_program'),
-            'birthdate' => get_string('userbirthdate', 'elis_program'),
-            'gender' => get_string('usergender', 'elis_program'),
-            'language' => get_string('user_language', 'elis_program'),
-            'transfercredits' => get_string('user_transfercredits', 'elis_program'),
-            'comments' => get_string('user_comments', 'elis_program'),
-            'notes' => get_string('user_notes', 'elis_program'),
-            'timecreated' => get_string('fld_timecreated', 'elis_program'),
-            'timemodified' => get_string('fld_timemodified', 'elis_program'),
+            'phone2' => get_string('phone2', 'local_elisprogram'),
+            'fax' => get_string('fax', 'local_elisprogram'),
+            'birthdate' => get_string('userbirthdate', 'local_elisprogram'),
+            'gender' => get_string('usergender', 'local_elisprogram'),
+            'language' => get_string('user_language', 'local_elisprogram'),
+            'transfercredits' => get_string('user_transfercredits', 'local_elisprogram'),
+            'comments' => get_string('user_comments', 'local_elisprogram'),
+            'notes' => get_string('user_notes', 'local_elisprogram'),
+            'timecreated' => get_string('fld_timecreated', 'local_elisprogram'),
+            'timemodified' => get_string('fld_timemodified', 'local_elisprogram'),
         );
 
         // Add custom fields.
@@ -888,7 +892,7 @@ class rlipexport_version1elis_extrafieldset_user extends rlipexport_version1elis
      * @return string A label.
      */
     public static function get_label() {
-        return get_string('fieldset_user_label', 'rlipexport_version1elis');
+        return get_string('fieldset_user_label', 'dhexport_version1elis');
     }
 
     /**
@@ -952,7 +956,7 @@ class rlipexport_version1elis_extrafieldset_student extends rlipexport_version1e
      */
     public static function get_available_fields() {
         $fields = array(
-            'credits' => get_string('credits', 'elis_program')
+            'credits' => get_string('credits', 'local_elisprogram')
         );
 
         return $fields;
@@ -964,7 +968,7 @@ class rlipexport_version1elis_extrafieldset_student extends rlipexport_version1e
      * @return string A label.
      */
     public static function get_label() {
-        return get_string('fieldset_student_label', 'rlipexport_version1elis');
+        return get_string('fieldset_student_label', 'dhexport_version1elis');
     }
 
     /**
@@ -1017,17 +1021,17 @@ class rlipexport_version1elis_extrafieldset_course extends rlipexport_version1el
      */
     public static function get_available_fields() {
         $fields = array(
-            'name' => get_string('course_name', 'elis_program'),
-            'code' => get_string('course_code', 'elis_program'),
-            'syllabus' => get_string('course_syllabus', 'elis_program'),
-            'lengthdescription' => get_string('courseform:length_description', 'elis_program'),
-            'length' => get_string('courseform:duration', 'elis_program'),
-            'credits' => get_string('credits', 'elis_program'),
-            'completion_grade' => get_string('completion_grade', 'elis_program'),
-            'cost' => get_string('cost', 'elis_program'),
-            'timecreated' => get_string('timecreated', 'elis_program'),
-            'timemodified' => get_string('fld_timemodified', 'elis_program'),
-            'version' => get_string('course_version', 'elis_program')
+            'name' => get_string('course_name', 'local_elisprogram'),
+            'code' => get_string('course_code', 'local_elisprogram'),
+            'syllabus' => get_string('course_syllabus', 'local_elisprogram'),
+            'lengthdescription' => get_string('courseform:length_description', 'local_elisprogram'),
+            'length' => get_string('courseform:duration', 'local_elisprogram'),
+            'credits' => get_string('credits', 'local_elisprogram'),
+            'completion_grade' => get_string('completion_grade', 'local_elisprogram'),
+            'cost' => get_string('cost', 'local_elisprogram'),
+            'timecreated' => get_string('timecreated', 'local_elisprogram'),
+            'timemodified' => get_string('fld_timemodified', 'local_elisprogram'),
+            'version' => get_string('course_version', 'local_elisprogram')
         );
 
         // Add custom fields.
@@ -1041,7 +1045,7 @@ class rlipexport_version1elis_extrafieldset_course extends rlipexport_version1el
      * @return string A label.
      */
     public static function get_label() {
-        return get_string('fieldset_course_label', 'rlipexport_version1elis');
+        return get_string('fieldset_course_label', 'dhexport_version1elis');
     }
 
     /**
@@ -1105,13 +1109,13 @@ class rlipexport_version1elis_extrafieldset_class extends rlipexport_version1eli
      */
     public static function get_available_fields() {
         $fields = array(
-            'idnumber' => get_string('class_idnumber', 'elis_program'),
-            'startdate' => get_string('class_startdate', 'elis_program'),
-            'enddate' => get_string('class_enddate', 'elis_program'),
-            'starttime' => get_string('class_starttime', 'elis_program'),
-            'endtime' => get_string('class_endtime', 'elis_program'),
-            'maxstudents' => get_string('class_maxstudents', 'elis_program'),
-            'instructors' => get_string('instructors', 'elis_program')
+            'idnumber' => get_string('class_idnumber', 'local_elisprogram'),
+            'startdate' => get_string('class_startdate', 'local_elisprogram'),
+            'enddate' => get_string('class_enddate', 'local_elisprogram'),
+            'starttime' => get_string('class_starttime', 'local_elisprogram'),
+            'endtime' => get_string('class_endtime', 'local_elisprogram'),
+            'maxstudents' => get_string('class_maxstudents', 'local_elisprogram'),
+            'instructors' => get_string('instructors', 'local_elisprogram')
         );
 
         // Add custom fields.
@@ -1126,7 +1130,7 @@ class rlipexport_version1elis_extrafieldset_class extends rlipexport_version1eli
      * @return string A label.
      */
     public static function get_label() {
-        return get_string('fieldset_class_label', 'rlipexport_version1elis');
+        return get_string('fieldset_class_label', 'dhexport_version1elis');
     }
 
     /**
@@ -1174,7 +1178,7 @@ class rlipexport_version1elis_extrafieldset_class extends rlipexport_version1eli
     public function get_data($record) {
         global $DB;
         static $instructor_cache = array();
-        $date_format = get_string('date_format', 'rlipexport_version1elis');
+        $date_format = get_string('date_format', 'dhexport_version1elis');
 
         $additional_data = array();
         foreach ($this->enabled_fields as $field => $fieldrec) {
@@ -1237,12 +1241,12 @@ class rlipexport_version1elis_extrafieldset_program extends rlipexport_version1e
     public static function get_available_fields() {
         $fields = array(
             // Program Fields.
-            'idnumber' => get_string('curriculum_idnumber', 'elis_program'),
-            'name' => get_string('curriculum_name', 'elis_program'),
-            'description' => get_string('curriculum_description', 'elis_program'),
-            'reqcredits' => get_string('curriculum_reqcredits', 'elis_program'),
+            'idnumber' => get_string('curriculum_idnumber', 'local_elisprogram'),
+            'name' => get_string('curriculum_name', 'local_elisprogram'),
+            'description' => get_string('curriculum_description', 'local_elisprogram'),
+            'reqcredits' => get_string('curriculum_reqcredits', 'local_elisprogram'),
             // Student-Program Assignment Fields.
-            'curass_expires' => get_string('curass_expires', 'rlipexport_version1elis')
+            'curass_expires' => get_string('curass_expires', 'dhexport_version1elis')
         );
 
         // Add custom fields.
@@ -1257,7 +1261,7 @@ class rlipexport_version1elis_extrafieldset_program extends rlipexport_version1e
      * @return string A label.
      */
     public static function get_label() {
-        return get_string('fieldset_program_label', 'rlipexport_version1elis');
+        return get_string('fieldset_program_label', 'dhexport_version1elis');
     }
 
     /**
@@ -1286,9 +1290,9 @@ class rlipexport_version1elis_extrafieldset_program extends rlipexport_version1e
      */
     public function get_sql_join() {
         $join = array(
-                'LEFT JOIN {crlm_curriculum_course} curcrs ON crs.id = curcrs.courseid',
-                'LEFT JOIN {crlm_curriculum_assignment} curstu ON curstu.userid = u.id AND curstu.curriculumid = curcrs.curriculumid',
-                'LEFT JOIN {crlm_curriculum} pgm ON pgm.id = curstu.curriculumid'
+                'LEFT JOIN {'.curriculumcourse::TABLE.'} curcrs ON crs.id = curcrs.courseid',
+                'LEFT JOIN {'.curriculumstudent::TABLE.'} curstu ON curstu.userid = u.id AND curstu.curriculumid = curcrs.curriculumid',
+                'LEFT JOIN {'.curriculum::TABLE.'} pgm ON pgm.id = curstu.curriculumid'
         );
         $custom_fields = parent::get_sql_join(CONTEXT_ELIS_PROGRAM, 'pgm.id');
         return array_merge($join, $custom_fields);
@@ -1307,10 +1311,10 @@ class rlipexport_version1elis_extrafieldset_program extends rlipexport_version1e
             $record_field_key = static::FIELDSET_NAME.'_'.$field;
             if ($field === 'curass_expires') {
                 if (isset($record->$record_field_key) && is_numeric($record->$record_field_key)) {
-                    $date_format = get_string('date_format', 'rlipexport_version1elis');
+                    $date_format = get_string('date_format', 'dhexport_version1elis');
                     $additional_data['curass_expires'] = date($date_format, $record->$record_field_key);
                 } else {
-                    $additional_data['curass_expires'] = get_string('nodatemarker', 'rlipexport_version1elis');
+                    $additional_data['curass_expires'] = get_string('nodatemarker', 'dhexport_version1elis');
                 }
             } else {
                 $additional_data[$field] = (isset($record->$record_field_key)) ? $record->$record_field_key : '';

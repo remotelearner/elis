@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage blocks_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 require_once(dirname(__FILE__) .'/../../config.php');
-require_once($CFG->dirroot .'/elis/core/lib/setup.php');
-require_once($CFG->dirroot .'/blocks/rlip/lib.php');
-require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot .'/blocks/rlip/form/rlip_schedule_form.class.php');
+require_once($CFG->dirroot .'/local/eliscore/lib/setup.php');
+require_once($CFG->dirroot .'/local/datahub/lib.php');
+require_once($CFG->dirroot .'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot .'/local/datahub/form/rlip_schedule_form.class.php');
 
 require_once elis::lib('page.class.php');
 
 class ip_schedule_page extends elis_page {
-    protected $type; // IP type: 'rlipimport' or 'rlipexport'
+    protected $type; // IP type: 'dhimport' or 'dhexport'
     protected $name; // IP name: 'version1'
     var       $import_form_class = 'rlip_import_schedule_form';
     var       $export_form_class = 'rlip_export_schedule_form';
@@ -49,7 +48,7 @@ class ip_schedule_page extends elis_page {
 
     protected function _get_page_url() {
         global $CFG;
-        return "{$CFG->wwwroot}/blocks/rlip/schedulepage.php";
+        return "{$CFG->wwwroot}/local/datahub/schedulepage.php";
     }
 
     private function add_submit_cancel_buttons($submiturl, $submitlabel,
@@ -66,7 +65,7 @@ class ip_schedule_page extends elis_page {
 
     function get_page_title_default() {
         // TBD: could check param 'plugin' & show different import/export title
-        return get_string('schedulepagetitle', 'block_rlip');
+        return get_string('schedulepagetitle', 'local_datahub');
     }
 
     function build_navbar_default() {
@@ -75,16 +74,16 @@ class ip_schedule_page extends elis_page {
         //add navigation items
         $this->navbar->add(get_string('administrationsite'));
         $this->navbar->add(get_string('plugins', 'admin'));
-        $this->navbar->add(get_string('blocks'));
-        $this->navbar->add(get_string('plugins', 'block_rlip'));
-        $this->navbar->add(get_string('rlipmanageplugins', 'block_rlip'), new moodle_url('/blocks/rlip/plugins.php'));
-        $this->navbar->add(get_string('schedulepagetitle', 'block_rlip'), null);
+        $this->navbar->add(get_string('localplugins'));
+        $this->navbar->add(get_string('plugins', 'local_datahub'));
+        $this->navbar->add(get_string('rlipmanageplugins', 'local_datahub'), new moodle_url('/local/datahub/plugins.php'));
+        $this->navbar->add(get_string('schedulepagetitle', 'local_datahub'), null);
     }
 
     function can_do_default() {
-        if (has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('moodle/site:config', context_system::instance())) {
             // Ensure that scheduling is setup correctly
-            rlip_schedulding_init();
+            rlip_scheduling_init();
 
             return true;
         }
@@ -100,18 +99,18 @@ class ip_schedule_page extends elis_page {
                                             is_siteadmin() ? 0 : $USER->id);
         if (!empty($ipscheds) && $ipscheds->valid()) {
             echo $OUTPUT->notification(get_string("rlip_jobs_heading_jobs",
-                                                  'block_rlip', get_string('pluginname', $display_name)),
+                                                  'local_datahub', get_string('pluginname', $display_name)),
                                        'rlip_bold_header', 'left');
             echo $OUTPUT->notification(get_string('rlip_jobs_heading_fullinstructions',
-                                                  'block_rlip', $display_name),
+                                                  'local_datahub', $display_name),
                                        'rlip_italic_header', 'left');
             $table = new html_table();
             $table->head = array(
-                          get_string('rlip_jobs_header_label', 'block_rlip'),
-                          get_string('rlip_jobs_header_owner', 'block_rlip'),
-                          get_string('rlip_jobs_header_lastran', 'block_rlip'),
-                          get_string('rlip_jobs_header_nextrun', 'block_rlip'),
-                          get_string('rlip_jobs_header_modified', 'block_rlip'),
+                          get_string('rlip_jobs_header_label', 'local_datahub'),
+                          get_string('rlip_jobs_header_owner', 'local_datahub'),
+                          get_string('rlip_jobs_header_lastran', 'local_datahub'),
+                          get_string('rlip_jobs_header_nextrun', 'local_datahub'),
+                          get_string('rlip_jobs_header_modified', 'local_datahub'),
                           '' // Actions: Edit/Delete
                          );
             $table->align      = array('left', 'center', 'left', 'left', 'left', 'center');
@@ -127,15 +126,15 @@ class ip_schedule_page extends elis_page {
                 $lastruntime = !empty($ipjob->lastruntime)
                                ? userdate($ipjob->lastruntime, '', $tz)
                                  .' (' . usertimezone($tz) .')'
-                               : get_string('no_lastruntime', 'block_rlip');
+                               : get_string('no_lastruntime', 'local_datahub');
                 $nextruntime = !empty($ipjob->nextruntime)
                                ? userdate($ipjob->nextruntime, '', $tz)
                                  .' (' . usertimezone($tz) .')'
-                               : get_string('na', 'block_rlip');
+                               : get_string('na', 'local_datahub');
                 $modified = !empty($data['timemodified'])
                             ? userdate($data['timemodified'], '', $tz)
                               .' (' . usertimezone($tz) .')'
-                            : get_string('na', 'block_rlip');
+                            : get_string('na', 'local_datahub');
                 $target = $this->get_new_page(array('id'     => $ipjob->id,
                                                     'plugin' => $ipjob->plugin));
                 $label = '<a name="edit" href="'. $target->url->out(true, array('action' => 'form')) .'">'. $data['label'] .'</a>';
@@ -150,14 +149,14 @@ class ip_schedule_page extends elis_page {
             echo html_writer::table($table);
 
             echo $OUTPUT->notification(get_string('schedulingtime',
-                                                  'block_rlip', $display_name),
+                                                  'local_datahub', $display_name),
                                        'rlip_italic_header', 'left');
         } else {
             echo $OUTPUT->notification(get_string('rlip_jobs_heading_nojobs',
-                                                  'block_rlip', get_string('pluginname', $display_name)),
+                                                  'local_datahub', get_string('pluginname', $display_name)),
                                        'rlip_bold_header', 'left');
             echo $OUTPUT->notification(get_string('rlip_jobs_heading_instructions',
-                                                  'block_rlip', $display_name),
+                                                  'local_datahub', $display_name),
                                        'rlip_italic_header', 'left');
         }
         echo $OUTPUT->spacer();
@@ -165,7 +164,7 @@ class ip_schedule_page extends elis_page {
                              array('action' => 'form',
                                    'plugin' => $this->get_ip_plugin()));
         $this->add_submit_cancel_buttons($submit->url, get_string('rlip_new_job',
-                                                                  'block_rlip'));
+                                                                  'local_datahub'));
     }
 
     function display_delete() {
@@ -186,7 +185,7 @@ class ip_schedule_page extends elis_page {
             $cancel_url = new moodle_url($target->url->out(true,
                                           array('action' => 'default')));
             $buttoncancel = new single_button($cancel_url, get_string('no'));
-            echo $OUTPUT->confirm(get_string('confirm_delete_ipjob', 'block_rlip', $id),
+            echo $OUTPUT->confirm(get_string('confirm_delete_ipjob', 'local_datahub', $id),
                                   $buttoncontinue, $buttoncancel);
         }
     }
@@ -209,7 +208,7 @@ class ip_schedule_page extends elis_page {
             unset($data['id']);
             $params = array_merge($params, $data);
         }
-        $form = ($this->type == 'rlipimport')
+        $form = ($this->type == 'dhimport')
                 ? new $this->import_form_class($target->url, $params)
                 : new $this->export_form_class($target->url, $params);
         $form->set_data($params);
@@ -237,6 +236,5 @@ class ip_schedule_page extends elis_page {
 }
 
 $PAGE = new ip_schedule_page();
-$PAGE->requires->css('/blocks/rlip/styles.css');
+$PAGE->requires->css('/local/datahub/styles.css');
 $PAGE->run();
-

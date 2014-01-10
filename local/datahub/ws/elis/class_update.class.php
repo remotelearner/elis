@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,7 +26,7 @@ require_once(dirname(__FILE__).'/../../lib.php');
 /**
  * Update class webservices method.
  */
-class block_rldh_elis_class_update extends external_api {
+class local_datahub_elis_class_update extends external_api {
 
     /**
      * Require ELIS dependencies if ELIS is installed, otherwise return false.
@@ -34,10 +34,11 @@ class block_rldh_elis_class_update extends external_api {
      */
     public static function require_elis_dependencies() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/pmclass.class.php'));
             require_once(elispm::lib('data/user.class.php'));
+            require_once(elis::lib('data/customfield.class.php'));
             require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
             return true;
         } else {
@@ -170,7 +171,7 @@ class block_rldh_elis_class_update extends external_api {
         global $USER, $DB;
 
         if (static::require_elis_dependencies() !== true) {
-            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+            throw new moodle_exception('ws_function_requires_elis', 'local_datahub');
         }
 
         // Parameter validation.
@@ -181,22 +182,22 @@ class block_rldh_elis_class_update extends external_api {
         self::validate_context($context);
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         $data = (object)$data;
 
         // Get the class to be updated.
-        $clsid = $DB->get_field('crlm_class', 'id', array('idnumber' => $data->idnumber));
+        $clsid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $data->idnumber));
         if (empty($clsid)) {
-            throw new moodle_exception('ws_class_update_fail_badidnumber', 'block_rlip');
+            throw new moodle_exception('ws_class_update_fail_badidnumber', 'local_datahub');
         }
 
         // Capability checking.
-        require_capability('elis/program:class_edit', context_elis_class::instance($clsid));
+        require_capability('local/elisprogram:class_edit', \local_elisprogram\context\pmclass::instance($clsid));
 
         // Cannot move classes between courses.
         if (isset($data->assignment)) {
-            throw new moodle_exception('ws_class_update_fail_cannotreassign', 'block_rlip');
+            throw new moodle_exception('ws_class_update_fail_cannotreassign', 'local_datahub');
         }
 
         // Handle custom fields.
@@ -233,8 +234,8 @@ class block_rldh_elis_class_update extends external_api {
         }
 
         return array(
-            'messagecode' => get_string('ws_class_update_success_code', 'block_rlip'),
-            'message' => get_string('ws_class_update_success_msg', 'block_rlip'),
+            'messagecode' => get_string('ws_class_update_success_code', 'local_datahub'),
+            'message' => get_string('ws_class_update_success_msg', 'local_datahub'),
             'record' => array_merge($classrec, $classobj),
         );
     }

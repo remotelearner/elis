@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,38 +16,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 require_once('../../../config.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/form/rlip_manualexport_form.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/form/rlip_manualexport_form.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 
 //permissions checking
 require_login();
 
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
 //determine which plugin we're using
 $plugin = required_param('plugin', PARAM_CLEAN);
 
 // Need base URL for form and Moodle block management
-$baseurl = $CFG->wwwroot.'/blocks/rlip/exportplugins/manualrun.php?plugin='.$plugin;
+$baseurl = $CFG->wwwroot.'/local/datahub/exportplugins/manualrun.php?plugin='.$plugin;
 
 //page setup
 $plugin_display = get_string('pluginname', $plugin);
 rlip_manualrun_page_setup($baseurl, $plugin_display);
 
 //javascript library needed by the form
-$PAGE->requires->js('/blocks/rlip/js/lib.js');
+$PAGE->requires->js('/local/datahub/js/lib.js');
 
 //create our basic form
 $form = new rlip_manualexport_form();

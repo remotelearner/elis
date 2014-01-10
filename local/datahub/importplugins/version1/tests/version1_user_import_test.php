@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/elis/core/lib/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/lib.php');
 
 /**
  * Class for version 1 user import correctness.
- * @group block_rlip
- * @group rlipimport_version1
+ * @group local_datahub
+ * @group dhimport_version1
  */
 class version1userimport_testcase extends rlip_test {
 
@@ -67,7 +67,7 @@ class version1userimport_testcase extends rlip_test {
      */
     private function run_core_user_import($extradata, $usedefaultdata = true) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         if ($usedefaultdata) {
@@ -106,6 +106,14 @@ class version1userimport_testcase extends rlip_test {
         $data->name = $name;
         $data->datatype = $datatype;
         $data->categoryid = $categoryid;
+        $data->startyear = null;
+        $data->endyear = null;
+        $data->startmonth = null;
+        $data->endmonth = null;
+        $data->startday = null;
+        $data->endday = null;
+        $data->param1 = null;
+        $data->param2 = null;
 
         if ($param1 !== null) {
             $data->param1 = $param1;
@@ -153,7 +161,7 @@ class version1userimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports user actions
      */
     public function test_version1importsupportsuseractions() {
-        $supports = plugin_supports('rlipimport', 'version1', 'user');
+        $supports = plugin_supports('dhimport', 'version1', 'user');
 
         $this->assertEquals($supports, array('create', 'add', 'update', 'delete', 'disable'));
     }
@@ -162,7 +170,7 @@ class version1userimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports user creation
      */
     public function test_version1importsupportsusercreate() {
-        $supports = plugin_supports('rlipimport', 'version1', 'user_create');
+        $supports = plugin_supports('dhimport', 'version1', 'user_create');
         $requiredfields = array(
                 'username',
                 'password',
@@ -182,7 +190,7 @@ class version1userimport_testcase extends rlip_test {
     public function test_version1importsupportsuseradd() {
         // Note: this is the same as user creation, but makes up for a weirdness.
         // In IP for 1.9.
-        $supports = plugin_supports('rlipimport', 'version1', 'user_add');
+        $supports = plugin_supports('dhimport', 'version1', 'user_add');
         $requiredfields = array(
                 'username',
                 'password',
@@ -200,7 +208,7 @@ class version1userimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports user updates
      */
     public function test_version1importsupportsuserupdate() {
-        $supports = plugin_supports('rlipimport', 'version1', 'user_update');
+        $supports = plugin_supports('dhimport', 'version1', 'user_update');
         $requiredfields = array(array('username', 'email', 'idnumber'));
         $this->assertEquals($supports, $requiredfields);
     }
@@ -210,7 +218,7 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importsetsrequireduserfieldsoncreate() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $data = $this->get_core_user_data();
@@ -240,7 +248,7 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importsetsrequireduserfieldsonadd() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $data = $this->get_core_user_data();
@@ -823,10 +831,10 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importdoesnotsetidnumberwhennotsuppliedorconfigured() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
         // Make sure we are not auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         $this->run_core_user_import(array());
@@ -844,10 +852,10 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importsetssuppliedidnumberoncreate() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
         // Make sure we are not auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         // Run the import.
@@ -866,10 +874,10 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importdoesnotsetsuppliedidnumberonupdate() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
         // Make sure we are not auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         // Create the user.
@@ -896,14 +904,14 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importautoassignsmissingidnumbersoncreate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
         if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
         // Make sure we are auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 1, 'elis_program');
+        set_config('auto_assign_user_idnumber', 1, 'local_elisprogram');
         elis::$config = new elis_config();
 
         // Run the import.
@@ -923,14 +931,14 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importautoassignsemptyidnumbersoncreate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
         if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
         // Make sure we are auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 1, 'elis_program');
+        set_config('auto_assign_user_idnumber', 1, 'local_elisprogram');
         elis::$config = new elis_config();
 
         // Run the import.
@@ -955,14 +963,14 @@ class version1userimport_testcase extends rlip_test {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
-        require_once($CFG->dirroot.'/elis/core/fields/moodle_profile/custom_fields.php');
+        require_once($CFG->dirroot.'/local/eliscore/fields/moodleprofile/custom_fields.php');
 
         // Make sure we are not auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         // Create Moodle custom field category.
@@ -989,14 +997,14 @@ class version1userimport_testcase extends rlip_test {
 
         // Make sure the field owner is setup.
         field_owner::ensure_field_owner_exists($field, 'manual');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+        $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
         $owner = new field_owner($ownerid);
         $owner->param_control = 'text';
         $owner->save();
 
         // Make sure the field is set up for synchronization.
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
+        $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
         $owner = new field_owner($ownerid);
         $owner->exclude = pm_moodle_profile::sync_from_moodle;
         $owner->save();
@@ -1032,13 +1040,13 @@ class version1userimport_testcase extends rlip_test {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
         // Make sure we are not auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 1, 'elis_program');
+        set_config('auto_assign_user_idnumber', 1, 'local_elisprogram');
         elis::$config = new elis_config();
 
         // Create Moodle custom field category.
@@ -1065,14 +1073,14 @@ class version1userimport_testcase extends rlip_test {
 
         // Make sure the field owner is setup.
         field_owner::ensure_field_owner_exists($field, 'manual');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+        $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
         $owner = new field_owner($ownerid);
         $owner->param_control = 'text';
         $owner->save();
 
         // Make sure the field is set up for synchronization.
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
+        $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
         $owner = new field_owner($ownerid);
         $owner->exclude = pm_moodle_profile::sync_from_moodle;
         $owner->save();
@@ -1107,13 +1115,13 @@ class version1userimport_testcase extends rlip_test {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
         // Make sure we are not auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         // Create Moodle custom field category.
@@ -1140,14 +1148,14 @@ class version1userimport_testcase extends rlip_test {
 
         // Make sure the field owner is setup.
         field_owner::ensure_field_owner_exists($field, 'manual');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+        $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
         $owner = new field_owner($ownerid);
         $owner->param_control = 'text';
         $owner->save();
 
         // Make sure the field is set up for synchronization.
         field_owner::ensure_field_owner_exists($field, 'moodle_profile');
-        $ownerid = $DB->get_field('elis_field_owner', 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
+        $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'moodle_profile'));
         $owner = new field_owner($ownerid);
         $owner->exclude = pm_moodle_profile::sync_from_moodle;
         $owner->save();
@@ -1190,12 +1198,12 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importsetsdefaultsonusercreate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/setup.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
         set_config('forcetimezone', 99);
 
         // Make sure we are not auto-assigning idnumbers.
-        set_config('auto_assign_user_idnumber', 0, 'elis_program');
+        set_config('auto_assign_user_idnumber', 0, 'local_elisprogram');
         elis::$config = new elis_config();
 
         $this->run_core_user_import(array());
@@ -1244,7 +1252,6 @@ class version1userimport_testcase extends rlip_test {
         $data['forcepasswordchange'] = 1;
         $data['maildisplay'] = 1;
         $data['mailformat'] = 0;
-        $data['htmleditor'] = 0;
         $data['descriptionformat'] = FORMAT_WIKI;
         $this->run_core_user_import($data);
 
@@ -1252,14 +1259,12 @@ class version1userimport_testcase extends rlip_test {
                    mnethostid = :mnethostid AND
                    maildisplay = :maildisplay AND
                    mailformat = :mailformat AND
-                   htmleditor = :htmleditor AND
                    descriptionformat = :descriptionformat";
         $params = array(
             'username' => 'rlipusername',
             'mnethostid' => $CFG->mnet_localhost_id,
             'maildisplay' => 2,
             'mailformat' => 1,
-            'htmleditor' => 1,
             'descriptionformat' => FORMAT_HTML
         );
 
@@ -1289,7 +1294,6 @@ class version1userimport_testcase extends rlip_test {
         $data['forcepasswordchange'] = 1;
         $data['maildisplay'] = 1;
         $data['mailformat'] = 0;
-        $data['htmleditor'] = 0;
         $data['descriptionformat'] = FORMAT_WIKI;
 
         $this->run_core_user_import($data, false);
@@ -1298,14 +1302,12 @@ class version1userimport_testcase extends rlip_test {
                    mnethostid = :mnethostid AND
                    maildisplay = :maildisplay AND
                    mailformat = :mailformat AND
-                   htmleditor = :htmleditor AND
                    descriptionformat = :descriptionformat";
         $params = array(
             'username' => 'rlipusername',
             'mnethostid' => $CFG->mnet_localhost_id,
             'maildisplay' => 2,
             'mailformat' => 1,
-            'htmleditor' => 1,
             'descriptionformat' => FORMAT_HTML
         );
 
@@ -1957,7 +1959,7 @@ class version1userimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports user deletes
      */
     public function test_version1importsupportsuserdelete() {
-        $supports = plugin_supports('rlipimport', 'version1', 'user_delete');
+        $supports = plugin_supports('dhimport', 'version1', 'user_delete');
         $requiredfields = array(array('username', 'email', 'idnumber'));
         $this->assertEquals($supports, $requiredfields);
     }
@@ -1966,7 +1968,7 @@ class version1userimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports user disabling
      */
     public function test_version1importsupportsuserdisable() {
-        $supports = plugin_supports('rlipimport', 'version1', 'user_disable');
+        $supports = plugin_supports('dhimport', 'version1', 'user_disable');
         $requiredfields = array(array('username', 'email', 'idnumber'));
         $this->assertEquals($supports, $requiredfields);
     }
@@ -2316,8 +2318,14 @@ class version1userimport_testcase extends rlip_test {
         $this->run_core_user_import(array());
         $userid = (int)$DB->get_field('user', 'id', array('username' => 'rlipusername', 'mnethostid' => $CFG->mnet_localhost_id));
 
-        // The the user to a cohort - does not require cohort to actually exist.
-        cohort_add_member(1, $userid);
+        // Create cohort.
+        $cohort = new stdClass();
+        $cohort->name = 'testcohort';
+        $cohort->contextid = context_system::instance()->id;
+        $cohortid = cohort_add_cohort($cohort);
+
+        // Add the user to the cohort.
+        cohort_add_member($cohortid, $userid);
 
         // Create a course category - there is no API for doing this.
         $category = new stdClass;
@@ -2421,7 +2429,7 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importusesuserfieldmappings() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
         $CFG->allowuserthemes = true;
 
@@ -2534,7 +2542,7 @@ class version1userimport_testcase extends rlip_test {
      */
     public function test_version1importuserfieldimportpreventsstandardfielduse() {
         global $CFG, $DB;
-        $plugindir = get_plugin_directory('rlipimport', 'version1');
+        $plugindir = get_plugin_directory('dhimport', 'version1');
         require_once($plugindir.'/version1.class.php');
         require_once($plugindir.'/lib.php');
 
@@ -2613,7 +2621,7 @@ class version1userimport_testcase extends rlip_test {
         );
         $DB->insert_record('user', $userone);
         $DB->insert_record('user', $usertwo);
-        set_config('allowduplicateemails', 1, 'rlipimport_version1');
+        set_config('allowduplicateemails', 1, 'dhimport_version1');
         $usertoimport = array(
             'username' => 'two',
             'mnethostid' => $CFG->mnet_localhost_id,
@@ -2640,23 +2648,23 @@ class version1userimport_testcase extends rlip_test {
         $testuser->email = 'testemail@example.com';
 
         // Test false return when not enabled.
-        set_config('newuseremailenabled', '0', 'rlipimport_version1');
-        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1');
-        set_config('newuseremailtemplate', 'Test Body', 'rlipimport_version1');
+        set_config('newuseremailenabled', '0', 'dhimport_version1');
+        set_config('newuseremailsubject', 'Test Subject', 'dhimport_version1');
+        set_config('newuseremailtemplate', 'Test Body', 'dhimport_version1');
         $result = $importplugin->newuseremail($testuser);
         $this->assertFalse($result);
 
         // Test false return when enabled but empty template.
-        set_config('newuseremailenabled', '1', 'rlipimport_version1');
-        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1');
-        set_config('newuseremailtemplate', '', 'rlipimport_version1');
+        set_config('newuseremailenabled', '1', 'dhimport_version1');
+        set_config('newuseremailsubject', 'Test Subject', 'dhimport_version1');
+        set_config('newuseremailtemplate', '', 'dhimport_version1');
         $result = $importplugin->newuseremail($testuser);
         $this->assertFalse($result);
 
         // Test false return when enabled and has template, but user has empty email.
-        set_config('newuseremailenabled', '1', 'rlipimport_version1');
-        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1');
-        set_config('newuseremailtemplate', 'Test Body', 'rlipimport_version1');
+        set_config('newuseremailenabled', '1', 'dhimport_version1');
+        set_config('newuseremailsubject', 'Test Subject', 'dhimport_version1');
+        set_config('newuseremailtemplate', 'Test Body', 'dhimport_version1');
         $testuser->email = '';
         $result = $importplugin->newuseremail($testuser);
         $this->assertFalse($result);
@@ -2665,9 +2673,9 @@ class version1userimport_testcase extends rlip_test {
         // Test success when enabled, has template text, and user has email.
         $testsubject = 'Test Subject';
         $testbody = 'Test Body';
-        set_config('newuseremailenabled', '1', 'rlipimport_version1');
-        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1');
-        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1');
+        set_config('newuseremailenabled', '1', 'dhimport_version1');
+        set_config('newuseremailsubject', $testsubject, 'dhimport_version1');
+        set_config('newuseremailtemplate', $testbody, 'dhimport_version1');
         $result = $importplugin->newuseremail($testuser);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -2681,9 +2689,9 @@ class version1userimport_testcase extends rlip_test {
         // Test that subject is replaced by empty string when not present.
         $testsubject = null;
         $testbody = 'Test Body';
-        set_config('newuseremailenabled', '1', 'rlipimport_version1');
-        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1');
-        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1');
+        set_config('newuseremailenabled', '1', 'dhimport_version1');
+        set_config('newuseremailsubject', $testsubject, 'dhimport_version1');
+        set_config('newuseremailtemplate', $testbody, 'dhimport_version1');
         $result = $importplugin->newuseremail($testuser);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -2698,9 +2706,9 @@ class version1userimport_testcase extends rlip_test {
         $testsubject = 'Test Subject';
         $testbody = 'Test Body %%username%%';
         $expectedtestbody = 'Test Body '.$testuser->username;
-        set_config('newuseremailenabled', '1', 'rlipimport_version1');
-        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1');
-        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1');
+        set_config('newuseremailenabled', '1', 'dhimport_version1');
+        set_config('newuseremailsubject', $testsubject, 'dhimport_version1');
+        set_config('newuseremailtemplate', $testbody, 'dhimport_version1');
         $result = $importplugin->newuseremail($testuser);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);

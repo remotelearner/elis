@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 //database table constants
-define('RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE', 'rlipimport_version1elis_map');
+define('RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE', 'dhimport_version1elis_map');
 
 /**
  * Performs page setup work needed on the page for configuring field mapping
@@ -38,8 +37,8 @@ function rlipimport_version1elis_page_setup($baseurl) {
 
     //set up the basic page info
     $PAGE->set_url($baseurl);
-    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
-    $displaystring = get_string('configuretitle', 'rlipimport_version1elis');
+    $PAGE->set_context(context_system::instance());
+    $displaystring = get_string('configuretitle', 'dhimport_version1elis');
     $PAGE->set_title("$SITE->shortname: ".$displaystring);
     $PAGE->set_heading($SITE->fullname);
 
@@ -61,7 +60,7 @@ function rlipimport_version1elis_get_tabs($baseurl) {
 
     foreach ($entitytypes as $entitytype) {
         $url = new moodle_url($baseurl, array('tab' => $entitytype));
-        $displaystring = get_string("{$entitytype}tab", 'rlipimport_version1elis');
+        $displaystring = get_string("{$entitytype}tab", 'dhimport_version1elis');
 
         $tabs[] = new tabobject($entitytype, $url, $displaystring);
     }
@@ -77,12 +76,12 @@ function rlipimport_version1elis_get_tabs($baseurl) {
  */
 function rlipimport_version1elis_get_mapping($entitytype) {
     global $CFG, $DB;
-    require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-    $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+    require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+    $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
     require_once($file);
 
     //obtain the list of supported fields
-    $plugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+    $plugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
     $fields = $plugin->get_available_fields($entitytype);
 
     if ($fields == false) {
@@ -153,7 +152,7 @@ function rlipimport_version1elis_save_mapping($entitytype, $options, $formdata) 
  */
 function rlipimport_version1elis_reset_mappings($entitytype) {
     global $CFG, $DB;
-    $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+    $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
     require_once($file);
 
     $sql = "UPDATE {".RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE."}

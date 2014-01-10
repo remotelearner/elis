@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 /**
  * Class for version 1 enrolment import correctness
- * @group block_rlip
- * @group rlipimport_version1
+ * @group local_datahub
+ * @group dhimport_version1
  */
 class version1enrolmentimport_testcase extends rlip_test {
     public static $courseroleid;
@@ -55,7 +55,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         parent::setUp();
 
         self::$courseroleid = self::create_test_role();
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
 
         self::$systemroleid = self::create_test_role('systemname', 'systemshortname', 'systemdescription', array(CONTEXT_SYSTEM));
         self::$coursecatroleid = self::create_test_role('coursecatname', 'coursecatshortname', 'coursecatdescription',
@@ -233,7 +233,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      */
     private function run_core_enrolment_import($extradata, $usedefaultdata = true) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         if ($usedefaultdata) {
@@ -269,7 +269,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports enrolment actions
      */
     public function test_version1importsupportsenrolmentactions() {
-        $supports = plugin_supports('rlipimport', 'version1', 'enrolment');
+        $supports = plugin_supports('dhimport', 'version1', 'enrolment');
         $this->assertEquals($supports, array('create', 'add', 'delete'));
     }
 
@@ -277,7 +277,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports the enrolment create action
      */
     public function test_version1importsupportsenrolmentcreate() {
-        $supports = plugin_supports('rlipimport', 'version1', 'enrolment_create');
+        $supports = plugin_supports('dhimport', 'version1', 'enrolment_create');
         $requiredfields = array(
                 array('username', 'email', 'idnumber'),
                 'context',
@@ -292,7 +292,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports the enrolment add action
      */
     public function test_version1importsupportsenrolmentadd() {
-        $supports = plugin_supports('rlipimport', 'version1', 'enrolment_add');
+        $supports = plugin_supports('dhimport', 'version1', 'enrolment_add');
         $requiredfields = array(
                 array('username', 'email', 'idnumber'),
                 'context',
@@ -307,7 +307,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports the enrolment delete action
      */
     public function test_version1importsupportsenrolmentdelete() {
-        $supports = plugin_supports('rlipimport', 'version1', 'enrolment_delete');
+        $supports = plugin_supports('dhimport', 'version1', 'enrolment_delete');
         $requiredfields = array(
                 array('username', 'email', 'idnumber'),
                 'context',
@@ -329,7 +329,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         $data = array();
         $data['roleid'] = self::$courseroleid;
 
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
 
         $data['userid'] = self::$userid;
@@ -354,7 +354,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         $data = array();
         $data['roleid'] = self::$systemroleid;
 
-        $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+        $systemcontext = context_system::instance();
         $data['contextid'] = $systemcontext->id;
 
         $data['userid'] = self::$userid;
@@ -384,7 +384,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         $data = array();
         $data['roleid'] = self::$coursecatroleid;
 
-        $categorycontext = get_context_instance(CONTEXT_COURSECAT, $category->id);
+        $categorycontext = context_coursecat::instance($category->id);
         $data['contextid'] = $categorycontext->id;
 
         $data['userid'] = self::$userid;
@@ -408,7 +408,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         $data = array();
         $data['roleid'] = self::$userroleid;
 
-        $usercontext = get_context_instance(CONTEXT_USER, self::$userid);
+        $usercontext = context_user::instance(self::$userid);
         $data['contextid'] = $usercontext->id;
 
         $data['userid'] = self::$userid;
@@ -595,7 +595,7 @@ class version1enrolmentimport_testcase extends rlip_test {
     public function test_version1importpreventsduplicateroleassignmentcreation() {
           global $DB;
 
-          $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+          $coursecontext = context_course::instance(self::$courseid);
           role_assign(self::$courseroleid, self::$userid, $coursecontext->id);
 
           // Course.
@@ -604,7 +604,7 @@ class version1enrolmentimport_testcase extends rlip_test {
           $this->assertEquals($DB->count_records('role_assignments'), 1);
 
           // System.
-          $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+          $systemcontext = context_system::instance();
           role_assign(self::$systemroleid, self::$userid, $systemcontext->id);
 
           $this->assertEquals($DB->count_records('role_assignments'), 2);
@@ -616,7 +616,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
           // Course category.
           $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
-          $categorycontext = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+          $categorycontext = context_coursecat::instance($categoryid);
           role_assign(self::$coursecatroleid, self::$userid, $categorycontext->id);
 
           $this->assertEquals($DB->count_records('role_assignments'), 3);
@@ -627,7 +627,7 @@ class version1enrolmentimport_testcase extends rlip_test {
           $this->assertEquals($DB->count_records('role_assignments'), 3);
 
           // User.
-          $usercontext = get_context_instance(CONTEXT_USER, self::$userid);
+          $usercontext = context_user::instance(self::$userid);
           role_assign(self::$userroleid, self::$userid, $usercontext->id);
 
           $this->assertEquals($DB->count_records('role_assignments'), 4);
@@ -692,7 +692,7 @@ class version1enrolmentimport_testcase extends rlip_test {
                                                              'enrolid' => $enrolid));
 
         // Role assignment.
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $this->assert_record_exists('role_assignments', array(
             'userid' => self::$userid,
             'roleid' => self::$courseroleid,
@@ -755,7 +755,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         $data = array();
         $data['roleid'] = self::$courseroleid;
 
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
 
         $data['userid'] = self::$userid;
@@ -780,7 +780,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         $data = array();
         $data['roleid'] = self::$courseroleid;
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
         $data['userid'] = self::$userid;
 
@@ -804,7 +804,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         $data = array();
         $data['roleid'] = self::$courseroleid;
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
         $data['userid'] = self::$userid;
 
@@ -829,7 +829,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         $data = array();
         $data['roleid'] = self::$courseroleid;
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
         $data['userid'] = self::$userid;
 
@@ -854,7 +854,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         $data = array();
         $data['roleid'] = self::$courseroleid;
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
         $data['userid'] = self::$userid;
 
@@ -879,7 +879,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         $data = array();
         $data['roleid'] = self::$courseroleid;
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
         $data['userid'] = self::$userid;
 
@@ -905,7 +905,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         $data = array();
         $data['roleid'] = self::$courseroleid;
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
         $data['userid'] = self::$userid;
 
@@ -978,7 +978,7 @@ class version1enrolmentimport_testcase extends rlip_test {
     public function test_version1importenrolsuseralreadyassignedarole() {
         global $DB;
 
-        $context = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $context = context_course::instance(self::$courseid);
 
         role_assign(self::$courseroleid, self::$userid, $context->id);
 
@@ -1029,7 +1029,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Run the import.
         $data = $this->get_core_enrolment_data();
@@ -1074,7 +1074,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Run the import.
         $this->run_core_enrolment_import(array('group' => 'rlipgroup',
@@ -1099,7 +1099,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Set up the "pre-existing" group.
         $groupid = $this->create_test_group(self::$courseid);
@@ -1126,7 +1126,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Set up the "pre-existing" grouping.
         $groupingid = $this->create_test_grouping(self::$courseid);
@@ -1234,7 +1234,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      */
     public function test_version1importinvalidgroupnamepreventsenrolment() {
         // Disable group / grouping creation.
-        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 0, 'dhimport_version1');
 
         // Run the import.
         $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
@@ -1252,7 +1252,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         $secondcourseid = $this->create_test_course(array('shortname' => 'allowduplicategroupsacrosscourses'));
 
@@ -1285,7 +1285,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Setup.
         $secondcourseid = $this->create_test_course(array('shortname' => 'allowduplicategroupsinaothercourse'));
@@ -1318,7 +1318,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable groups functionality.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Run the system-level import.
         // $this->create_test_user();.
@@ -1379,7 +1379,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      */
     public function test_version1importinvalidgroupingnamepreventsenrolment() {
         // Disable group / grouping creation.
-        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 0, 'dhimport_version1');
 
         // Set up the "pre-existing" grouping.
         $this->create_test_grouping(self::$courseid);
@@ -1403,7 +1403,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Setup.
         $secondcourseid = $this->create_test_course(array('shortname' => 'allowduplicategroupingsacrosscourses'));
@@ -1439,7 +1439,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Setup.
         $secondcourseid = $this->create_test_course(array('shortname' => 'allowduplicategroupingsinanothercourse'));
@@ -1532,7 +1532,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Run the import.
         $this->run_core_enrolment_import(array('context' => 'system',
@@ -1551,7 +1551,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Disable group / grouping creation.
-        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 0, 'dhimport_version1');
 
         // Run the import.
         $this->run_core_enrolment_import(array('group' => 'rlipgroup'));
@@ -1568,7 +1568,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Disable group / grouping creation.
-        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 0, 'dhimport_version1');
 
         // Run the import.
         $this->run_core_enrolment_import(array('group' => 'rlipgroup',
@@ -1783,7 +1783,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      */
     public function test_version1importdeletescourseroleassignment() {
         // Set up our enrolment.
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         role_assign(self::$courseroleid, self::$userid, $coursecontext->id);
 
         // Validate setup.
@@ -1827,7 +1827,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Setup.
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
         role_assign(self::$systemroleid, self::$userid, $context->id);
 
         $this->assertEquals($DB->count_records('role_assignments'), 1);
@@ -1850,7 +1850,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         // Setup.
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
-        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $context = context_coursecat::instance($categoryid);
 
         // Prevent PM from trying to process instructors.
         set_config('coursecontact', '');
@@ -1877,7 +1877,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Setup.
-        $context = get_context_instance(CONTEXT_USER, self::$userid);
+        $context = context_user::instance(self::$userid);
         role_assign(self::$userroleid, self::$userid, $context->id);
 
         $this->assertEquals($DB->count_records('role_assignments'), 1);
@@ -2001,7 +2001,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         // Setup.
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
-        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $context = context_coursecat::instance($categoryid);
 
         // Set up our role assignment.
         role_assign(self::$coursecatroleid, self::$userid, $context->id);
@@ -2029,7 +2029,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         // Setup.
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipcategory'));
-        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $context = context_coursecat::instance($categoryid);
 
         // Set up our role assignment.
         role_assign(self::$coursecatroleid, self::$userid, $context->id);
@@ -2056,7 +2056,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Setup.
-        $context = get_context_instance(CONTEXT_USER, self::$userid);
+        $context = context_user::instance(self::$userid);
 
         // Set up our role assignment.
         role_assign(self::$userroleid, self::$userid, $context->id);
@@ -2285,7 +2285,7 @@ class version1enrolmentimport_testcase extends rlip_test {
 
         $roleid = $this->create_test_role('deletionrolespecificname', 'deletionrolespecificshortname',
                 'deletionrolespecificdescription');
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
 
         // Set up a second enrolment.
         $data = $this->get_core_enrolment_data();
@@ -2311,7 +2311,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      */
     public function test_version1importusesenrolmentfieldmappings() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up our mapping of standard field names to custom field names.
@@ -2346,7 +2346,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         // Validate role assignment record.
         $data = array();
         $data['roleid'] = self::$courseroleid;
-        $coursecontext = get_context_instance(CONTEXT_COURSE, self::$courseid);
+        $coursecontext = context_course::instance(self::$courseid);
         $data['contextid'] = $coursecontext->id;
         $data['userid'] = self::$userid;
 
@@ -2361,7 +2361,7 @@ class version1enrolmentimport_testcase extends rlip_test {
      */
     public function test_version1importenrolmentfieldimportpreventsstandardfielduse() {
         global $CFG, $DB;
-        $plugindir = get_plugin_directory('rlipimport', 'version1');
+        $plugindir = get_plugin_directory('dhimport', 'version1');
         require_once($plugindir.'/lib.php');
         require_once($plugindir.'/version1.class.php');
 
@@ -2397,7 +2397,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         global $DB;
 
         // Enable group / grouping creation.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         // Data for all fixed-size fields at their maximum sizes.
         $data = array('username' => str_repeat('x', 100),
@@ -2461,28 +2461,28 @@ class version1enrolmentimport_testcase extends rlip_test {
         $this->assertFalse($result);
 
         // Test false return when not enabled.
-        set_config('newenrolmentemailenabled', '0', 'rlipimport_version1');
-        set_config('newenrolmentemailsubject', 'Test Subject', 'rlipimport_version1');
-        set_config('newenrolmentemailtemplate', 'Test Body', 'rlipimport_version1');
-        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1');
+        set_config('newenrolmentemailenabled', '0', 'dhimport_version1');
+        set_config('newenrolmentemailsubject', 'Test Subject', 'dhimport_version1');
+        set_config('newenrolmentemailtemplate', 'Test Body', 'dhimport_version1');
+        set_config('newenrolmentemailfrom', 'teacher', 'dhimport_version1');
         $result = $importplugin->newenrolmentemail($user->id, $course->id);
         $this->assertFalse($result);
 
         // Test false return when enabled but empty template.
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
-        set_config('newenrolmentemailsubject', 'Test Subject', 'rlipimport_version1');
-        set_config('newenrolmentemailtemplate', '', 'rlipimport_version1');
-        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1');
+        set_config('newenrolmentemailsubject', 'Test Subject', 'dhimport_version1');
+        set_config('newenrolmentemailtemplate', '', 'dhimport_version1');
+        set_config('newenrolmentemailfrom', 'teacher', 'dhimport_version1');
         $result = $importplugin->newenrolmentemail($user->id, $course->id);
         $this->assertFalse($result);
 
         // Test success when enabled, has template text, and user has email.
         $testsubject = 'Test Subject';
         $testbody = 'Test Body';
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
-        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1');
-        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1');
-        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1');
+        set_config('newenrolmentemailsubject', $testsubject, 'dhimport_version1');
+        set_config('newenrolmentemailtemplate', $testbody, 'dhimport_version1');
+        set_config('newenrolmentemailfrom', 'admin', 'dhimport_version1');
         $result = $importplugin->newenrolmentemail($user->id, $course->id);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -2498,10 +2498,10 @@ class version1enrolmentimport_testcase extends rlip_test {
         // Test success and from is set to teacher when selected.
         $testsubject = 'Test Subject';
         $testbody = 'Test Body';
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
-        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1');
-        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1');
-        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1');
+        set_config('newenrolmentemailsubject', $testsubject, 'dhimport_version1');
+        set_config('newenrolmentemailtemplate', $testbody, 'dhimport_version1');
+        set_config('newenrolmentemailfrom', 'teacher', 'dhimport_version1');
         $result = $importplugin->newenrolmentemail($user->id, $course->id);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -2517,10 +2517,10 @@ class version1enrolmentimport_testcase extends rlip_test {
         // Test that subject is replaced by empty string when not present.
         $testsubject = null;
         $testbody = 'Test Body';
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
-        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1');
-        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1');
-        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1');
+        set_config('newenrolmentemailsubject', $testsubject, 'dhimport_version1');
+        set_config('newenrolmentemailtemplate', $testbody, 'dhimport_version1');
+        set_config('newenrolmentemailfrom', 'admin', 'dhimport_version1');
         $result = $importplugin->newenrolmentemail($user->id, $course->id);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -2537,10 +2537,10 @@ class version1enrolmentimport_testcase extends rlip_test {
         $testsubject = 'Test Subject';
         $testbody = 'Test Body %%user_username%%';
         $expectedtestbody = 'Test Body '.$user->username;
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1');
-        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1');
-        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1');
-        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1');
+        set_config('newenrolmentemailsubject', $testsubject, 'dhimport_version1');
+        set_config('newenrolmentemailtemplate', $testbody, 'dhimport_version1');
+        set_config('newenrolmentemailfrom', 'admin', 'dhimport_version1');
         $result = $importplugin->newenrolmentemail($user->id, $course->id);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);

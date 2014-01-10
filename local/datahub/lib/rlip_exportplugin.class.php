@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
 /**
  * Base class for Integration Point export plugins
@@ -89,8 +88,8 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      */
     function __construct($fileplugin, $manual = false) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dblogger.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fslogger.class.php');
 
         $this->fileplugin = $fileplugin;
         $this->manual = $manual;
@@ -98,7 +97,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
 
         //convert class name to plugin name
         $class = get_class($this);
-        $this->plugin = str_replace('rlip_exportplugin_', 'rlipexport_', $class);
+        $this->plugin = str_replace('rlip_exportplugin_', 'dhexport_', $class);
 
         //track the start time as the current time - moved from run() in order to support rlip_log_file_name
         $this->dblogger->set_starttime(time());
@@ -212,7 +211,7 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
                 if ($this->fslogger) {
                     $msg = get_string($this->manual
                                       ? 'manualexportexceedstimelimit'
-                                      : 'exportexceedstimelimit', 'block_rlip');
+                                      : 'exportexceedstimelimit', 'local_datahub');
                     $this->fslogger->log_failure($msg);
                 }
                 return false;

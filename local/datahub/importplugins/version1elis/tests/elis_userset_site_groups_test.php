@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Validate that IP actions trigger the appropriate userset site groups functionality, including groupings functionality.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_userset_site_groups_testcase extends rlip_elis_test {
 
@@ -47,10 +47,10 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
      */
     private function set_up_required_data($setcustomfielddata = true, $assignuser = true, $setautoassociatefields = false) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::file('accesslib.php'));
-        require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+        require_once(elispm::file('enrol/userset/moodleprofile/userset_profile.class.php'));
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
@@ -171,8 +171,8 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
         $this->set_up_required_data(false, true);
 
         // Set up the necessary config data.
-        set_config('site_course_userset_groups', 1, 'pmplugins_userset_groups');
-        set_config('userset_groupings', 1, 'pmplugins_userset_groups');
+        set_config('site_course_userset_groups', 1, 'elisprogram_usetgroups');
+        set_config('userset_groupings', 1, 'elisprogram_usetgroups');
         set_config('siteguest', '');
 
         // Validate setup.
@@ -186,7 +186,7 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
         $record->userset_group = '1';
         $record->userset_groupings = '1';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         // Need to call process_record so that custom field mappings are handled.
         $importplugin->process_record('course', $record, 'bogus');
@@ -202,8 +202,8 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
         $this->set_up_required_data(true, false);
 
         // Set up the necessary config data.
-        set_config('site_course_userset_groups', 1, 'pmplugins_userset_groups');
-        set_config('userset_groupings', 1, 'pmplugins_userset_groups');
+        set_config('site_course_userset_groups', 1, 'elisprogram_usetgroups');
+        set_config('userset_groupings', 1, 'elisprogram_usetgroups');
         set_config('siteguest', '');
 
         // Run the user set enrolment action.
@@ -211,7 +211,7 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
         $record->context = 'cluster_testusersetname';
         $record->username = 'testuserusername';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_enrolment_create($record, 'bogus', 'testusersetname');
 
@@ -224,13 +224,13 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
      */
     public function test_elis_user_update_triggers_group_and_grouping_setup() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $this->set_up_required_data(true, false, true);
 
         // Set up the necessary config data.
-        set_config('site_course_userset_groups', 1, 'pmplugins_userset_groups');
-        set_config('userset_groupings', 1, 'pmplugins_userset_groups');
+        set_config('site_course_userset_groups', 1, 'elisprogram_usetgroups');
+        set_config('userset_groupings', 1, 'elisprogram_usetgroups');
         set_config('siteguest', '');
 
         // Run the user update action.
@@ -245,7 +245,7 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
         $temp = new user();
         $temp->reset_custom_field_list();
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         // Need to call process_record so that custom field mappings are handled.
         $importplugin->process_record('user', $record, 'bogus');

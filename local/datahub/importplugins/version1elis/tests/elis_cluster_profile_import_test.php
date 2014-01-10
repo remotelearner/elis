@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Test class for validating that users are auto-assigned to clusters (i.e.
  * user sets) based on profile fields set during user import
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_cluster_profile_import_testcase extends rlip_elis_test {
 
@@ -46,8 +46,8 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
      */
     private function init_required_data($numfields = 1) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
-        require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+        require_once(elis::file('eliscore/fields/moodleprofile/custom_fields.php'));
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::file('accesslib.php'));
         require_once(elispm::lib('data/userset.class.php'));
@@ -106,7 +106,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
      */
     public function test_one_field_cluster_profile_on_user_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/clusterassignment.class.php');
 
         // Set up data.
         $this->init_required_data();
@@ -122,7 +122,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
         $record->country = 'CA';
         $record->testfieldshortname1 = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $result = $importplugin->process_record('user', $record, 'bogus');
 
@@ -142,8 +142,8 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
      */
     public function test_two_field_cluster_profile_on_user_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/clusterassignment.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         // Set up data.
         $this->init_required_data(2);
@@ -160,7 +160,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
         $record->testfieldshortname1 = 1;
         $record->testfieldshortname2 = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
@@ -178,8 +178,8 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
      */
     public function test_one_field_cluster_profile_on_user_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/clusterassignment.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         // Set up data.
         $this->init_required_data();
@@ -202,7 +202,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
         $record->idnumber = 'testuseridnumber';
         $record->testfieldshortname1 = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
@@ -220,8 +220,8 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
      */
     public function test_two_field_cluster_profile_on_user_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/clusterassignment.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         // Set up data.
         $this->init_required_data(2);
@@ -245,7 +245,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
         $record->testfieldshortname1 = 1;
         $record->testfieldshortname2 = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 

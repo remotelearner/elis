@@ -16,19 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1
+ * @package    dhexport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 
 /**
  * File plugin that just stores read records in memory
@@ -112,8 +112,8 @@ class rlip_fileplugin_memoryexport extends rlip_fileplugin_base {
 /**
  * Class for testing export database logging for the "version 1" plugin
  * @author brendan
- * @group rlipexport_version1
- * @group block_rlip
+ * @group dhexport_version1
+ * @group local_datahub
  */
 class version1exportdatabaselogging_testcase extends rlip_test {
 
@@ -163,7 +163,7 @@ class version1exportdatabaselogging_testcase extends rlip_test {
      */
     public function run_export($targetstarttime = 0, $writedelay = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/version1.class.php';
         require_once($file);
 
         // Set the log file location to the dataroot.
@@ -186,7 +186,7 @@ class version1exportdatabaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogsemptyexport() {
         global $CFG, $USER, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Lower bound on starttime.
         $starttime = time();
@@ -213,7 +213,7 @@ class version1exportdatabaselogging_testcase extends rlip_test {
                    unmetdependency = :unmetdependency";
         $params = array(
             'export' => 1,
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'userid' => $USER->id,
             'starttime' => $starttime,
             'endtime' => $endtime,
@@ -234,10 +234,10 @@ class version1exportdatabaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogsnonemptyexport() {
         global $CFG, $USER, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Make sure the export is insensitive to time values.
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
@@ -266,7 +266,7 @@ class version1exportdatabaselogging_testcase extends rlip_test {
                    unmetdependency = :unmetdependency";
         $params = array(
             'export' => 1,
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'userid' => $USER->id,
             'starttime' => $starttime,
             'endtime' => $endtime,
@@ -288,10 +288,10 @@ class version1exportdatabaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingtargetstarttimedefaultstozero() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Make sure the export is insensitive to time values.
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
@@ -310,10 +310,10 @@ class version1exportdatabaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingsupportstargetstarttimes() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Make sure the export is insensitive to time values.
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
@@ -333,7 +333,7 @@ class version1exportdatabaselogging_testcase extends rlip_test {
         global $DB;
 
         // Make sure the export is insensitive to time values.
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
         // Set up data for one course and one enroled user.
         $this->load_csv_data2();
 
@@ -348,21 +348,21 @@ class version1exportdatabaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingsetsallfieldsduringscheduledrun() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Set up the export file path.
         $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        set_config('export_file', $filename, 'dhexport_version1');
 
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipexport'
+            'type' => 'dhexport'
         );
         $taskid = rlip_schedule_add_job($data);
 
@@ -370,17 +370,17 @@ class version1exportdatabaselogging_testcase extends rlip_test {
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = 99;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhexport_version1'));
         $job->nextruntime = 99;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Lower bound on starttime.
         $starttime = time();
         // Run the export.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
         // Upper bound on endtime.
         $endtime = time();
@@ -403,7 +403,7 @@ class version1exportdatabaselogging_testcase extends rlip_test {
         $datestr = date('M_j_Y_His', $starttime);
         $params = array(
             'export' => 1,
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'userid' => $USER->id,
             'targetstarttime' => 99,
             'starttime' => $starttime,
@@ -427,14 +427,14 @@ class version1exportdatabaselogging_testcase extends rlip_test {
      */
     public function test_version1exportdbloggingstoreslogpathforexistinglogfile() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Set up the export file path.
-        set_config('export_file', '', 'rlipexport_version1');
+        set_config('export_file', '', 'dhexport_version1');
         // Set up the log file location.
-        set_config('logfilelocation', '', 'rlipexport_version1');
+        set_config('logfilelocation', '', 'dhexport_version1');
         // Make sure the export is insensitive to time values.
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
         // Set up data for one course and one enroled user.
         $this->load_csv_data2();
 
@@ -454,14 +454,14 @@ class version1exportdatabaselogging_testcase extends rlip_test {
      */
     public function test_version1exportdbloggingdoesnotstorelogpathfornonexistentlogfile() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Set up the export file path.
-        set_config('export_file', '', 'rlipexport_version1');
+        set_config('export_file', '', 'dhexport_version1');
         // Set up the log file location.
-        set_config('logfilelocation', '', 'rlipexport_version1');
+        set_config('logfilelocation', '', 'dhexport_version1');
         // Make sure the export is insensitive to time values.
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
         // Set up data for one course and one enroled user.
         $this->load_csv_data2();
 

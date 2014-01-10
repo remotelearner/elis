@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
 
 /**
  * Class for testing version 1 "create or update" action correctness
- * @group block_rlip
- * @group rlipimport_version1
+ * @group local_datahub
+ * @group dhimport_version1
  */
 class version1createorupdate_testcase extends rlip_test {
 
@@ -47,7 +47,7 @@ class version1createorupdate_testcase extends rlip_test {
      */
     private function run_core_user_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1_importprovider_createorupdateuser($data);
@@ -63,7 +63,7 @@ class version1createorupdate_testcase extends rlip_test {
      */
     private function run_core_course_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1_importprovider_createorupdatecourse($data);
@@ -79,7 +79,7 @@ class version1createorupdate_testcase extends rlip_test {
      */
     private function run_core_enrolment_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1_importprovider_createorupdateenrolment($data);
@@ -148,7 +148,7 @@ class version1createorupdate_testcase extends rlip_test {
      */
     private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Add the record to the DB.
@@ -167,7 +167,7 @@ class version1createorupdate_testcase extends rlip_test {
         global $CFG, $DB;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Validate that the standard create action still works.
         $expecteddata = array(
@@ -210,7 +210,7 @@ class version1createorupdate_testcase extends rlip_test {
         global $CFG, $DB;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         $initalusercount = $DB->count_records('user');
 
@@ -281,7 +281,7 @@ class version1createorupdate_testcase extends rlip_test {
         global $CFG, $DB;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Set up mapping record.
         $this->create_mapping_record('user', 'action', 'customaction');
@@ -326,7 +326,7 @@ class version1createorupdate_testcase extends rlip_test {
         global $DB;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Validate that the standard create action still works.
         $expecteddata = array('shortname' => 'rlipshortname', 'fullname' => 'rlipfullname');
@@ -354,7 +354,7 @@ class version1createorupdate_testcase extends rlip_test {
         global $DB;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Initial data setup.
         $expecteddata = array('shortname' => 'rlipshortname', 'fullname' => 'rlipfullname');
@@ -391,7 +391,7 @@ class version1createorupdate_testcase extends rlip_test {
         global $DB;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Set up mapping record.
         $this->create_mapping_record('course', 'action', 'customaction');
@@ -423,7 +423,7 @@ class version1createorupdate_testcase extends rlip_test {
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
         set_config('gradebookroles', '');
 
         set_config('defaultenrol', 1, 'enrol_manual');
@@ -432,10 +432,10 @@ class version1createorupdate_testcase extends rlip_test {
         // Initial data setup.
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = create_role('rlipname', 'rlipshortname', 'rlipdescription');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
         // Make sure it has the course view capability so it can be assigned as a non-student role.
         assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
@@ -462,12 +462,12 @@ class version1createorupdate_testcase extends rlip_test {
         global $DB;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Initial data setup.
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = create_role('rlipname', 'rlipshortname', 'rlipdescription');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
 
@@ -490,7 +490,7 @@ class version1createorupdate_testcase extends rlip_test {
      */
     public function test_version1createorupdateignoresemptyuserfields() {
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Initial data setup.
         $this->create_test_user();
@@ -519,7 +519,7 @@ class version1createorupdate_testcase extends rlip_test {
         global $DB;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Validate that the standard delete action still works first create course.
         $expecteddata = array('shortname' => 'rlipshortname', 'fullname' => 'rlipfullname');
@@ -548,7 +548,7 @@ class version1createorupdate_testcase extends rlip_test {
         $CFG->siteguest = 0;
 
         // Set up initial conditions.
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Validate that the standard delete action still works first create the user.
         $expecteddata = array(
@@ -590,7 +590,7 @@ class version1createorupdate_testcase extends rlip_test {
      * Validate legacy support using "add" for action with create or update
      */
     public function test_version1createorupdateaddaction() {
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         $this->create_test_user();
 

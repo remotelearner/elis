@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/tests/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
 
 /**
  * Class for validating that field mappings work correctly during the ELIS PM entity (i.e. "Course") import.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
     private $mapping = array(
@@ -80,7 +80,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     private function init_mapping() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/lib.php');
 
         foreach ($this->mapping as $standardfieldname => $customfieldname) {
             $mapping = new stdClass;
@@ -100,8 +100,8 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     private function create_custom_field($contextlevel) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         // Field category.
         $fieldcategory = new field_category(array('name' => 'testcategoryname'));
@@ -130,7 +130,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     private function run_pmentity_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1elis_importprovider_mockcourse($data);
@@ -144,15 +144,15 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_program_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
         $this->init_mapping();
 
         $customfieldid = $this->create_custom_field(CONTEXT_ELIS_PROGRAM);
 
-        set_config('enable_curriculum_expiration', 1, 'elis_program');
+        set_config('enable_curriculum_expiration', 1, 'local_elisprogram');
 
         // Run the program create action.
         $record = new stdClass;
@@ -184,7 +184,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
         $record = $DB->get_record(curriculum::TABLE, array('idnumber' => 'testprogramidnumber'));
         $this->assertEquals('testprogramdescription', $record->description);
 
-        $instance = context_elis_program::instance(1);
+        $instance = \local_elisprogram\context\program::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -198,15 +198,15 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_program_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
         $this->init_mapping();
 
         $customfieldid = $this->create_custom_field(CONTEXT_ELIS_PROGRAM);
 
-        set_config('enable_curriculum_expiration', 1, 'elis_program');
+        set_config('enable_curriculum_expiration', 1, 'local_elisprogram');
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
@@ -240,7 +240,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
         $record = $DB->get_record(curriculum::TABLE, array('idnumber' => 'testprogramidnumber'));
         $this->assertEquals('updatedtestprogramdescription', $record->description);
 
-        $instance = context_elis_program::instance(1);
+        $instance = \local_elisprogram\context\program::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -254,7 +254,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_program_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
         $this->init_mapping();
 
@@ -278,13 +278,13 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_track_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $this->init_mapping();
 
@@ -332,7 +332,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
 
         $this->assertEquals(1, $DB->count_records(pmclass::TABLE));
 
-        $instance = context_elis_track::instance(1);
+        $instance = \local_elisprogram\context\track::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -346,10 +346,10 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_track_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $this->init_mapping();
 
@@ -386,7 +386,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
         $record = $DB->get_record(track::TABLE, array('idnumber' => 'testtrackidnumber'));
         $this->assertEquals('updatedtesttrackdescription', $record->description);
 
-        $instance = context_elis_track::instance(1);
+        $instance = \local_elisprogram\context\track::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -400,8 +400,8 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_track_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $this->init_mapping();
 
@@ -432,12 +432,12 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
     public function test_mapping_applied_during_course_create() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/coursetemplate.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/coursetemplate.class.php');
 
         $this->init_mapping();
 
@@ -507,7 +507,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
             'location' => $course->id
         )));
 
-        $instance = context_elis_course::instance(1);
+        $instance = \local_elisprogram\context\course::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -522,12 +522,12 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
     public function test_mapping_applied_during_course_update() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculumcourse.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/coursetemplate.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculumcourse.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/coursetemplate.class.php');
 
         $this->init_mapping();
 
@@ -601,7 +601,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
             'location' => $course->id
         )));
 
-        $instance = context_elis_course::instance(1);
+        $instance = \local_elisprogram\context\course::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -615,7 +615,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_course_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
         $this->init_mapping();
 
@@ -644,13 +644,13 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
     public function test_mapping_applied_during_class_create() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/classmoodlecourse.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $this->init_mapping();
 
@@ -729,7 +729,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
             'moodlecourseid' => $course->id
         )));
 
-        $instance = context_elis_class::instance(1);
+        $instance = \local_elisprogram\context\pmclass::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -744,13 +744,13 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
     public function test_mapping_applied_during_class_update() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/classmoodlecourse.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $this->init_mapping();
 
@@ -828,7 +828,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
             'moodlecourseid' => $course->id
         )));
 
-        $instance = context_elis_class::instance(1);
+        $instance = \local_elisprogram\context\pmclass::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -842,8 +842,8 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_class_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
         $this->init_mapping();
 
@@ -874,9 +874,9 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_userset_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $this->init_mapping();
 
@@ -910,7 +910,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
 
         $usersetid = $DB->get_field(userset::TABLE, 'id', array('name' => 'testusersetname'));
         $this->assertNotEquals(false, $usersetid);
-        $instance = context_elis_userset::instance($usersetid);
+        $instance = \local_elisprogram\context\userset::instance($usersetid);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -924,9 +924,9 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_userset_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $this->init_mapping();
 
@@ -961,7 +961,7 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
         );
         $this->assertTrue($DB->record_exists(userset::TABLE, $data));
 
-        $instance = context_elis_userset::instance($userset->id);
+        $instance = \local_elisprogram\context\userset::instance($userset->id);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -975,8 +975,8 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_userset_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $this->init_mapping();
 
@@ -984,11 +984,11 @@ class elis_pmentity_field_mappings_testcase extends rlip_elis_test {
 
         $parentuserset = new userset(array('name' => 'testparentusersetname'));
         $parentuserset->save();
-        context_elis_userset::instance($parentuserset->id);
+        \local_elisprogram\context\userset::instance($parentuserset->id);
 
         $userset = new userset(array('parent' => $parentuserset->id, 'name' => 'testusersetname'));
         $userset->save();
-        context_elis_userset::instance($userset->id);
+        \local_elisprogram\context\userset::instance($userset->id);
 
         // Run the course delete action.
         $record = new stdClass;

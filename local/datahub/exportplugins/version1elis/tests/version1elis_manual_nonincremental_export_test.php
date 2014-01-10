@@ -16,23 +16,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1elis
+ * @package    dhexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
+require_once($CFG->dirroot.'/local/datahub/exportplugins/version1elis/lib.php');
+require_once($CFG->dirroot.'/local/datahub/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
 require_once($CFG->dirroot.'/course/lib.php');
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/classmoodlecourse.class.php'));
     require_once(elispm::lib('data/course.class.php'));
     require_once(elispm::lib('data/pmclass.class.php'));
@@ -43,8 +43,8 @@ if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
 
 /**
  * Test class for validating basic export data during a manual, nonincremental export.
- * @group block_rlip
- * @group rlipexport_version1elis
+ * @group local_datahub
+ * @group dhexport_version1elis
  */
 class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
 
@@ -57,11 +57,11 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
      */
     protected function get_export_data($manual = true, $targetstarttime = 0, $lastruntime = 0) {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         // Set the export to be nonincremental.
-        set_config('nonincremental', 1, 'rlipexport_version1elis');
+        set_config('nonincremental', 1, 'dhexport_version1elis');
 
         // Plugin for file IO.
         $fileplugin = new rlip_fileplugin_export();
@@ -113,16 +113,16 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
      */
     public function valid_header_provider() {
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1elis'),
-                get_string('header_lastname', 'rlipexport_version1elis'),
-                get_string('header_username', 'rlipexport_version1elis'),
-                get_string('header_useridnumber', 'rlipexport_version1elis'),
-                get_string('header_courseidnumber', 'rlipexport_version1elis'),
-                get_string('header_startdate', 'rlipexport_version1elis'),
-                get_string('header_enddate', 'rlipexport_version1elis'),
-                get_string('header_status', 'rlipexport_version1elis'),
-                get_string('header_grade', 'rlipexport_version1elis'),
-                get_string('header_letter', 'rlipexport_version1elis')
+                get_string('header_firstname', 'dhexport_version1elis'),
+                get_string('header_lastname', 'dhexport_version1elis'),
+                get_string('header_username', 'dhexport_version1elis'),
+                get_string('header_useridnumber', 'dhexport_version1elis'),
+                get_string('header_courseidnumber', 'dhexport_version1elis'),
+                get_string('header_startdate', 'dhexport_version1elis'),
+                get_string('header_enddate', 'dhexport_version1elis'),
+                get_string('header_status', 'dhexport_version1elis'),
+                get_string('header_grade', 'dhexport_version1elis'),
+                get_string('header_letter', 'dhexport_version1elis')
         );
         return array(array($expectedheader));
     }
@@ -200,7 +200,7 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
      */
     public function necessary_associations_provider() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             return array(
                     array(course::TABLE),
                     array(pmclass::TABLE),
@@ -239,7 +239,7 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
      */
     public function completion_status_provider() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             return array(
                     array(student::STUSTATUS_NOTCOMPLETE),
                     array(student::STUSTATUS_FAILED),
@@ -572,14 +572,14 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
      */
     public function test_exportresetsstate() {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         // Data setup.
         $this->load_csv_data();
 
         // Set the export to be nonincremental.
-        set_config('nonincremental', 1, 'rlipexport_version1elis');
+        set_config('nonincremental', 1, 'dhexport_version1elis');
 
         // Plugin for file IO.
         $fileplugin = new rlip_fileplugin_export();

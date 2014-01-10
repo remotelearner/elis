@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -24,7 +24,7 @@
 /**
  * Delete class webservices method.
  */
-class block_rldh_elis_class_delete extends external_api {
+class local_datahub_elis_class_delete extends external_api {
 
     /**
      * Require ELIS dependencies if ELIS is installed, otherwise return false.
@@ -32,8 +32,8 @@ class block_rldh_elis_class_delete extends external_api {
      */
     public static function require_elis_dependencies() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/pmclass.class.php'));
             require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
             return true;
@@ -66,28 +66,28 @@ class block_rldh_elis_class_delete extends external_api {
         global $USER, $DB;
 
         if (static::require_elis_dependencies() !== true) {
-            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+            throw new moodle_exception('ws_function_requires_elis', 'local_datahub');
         }
 
         // Parameter validation.
         $params = self::validate_parameters(self::class_delete_parameters(), array('data' => $data));
 
         // Context validation.
-        $context = get_context_instance(CONTEXT_USER, $USER->id);
+        $context = context_user::instance($USER->id);
         self::validate_context($context);
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         // Get the class.
         $clsid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $data['idnumber']));
 
         if (empty($clsid)) {
-            throw new data_object_exception('ws_class_delete_fail_invalid_idnumber', 'block_rlip', '', $data);
+            throw new data_object_exception('ws_class_delete_fail_invalid_idnumber', 'local_datahub', '', $data);
         }
 
         // Capability checking.
-        require_capability('elis/program:class_delete', context_elis_class::instance($clsid));
+        require_capability('local/elisprogram:class_delete', \local_elisprogram\context\pmclass::instance($clsid));
 
         // Delete the class.
         $pmclass = new pmclass($clsid);
@@ -96,11 +96,11 @@ class block_rldh_elis_class_delete extends external_api {
         // Verify class deleted & respond.
         if (!$DB->record_exists(pmclass::TABLE, array('id' => $clsid))) {
             return array(
-                'messagecode' => get_string('ws_class_delete_success_code', 'block_rlip'),
-                'message' => get_string('ws_class_delete_success_msg', 'block_rlip'),
+                'messagecode' => get_string('ws_class_delete_success_code', 'local_datahub'),
+                'message' => get_string('ws_class_delete_success_msg', 'local_datahub'),
             );
         } else {
-            throw new data_object_exception('ws_class_delete_fail', 'block_rlip');
+            throw new data_object_exception('ws_class_delete_fail', 'local_datahub');
         }
     }
 

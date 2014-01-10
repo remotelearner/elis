@@ -16,14 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
 /**
  * Base class for a provider that instantiates a file plugin
@@ -51,7 +51,7 @@ abstract class rlip_importprovider {
      */
     function get_dblogger() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dblogger.class.php');
 
         //for now, the only db logger, and assume scheduled
         return new rlip_dblogger_import(false);
@@ -68,7 +68,7 @@ abstract class rlip_importprovider {
      */
     function get_fslogger($plugin, $entity = '', $manual = false, $starttime = 0) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fslogger.class.php');
         //set up the file-system logger
         $filepath = get_config($plugin, 'logfilelocation');
 
@@ -127,14 +127,14 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
      */
     function __construct($provider = NULL, $manual = false) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 
         if ($provider !== NULL) {
             //note: provider is not set if only using plugin_supports
 
             //convert class name to plugin name
             $class = get_class($this);
-            $plugin = str_replace('rlip_importplugin_', 'rlipimport_', $class);
+            $plugin = str_replace('rlip_importplugin_', 'dhimport_', $class);
 
             $this->provider = $provider;
             $this->dblogger = $this->provider->get_dblogger();
@@ -833,7 +833,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                     if ($this->manual) {
                         $strid = 'manualimportexceedstimelimit_b';
                     }
-                    $msg = get_string($strid, 'block_rlip', $a);
+                    $msg = get_string($strid, 'local_datahub', $a);
                     $this->fslogger->log_failure($msg);
                 }
                 return $result;
@@ -865,7 +865,7 @@ abstract class rlip_importplugin_base extends rlip_dataplugin {
                         if ($this->manual) {
                             $strid = 'manualimportexceedstimelimit';
                         }
-                        $msg = get_string($strid, 'block_rlip', $state);
+                        $msg = get_string($strid, 'local_datahub', $state);
                         $this->fslogger->log_failure($msg);
                     }
                     return $state;

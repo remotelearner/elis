@@ -16,15 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../elis/core/lib/setup.php');
+require_once(dirname(__FILE__).'/../../../../local/eliscore/lib/setup.php');
 require_once(elis::lib('testlib.php'));
 
 /**
@@ -48,7 +47,7 @@ abstract class rlip_test extends elis_database_test {
         parent::setUp();
 
         // Create log directory.
-        $dirs = array($CFG->dataroot.'/rlip/', $CFG->dataroot.'/rlip/log/');
+        $dirs = array($CFG->dataroot.'/datahub/', $CFG->dataroot.'/datahub/log/');
         foreach ($dirs as $dir) {
             if (!file_exists($dir)) {
                 mkdir($dir);
@@ -273,8 +272,8 @@ abstract class rlip_elis_test extends rlip_test {
 
         // We require these classes here so they're defined when we reset custom fields in setUp.
         // For some reason, requiring these in setUp doesn't not actually define them.. phpunit weirdness?
-        if (file_exists(dirname(__FILE__).'/../../../../elis/program')) {
-            require_once(dirname(__FILE__).'/../../../../elis/program/lib/setup.php');
+        if (file_exists(dirname(__FILE__).'/../../../../local/elisprogram')) {
+            require_once(dirname(__FILE__).'/../../../../local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/curriculum.class.php'));
             require_once(elispm::lib('data/track.class.php'));
             require_once(elispm::lib('data/course.class.php'));
@@ -290,7 +289,7 @@ abstract class rlip_elis_test extends rlip_test {
     protected function setUp() {
         global $CFG;
         // Skip test if ELIS is not installed.
-        $elis = (file_exists($CFG->dirroot.'/elis/program/lib/setup.php') === true) ? true : false;
+        $elis = (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php') === true) ? true : false;
 
         if ($elis !== true) {
             $this->markTestSkipped('Test requires ELIS to run.');
@@ -360,7 +359,7 @@ abstract class rlip_test_ws extends rlip_test {
     protected function setUp() {
         global $CFG;
         // Skip test if ELIS is not installed.
-        $elis = (file_exists($CFG->dirroot.'/elis/program/lib/setup.php') === true) ? true : false;
+        $elis = (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php') === true) ? true : false;
 
         if ($elis !== true) {
             $this->markTestSkipped('Test requires ELIS to run.');

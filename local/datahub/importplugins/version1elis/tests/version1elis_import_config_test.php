@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-$plugindir = get_plugin_directory('rlipimport', 'version1elis');
+$plugindir = get_plugin_directory('dhimport', 'version1elis');
 require_once($plugindir.'/version1elis.class.php');
 require_once($plugindir.'/lib.php');
 require_once($CFG->dirroot.'/user/profile/definelib.php');
 
 /**
  * Class for validating import configuration.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class version1elisimportconfig_testcase extends rlip_elis_test {
 
@@ -60,7 +60,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
      */
     private function create_custom_field_category() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
 
         $category = new field_category(array('name' => 'testcategoryname'));
         $category->save();
@@ -78,8 +78,8 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
      */
     private function create_profile_field($name, $datatype, $categoryid, $contextlevelname = 'user') {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $field = new field(array(
@@ -90,7 +90,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
         $field->save();
 
         // Field contextlevel.
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevelname);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevelname);
         $fieldcontextlevel = new field_contextlevel(array(
             'fieldid' => $field->id,
             'contextlevel' => $contextlevel
@@ -118,7 +118,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
         $this->assertEquals(count($tabs), 3);
 
         // The string displayed on the tab.
-        $displaystring = get_string($entitytype.'tab', 'rlipimport_version1elis');
+        $displaystring = get_string($entitytype.'tab', 'dhimport_version1elis');
 
         // Data validation.
         $tab = $tabs[$index];
@@ -207,7 +207,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
      */
     public function test_getmappingreturnsvaliddata($entitytype, $field) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         // Obtain the entire list of fields.
@@ -274,7 +274,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
      */
     public function test_savemappingpersistsalldata($entitytype, $field) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         // Obtain available fields.
@@ -316,7 +316,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
      */
     public function testsavemappingupdatesexistingrecords() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         // Obtain the available fields.
@@ -348,7 +348,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
      */
     public function testsavemappingdoesnotdeletemappingsforotherentities() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         // Create a user mapping record.
@@ -375,7 +375,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
      */
     public function testsavemappingdoesnotsaveinvalidfields() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         // Obtain available fields.
@@ -395,7 +395,7 @@ class version1elisimportconfig_testcase extends rlip_elis_test {
      */
     public function testrestoredefaultmappingupdatesrecords() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         // Obtain available fields.

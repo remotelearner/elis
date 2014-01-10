@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    blocks/rlip
+ * @package    local_datahub
  * @subpackage importplugins/version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -30,7 +30,7 @@ if (!isset($_SERVER['HTTP_USER_AGENT'])) {
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
-$file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+$file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
 require_once($file);
 
 /**
@@ -46,7 +46,7 @@ class version1elis_utility_test extends PHPUnit_Framework_TestCase {
      */
     public function pddataprovider() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
         $bogusobj = new stdClass;
         $bogusobj->name = 'bogus';
         return array(

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -24,15 +24,15 @@
  */
 
 $dirname = dirname(__FILE__);
-require_once($dirname.'/../../../elis/core/test_config.php');
+require_once($dirname.'/../../../local/eliscore/test_config.php');
 global $CFG;
 require_once($dirname.'/other/rlip_test.class.php');
 
 // Libs.
 require_once($dirname.'/../lib.php');
 require_once($CFG->libdir.'/externallib.php');
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/user.class.php'));
     require_once(elispm::lib('data/usermoodle.class.php'));
     require_once(elispm::lib('data/curriculum.class.php'));
@@ -45,11 +45,11 @@ if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
 }
 
 /**
- * Tests webservice method block_rldh_elis_course_update.
- * @group block_rlip
- * @group block_rlip_ws
+ * Tests webservice method local_datahub_elis_course_update.
+ * @group local_datahub
+ * @group local_datahub_ws
  */
-class block_rlip_ws_elis_course_update_testcase extends rlip_test_ws {
+class local_datahub_ws_elis_course_update_testcase extends rlip_test_ws {
 
     /**
      * Test successful course update.
@@ -75,7 +75,7 @@ class block_rlip_ws_elis_course_update_testcase extends rlip_test_ws {
         $fieldctx->save();
 
         // Grant permissions.
-        $this->give_permissions(array('elis/program:course_edit'));
+        $this->give_permissions(array('local/elisprogram:course_edit'));
 
         // Create test program.
         $datagen = new elis_program_datagenerator($DB);
@@ -100,15 +100,15 @@ class block_rlip_ws_elis_course_update_testcase extends rlip_test_ws {
         );
 
         // Update test course.
-        $response = block_rldh_elis_course_update::course_update($course);
+        $response = local_datahub_elis_course_update::course_update($course);
 
         $this->assertNotEmpty($response);
         $this->assertInternalType('array', $response);
         $this->assertArrayHasKey('messagecode', $response);
         $this->assertArrayHasKey('message', $response);
         $this->assertArrayHasKey('record', $response);
-        $this->assertEquals(get_string('ws_course_update_success_code', 'block_rlip'), $response['messagecode']);
-        $this->assertEquals(get_string('ws_course_update_success_msg', 'block_rlip'), $response['message']);
+        $this->assertEquals(get_string('ws_course_update_success_code', 'local_datahub'), $response['messagecode']);
+        $this->assertEquals(get_string('ws_course_update_success_msg', 'local_datahub'), $response['message']);
 
         $this->assertInternalType('array', $response['record']);
         $this->assertArrayHasKey('id', $response['record']);
@@ -197,12 +197,12 @@ class block_rlip_ws_elis_course_update_testcase extends rlip_test_ws {
     public function test_failure(array $coursetoupdate) {
         global $DB;
 
-        $this->give_permissions(array('elis/program:course_edit'));
+        $this->give_permissions(array('local/elisprogram:course_edit'));
 
         // Create test course to update.
         $crs = new course(array('idnumber' => 'testcourse', 'name' => 'Test Course', 'syllabus' => ''));
         $crs->save();
 
-        $response = block_rldh_elis_course_update::course_update($coursetoupdate);
+        $response = local_datahub_elis_course_update::course_update($coursetoupdate);
     }
 }

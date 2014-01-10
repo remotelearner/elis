@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -24,15 +24,15 @@
  */
 
 $dirname = dirname(__FILE__);
-require_once($dirname.'/../../../elis/core/test_config.php');
+require_once($dirname.'/../../../local/eliscore/test_config.php');
 global $CFG;
 require_once($dirname.'/other/rlip_test.class.php');
 
 // Libs.
 require_once($dirname.'/../lib.php');
 require_once($CFG->libdir.'/externallib.php');
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/usertrack.class.php'));
     require_once(elispm::lib('data/usermoodle.class.php'));
     require_once($dirname.'/../ws/elis/track_enrolment_delete.class.php');
@@ -40,11 +40,11 @@ if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
 }
 
 /**
- * Tests webservice method block_rldh_elis_track_enrolment_delete.
- * @group block_rlip
- * @group block_rlip_ws
+ * Tests webservice method local_datahub_elis_track_enrolment_delete.
+ * @group local_datahub
+ * @group local_datahub_ws
  */
-class block_rlip_ws_elis_track_enrolment_delete_testcase extends rlip_test_ws {
+class local_datahub_ws_elis_track_enrolment_delete_testcase extends rlip_test_ws {
 
     /**
      * Test successful track enrolment deletion.
@@ -52,10 +52,10 @@ class block_rlip_ws_elis_track_enrolment_delete_testcase extends rlip_test_ws {
     public function test_success() {
         global $DB, $USER;
 
-        $this->give_permissions(array('elis/program:track_enrol'));
+        $this->give_permissions(array('local/elisprogram:track_enrol'));
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         // Create test program and track.
         $datagen = new elis_program_datagenerator($DB);
@@ -73,14 +73,14 @@ class block_rlip_ws_elis_track_enrolment_delete_testcase extends rlip_test_ws {
             'user_email' => 'assigninguser@example.com',
         );
 
-        $response = block_rldh_elis_track_enrolment_delete::track_enrolment_delete($data);
+        $response = local_datahub_elis_track_enrolment_delete::track_enrolment_delete($data);
 
         $this->assertNotEmpty($response);
         $this->assertInternalType('array', $response);
         $this->assertArrayHasKey('messagecode', $response);
         $this->assertArrayHasKey('message', $response);
-        $this->assertEquals(get_string('ws_track_enrolment_delete_success_code', 'block_rlip'), $response['messagecode']);
-        $this->assertEquals(get_string('ws_track_enrolment_delete_success_msg', 'block_rlip'), $response['message']);
+        $this->assertEquals(get_string('ws_track_enrolment_delete_success_code', 'local_datahub'), $response['messagecode']);
+        $this->assertEquals(get_string('ws_track_enrolment_delete_success_msg', 'local_datahub'), $response['message']);
         $this->assertFalse($DB->record_exists(usertrack::TABLE, array('userid' => $userid, 'trackid' => $track->id)));
     }
 
@@ -158,7 +158,7 @@ class block_rlip_ws_elis_track_enrolment_delete_testcase extends rlip_test_ws {
         $program = $datagen->create_program(array('idnumber' => 'TestProgramForTrack'));
         $track = $datagen->create_track(array('idnumber' => 'TestTrackForProgram', 'curid' => $program->id));
 
-        $this->give_permissions(array('elis/program:track_enrol'));
-        $response = block_rldh_elis_track_enrolment_delete::track_enrolment_delete($data);
+        $this->give_permissions(array('local/elisprogram:track_enrol'));
+        $response = local_datahub_elis_track_enrolment_delete::track_enrolment_delete($data);
     }
 }

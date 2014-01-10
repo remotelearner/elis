@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 elis import plugin"
+<XMLDB PATH="local/eliscore/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 elis import plugin"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="rlipimport_version1elis_map" COMMENT="Field mapping configuration for version ELIS 1 import plugin">
+    <TABLE NAME="dhimport_version1elis_map" COMMENT="Field mapping configuration for version ELIS 1 import plugin">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="entitytype"/>
         <FIELD NAME="entitytype" TYPE="char" LENGTH="30" NOTNULL="true" SEQUENCE="false" COMMENT="The type of entity being operated on, e.g. course" PREVIOUS="id" NEXT="standardfieldname"/>

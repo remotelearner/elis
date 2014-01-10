@@ -16,11 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage importplugins_version1
+ * @package    local_datahub
+ * @subpackage importplugins_version1elis
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -31,37 +31,33 @@ $rlipshortname = 'DH';
 $string['admin'] = 'Site Administrator';
 $string['allowduplicateemails'] = 'Allow duplicate email addresses.';
 $string['configallowduplicateemails'] = 'If on, duplicate email addresses will be allowed.';
-$string['config_schedule_files_path'] = 'The directory path, relative to moodledata, to the location of import files.';
-$string['config_course_schedule_file'] = 'The filename of the \'course\' '.$rlipshortname.' import file.';
+$string['configemailnotification'] = 'A comma-separated list of email addresses to send import log files to.';
 $string['config_enrolment_schedule_file'] = 'The filename of the \'enrolment\' '.$rlipshortname.' import file.';
-$string['config_user_schedule_file'] = 'The filename of the \'user\' '.$rlipshortname.' import file.';
-$string['configcreategroupsandgroupings'] = 'If enabled, groups and groupings can be created in the enrolment import.';
+$string['configlogfilelocation'] = 'The directory path, relative to moodledata, to the location of log files.';
+$string['config_course_schedule_file'] = 'The filename of the \'course\' '.$rlipshortname.' import file.';
+$string['config_schedule_files_path'] = 'The directory path, relative to moodledata, to the location of import files.';
+$string['configfieldstreelink'] = 'Field mapping';
+$string['configuretitle'] = 'Plugins Blocks: Configure Version 1 ELIS Import Fields';
 $string['configcreateorupdate'] = 'If enabled, all create or update actions on users and courses are converted to create
 actions if the entity does not already exist, or update actions if the entity exists.';
-$string['configemailnotification'] = 'A comma-separated list of email addresses to send import log files to.';
-$string['configfieldstreelink'] = 'Field mapping';
-$string['configlogfilelocation'] = 'The directory path, relative to moodledata, to the location of log files.';
-$string['configurelink'] = 'Click here to configure field mappings to use for importing data';
-$string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Import Fields';
-$string['course_schedule_file'] = 'Course import filename';
+$string['config_user_schedule_file'] = 'The filename of the \'user\' '.$rlipshortname.' import file.';
 $string['coursefile'] = 'Course file';
+$string['course_schedule_file'] = 'Course import filename';
 $string['coursetab'] = 'Course fields';
-$string['creategroupsandgroupings'] = 'Create groups and groupings';
 $string['createorupdate'] = 'Create or update';
 $string['datahandling'] = 'Data handling';
 $string['emails'] = 'Emails';
 $string['emailnotification'] = 'Email notification';
-$string['enrolment_schedule_file'] = 'Enrolment import filename';
 $string['enrolmentfile'] = 'Enrolment file';
+$string['enrolment_schedule_file'] = 'Enrolment import filename';
 $string['enrolmenttab'] = 'Enrolment fields';
-$string['importfields'] = 'Version 1 import fields';
+$string['import_files_path'] = 'Import files path';
 $string['importfilesheading'] = 'Scheduled Import File Locations';
-$string['import_file_timestamp'] = '%b_%d_%Y_%H%M%S';
-$string['logfilelocation'] = 'Log file location';
 $string['logging'] = 'Logging';
+$string['logfilelocation'] = 'Log file location';
+$string['mappingssaved'] = 'Field mappings successfully saved';
 $string['mappingscancelled'] = 'Previously saved field mappings successfully restored';
 $string['mappingsreset'] = 'Default field mappings successfully restored';
-$string['mappingssaved'] = 'Field mappings successfully saved';
 
 $string['newuseremailenabledname'] = 'Send New User Email Notifications';
 $string['newuseremailenableddesc'] = 'When a new user is created with this import plugin, send them an email using the template below';
@@ -105,10 +101,8 @@ $string['newenrolmentemailtemplatedesc'] = 'If enabled, send users enroled with 
 <li><b>%%course_summary%%</b>: The course\'s summary.</li>
 </ul>
 ';
-$string['pluginname'] = 'Version 1 import';
-$string['scheduling'] = 'Scheduling';
+$string['pluginname'] = 'Version 1 ELIS import';
 $string['teacher'] = 'Course Teacher';
-$string['import_files_path'] = 'Import files path';
-$string['user_schedule_file'] = 'User import filename';
 $string['userfile'] = 'User file';
+$string['user_schedule_file'] = 'User import filename';
 $string['usertab'] = 'User fields';

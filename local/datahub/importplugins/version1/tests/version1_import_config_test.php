@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-$plugindir = get_plugin_directory('rlipimport', 'version1');
+$plugindir = get_plugin_directory('dhimport', 'version1');
 require_once($plugindir.'/version1.class.php');
 require_once($plugindir.'/lib.php');
 require_once($CFG->dirroot.'/user/profile/definelib.php');
 
 /**
  * Class for validating import configuration
- * @group block_rlip
- * @group rlipimport_version1
+ * @group local_datahub
+ * @group dhimport_version1
  */
 class version1importconfig_testcase extends rlip_test {
 
@@ -122,7 +122,7 @@ class version1importconfig_testcase extends rlip_test {
         $this->assertEquals(count($tabs), 3);
 
         // The string displayed on the tab.
-        $displaystring = get_string($entitytype.'tab', 'rlipimport_version1');
+        $displaystring = get_string($entitytype.'tab', 'dhimport_version1');
 
         // Data validation.
         $tab = $tabs[$index];
@@ -253,7 +253,7 @@ class version1importconfig_testcase extends rlip_test {
      */
     public function test_getmappingreturnsvaliddata($entitytype, $field) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Obtain the entire list of fields.
@@ -320,7 +320,7 @@ class version1importconfig_testcase extends rlip_test {
      */
     public function test_savemappingpersistsalldata($entitytype, $field) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Obtain available fields.
@@ -362,7 +362,7 @@ class version1importconfig_testcase extends rlip_test {
      */
     public function test_savemappingupdatesexistingrecords() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Obtain the available fields.
@@ -394,7 +394,7 @@ class version1importconfig_testcase extends rlip_test {
      */
     public function test_savemappingdoesnotdeletemappingsforotherentities() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Create a user mapping record.
@@ -421,7 +421,7 @@ class version1importconfig_testcase extends rlip_test {
      */
     public function test_savemappingdoesnotsaveinvalidfields() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Obtain available fields.
@@ -441,7 +441,7 @@ class version1importconfig_testcase extends rlip_test {
      */
     public function test_restoredefaultmappingupdatesrecords() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Obtain available fields.

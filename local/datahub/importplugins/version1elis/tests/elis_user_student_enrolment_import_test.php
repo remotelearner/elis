@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Class for validating that enrolment of users into class instances as students works.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_user_student_enrolment_testcase extends rlip_elis_test {
 
@@ -64,7 +64,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
     public function test_elis_user_student_minimal_fields_enrolment_import($actioncreate, $actiondelete, $username, $email,
                                                                            $idnumber) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -101,7 +101,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
             $record->user_idnumber = $user->idnumber;
         }
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
@@ -131,7 +131,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
     public function test_elis_user_student_maximal_fields_enrolment_import($actioncreate, $actiondelete, $username, $email,
                                                                            $idnumber) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
@@ -174,7 +174,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
         $record->credits = 3;
         $record->locked = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
@@ -225,7 +225,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
      */
     public function test_elis_user_student_enrolment_handles_dates($datestring, $timestamp) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
@@ -258,7 +258,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
         $record->enrolmenttime = $datestring;
         $record->completetime = $datestring;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
@@ -282,8 +282,8 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
      */
     public function completion_provider() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/student.class.php'));
 
             // Support the numerical values, plus "Not Completed", "Failed", "Passed".
@@ -313,7 +313,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
      */
     public function test_elis_user_student_enrolment_handles_completion_statuses($completionstring, $value) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
@@ -343,7 +343,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
         $record->user_username = 'testuserusername';
         $record->completestatusid = $completionstring;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
@@ -368,8 +368,8 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
     public function minimal_update_field_provider() {
         global $CFG;
 
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/student.class.php'));
 
             set_config('noemailever', true);
@@ -409,7 +409,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
      */
     public function test_update_elis_user_student_enrolment_with_minimal_fields($fieldname, $value, $dbvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
@@ -449,7 +449,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
         $record->user_username = 'testuserusername';
         $record->$fieldname = $value;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
@@ -472,7 +472,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
     public function test_update_elis_user_student_enrolment_with_all_fields($actioncreate, $actiondelete, $username, $email,
                                                                             $idnumber) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
@@ -521,7 +521,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
         $record->credits = 3;
         $record->locked = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
@@ -548,7 +548,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
      */
     public function test_elis_user_student_unenrolment_import($actioncreate, $actiondelete, $username, $email, $idnumber) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/student.class.php'));
@@ -592,7 +592,7 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
             $record->user_idnumber = $user->idnumber;
         }
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 

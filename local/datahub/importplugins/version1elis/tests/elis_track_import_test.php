@@ -16,32 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+    require_once(elispm::lib('data/curriculum.class.php'));
     require_once(elispm::lib('data/track.class.php'));
 }
 
 /**
  * Test track import.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_track_import_testcase extends rlip_elis_test {
 
@@ -52,10 +53,10 @@ class elis_track_import_testcase extends rlip_elis_test {
         global $DB;
 
         $this->run_core_program_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_curriculum', array('idnumber' => 'testprogramid')));
+        $this->assertTrue($DB->record_exists(curriculum::TABLE, array('idnumber' => 'testprogramid')));
 
         $this->run_core_track_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_track', array('idnumber' => 'testtrackid')));
+        $this->assertTrue($DB->record_exists(track::TABLE, array('idnumber' => 'testtrackid')));
     }
 
     /**
@@ -65,7 +66,7 @@ class elis_track_import_testcase extends rlip_elis_test {
         global $DB;
 
         $this->run_core_program_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_curriculum', array('idnumber' => 'testprogramid')));
+        $this->assertTrue($DB->record_exists(curriculum::TABLE, array('idnumber' => 'testprogramid')));
 
         $data = $this->get_core_track_data();
         $data['description'] = 'testdescription';
@@ -77,7 +78,7 @@ class elis_track_import_testcase extends rlip_elis_test {
         $data['enddate'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
 
         unset($data['action'], $data['context'], $data['assignment'], $data['description']);
-        $this->assertTrue($DB->record_exists('crlm_track', $data));
+        $this->assertTrue($DB->record_exists(track::TABLE, $data));
     }
 
     /**
@@ -87,16 +88,16 @@ class elis_track_import_testcase extends rlip_elis_test {
         global $DB;
 
         $this->run_core_program_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_curriculum', array('idnumber' => 'testprogramid')));
+        $this->assertTrue($DB->record_exists(curriculum::TABLE, array('idnumber' => 'testprogramid')));
 
         $this->run_core_track_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_track', array('idnumber' => 'testtrackid')));
+        $this->assertTrue($DB->record_exists(track::TABLE, array('idnumber' => 'testtrackid')));
 
         $data = array('action' => 'delete', 'context' => 'track', 'idnumber' => 'testtrackid');
         $this->run_core_track_import($data, false);
 
         unset($data['action'], $data['context']);
-        $this->assertFalse($DB->record_exists('crlm_track', $data));
+        $this->assertFalse($DB->record_exists(track::TABLE, $data));
     }
 
     /**
@@ -106,7 +107,7 @@ class elis_track_import_testcase extends rlip_elis_test {
         global $DB;
 
         $this->run_core_program_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_curriculum', array('idnumber' => 'testprogramid')));
+        $this->assertTrue($DB->record_exists(curriculum::TABLE, array('idnumber' => 'testprogramid')));
 
         $this->run_core_track_import(array(), true);
 
@@ -125,7 +126,7 @@ class elis_track_import_testcase extends rlip_elis_test {
         $data['startdate'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
         $data['enddate'] = rlip_timestamp(0, 0, 0, 1, 1, 2012);
 
-        $this->assertTrue($DB->record_exists('crlm_track', $data));
+        $this->assertTrue($DB->record_exists(track::TABLE, $data));
     }
 
     /**
@@ -198,7 +199,7 @@ class elis_track_import_testcase extends rlip_elis_test {
     private function run_core_track_import($extradata, $usedefaultdata = true) {
         global $CFG;
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         if ($usedefaultdata) {
@@ -225,7 +226,7 @@ class elis_track_import_testcase extends rlip_elis_test {
     private function run_core_program_import($extradata, $usedefaultdata = true) {
         global $CFG;
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         if ($usedefaultdata) {

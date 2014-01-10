@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage blocks_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -29,70 +28,95 @@ defined('MOODLE_INTERNAL') || die();
 /**
  * Custom post-install method for the "Version 1 ELIS" RLIP export plugin
  */
-function xmldb_rlipexport_version1elis_install() {
+function xmldb_dhexport_version1elis_install() {
     global $CFG, $DB;
-
+    $result = true;
     $dbman = $DB->get_manager();
-    if (!$dbman->table_exists('block_rlip_export_fieldmap')) {
-        //this is a fresh install with no previous 1.9-version IP set up
-        //so no need to migrate data
-        return true;
-    }
 
-    // Skip this work if we should be using Moodle-only IP
-    $pm_installed = file_exists($CFG->dirroot.'/elis/program/lib/setup.php');
-    $cm_upgraded_from_19 = get_config('block_rlip', 'cm_upgraded_from_19');
-    $ip_basic_enabled = !empty($CFG->block_rlip_overrideelisip);
-    $init_pm_plugins = $pm_installed && !empty($cm_upgraded_from_19) && !$ip_basic_enabled;
+    // Run upgrade steps from old plugin if applicable.
+    $oldversion = get_config('rlipexport_version1elis', 'version');
+    if ($oldversion !== false) {
+        if ($result && $oldversion < 2012071200) {
+            // Define table rlipexport_version1elis_fld to be created
+            $table = new xmldb_table('rlipexport_version1elis_field');
 
-    if (!$init_pm_plugins) {
-        return true;
-    }
+            // Adding fields to table rlipexport_version1elis_field
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+            $table->add_field('header', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, null);
+            $table->add_field('fieldorder', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
 
-    // Order by id to get the first mapping created
-    $export_fieldmap = $DB->get_recordset('block_rlip_export_fieldmap', NULL, 'id');
+            // Adding keys to table rlipexport_version1elis_field
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
 
-    $prefix_length = strlen('profile_field_');
+            // Adding indexes to table rlipexport_version1elis_field
+            $table->add_index('fieldid_ix', XMLDB_INDEX_UNIQUE, array('fieldid'));
 
-    // Need this to look up custom fields
-    require_once($CFG->dirroot.'/elis/core/lib/setup.php');
-    require_once(elis::lib('data/customfield.class.php'));
-
-    // This will copy the profile fields from RLIP 1.9 into the new table
-    foreach ($export_fieldmap as $fieldmap) {
-        $fldname = substr($fieldmap->fieldname, $prefix_length); // eg. get "fld" from "profile_field_fld"
-
-        if ($customfield = field::get_for_context_level_with_name('user', $fldname) and
-            isset($customfield->id)) {
-            /*
-             * RLIP 1.9 allows for multiple profile fields with the same name, while RLIP 2 does not
-             * Only the first profile field will be copied and the rest will be ignored
-             */
-            $params = array('fieldid' => $customfield->id);
-            if (!$DB->record_exists('rlipexport_version1elis_fld', $params)) {
-                // Does not already exists, so create it
-                $data = array(
-                    'fieldid'    => $customfield->id,
-                    'header'     => $fieldmap->fieldmap,
-                    'fieldorder' => $fieldmap->fieldorder
-                );
-                $DB->insert_record('rlipexport_version1elis_fld', $data);
+            // Conditionally launch create table for rlipexport_version1elis_field
+            if (!$dbman->table_exists($table)) {
+                $dbman->create_table($table);
             }
 
+            // plugin savepoint reached
+            upgrade_plugin_savepoint(true, 2012071200, 'rlipexport', 'version1elis');
+        }
+
+        if ($result && $oldversion < 2012080100) {
+            $table = new xmldb_table('rlipexport_version1elis_field');
+            $result = $result && !empty($table) && $dbman->table_exists($table);
+            if ($result) {
+                $dbman->rename_table($table, 'rlipexport_version1elis_fld');
+                $result = $dbman->table_exists('rlipexport_version1elis_fld');
+            }
+
+            // plugin savepoint reached
+            upgrade_plugin_savepoint($result, 2012080100, 'rlipexport', 'version1elis');
+        }
+
+        if ($result && $oldversion < 2013022801) {
+
+            // Add fieldset field, migrate data, update indexes.
+            if ($dbman->field_exists('rlipexport_version1elis_fld', 'fieldset') === false) {
+                $existing_fields = $DB->get_recordset('rlipexport_version1elis_fld');
+
+                $table = new xmldb_table('rlipexport_version1elis_fld');
+
+                // Remove old fieldid field and associated index.
+                $fieldid_ix = new xmldb_index('fieldid_ix', XMLDB_INDEX_UNIQUE, array('fieldid'));
+                $dbman->drop_index($table, $fieldid_ix);
+                $dbman->drop_field($table, new xmldb_field('fieldid'));
+
+                // Add new fields.
+                $set_field = new xmldb_field('fieldset', XMLDB_TYPE_CHAR, '127', null, XMLDB_NOTNULL, null, null);
+                $field_field = new xmldb_field('field', XMLDB_TYPE_CHAR, '127', null, XMLDB_NOTNULL, null, null);
+                $dbman->add_field($table, $set_field);
+                $dbman->add_field($table, $field_field);
+
+                // Update rows.
+                foreach ($existing_fields as $orig_rec) {
+                    $record = new stdClass;
+                    $record->id = $orig_rec->id;
+                    $record->fieldset = 'user';
+                    $record->field = 'field_'.$orig_rec->fieldid;
+                    $DB->update_record('rlipexport_version1elis_fld', $record);
+                }
+
+                // Add index for new fields.
+                $index = new xmldb_index('setfield_idx', XMLDB_INDEX_UNIQUE, array('fieldset', 'field'));
+                $dbman->add_index($table, $index);
+            }
+
+            // Plugin savepoint reached.
+            upgrade_plugin_savepoint($result, 2013022801, 'rlipexport', 'version1elis');
         }
     }
 
-    // Fix the field order because duplicate removal may have created gaps
-    $fieldorder = 1;
-
-    if ($newmappings = $DB->get_recordset('rlipexport_version1elis_fld', NULL, 'fieldorder')) {
-        foreach ($newmappings as $newmapping) {
-            // Set the field order to the appropriate sequential number 
-            $newmapping->fieldorder = $fieldorder;
-            $DB->update_record('rlipexport_version1elis_fld', $newmapping);
-
-            $fieldorder++;
-        }
+    // Migrate old rlipexport_version1elis_fld if it exists.
+    $table = new xmldb_table('rlipexport_version1elis_fld');
+    if ($dbman->table_exists($table)) {
+        $newtable = new xmldb_table('dhexport_version1elis_fld');
+        $dbman->drop_table($newtable);
+        $dbman->rename_table($table, 'dhexport_version1elis_fld');
     }
 
     return true;

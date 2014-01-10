@@ -16,20 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1
+ * @package    dhexport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 
 /**
  * File plugin that just stores read records in memory
@@ -170,8 +170,8 @@ class rlip_fileplugin_openclose extends rlip_fileplugin_base {
 
 /**
  * Class for version 1 export correctness.
- * @group rlipexport_version1
- * @group block_rlip
+ * @group dhexport_version1
+ * @group local_datahub
  */
 class version1export_testcase extends rlip_test {
 
@@ -196,7 +196,7 @@ class version1export_testcase extends rlip_test {
      */
     protected function get_export_data($manual = true, $targetstarttime = 0, $lastruntime = 0) {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/version1.class.php';
         require_once($file);
 
         // Plugin for file IO.
@@ -251,6 +251,14 @@ class version1export_testcase extends rlip_test {
         $data->name = $name;
         $data->datatype = $datatype;
         $data->categoryid = $categoryid;
+        $data->startyear = null;
+        $data->endyear = null;
+        $data->startmonth = null;
+        $data->endmonth = null;
+        $data->startday = null;
+        $data->endday = null;
+        $data->param1 = null;
+        $data->param2 = null;
 
         if ($param1 !== null) {
             // Set the select options.
@@ -275,7 +283,7 @@ class version1export_testcase extends rlip_test {
      */
     private function create_field_mapping($fieldid, $header = 'Header', $fieldorder = 1) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up and insert the record.
@@ -327,15 +335,15 @@ class version1export_testcase extends rlip_test {
         $data = $this->get_export_data();
 
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1'),
-                get_string('header_lastname', 'rlipexport_version1'),
-                get_string('header_username', 'rlipexport_version1'),
-                get_string('header_useridnumber', 'rlipexport_version1'),
-                get_string('header_courseidnumber', 'rlipexport_version1'),
-                get_string('header_startdate', 'rlipexport_version1'),
-                get_string('header_enddate', 'rlipexport_version1'),
-                get_string('header_grade', 'rlipexport_version1'),
-                get_string('header_letter', 'rlipexport_version1')
+                get_string('header_firstname', 'dhexport_version1'),
+                get_string('header_lastname', 'dhexport_version1'),
+                get_string('header_username', 'dhexport_version1'),
+                get_string('header_useridnumber', 'dhexport_version1'),
+                get_string('header_courseidnumber', 'dhexport_version1'),
+                get_string('header_startdate', 'dhexport_version1'),
+                get_string('header_enddate', 'dhexport_version1'),
+                get_string('header_grade', 'dhexport_version1'),
+                get_string('header_letter', 'dhexport_version1')
         );
 
         $this->assertEquals(count($data), 1);
@@ -349,7 +357,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportincludescorrectdata() {
         global $DB;
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
         $DB->delete_records('user');
         $this->load_csv_data();
 
@@ -382,10 +390,10 @@ class version1export_testcase extends rlip_test {
 
         if ($DB->record_exists('block', array('name' => 'curr_admin'))) {
             // Needed to prevent error in PM delete handler.
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         }
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -408,7 +416,7 @@ class version1export_testcase extends rlip_test {
     public function test_version1exportexcludesmissingusers() {
         global $DB;
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -430,7 +438,7 @@ class version1export_testcase extends rlip_test {
     public function test_version1exportexcludesmissingcourses() {
         global $DB;
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -449,7 +457,7 @@ class version1export_testcase extends rlip_test {
     public function test_version1exportexcludesmissinggradeitems() {
         global $DB;
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -468,7 +476,7 @@ class version1export_testcase extends rlip_test {
     public function test_version1exportexcludesincorrectgradeitemtypes() {
         global $DB;
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -490,7 +498,7 @@ class version1export_testcase extends rlip_test {
     public function test_version1exportexcludesmissinggrades() {
         global $DB;
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -512,7 +520,7 @@ class version1export_testcase extends rlip_test {
 
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         // Set up necessary custom field information in the database.
         $categoryid = $this->create_custom_field_category();
@@ -524,15 +532,15 @@ class version1export_testcase extends rlip_test {
 
         // Data validation.
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1'),
-                get_string('header_lastname', 'rlipexport_version1'),
-                get_string('header_username', 'rlipexport_version1'),
-                get_string('header_useridnumber', 'rlipexport_version1'),
-                get_string('header_courseidnumber', 'rlipexport_version1'),
-                get_string('header_startdate', 'rlipexport_version1'),
-                get_string('header_enddate', 'rlipexport_version1'),
-                get_string('header_grade', 'rlipexport_version1'),
-                get_string('header_letter', 'rlipexport_version1'),
+                get_string('header_firstname', 'dhexport_version1'),
+                get_string('header_lastname', 'dhexport_version1'),
+                get_string('header_username', 'dhexport_version1'),
+                get_string('header_useridnumber', 'dhexport_version1'),
+                get_string('header_courseidnumber', 'dhexport_version1'),
+                get_string('header_startdate', 'dhexport_version1'),
+                get_string('header_enddate', 'dhexport_version1'),
+                get_string('header_grade', 'dhexport_version1'),
+                get_string('header_letter', 'dhexport_version1'),
                 'Header'
         );
 
@@ -550,7 +558,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -590,7 +598,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -629,7 +637,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -674,7 +682,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -691,7 +699,7 @@ class version1export_testcase extends rlip_test {
         $this->assertEquals(count($data), 2);
         $row = $data[1];
         $this->assertEquals(count($row), 10);
-        $marker = get_string('nodatemarker', 'rlipexport_version1');
+        $marker = get_string('nodatemarker', 'dhexport_version1');
         $this->assertEquals($row[9], $marker);
     }
 
@@ -707,7 +715,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -735,7 +743,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -764,7 +772,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -792,7 +800,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -819,7 +827,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -847,7 +855,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
 
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -874,7 +882,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         $DB->delete_records('user');
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -883,15 +891,15 @@ class version1export_testcase extends rlip_test {
 
         // Set up the expected output.
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1'),
-                get_string('header_lastname', 'rlipexport_version1'),
-                get_string('header_username', 'rlipexport_version1'),
-                get_string('header_useridnumber', 'rlipexport_version1'),
-                get_string('header_courseidnumber', 'rlipexport_version1'),
-                get_string('header_startdate', 'rlipexport_version1'),
-                get_string('header_enddate', 'rlipexport_version1'),
-                get_string('header_grade', 'rlipexport_version1'),
-                get_string('header_letter', 'rlipexport_version1')
+                get_string('header_firstname', 'dhexport_version1'),
+                get_string('header_lastname', 'dhexport_version1'),
+                get_string('header_username', 'dhexport_version1'),
+                get_string('header_useridnumber', 'dhexport_version1'),
+                get_string('header_courseidnumber', 'dhexport_version1'),
+                get_string('header_startdate', 'dhexport_version1'),
+                get_string('header_enddate', 'dhexport_version1'),
+                get_string('header_grade', 'dhexport_version1'),
+                get_string('header_letter', 'dhexport_version1')
         );
         $expectedbody = array(
                 'test',
@@ -921,7 +929,7 @@ class version1export_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/profile/definelib.php');
         $DB->delete_records('user');
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -936,15 +944,15 @@ class version1export_testcase extends rlip_test {
 
         // Set up the expected output.
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1'),
-                get_string('header_lastname', 'rlipexport_version1'),
-                get_string('header_username', 'rlipexport_version1'),
-                get_string('header_useridnumber', 'rlipexport_version1'),
-                get_string('header_courseidnumber', 'rlipexport_version1'),
-                get_string('header_startdate', 'rlipexport_version1'),
-                get_string('header_enddate', 'rlipexport_version1'),
-                get_string('header_grade', 'rlipexport_version1'),
-                get_string('header_letter', 'rlipexport_version1'),
+                get_string('header_firstname', 'dhexport_version1'),
+                get_string('header_lastname', 'dhexport_version1'),
+                get_string('header_username', 'dhexport_version1'),
+                get_string('header_useridnumber', 'dhexport_version1'),
+                get_string('header_courseidnumber', 'dhexport_version1'),
+                get_string('header_startdate', 'dhexport_version1'),
+                get_string('header_enddate', 'dhexport_version1'),
+                get_string('header_grade', 'dhexport_version1'),
+                get_string('header_letter', 'dhexport_version1'),
                 'Header',
                 'Header2'
         );
@@ -976,7 +984,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportdeletesfield() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1002,7 +1010,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportaddsfield() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field.
@@ -1022,7 +1030,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportmovesfieldup() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1049,7 +1057,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportmovesfielddown() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1076,7 +1084,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportupdatesheader() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1098,7 +1106,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportupdatesheaders() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1130,7 +1138,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportreportsconfiguredfields() {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1180,7 +1188,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exportreportsavailablefields() {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1223,7 +1231,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exporthandlesdeletedfieldswhenmovingup() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1254,7 +1262,7 @@ class version1export_testcase extends rlip_test {
      */
     public function test_version1exporthandlesdeletedfieldswhenmovingdown() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1').'/lib.php';
         require_once($file);
 
         // Set up the category and field, along with the export mapping.
@@ -1285,11 +1293,11 @@ class version1export_testcase extends rlip_test {
      */
     public function test_versionexportopensandclosesfile() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Run run the export.
         $fileplugin = new rlip_fileplugin_openclose();
-        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin);
+        $instance = rlip_dataplugin_factory::factory('dhexport_version1', null, $fileplugin);
         $instance->run();
 
         // Validate that the export file was opened.
@@ -1306,8 +1314,8 @@ class version1export_testcase extends rlip_test {
         global $DB;
         $DB->delete_records('user');
         // Set to incremental, using 1 day as the maximum delta.
-        set_config('nonincremental', 0, 'rlipexport_version1');
-        set_config('incrementaldelta', '1d', 'rlipexport_version1');
+        set_config('nonincremental', 0, 'dhexport_version1');
+        set_config('incrementaldelta', '1d', 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -1343,15 +1351,15 @@ class version1export_testcase extends rlip_test {
 
         // Set up the expected output, only including the more recent record.
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1'),
-                get_string('header_lastname', 'rlipexport_version1'),
-                get_string('header_username', 'rlipexport_version1'),
-                get_string('header_useridnumber', 'rlipexport_version1'),
-                get_string('header_courseidnumber', 'rlipexport_version1'),
-                get_string('header_startdate', 'rlipexport_version1'),
-                get_string('header_enddate', 'rlipexport_version1'),
-                get_string('header_grade', 'rlipexport_version1'),
-                get_string('header_letter', 'rlipexport_version1')
+                get_string('header_firstname', 'dhexport_version1'),
+                get_string('header_lastname', 'dhexport_version1'),
+                get_string('header_username', 'dhexport_version1'),
+                get_string('header_useridnumber', 'dhexport_version1'),
+                get_string('header_courseidnumber', 'dhexport_version1'),
+                get_string('header_startdate', 'dhexport_version1'),
+                get_string('header_enddate', 'dhexport_version1'),
+                get_string('header_grade', 'dhexport_version1'),
+                get_string('header_letter', 'dhexport_version1')
         );
         $expectedbody = array(
                 'test',
@@ -1377,7 +1385,7 @@ class version1export_testcase extends rlip_test {
     public function test_version1exportrunsincrementallyscheduled() {
         global $DB;
         $DB->delete_records('user');
-        set_config('nonincremental', 0, 'rlipexport_version1');
+        set_config('nonincremental', 0, 'dhexport_version1');
 
         $this->load_csv_data();
 
@@ -1417,15 +1425,15 @@ class version1export_testcase extends rlip_test {
 
         // Set up the expected output, only including the more recent record.
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1'),
-                get_string('header_lastname', 'rlipexport_version1'),
-                get_string('header_username', 'rlipexport_version1'),
-                get_string('header_useridnumber', 'rlipexport_version1'),
-                get_string('header_courseidnumber', 'rlipexport_version1'),
-                get_string('header_startdate', 'rlipexport_version1'),
-                get_string('header_enddate', 'rlipexport_version1'),
-                get_string('header_grade', 'rlipexport_version1'),
-                get_string('header_letter', 'rlipexport_version1')
+                get_string('header_firstname', 'dhexport_version1'),
+                get_string('header_lastname', 'dhexport_version1'),
+                get_string('header_username', 'dhexport_version1'),
+                get_string('header_useridnumber', 'dhexport_version1'),
+                get_string('header_courseidnumber', 'dhexport_version1'),
+                get_string('header_startdate', 'dhexport_version1'),
+                get_string('header_enddate', 'dhexport_version1'),
+                get_string('header_grade', 'dhexport_version1'),
+                get_string('header_letter', 'dhexport_version1')
         );
         $expectedbody = array(
                 'test',
@@ -1452,7 +1460,7 @@ class version1export_testcase extends rlip_test {
         if (empty($USER->timezone)) {
             $USER->timezone = 99;
         }
-        $plugin = 'rlipexport_version1';
+        $plugin = 'dhexport_version1';
         $baseexportfile = 'export_version1.csv';
         set_config('export_file', $baseexportfile, $plugin);
         set_config('export_file_timestamp', false, $plugin);
@@ -1483,10 +1491,10 @@ class version1export_testcase extends rlip_test {
     public function test_version1exportpathcreated() {
         global $CFG, $DB, $USER;
 
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
-        set_config('export_path', 'exportpath/deeper', 'rlipexport_version1');
+        set_config('export_path', 'exportpath/deeper', 'dhexport_version1');
 
         $filepath = $CFG->dataroot.'/exportpath/deeper';
         // Cleanup filepath if it exists at beginning of test.
@@ -1496,17 +1504,17 @@ class version1export_testcase extends rlip_test {
 
         // Set up the export file path.
         $filename = 'rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        set_config('export_file', $filename, 'dhexport_version1');
 
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipexport'
+            'type' => 'dhexport'
         );
         $taskid = rlip_schedule_add_job($data);
 
@@ -1514,10 +1522,10 @@ class version1export_testcase extends rlip_test {
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = 99;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhexport_version1'));
         $job->nextruntime = 99;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
@@ -1526,7 +1534,7 @@ class version1export_testcase extends rlip_test {
         $datestr = date('M_j_Y_His', $starttime);
         $outputfilename = 'rliptestexport_'.$datestr.'.csv';
         // Run the export.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         $records = $DB->get_records(RLIP_LOG_TABLE);
@@ -1551,10 +1559,10 @@ class version1export_testcase extends rlip_test {
             $this->markTestSkipped('This test will always fail when run as root.');
         }
 
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
-        set_config('export_path', 'invalidexportpath', 'rlipexport_version1');
+        set_config('export_path', 'invalidexportpath', 'dhexport_version1');
         $filepath = $CFG->dataroot.'/invalidexportpath';
 
         // Create a folder and make it executable only.
@@ -1572,17 +1580,17 @@ class version1export_testcase extends rlip_test {
 
         // Set up the export file path.
         $filename = 'rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        set_config('export_file', $filename, 'dhexport_version1');
 
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipexport'
+            'type' => 'dhexport'
         );
         $taskid = rlip_schedule_add_job($data);
 
@@ -1590,17 +1598,17 @@ class version1export_testcase extends rlip_test {
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = 99;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhexport_version1'));
         $job->nextruntime = 99;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Lower bound on starttime.
         $starttime = time();
         // Run the export.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         // Database error log validation.
@@ -1632,8 +1640,8 @@ class version1export_testcase extends rlip_test {
 
         // Validate that a log file was created.
         $plugintype = 'export';
-        $plugin = 'rlipexport_version1';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhexport_version1';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         // Get most recent record.
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {

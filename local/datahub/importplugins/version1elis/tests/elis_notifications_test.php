@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Class for validating that IP action trigger appropriate notifications that would normally be sent.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_notifications_testcase extends rlip_elis_test {
 
@@ -44,7 +44,7 @@ class elis_notifications_testcase extends rlip_elis_test {
      */
     public function test_class_enrolment_sends_class_enrolment_notification() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -52,9 +52,9 @@ class elis_notifications_testcase extends rlip_elis_test {
         // Configuration.
         set_config('popup_provider_elis_program_notify_pm_permitted', 1, 'message');
         set_config('email_provider_elis_program_notify_pm_permitted', 1, 'message');
-        set_config('notify_classenrol_user', 1, 'elis_program');
+        set_config('notify_classenrol_user', 1, 'local_elisprogram');
         $message = '%%userenrolname%% has been enrolled in the class instance %%classname%%.';
-        set_config('notify_classenrol_message', $message, 'elis_program');
+        set_config('notify_classenrol_message', $message, 'local_elisprogram');
         set_config('noemailever', 1);
         // Force refreshing of configuration.
         elis::$config = new elis_config();
@@ -85,7 +85,7 @@ class elis_notifications_testcase extends rlip_elis_test {
         $record->context = 'class_testclassidnumber';
         $record->user_username = 'testuserusername';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
@@ -110,8 +110,8 @@ class elis_notifications_testcase extends rlip_elis_test {
     public function enrolment_completion_on_create_provider() {
         global $CFG;
 
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
 
             return array(
                     array(student::STUSTATUS_NOTCOMPLETE, false),
@@ -133,7 +133,7 @@ class elis_notifications_testcase extends rlip_elis_test {
      */
     public function test_class_completion_sends_class_completed_notification_on_enrolment_create($completestatus, $expectmessage) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -141,9 +141,9 @@ class elis_notifications_testcase extends rlip_elis_test {
         // Configuration.
         set_config('popup_provider_elis_program_notify_pm_permitted', 1, 'message');
         set_config('email_provider_elis_program_notify_pm_permitted', 1, 'message');
-        set_config('notify_classcompleted_user', 1, 'elis_program');
+        set_config('notify_classcompleted_user', 1, 'local_elisprogram');
         $message = '%%userenrolname%% has completed the class instance %%classname%%.';
-        set_config('notify_classcompleted_message', $message, 'elis_program');
+        set_config('notify_classcompleted_message', $message, 'local_elisprogram');
         set_config('noemailever', 1);
         // Force refreshing of configuration.
         elis::$config = new elis_config();
@@ -174,7 +174,7 @@ class elis_notifications_testcase extends rlip_elis_test {
         $record->user_username = 'testuserusername';
         $record->completestatusid = $completestatus;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
 
@@ -206,8 +206,8 @@ class elis_notifications_testcase extends rlip_elis_test {
      */
     public function enrolment_completion_on_update_provider() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
 
             return array(
                     array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE, false),
@@ -233,7 +233,7 @@ class elis_notifications_testcase extends rlip_elis_test {
                                                                                                  $newcompletestatus,
                                                                                                  $expectmessage) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -243,9 +243,9 @@ class elis_notifications_testcase extends rlip_elis_test {
         // Configuration.
         set_config('popup_provider_elis_program_notify_pm_permitted', 1, 'message');
         set_config('email_provider_elis_program_notify_pm_permitted', 1, 'message');
-        set_config('notify_classcompleted_user', 1, 'elis_program');
+        set_config('notify_classcompleted_user', 1, 'local_elisprogram');
         $message = '%%userenrolname%% has completed the class instance %%classname%%.';
-        set_config('notify_classcompleted_message', $message, 'elis_program');
+        set_config('notify_classcompleted_message', $message, 'local_elisprogram');
         set_config('noemailever', 1);
 
         // Setup.
@@ -286,7 +286,7 @@ class elis_notifications_testcase extends rlip_elis_test {
         $record->user_username = 'testuserusername';
         $record->completestatusid = $newcompletestatus;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
 
@@ -317,7 +317,7 @@ class elis_notifications_testcase extends rlip_elis_test {
      */
     public function test_track_enrolment_sends_class_enrolment_notification() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -325,9 +325,9 @@ class elis_notifications_testcase extends rlip_elis_test {
         // Configuration.
         set_config('popup_provider_elis_program_notify_pm_permitted', 1, 'message');
         set_config('email_provider_elis_program_notify_pm_permitted', 1, 'message');
-        set_config('notify_trackenrol_user', 1, 'elis_program');
+        set_config('notify_trackenrol_user', 1, 'local_elisprogram');
         $message = '%%userenrolname%% has been enrolled in the track %%trackname%%.';
-        set_config('notify_trackenrol_message', $message, 'elis_program');
+        set_config('notify_trackenrol_message', $message, 'local_elisprogram');
         set_config('noemailever', 1);
         // Force refreshing of configuration.
         elis::$config = new elis_config();
@@ -354,7 +354,7 @@ class elis_notifications_testcase extends rlip_elis_test {
         $record->context = 'track_testtrackidnumber';
         $record->user_username = 'testuserusername';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
 
@@ -456,28 +456,28 @@ class elis_notifications_testcase extends rlip_elis_test {
         $DB->update_record(usermoodle::TABLE, array('id' => $usermoodleid, 'muserid' => $muser->id));
 
         // Test false return when not enabled.
-        set_config('newenrolmentemailenabled', '0', 'rlipimport_version1elis');
-        set_config('newenrolmentemailsubject', 'Test Subject', 'rlipimport_version1elis');
-        set_config('newenrolmentemailtemplate', 'Test Body', 'rlipimport_version1elis');
-        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1elis');
+        set_config('newenrolmentemailenabled', '0', 'dhimport_version1elis');
+        set_config('newenrolmentemailsubject', 'Test Subject', 'dhimport_version1elis');
+        set_config('newenrolmentemailtemplate', 'Test Body', 'dhimport_version1elis');
+        set_config('newenrolmentemailfrom', 'teacher', 'dhimport_version1elis');
         $result = $importplugin->newenrolmentemail($student);
         $this->assertFalse($result);
 
         // Test false return when enabled but empty template.
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
-        set_config('newenrolmentemailsubject', 'Test Subject', 'rlipimport_version1elis');
-        set_config('newenrolmentemailtemplate', '', 'rlipimport_version1elis');
-        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1elis');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1elis');
+        set_config('newenrolmentemailsubject', 'Test Subject', 'dhimport_version1elis');
+        set_config('newenrolmentemailtemplate', '', 'dhimport_version1elis');
+        set_config('newenrolmentemailfrom', 'teacher', 'dhimport_version1elis');
         $result = $importplugin->newenrolmentemail($student);
         $this->assertFalse($result);
 
         // Test success when enabled, has template text, and user has email.
         $testsubject = 'Test Subject';
         $testbody = 'Test Body';
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
-        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1elis');
-        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1elis');
-        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1elis');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1elis');
+        set_config('newenrolmentemailsubject', $testsubject, 'dhimport_version1elis');
+        set_config('newenrolmentemailtemplate', $testbody, 'dhimport_version1elis');
+        set_config('newenrolmentemailfrom', 'admin', 'dhimport_version1elis');
         $result = $importplugin->newenrolmentemail($student);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -493,10 +493,10 @@ class elis_notifications_testcase extends rlip_elis_test {
         // Test success and from is set to teacher when selected.
         $testsubject = 'Test Subject';
         $testbody = 'Test Body';
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
-        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1elis');
-        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1elis');
-        set_config('newenrolmentemailfrom', 'teacher', 'rlipimport_version1elis');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1elis');
+        set_config('newenrolmentemailsubject', $testsubject, 'dhimport_version1elis');
+        set_config('newenrolmentemailtemplate', $testbody, 'dhimport_version1elis');
+        set_config('newenrolmentemailfrom', 'teacher', 'dhimport_version1elis');
         $result = $importplugin->newenrolmentemail($student);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -512,10 +512,10 @@ class elis_notifications_testcase extends rlip_elis_test {
         // Test that subject is replaced by empty string when not present.
         $testsubject = null;
         $testbody = 'Test Body';
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
-        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1elis');
-        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1elis');
-        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1elis');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1elis');
+        set_config('newenrolmentemailsubject', $testsubject, 'dhimport_version1elis');
+        set_config('newenrolmentemailtemplate', $testbody, 'dhimport_version1elis');
+        set_config('newenrolmentemailfrom', 'admin', 'dhimport_version1elis');
         $result = $importplugin->newenrolmentemail($student);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -532,10 +532,10 @@ class elis_notifications_testcase extends rlip_elis_test {
         $testsubject = 'Test Subject';
         $testbody = 'Test Body %%user_username%%';
         $expectedtestbody = 'Test Body '.$muser->username;
-        set_config('newenrolmentemailenabled', '1', 'rlipimport_version1elis');
-        set_config('newenrolmentemailsubject', $testsubject, 'rlipimport_version1elis');
-        set_config('newenrolmentemailtemplate', $testbody, 'rlipimport_version1elis');
-        set_config('newenrolmentemailfrom', 'admin', 'rlipimport_version1elis');
+        set_config('newenrolmentemailenabled', '1', 'dhimport_version1elis');
+        set_config('newenrolmentemailsubject', $testsubject, 'dhimport_version1elis');
+        set_config('newenrolmentemailtemplate', $testbody, 'dhimport_version1elis');
+        set_config('newenrolmentemailfrom', 'admin', 'dhimport_version1elis');
         $result = $importplugin->newenrolmentemail($student);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);

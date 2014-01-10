@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Class for validating side effects of PM enrolments
  *
  * NOTE: Notifications are being testing in test_elis_notifications.php
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_enrolment_side_effects_testcase extends rlip_elis_test {
 
@@ -45,7 +45,7 @@ class elis_enrolment_side_effects_testcase extends rlip_elis_test {
      */
     public function test_track_enrolment_creates_program_enrolment() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/curriculumstudent.class.php'));
         require_once(elispm::lib('data/track.class.php'));
@@ -77,7 +77,7 @@ class elis_enrolment_side_effects_testcase extends rlip_elis_test {
         $record->context = 'track_testtrackidnumber';
         $record->user_username = 'testuserusername';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
 
@@ -93,7 +93,7 @@ class elis_enrolment_side_effects_testcase extends rlip_elis_test {
      */
     public function test_track_enrolment_creates_class_enrolment() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/curriculumcourse.class.php'));
@@ -146,7 +146,7 @@ class elis_enrolment_side_effects_testcase extends rlip_elis_test {
         $record->context = 'track_testtrackidnumber';
         $record->user_username = 'testuserusername';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
 
@@ -160,7 +160,7 @@ class elis_enrolment_side_effects_testcase extends rlip_elis_test {
      */
     public function test_userset_enrolment_creates_track_enrolment() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/clustertrack.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -225,7 +225,7 @@ class elis_enrolment_side_effects_testcase extends rlip_elis_test {
         $record->context = 'userset_testusersetname';
         $record->user_username = 'testuserusername';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_enrolment_create($record, 'bogus', 'testusersetname');
 

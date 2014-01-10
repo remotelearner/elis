@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
 
 /**
  * Class for validating functionality related to field lengths and related logging
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class version1elismaxfieldlengths_testcase extends rlip_elis_test {
 
@@ -45,7 +45,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testusercreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $record = new stdClass;
         $record->idnumber = str_repeat('a', 255);
@@ -68,7 +68,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
 
         $expectedpassword = $record->password;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_create($record, 'bogus');
 
@@ -98,7 +98,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testuserupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $user = new user(array(
             'idnumber'  => 'testuseridnumber',
@@ -130,7 +130,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
 
         $expectedpassword = $record->password;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_update($record, 'bogus');
 
@@ -158,7 +158,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testcoursedescriptioncreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
         $record = new stdClass;
         $record->context = 'course';
@@ -170,7 +170,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->cost = str_repeat('1', 10);
         $record->version = str_repeat('a', 100);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->course_create($record, 'bogus');
 
@@ -188,7 +188,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testcoursedescriptionupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
         $course = new course(array(
             'name'     => 'testcoursename',
@@ -207,7 +207,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->cost = str_repeat('1', 10);
         $record->version = str_repeat('a', 100);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->course_update($record, 'bogus');
 
@@ -225,9 +225,9 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testprogramcreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
-        set_config('enable_curriculum_expiration', 1, 'elis_program');
+        set_config('enable_curriculum_expiration', 1, 'local_elisprogram');
 
         $record = new stdClass;
         $record->context = 'curriculum';
@@ -236,7 +236,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->timetocomplete = str_repeat('1', 63).'h';
         $record->frequency = str_repeat('1', 63).'h';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_create($record, 'bogus');
 
@@ -251,9 +251,9 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testprogramupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
-        set_config('enable_curriculum_expiration', 1, 'elis_program');
+        set_config('enable_curriculum_expiration', 1, 'local_elisprogram');
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
@@ -265,7 +265,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->timetocomplete = str_repeat('1', 63).'h';
         $record->frequency = str_repeat('1', 63).'h';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->curriculum_update($record, 'bogus');
 
@@ -280,8 +280,8 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testtrackcreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
@@ -292,7 +292,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->idnumber = str_repeat('a', 100);
         $record->name = str_repeat('a', 255);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->track_create($record, 'bogus');
 
@@ -305,8 +305,8 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testtrackupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
@@ -321,7 +321,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->idnumber = 'testtrackidnumber';
         $record->name = str_repeat('a', 255);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->track_update($record, 'bogus');
 
@@ -334,8 +334,8 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testclassinstancecreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
         $course = new course(array(
             'name'     => 'testcoursename',
@@ -349,7 +349,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->assignment = 'testcourseidnumber';
         $record->idnumber = str_repeat('a', 100);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_create($record, 'bogus');
 
@@ -363,14 +363,14 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testusersetcreateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $record = new stdClass;
         $record->context = 'cluster';
         $record->name = str_repeat('a', 255);
         $record->display = str_repeat('a', 255);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_create($record, 'bogus');
 
@@ -383,7 +383,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function testusersetupdateissuccessfulwithmaxlengthfields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
@@ -393,7 +393,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->name = 'testusersetname';
         $record->display = str_repeat('a', 255);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_update($record, 'bogus');
 
@@ -414,8 +414,8 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     protected function assert_data_produces_error($data, $expectederror, $entitytype) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Set the log file location.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
@@ -424,7 +424,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         // Run the import.
         $classname = "rlipimport_version1elis_importprovider_fslog{$entitytype}";
         $provider = new $classname($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider, null, true);
         // Suppress output for now.
         ob_start();
         $instance->run();
@@ -441,9 +441,9 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
 
         // Get logfile name.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1elis';
+        $plugin = 'dhimport_version1elis';
 
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $testfilename = $filepath.'/'.$plugintype.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         // Get most recent logfile.
 
@@ -522,7 +522,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_usercreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $data = array(
             'action'    => 'create',
@@ -580,7 +580,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_userupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $user = new user(array(
             'idnumber'  => 'testuseridnumber',
@@ -635,7 +635,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_coursedescriptioncreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
         $data = array(
             'action'   => 'create',
@@ -683,7 +683,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_coursedescriptionupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
         $course = new course(array(
             'name'     => 'testcoursename',
@@ -734,7 +734,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_programcreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
         $data = array(
             'action' => 'create',
@@ -780,7 +780,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_programupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
@@ -826,8 +826,8 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_trackcreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
@@ -873,8 +873,8 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_trackupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $program = new curriculum(array('idnumber' => 'testprogramidnumber'));
         $program->save();
@@ -922,8 +922,8 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_classinstancecreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
         $course = new course(array('idnumber' => 'testcourseidnumber',
                                    'name' => 'testcoursename',
@@ -975,7 +975,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_usersetcreatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $data = array(
             'action'  => 'create',
@@ -1015,7 +1015,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
      */
     public function test_usersetupdatelogserrorwhenfieldstoolong($field, $length, $customvalue) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $userset = new userset(array('name' => 'testusersetname'));
         $userset->save();
@@ -1055,7 +1055,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->email = 'testuser@email.com';
         $record->country = 'CA';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('user');
         $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_user_field_lengths($record, 'bogus');
@@ -1075,7 +1075,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->name = str_repeat('a', 256);
         $record->idnumber = 'testcourseidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
         $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_course_field_lengths($record, 'bogus');
@@ -1094,7 +1094,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->name = str_repeat('a', 256);
         $record->idnumber = 'testprogramidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
         $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_program_field_lengths($record, 'bogus');
@@ -1115,7 +1115,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         // TODO: remove?.
         $record->assignment = 'testprogramidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
         $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_track_field_lengths($record, 'bogus');
@@ -1135,7 +1135,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         // TODO: remove?.
         $record->assignment = 'testcourseidnumber';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
         $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_class_field_lengths($record, 'bogus');
@@ -1154,7 +1154,7 @@ class version1elismaxfieldlengths_testcase extends rlip_elis_test {
         $record->name = 'testusersetname';
         $record->display = str_repeat('a', 256);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->mappings = rlipimport_version1elis_get_mapping('course');
         $importplugin->fslogger = new capture_fslogger(null);
         $importplugin->check_userset_field_lengths($record, 'bogus');

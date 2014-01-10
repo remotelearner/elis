@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
 
 /**
  * Mock file plugin for testing closing of input files
@@ -200,7 +200,7 @@ class rlip_importprovider_nodata extends rlip_importprovider {
 
 /**
  * Class for testing the base import plugin class
- * @group block_rlip
+ * @group local_datahub
  */
 class importplugin_testcase extends rlip_test {
 
@@ -208,7 +208,7 @@ class importplugin_testcase extends rlip_test {
      * Validate that plugin_supports works for entities
      */
     public function test_importpluginsupportsvalidatesvalidentity() {
-        $supports = plugin_supports('rlipimport', 'sample', 'sampleentity');
+        $supports = plugin_supports('dhimport', 'sample', 'sampleentity');
 
         $this->assertEquals($supports, array('sampleaction'));
     }
@@ -217,7 +217,7 @@ class importplugin_testcase extends rlip_test {
      * Validate that plugin_supports flags invalid entities
      */
     public function test_importpluginsupportsinvalidatesinvalidentity() {
-        $supports = plugin_supports('rlipimport', 'sample', 'bogusentity');
+        $supports = plugin_supports('dhimport', 'sample', 'bogusentity');
 
         $this->assertEquals($supports, null);
     }
@@ -226,7 +226,7 @@ class importplugin_testcase extends rlip_test {
      * Validate that plugin_supports works for valid entity-action combinations
      */
     public function test_importpluginsupportsvalidatesvalidentityandaction() {
-        $supports = plugin_supports('rlipimport', 'sample', 'sampleentity_sampleaction');
+        $supports = plugin_supports('dhimport', 'sample', 'sampleentity_sampleaction');
 
         $this->assertEquals($supports, array('samplefield'));
     }
@@ -254,7 +254,7 @@ class importplugin_testcase extends rlip_test {
      */
     public function test_validinputtriggersaction() {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
+        $file = get_plugin_directory('dhimport', 'sample').'/sample.class.php';
         require_once($file);
 
         $provider = new rlip_importprovider_mock();
@@ -272,7 +272,7 @@ class importplugin_testcase extends rlip_test {
      */
     public function test_importclosesfile() {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'sample').'/sample.class.php';
+        $file = get_plugin_directory('dhimport', 'sample').'/sample.class.php';
         require_once($file);
 
         $provider = new rlip_importprovider_inputclosed();
@@ -289,7 +289,7 @@ class importplugin_testcase extends rlip_test {
      */
     public function test_importpluginssupportmultiplefiles() {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'multiple').'/multiple.class.php';
+        $file = get_plugin_directory('dhimport', 'multiple').'/multiple.class.php';
         require_once($file);
 
         $provider = new rlip_importprovider_multiple();
@@ -306,7 +306,7 @@ class importplugin_testcase extends rlip_test {
      */
     public function test_importtriggersheaderreadhook() {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'header').'/header.class.php';
+        $file = get_plugin_directory('dhimport', 'header').'/header.class.php';
         require_once($file);
 
         $provider = new rlip_importprovider_mock();
@@ -323,16 +323,16 @@ class importplugin_testcase extends rlip_test {
      */
     public function test_csvimportproviderprovidesloggerinscheduledmode() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_importprovider_csv.class.php');
 
         // Construct our provider.
         $provider = new rlip_importprovider_csv(array(), array());
 
         // Obtain its logging object.
-        set_config('logfilelocation', 'bogus', 'rlipimport_version1');
+        set_config('logfilelocation', 'bogus', 'dhimport_version1');
         $entity = '';
         $manual = false;
-        $fslogger = $provider->get_fslogger('rlipimport_version1', $entity, $manual);
+        $fslogger = $provider->get_fslogger('dhimport_version1', $entity, $manual);
 
         // Validation.
         $this->assertFalse($fslogger->get_manual());
@@ -345,16 +345,16 @@ class importplugin_testcase extends rlip_test {
      */
     public function test_moodlefileimportproviderprovidesloggerinmanualmode() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_importprovider_moodlefile.class.php');
 
         // Construct our provider.
         $provider = new rlip_importprovider_moodlefile(array(), array());
 
         // Obtain its logging object.
-        set_config('logfilelocation', 'bogus', 'rlipimport_version1');
+        set_config('logfilelocation', 'bogus', 'dhimport_version1');
         $entity = '';
         $manual = true;
-        $fslogger = $provider->get_fslogger('rlipimport_version1', $entity, $manual);
+        $fslogger = $provider->get_fslogger('dhimport_version1', $entity, $manual);
 
         // Validation.
         $this->assertTrue($fslogger->get_manual());

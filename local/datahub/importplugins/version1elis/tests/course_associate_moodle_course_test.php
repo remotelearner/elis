@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Class for testing course description-moodle template course association creation during course description create and update
  * actions.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_course_associate_moodle_course_testcase extends rlip_elis_test {
 
@@ -46,7 +46,7 @@ class elis_course_associate_moodle_course_testcase extends rlip_elis_test {
     public function test_associate_moodle_course_during_course_create() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/coursetemplate.class.php'));
 
@@ -66,7 +66,7 @@ class elis_course_associate_moodle_course_testcase extends rlip_elis_test {
         $record->idnumber = 'testcourseidnumber';
         $record->link = $templatecourse->shortname;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->course_create($record, 'bogus');
 
@@ -86,7 +86,7 @@ class elis_course_associate_moodle_course_testcase extends rlip_elis_test {
     public function test_associate_moodle_course_during_course_update() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/coursetemplate.class.php'));
 
@@ -114,7 +114,7 @@ class elis_course_associate_moodle_course_testcase extends rlip_elis_test {
         $record->idnumber = 'testcourseidnumber';
         $record->link = $templatecourse->shortname;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->course_update($record, 'bogus');
 

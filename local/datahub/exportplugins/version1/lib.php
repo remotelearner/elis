@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 //database table constants
-define('RLIPEXPORT_VERSION1_FIELD_TABLE', 'rlipexport_version1_field');
+define('RLIPEXPORT_VERSION1_FIELD_TABLE', 'dhexport_version1_field');
 
 /**
  * Helper class that is used for configuring the Version 1 format export
@@ -217,7 +216,7 @@ class rlipexport_version1_config {
         $delete = optional_param('delete', 0, PARAM_INT);
         if ($delete != 0) {
             self::delete_field_from_export($delete);
-            redirect($baseurl, get_string('profilefieldsuccessdelete', 'rlipexport_version1'), 1);
+            redirect($baseurl, get_string('profilefieldsuccessdelete', 'dhexport_version1'), 1);
         }
 
         //handle moving a field down the list
@@ -246,7 +245,7 @@ class rlipexport_version1_config {
         if ($updatefields !== '') {
             $data = data_submitted();
             self::update_field_headers($data);
-            redirect($baseurl, get_string('profilefieldsuccessupdate', 'rlipexport_version1'), 1);
+            redirect($baseurl, get_string('profilefieldsuccessupdate', 'dhexport_version1'), 1);
         }
     }
 }
@@ -262,8 +261,8 @@ function rlipexport_version1_page_setup($baseurl) {
 
     //set up the basic page info
     $PAGE->set_url($baseurl);
-    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
-    $displaystring = get_string('configuretitle', 'rlipexport_version1');
+    $PAGE->set_context(context_system::instance());
+    $displaystring = get_string('configuretitle', 'dhexport_version1');
     $PAGE->set_title("$SITE->shortname: ".$displaystring);
     $PAGE->set_heading($SITE->fullname);
 
@@ -285,13 +284,13 @@ function rlipexport_version1_linked_image($url, $imageidentifier) {
     $imageurl = $OUTPUT->pix_url($imageidentifier);
     $alttitle = '';
     if ($imageidentifier == 't/delete') {
-        $alttitle = get_string('delete', 'rlipexport_version1');
+        $alttitle = get_string('delete', 'dhexport_version1');
     }
     if ($imageidentifier == 't/up') {
-        $alttitle = get_string('moveup', 'rlipexport_version1');
+        $alttitle = get_string('moveup', 'dhexport_version1');
     }
     if ($imageidentifier == 't/down') {
-        $alttitle = get_string('movedown', 'rlipexport_version1');
+        $alttitle = get_string('movedown', 'dhexport_version1');
     }
     $imagetag = html_writer::empty_tag('img', array('src' => $imageurl, 'alt' => $alttitle, 'title' => $alttitle));
 
@@ -307,17 +306,17 @@ function rlipexport_version1_linked_image($url, $imageidentifier) {
  */
 function rlipexport_version1_incrementaldelta_updatedcallback($name) {
     global $CFG;
-    require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+    require_once($CFG->dirroot.'/local/datahub/lib.php');
 
     if ($name == 's_rlipexport_version1_incrementaldelta') {
         //have the right setting
 
         //obtain the value
-        $time_string = get_config('rlipexport_version1', 'incrementaldelta');
+        $time_string = get_config('dhexport_version1', 'incrementaldelta');
         //sanitize
         $time_string = rlip_sanitize_time_string($time_string, '1d');
 
         //flush
-        set_config('incrementaldelta', $time_string, 'rlipexport_version1');
+        set_config('incrementaldelta', $time_string, 'dhexport_version1');
     }
 }

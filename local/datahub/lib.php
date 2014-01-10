@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -32,19 +32,19 @@ define('RLIP_MAXRUNTIME_MIN', 28); // minimum maxruntime in secs
 define('RLIP_LOGS_PER_PAGE', 20);
 
 //database table constant
-define('RLIP_LOG_TABLE', 'block_rlip_summary_logs');
-define('RLIP_SCHEDULE_TABLE', 'block_rlip_schedule');
+define('RLIP_LOG_TABLE', 'local_datahub_summary_logs');
+define('RLIP_SCHEDULE_TABLE', 'local_datahub_schedule');
 
 //constants for temporary import & export directories (wildcard for plugin)
-define('RLIP_EXPORT_TEMPDIR', '/rlip/%s/temp/');
-define('RLIP_IMPORT_TEMPDIR', '/rlip/%s/temp/');
+define('RLIP_EXPORT_TEMPDIR', '/datahub/%s/temp/');
+define('RLIP_IMPORT_TEMPDIR', '/datahub/%s/temp/');
 
 //the default log path
-define('RLIP_DEFAULT_LOG_PATH', '/rlip/log');
+define('RLIP_DEFAULT_LOG_PATH', '/datahub/log');
 
 require_once($CFG->dirroot.'/lib/pluginlib.php');
 require_once($CFG->dirroot.'/lib/adminlib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
 /**
  * Settings page that can have child pages
@@ -100,16 +100,16 @@ class rlip_category_externalpage extends admin_externalpage implements parentabl
  */
 function rlip_admintree_setup(&$adminroot) {
     global $CFG;
-    require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
-    $plugintypes = array('rlipimport', 'rlipexport');
+    $plugintypes = array('dhimport', 'dhexport');
 
-    $displaystring = get_string('plugins', 'block_rlip');
+    $displaystring = get_string('plugins', 'local_datahub');
     $externcat = new admin_category('rlipmanageplugins', $displaystring);
-    $adminroot->add('blocksettings', $externcat);
+    $adminroot->add('localplugins', $externcat);
 
-    $displaystring = get_string('rlipmanageplugins', 'block_rlip');
-    $url = $CFG->wwwroot.'/blocks/rlip/plugins.php';
+    $displaystring = get_string('rlipmanageplugins', 'local_datahub');
+    $url = $CFG->wwwroot.'/local/datahub/plugins.php';
     $page = new admin_externalpage('rlipsettingplugins', $displaystring, $url, 'moodle/site:config');
     $adminroot->add('rlipmanageplugins', $page);
 
@@ -119,7 +119,7 @@ function rlip_admintree_setup(&$adminroot) {
             ksort($plugins);
 
             foreach ($plugins as $p => $path) {
-                //NOTE: do not use $plugin here because elis/core/lib/setup will
+                //NOTE: do not use $plugin here because local/eliscore/lib/setup will
                 //overwrite this value if included below
                 $plugsettings = $path.'/settings.php';
 
@@ -147,8 +147,8 @@ function rlip_admintree_setup(&$adminroot) {
     }
 
     //add a link for viewing logs
-    $displaystring = get_string('logs', 'block_rlip');
-    $url = $CFG->wwwroot.'/blocks/rlip/viewlogs.php';
+    $displaystring = get_string('logs', 'local_datahub');
+    $url = $CFG->wwwroot.'/local/datahub/viewlogs.php';
     $page = new admin_externalpage('rliplogs', $displaystring, $url,
                                    'moodle/site:config');
     $adminroot->add('reports', $page);
@@ -165,8 +165,8 @@ function rlip_manualrun_page_setup($baseurl, $plugin_display) {
 
     //set up the basic page info
     $PAGE->set_url($baseurl);
-    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
-    $displaystring = get_string('configuretitle', 'rlipexport_version1');
+    $PAGE->set_context(context_system::instance());
+    $displaystring = get_string('configuretitle', 'dhexport_version1');
     $PAGE->set_title("$SITE->shortname: ".$displaystring);
     $PAGE->set_heading($SITE->fullname);
 
@@ -176,13 +176,13 @@ function rlip_manualrun_page_setup($baseurl, $plugin_display) {
     //add navigation items
     $PAGE->navbar->add(get_string('administrationsite'));
     $PAGE->navbar->add(get_string('plugins', 'admin'));
-    $PAGE->navbar->add(get_string('blocks'));
-    $PAGE->navbar->add(get_string('plugins', 'block_rlip'));
-    $PAGE->navbar->add(get_string('rlipmanageplugins', 'block_rlip'), new moodle_url('/blocks/rlip/plugins.php'));
-    $PAGE->navbar->add(get_string('runmanually', 'block_rlip'));
+    $PAGE->navbar->add(get_string('localplugins'));
+    $PAGE->navbar->add(get_string('plugins', 'local_datahub'));
+    $PAGE->navbar->add(get_string('rlipmanageplugins', 'local_datahub'), new moodle_url('/local/datahub/plugins.php'));
+    $PAGE->navbar->add(get_string('runmanually', 'local_datahub'));
 
     //block css file
-    $PAGE->requires->css('/blocks/rlip/styles.css');
+    $PAGE->requires->css('/local/datahub/styles.css');
 }
 
 /**
@@ -203,20 +203,14 @@ function rlip_handle_file_upload($data, $key) {
     $fs = get_file_storage();
 
     //obtain the listing of files just uploaded
-    $usercontext = get_context_instance(CONTEXT_USER, $USER->id);
+    $usercontext = context_user::instance($USER->id);
     $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $data->$key);
 
-    if ($instanceid = $DB->get_field('block_instances', 'id', array('blockname' => 'rlip'), IGNORE_MULTIPLE)) {
-        //try to use the block context
-        $context = get_context_instance(CONTEXT_BLOCK, $instanceid);
-    } else {
-        //fall back to site context
-        $context = get_context_instance(CONTEXT_SYSTEM);
-    }
+    $context = context_system::instance();
 
     //set up file parameters
     $file_record = array('contextid' => $context->id,
-                         'component' => 'block_rlip',
+                         'component' => 'local_datahub',
                          'filearea' => 'files',
                          'filepath' => '/manualupload/');
 
@@ -229,7 +223,7 @@ function rlip_handle_file_upload($data, $key) {
 
             //maintain the same filename
             $draft_filename = $draftfile->get_filename();
-            $file = $fs->get_file($context->id, 'block_rlip', 'files',
+            $file = $fs->get_file($context->id, 'local_datahub', 'files',
                                   $data->$key, '/manualupload/', $draft_filename);
 
             if ($file) {
@@ -364,8 +358,7 @@ function rlip_time_string_to_offset($time_string) {
 /**
  * Get scheduled IP jobs
  *
- * @param  string $plugin The IP plugin type:
-                          'rlipimport_version1', 'rlipexport_version1', ...
+ * @param  string $plugin The IP plugin type: 'dhimport_version1', 'dhexport_version1', ...
  * @param  int    $userid The desired schedule owner or (default) 0 for all.
  * @uses   $DB
  * @return mixed         Either list of scheduled jobs for IP plugin
@@ -377,7 +370,7 @@ function rlip_get_scheduled_jobs($plugin, $userid = 0) {
     $params = array('plugin' => $plugin);
     $sql = "SELECT ipjob.*, usr.username, usr.firstname, usr.lastname,
                    usr.timezone, task.lastruntime, task.nextruntime
-              FROM {elis_scheduled_tasks} task
+              FROM {local_eliscore_sched_tasks} task
               JOIN {".RLIP_SCHEDULE_TABLE."} ipjob
                 ON task.taskname = {$taskname}
               JOIN {user} usr
@@ -452,15 +445,15 @@ function rlip_schedule_add_job($data) {
         $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
         // Must delete any existing task records for the old schedule
         $taskname = 'ipjob_'. $ipjob->id;
-        $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
+        $DB->delete_records('local_eliscore_sched_tasks', array('taskname' => $taskname));
     } else {
         $ipjob->id = $DB->insert_record(RLIP_SCHEDULE_TABLE, $ipjob);
     }
 
     $task = new stdClass;
-    $task->plugin        = 'block_rlip';
+    $task->plugin        = 'local_datahub';
     $task->taskname      = 'ipjob_'. $ipjob->id;
-    $task->callfile      = '/blocks/rlip/lib.php';
+    $task->callfile      = '/local/datahub/lib.php';
     $task->callfunction  = serialize('run_ipjob'); // TBD
     $task->lastruntime   = 0;
     $task->blocking      = 0;
@@ -473,7 +466,7 @@ function rlip_schedule_add_job($data) {
     $task->enddate       = null;
     $task->runsremaining = null;
     $task->nextruntime   = $nextruntime;
-    return $DB->insert_record('elis_scheduled_tasks', $task);
+    return $DB->insert_record('local_eliscore_sched_tasks', $task);
 }
 
 /**
@@ -487,7 +480,7 @@ function rlip_schedule_delete_job($id) {
     global $DB;
     $DB->delete_records(RLIP_SCHEDULE_TABLE, array('id' => $id));
     $taskname = 'ipjob_'. $id;
-    $DB->delete_records('elis_scheduled_tasks', array('taskname' => $taskname));
+    $DB->delete_records('local_eliscore_sched_tasks', array('taskname' => $taskname));
     return true;
 }
 
@@ -515,7 +508,7 @@ function rlip_get_export_filename($plugin, $tz = 99) {
         }
     }
     if (!file_exists($tempexportdir) && !@mkdir($tempexportdir, 0777, true)) {
-        error_log("/blocks/rlip/lib.php::rlip_get_export_filename('{$plugin}', {$tz}) - Error creating directory: '{$tempexportdir}'");
+        error_log("/local/datahub/lib.php::rlip_get_export_filename('{$plugin}', {$tz}) - Error creating directory: '{$tempexportdir}'");
     }
     return $tempexportdir . $export;
 }
@@ -525,7 +518,7 @@ function rlip_get_export_filename($plugin, $tz = 99) {
  *
  * @param  string  $prefix    mtrace prefix string
  * @param  string  $plugin    The plugin name
- * @param  string  $type      The plugin type (i.e. rlipimport, rlipexport)
+ * @param  string  $type      The plugin type (i.e. dhimport, dhexport)
  * @param  int     $userid    the scheduled job's Moodle userid
  * @param  object  $state     the scheduled job's past state object
  * @uses   $CFG
@@ -538,7 +531,7 @@ function rlip_get_run_instance($prefix, $plugin, $type, $userid, $state) {
     $instance = null;
     $rlipshortname = 'DH';
     switch ($type) { // TBD
-        case 'rlipimport':
+        case 'dhimport':
             $baseinstance = rlip_dataplugin_factory::factory($plugin);
             $entity_types = $baseinstance->get_import_entities();
             $files = array();
@@ -573,7 +566,7 @@ function rlip_get_run_instance($prefix, $plugin, $type, $userid, $state) {
             $instance = rlip_dataplugin_factory::factory($plugin, $importprovider);
             break;
 
-        case 'rlipexport':
+        case 'dhexport':
             $tz = $DB->get_field('user', 'timezone', array('id' => $userid));
             $export = rlip_get_export_filename($plugin,
                           ($tz === false) ? 99 : $tz);
@@ -607,7 +600,7 @@ function rlip_calc_next_runtime($targetstarttime, $period, $currenttime = 0) {
 }
 
 /**
- *  Callback function for elis_scheduled_tasks IP jobs
+ *  Callback function for local_eliscore_sched_tasks IP jobs
  *
  * @param  string  $taskname  The task name, in the form ipjob_{id}, where id
  *                            is the IP job's schedule id
@@ -619,16 +612,16 @@ function run_ipjob($taskname, $maxruntime = 0) {
     global $CFG, $DB;
 
     $fcnname = "run_ipjob({$taskname}, {$maxruntime})";
-    $disabledincron = !empty($CFG->forcedatahubcron) || get_config('block_rlip', 'disableincron');
+    $disabledincron = !empty($CFG->forcedatahubcron) || get_config('local_datahub', 'disableincron');
     $rlipshortname = 'DH';
 
     if (empty($maxruntime)) {
         $maxruntime = IP_SCHEDULE_TIMELIMIT;
     }
 
-    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_dataplugin.class.php');
-    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fileplugin.class.php');
-    require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
+    require_once($CFG->dirroot .'/local/datahub/lib/rlip_dataplugin.class.php');
+    require_once($CFG->dirroot .'/local/datahub/lib/rlip_fileplugin.class.php');
+    require_once($CFG->dirroot .'/local/datahub/lib/rlip_importprovider_csv.class.php');
 
     // Get the schedule record
     list($prefix, $id) = explode('_', $taskname);
@@ -646,7 +639,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     $targetstarttime = $ipjob->nextruntime;
 
     // Set the next run time & lastruntime
-    if ($task = $DB->get_record('elis_scheduled_tasks',
+    if ($task = $DB->get_record('local_eliscore_sched_tasks',
                                 array('taskname' => $taskname))) {
         // Check if a job is already in progress.
         try {
@@ -659,7 +652,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
             // Put times back to pre-run state.
             $task->nextruntime = $ipjob->nextruntime;
             $task->lastruntime = $ipjob->lastruntime;
-            $DB->update_record('elis_scheduled_tasks', $task);
+            $DB->update_record('local_eliscore_sched_tasks', $task);
             mtrace("{$fcnname}: Similiar task has not completed yet!");
             return false;
         } else if (empty($disabledincron)) {
@@ -671,11 +664,11 @@ function run_ipjob($taskname, $maxruntime = 0) {
             $ipjob->nextruntime = $task->nextruntime;
             $DB->update_record(RLIP_SCHEDULE_TABLE, $ipjob);
         } else {
-            // running RLIP cron externally, put times back to pre-run state
+            // running Datahub cron externally, put times back to pre-run state
             $task->nextruntime = $ipjob->nextruntime;
             $task->lastruntime = $ipjob->lastruntime;
         }
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
     } else {
         mtrace("{$fcnname}: DB Error retrieving task record!");
         //todo: return false?
@@ -703,7 +696,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
         //update next runtime on the scheduled task record
         $task->nextruntime = $targetstarttime;
         $task->lastruntime = $ipjob->lastruntime = $lastruntime;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
         $data['state'] = $newstate;
@@ -782,45 +775,45 @@ function rlip_get_log_table($logs) {
     global $DB;
 
     //used for the display of all time values in this table
-    $timeformat = get_string('displaytimeformat', 'block_rlip');
+    $timeformat = get_string('displaytimeformat', 'local_datahub');
 
     $table = new html_table();
     //alignment
     $table->align = array('left', 'left', 'left', 'left', 'left',
                           'left', 'left', 'right', 'right', 'left');
     //column headers
-    $table->head = array(get_string('logtasktype', 'block_rlip'),
-                         get_string('logplugin', 'block_rlip'),
-                         get_string('logexecution', 'block_rlip'),
-                         get_string('loguser', 'block_rlip'),
-                         get_string('logscheduledstart', 'block_rlip'),
-                         get_string('logstart', 'block_rlip'),
-                         get_string('logend', 'block_rlip'),
-                         get_string('logfilesuccesses', 'block_rlip'),
-                         get_string('logfilefailures', 'block_rlip'),
-                         get_string('logstatus', 'block_rlip'),
-                         get_string('logentitytype', 'block_rlip'),
-                         get_string('logdownload', 'block_rlip'));
+    $table->head = array(get_string('logtasktype', 'local_datahub'),
+                         get_string('logplugin', 'local_datahub'),
+                         get_string('logexecution', 'local_datahub'),
+                         get_string('loguser', 'local_datahub'),
+                         get_string('logscheduledstart', 'local_datahub'),
+                         get_string('logstart', 'local_datahub'),
+                         get_string('logend', 'local_datahub'),
+                         get_string('logfilesuccesses', 'local_datahub'),
+                         get_string('logfilefailures', 'local_datahub'),
+                         get_string('logstatus', 'local_datahub'),
+                         get_string('logentitytype', 'local_datahub'),
+                         get_string('logdownload', 'local_datahub'));
 
     $table->data = array();
 
-    $logstr = get_string('log', 'block_rlip');
+    $logstr = get_string('log', 'local_datahub');
 
     //fill in table data
     foreach ($logs as $log) {
         // TODO: cache user records here so we aren't constantly fetching records from the DB?
-        $user = $DB->get_record('user', array('id' => $log->userid), 'firstname, lastname');
+        $user = $DB->get_record('user', array('id' => $log->userid));
 
         if ($log->export == 1) {
             //export case
 
-            $plugintype = get_string('export', 'block_rlip');
+            $plugintype = get_string('export', 'local_datahub');
             //can't have failures in export files
-            $filefailures = get_string('na', 'block_rlip');
+            $filefailures = get_string('na', 'local_datahub');
 
-            $entitytype = get_string('na', 'block_rlip');
+            $entitytype = get_string('na', 'local_datahub');
         } else {
-            $plugintype = get_string('import', 'block_rlip');
+            $plugintype = get_string('import', 'local_datahub');
             //use tracked number of failures for display
             $filefailures = $log->filefailures;
 
@@ -829,11 +822,11 @@ function rlip_get_log_table($logs) {
 
         if ($log->targetstarttime == 0) {
             //process was run manually
-            $executiontype = get_string('manual', 'block_rlip');
-            $targetstarttime = get_string('na', 'block_rlip');
+            $executiontype = get_string('manual', 'local_datahub');
+            $targetstarttime = get_string('na', 'local_datahub');
         } else {
             //process was run automatically (cron)
-            $executiontype = get_string('automatic', 'block_rlip');
+            $executiontype = get_string('automatic', 'local_datahub');
             $targetstarttime = userdate($log->targetstarttime, $timeformat, 99, false);
         }
 
@@ -875,7 +868,7 @@ function rlip_log_table_html($table) {
 
     if (empty($table->data)) {
         //no table data, so instead return message
-        return $OUTPUT->heading(get_string('nologmessage', 'block_rlip'));
+        return $OUTPUT->heading(get_string('nologmessage', 'local_datahub'));
     }
 
     //obtain table html
@@ -898,12 +891,12 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
 
     //if no timeformat is set, set it to logfile timestamp format
     if (empty($format)) {
-        $format = get_string('logfile_timestamp','block_rlip');
+        $format = get_string('logfile_timestamp','local_datahub');
     }
 
     //add scheduled/manual to the logfile name
-    $scheduling = empty($manual) ? strtolower(get_string('scheduled','block_rlip'))
-                                 : strtolower(get_string('manual','block_rlip'));
+    $scheduling = empty($manual) ? strtolower(get_string('scheduled','local_datahub'))
+                                 : strtolower(get_string('manual','local_datahub'));
     //use timestamp passed or time()
     if (empty($timestamp)) {
         $timestamp = time();
@@ -920,7 +913,7 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
     // create directory if it doesn't exist
     if (!file_exists($filepath) && !@mkdir($filepath, 0777, true)) {
         // TBD: log this error to UI and/or elsewhere
-        error_log("/blocks/rlip/lib.php::rlip_log_file_name('{$plugin_type}', '{$plugin}', '{$filepath}', '{$entity}', {$manual}, {$timestamp}, {$format}, {$timezone}) - Error creating directory: '{$filepath}'");
+        error_log("/local/datahub/lib.php::rlip_log_file_name('{$plugin_type}', '{$plugin}', '{$filepath}', '{$entity}', {$manual}, {$timestamp}, {$format}, {$timezone}) - Error creating directory: '{$filepath}'");
     }
 
     $pluginparts = explode('_', $plugin);
@@ -949,7 +942,7 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
 /**
  * Task to create a zip file from today's log files
  *
- * @param string $taskname elis_scheduled_tasks task name (unused).
+ * @param string $taskname local_eliscore_sched_tasks task name (unused).
  * @param int    $runtime  elis_scheduled tasks suggested run time (unused).
  * @param int    $time     day to archive logs - default (0) => yesterday's logs
  *                         (used for testing)
@@ -966,11 +959,11 @@ function rlip_compress_logs_cron($taskname, $runtime = 0, $time = 0) {
     }
 
     //the types of plugins we are considering
-    $plugintypes = array('rlipimport' => 'import', 'rlipexport' => 'export');
+    $plugintypes = array('dhimport' => 'import', 'dhexport' => 'export');
     //lookup for the directory paths for plugins
     $directories = get_plugin_types();
     //Loop through all plugins...
-    $timestamp = userdate($time, get_string('logfiledaily_timestamp','block_rlip'), 99);
+    $timestamp = userdate($time, get_string('logfiledaily_timestamp','local_datahub'), 99);
 
     foreach ($plugintypes as $plugintype => $pluginvalue) {
         //base directory
@@ -1106,22 +1099,22 @@ function rlip_get_maxruntime() {
  * @param none
  * @return none
  */
-function rlip_schedulding_init() {
+function rlip_scheduling_init() {
     global $CFG, $DB;
 
     // Check whether the scheduled tasks table exists
     $dbman = $DB->get_manager();
-    $table = new xmldb_table('elis_scheduled_tasks');
+    $table = new xmldb_table('local_eliscore_sched_tasks');
     if (!$dbman->table_exists($table)) {
         return;
     }
 
     // If we haven't setup a scheduled task for the block yet, do so now
-    if (!$DB->record_exists('elis_scheduled_tasks', array('plugin' => 'block_rlip'))) {
-        require_once($CFG->dirroot.'/elis/core/lib/tasklib.php');
+    if (!$DB->record_exists('local_eliscore_sched_tasks', array('plugin' => 'local_datahub'))) {
+        require_once($CFG->dirroot.'/local/eliscore/lib/tasklib.php');
 
-        // Add a cron task for the RLIP block
-        elis_tasks_update_definition('block_rlip');
+        // Add a cron task for the Datahub block
+        elis_tasks_update_definition('local_datahub');
     }
 }
 
@@ -1193,8 +1186,8 @@ function rlip_send_log_email($plugin, $recipient, $archive_name) {
 
     //obtain email contents
     $plugindisplay = get_string('pluginname', $plugin);
-    $subject = get_string('notificationemailsubject', 'block_rlip', $plugindisplay);
-    $message = get_string('notificationemailmessage', 'block_rlip', $plugindisplay);
+    $subject = get_string('notificationemailsubject', 'local_datahub', $plugindisplay);
+    $message = get_string('notificationemailmessage', 'local_datahub', $plugindisplay);
 
     //send the email
     email_to_user($recipient, $admin, $subject, $message, '', $archive_name, $archive_name);
@@ -1246,13 +1239,13 @@ function rlip_email_archive_name($plugin, $time = 0, $manual = false) {
 
     //convert plugin name to prefix
     $plugin_display = $plugin;
-    $importpos = strpos($plugin_display, 'rlipimport_');
-    $exportpos = strpos($plugin_display, 'rlipexport_');
+    $importpos = strpos($plugin_display, 'dhimport_');
+    $exportpos = strpos($plugin_display, 'dhexport_');
 
     if ($importpos === 0) {
-       $plugin_display = 'import_'.substr($plugin_display, strlen('rlipimport_'));
+       $plugin_display = 'import_'.substr($plugin_display, strlen('dhimport_'));
     } else if ($exportpos === 0) {
-        $plugin_display = 'export_'.substr($plugin_display, strlen('rlipexport_'));
+        $plugin_display = 'export_'.substr($plugin_display, strlen('dhexport_'));
     }
 
     //execution type logic
@@ -1288,9 +1281,9 @@ function rlip_get_archive_log_filename($logorid) {
         return false;
     }
 
-    $pluginname = str_replace(array('rlipimport_', 'rlipexport_'), '', $log->plugin);
+    $pluginname = str_replace(array('dhimport_', 'dhexport_'), '', $log->plugin);
 
-    $timestamp  = userdate($log->starttime, get_string('logfiledaily_timestamp','block_rlip'), 99);;
+    $timestamp  = userdate($log->starttime, get_string('logfiledaily_timestamp','local_datahub'), 99);;
     $archivelog = ($log->export == 1 ? 'export' : 'import').'_'.$pluginname.'_'.$timestamp.'.zip';
 
     $logflielocation  = '';
@@ -1375,7 +1368,7 @@ function rlip_data_root_path_translation($path) {
 /**
  * Function to convert time in user's timezone to GMT
  * Note: Moodle function usertime() doesn't include DST offset
- * from: /elis/program/lib/lib.php::pm_gmt_from_usertime()
+ * from: /local/elisprogram/lib/lib.php::pm_gmt_from_usertime()
  * @param int $usertime timestamp in user's timezone
  * @param float|int|string $timezone optional timezone to use, defaults to user's
  * @return int  timestamp in GMT

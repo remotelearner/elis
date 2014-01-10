@@ -16,24 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 
 /**
  * Unit test for validating basic userset actions.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_userset_import_testcase extends rlip_elis_test {
 
@@ -42,7 +42,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
      */
     public function test_create_elis_userset_import_with_minimal_fields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
         // Run the import.
@@ -63,7 +63,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
      */
     public function test_create_elis_userset_import_with_all_fields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
         // Set up a parent userset.
@@ -103,7 +103,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
      */
     public function test_update_elis_userset_import_with_minimal_fields($fieldname, $value) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
         // Set up a userset.
@@ -128,7 +128,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
      */
     public function test_update_elis_userset_import_with_all_fields() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
         // Set up a userset.
@@ -153,7 +153,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
      */
     public function test_delete_elis_userset_import_with_minimal_fields($data, $expected) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
         // Set up a userset.
@@ -185,7 +185,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
     public function test_delete_elis_userset_deletes_associations() {
         global $CFG, $DB;
         // Entities.
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -196,7 +196,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
         require_once(elispm::lib('data/clusterassignment.class.php'));
         require_once(elispm::lib('data/clustercurriculum.class.php'));
         require_once(elispm::lib('data/clustertrack.class.php'));
-        require_once(elispm::file('enrol/userset/moodle_profile/userset_profile.class.php'));
+        require_once(elispm::file('enrol/userset/moodleprofile/userset_profile.class.php'));
 
         // For context level access.
         require_once(elispm::file('accesslib.php'));
@@ -237,7 +237,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
         // Custom field.
         $field = new field(array('name' => 'testfieldname', 'categoryid' => 9999));
         $field->save();
-        $context = context_elis_userset::instance($userset->id);
+        $context = \local_elisprogram\context\userset::instance($userset->id);
         $data = new field_data_int(array(
             'contextid' => $context->id,
             'fieldid' => $field->id,
@@ -305,7 +305,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
      */
     public function test_create_elis_userset_respects_parent_field($inputvalue, $dbvalue, $depth) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
 
         // Set up a parent userset.
@@ -347,7 +347,7 @@ class elis_userset_import_testcase extends rlip_elis_test {
     private function run_core_userset_import($extradata, $usedefaultdata = true) {
         global $CFG;
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         if ($usedefaultdata) {

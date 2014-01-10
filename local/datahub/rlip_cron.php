@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-// External RLIP 'cron' processing file
+// External Datahub 'cron' processing file
 define('CLI_SCRIPT', 1);
 
 require_once(dirname(__FILE__) .'/../../config.php');
-require_once($CFG->dirroot .'/elis/core/lib/tasklib.php');
-require_once($CFG->dirroot .'/blocks/rlip/lib.php');
-require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot .'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
+require_once($CFG->dirroot .'/local/eliscore/lib/tasklib.php');
+require_once($CFG->dirroot .'/local/datahub/lib.php');
+require_once($CFG->dirroot .'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot .'/local/datahub/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot .'/local/datahub/lib/rlip_importprovider_csv.class.php');
 
 $filename = basename(__FILE__);
-$disabledincron = !empty($CFG->forcedatahubcron) || get_config('block_rlip', 'disableincron');
+$disabledincron = !empty($CFG->forcedatahubcron) || get_config('local_datahub', 'disableincron');
 
 if (empty($disabledincron)) {
     exit(0);
@@ -54,13 +54,13 @@ if (empty($CFG->extramemorylimit)) {
     raise_memory_limit($CFG->extramemorylimit);
 }
 
-mtrace('RL'.$rlipshortname.' external cron start - Server Time: '. date('r', time()) ."\n");
+mtrace($rlipshortname.' external cron start - Server Time: '. date('r', time()) ."\n");
 
-$pluginstorun = array('rlipimport', 'rlipexport');
+$pluginstorun = array('dhimport', 'dhexport');
 
 $timenow = time();
 $params = array('timenow' => $timenow);
-$tasks = $DB->get_recordset_select('elis_scheduled_tasks', 'nextruntime <= :timenow', $params, 'nextruntime ASC');
+$tasks = $DB->get_recordset_select('local_eliscore_sched_tasks', 'nextruntime <= :timenow', $params, 'nextruntime ASC');
 if ($tasks && $tasks->valid()) {
     foreach ($tasks as $task) {
         // Make sure we have an import/export task
@@ -81,14 +81,14 @@ if ($tasks && $tasks->valid()) {
         $plugin = $ipjob->plugin;
         $plugparts = explode('_', $plugin);
         if (!in_array($plugparts[0], $pluginstorun)) {
-            mtrace("{$filename}: RL{$rlipshortname} plugin '{$plugin}' not configured to run externally - aborting!");
+            mtrace("{$filename}: {$rlipshortname} plugin '{$plugin}' not configured to run externally - aborting!");
             continue;
         }
 
         $rlip_plugins = get_plugin_list($plugparts[0]);
         //print_object($rlip_plugins);
         if (!array_key_exists($plugparts[1], $rlip_plugins)) {
-            mtrace("{$filename}: RL{$rlipshortname} plugin '{$plugin}' unknown!");
+            mtrace("{$filename}: {$rlipshortname} plugin '{$plugin}' unknown!");
             continue;
         }
 
@@ -106,7 +106,7 @@ if ($tasks && $tasks->valid()) {
         $nextruntime = rlip_calc_next_runtime($targetstarttime, $data['period']);
         $task->nextruntime = $nextruntime;
         $task->lastruntime = $timenow;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         //update the next runtime on the ip schedule record
         $ipjob->nextruntime = $task->nextruntime;
@@ -126,6 +126,6 @@ if ($tasks && $tasks->valid()) {
     }
 }
 
-mtrace("\nRL{$rlipshortname} external cron end - Server Time: ". date('r', time()) ."\n\n");
+mtrace("\n{$rlipshortname} external cron end - Server Time: ". date('r', time()) ."\n\n");
 
 // end of file

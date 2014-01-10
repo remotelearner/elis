@@ -16,28 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 /**
  * Class for testing how Version 1 deals with "empty" values in updates
- * @group block_rlip
- * @group rlipimport_version1
+ * @group local_datahub
+ * @group dhimport_version1
  */
 class version1emptyvalueupdates_testcase extends rlip_test {
 
@@ -61,7 +61,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
     public function test_version1userupdateignoresemptyvalues() {
         global $CFG, $DB;
 
-        set_config('createorupdate', 0, 'rlipimport_version1');
+        set_config('createorupdate', 0, 'dhimport_version1');
 
         // Create, then update a user.
         $data = array(
@@ -92,7 +92,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
         );
         $provider = new rlipimport_version1_importprovider_emptyuser($data);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider);
         $importplugin->run();
 
         // Validation.
@@ -120,7 +120,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
     public function test_version1courseupdateignoresemptyvalues() {
         global $CFG, $DB;
 
-        set_config('createorupdate', 0, 'rlipimport_version1');
+        set_config('createorupdate', 0, 'dhimport_version1');
 
         // New config settings required by course format refactoring in 2.4.
         set_config('numsections', 15, 'moodlecourse');
@@ -146,7 +146,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
         );
         $provider = new rlipimport_version1_importprovider_emptycourse($data);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider);
         $importplugin->run();
 
         // Category validation.
@@ -173,7 +173,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
         require_once($CFG->dirroot.'/user/lib.php');
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
-        set_config('createorupdate', 0, 'rlipimport_version1');
+        set_config('createorupdate', 0, 'dhimport_version1');
         set_config('gradebookroles', '');
 
         set_config('defaultenrol', 1, 'enrol_manual');
@@ -205,10 +205,10 @@ class version1emptyvalueupdates_testcase extends rlip_test {
         set_config('siteguest', 99999);
 
         // Create role.
-        $context = get_context_instance(CONTEXT_COURSE, $course->id);
+        $context = context_course::instance($course->id);
         $roleid = create_role('rliprole', 'rliprole', 'rliprole');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
         assign_capability('moodle/course:view', CAP_ALLOW, $roleid, $syscontext->id);
 
         // Create an enrolment.
@@ -227,7 +227,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
 
         $provider = new rlipimport_version1_importprovider_emptyenrolment($data);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider);
         $importplugin->run();
 
         $this->assert_record_exists('role_assignments', array(
@@ -241,7 +241,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
 
         $provider = new rlipimport_version1_importprovider_emptyenrolment($data);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider);
         $importplugin->run();
 
         // Validation.
@@ -287,7 +287,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
 
         $provider = new rlipimport_version1_importprovider_emptyuser($data);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider);
         $importplugin->run();
 
         // Validation.
@@ -313,7 +313,7 @@ class version1emptyvalueupdates_testcase extends rlip_test {
 
         $provider = new rlipimport_version1_importprovider_emptyuser($data);
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider);
         $importplugin->run();
 
         // Validation.

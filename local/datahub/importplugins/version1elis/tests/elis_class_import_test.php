@@ -16,31 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+    require_once(elispm::lib('data/course.class.php'));
     require_once(elispm::lib('data/pmclass.class.php'));
 }
 
 /**
  * Test class import.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_class_import_test extends rlip_elis_test {
 
@@ -51,10 +52,10 @@ class elis_class_import_test extends rlip_elis_test {
         global $DB;
 
         $this->run_elis_course_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_course', array('idnumber' => 'testcourseid')));
+        $this->assertTrue($DB->record_exists(course::TABLE, array('idnumber' => 'testcourseid')));
 
         $this->run_elis_class_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_class', array('idnumber' => 'testclassid')));
+        $this->assertTrue($DB->record_exists(pmclass::TABLE, array('idnumber' => 'testclassid')));
     }
 
     /**
@@ -64,7 +65,7 @@ class elis_class_import_test extends rlip_elis_test {
         global $DB;
 
         $this->run_elis_course_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_course', array('idnumber' => 'testcourseid')));
+        $this->assertTrue($DB->record_exists(course::TABLE, array('idnumber' => 'testcourseid')));
 
         $this->run_elis_class_import(array(), true);
 
@@ -72,7 +73,7 @@ class elis_class_import_test extends rlip_elis_test {
         $this->run_elis_class_import($data, false);
 
         unset($data['action'], $data['context']);
-        $this->assertFalse($DB->record_exists('crlm_class', $data));
+        $this->assertFalse($DB->record_exists(pmclass::TABLE, $data));
     }
 
     /**
@@ -82,7 +83,7 @@ class elis_class_import_test extends rlip_elis_test {
         global $DB;
 
         $this->run_elis_course_import(array(), true);
-        $this->assertTrue($DB->record_exists('crlm_course', array('idnumber' => 'testcourseid')));
+        $this->assertTrue($DB->record_exists(course::TABLE, array('idnumber' => 'testcourseid')));
 
         $this->run_elis_class_import(array(), true);
 
@@ -90,7 +91,7 @@ class elis_class_import_test extends rlip_elis_test {
         $this->run_elis_class_import($data, false);
 
         unset($data['action'], $data['context']);
-        $this->assertTrue($DB->record_exists('crlm_class', $data));
+        $this->assertTrue($DB->record_exists(pmclass::TABLE, $data));
     }
 
     /**
@@ -184,7 +185,7 @@ class elis_class_import_test extends rlip_elis_test {
     private function run_elis_class_import($extradata, $usedefaultdata = true) {
         global $CFG;
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         if ($usedefaultdata) {
@@ -211,7 +212,7 @@ class elis_class_import_test extends rlip_elis_test {
     private function run_elis_course_import($extradata, $usedefaultdata = true) {
         global $CFG;
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         if ($usedefaultdata) {

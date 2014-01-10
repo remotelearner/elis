@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -25,11 +25,11 @@
 
 require_once(dirname(__FILE__).'/../../../../../../config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemorywithname.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/rlip_import_version1elis_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemorywithname.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/rlip_import_version1elis_fslogger.class.php');
 
 /**
  * Class that fetches import files for the course import

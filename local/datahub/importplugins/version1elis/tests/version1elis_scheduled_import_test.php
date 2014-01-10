@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 /**
  * Unit testing specifically related to scheduling the Version 1 ELIS import
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class version1elisscheduledimport_testcase extends rlip_elis_test {
 
@@ -39,15 +39,15 @@ class version1elisscheduledimport_testcase extends rlip_elis_test {
      */
     public function test_importleavesnextruntimewhentimelimitexceeded() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
-        $DB->delete_records('elis_scheduled_tasks');
+        $DB->delete_records('local_eliscore_sched_tasks');
         $DB->delete_records(RLIP_SCHEDULE_TABLE);
 
-        $filepath = '/block_rlip_phpunit/';
+        $filepath = '/local_datahub_phpunit/';
         $filename = 'userfile2.csv';
-        set_config('schedule_files_path', $filepath, 'rlipimport_version1elis');
-        set_config('user_schedule_file', $filename, 'rlipimport_version1elis');
+        set_config('schedule_files_path', $filepath, 'dhimport_version1elis');
+        set_config('user_schedule_file', $filename, 'dhimport_version1elis');
 
         // Set up the test directory.
         $testdir = $CFG->dataroot.$filepath;
@@ -56,22 +56,22 @@ class version1elisscheduledimport_testcase extends rlip_elis_test {
 
         // Create the job.
         $data = array(
-            'plugin' => 'rlipimport_version1elis',
+            'plugin' => 'dhimport_version1elis',
             'period' => '5m',
-            'type' => 'rlipimport'
+            'type' => 'dhimport'
         );
         $taskid = rlip_schedule_add_job($data);
 
         // Set next runtime values to a known state.
-        $DB->execute("UPDATE {elis_scheduled_tasks} SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {local_eliscore_sched_tasks} SET nextruntime = ?", array(1));
         $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."} SET nextruntime = ?", array(1));
 
         // Run the import.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname, -1);
 
         // Validate that nextruntime values haven't changed.
-        $exists = $DB->record_exists('elis_scheduled_tasks', array('nextruntime' => 1));
+        $exists = $DB->record_exists('local_eliscore_sched_tasks', array('nextruntime' => 1));
         $this->assertTrue($exists);
 
         $exists = $DB->record_exists(RLIP_SCHEDULE_TABLE, array('nextruntime' => 1));
@@ -83,34 +83,34 @@ class version1elisscheduledimport_testcase extends rlip_elis_test {
      */
     public function test_importfromsavedstate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
-        $DB->delete_records('elis_scheduled_tasks');
+        $DB->delete_records('local_eliscore_sched_tasks');
         $DB->delete_records(RLIP_SCHEDULE_TABLE);
 
         $filename = 'userfile2.csv';
-        set_config('user_schedule_file', $filename, 'rlipimport_version1elis');
+        set_config('user_schedule_file', $filename, 'dhimport_version1elis');
 
         // Set up the test directory.
-        $testdir = $CFG->dataroot.'/rlip/rlipimport_version1elis/temp/';
+        $testdir = $CFG->dataroot.'/datahub/dhimport_version1elis/temp/';
         mkdir($testdir, 0777, true);
         copy(dirname(__FILE__)."/fixtures/{$filename}", $testdir.$filename);
 
         // Create the job.
         $data = array(
-            'plugin' => 'rlipimport_version1elis',
+            'plugin' => 'dhimport_version1elis',
             'period' => '5m',
-            'type'   => 'rlipimport'
+            'type'   => 'dhimport'
         );
         $taskid = rlip_schedule_add_job($data);
 
         // Set next runtime values to a known state.
-        $DB->execute("UPDATE {elis_scheduled_tasks} SET nextruntime = ?", array(1));
+        $DB->execute("UPDATE {local_eliscore_sched_tasks} SET nextruntime = ?", array(1));
         $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."} SET nextruntime = ?", array(1));
 
         // Put the import in a particular state.
-        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('plugin' => 'rlipimport_version1elis'));
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('plugin' => 'dhimport_version1elis'));
         $state = new stdClass;
         $state->result = false;
         $state->entity = 'user';
@@ -122,7 +122,7 @@ class version1elisscheduledimport_testcase extends rlip_elis_test {
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Run the import.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         // Validation.
@@ -141,16 +141,16 @@ class version1elisscheduledimport_testcase extends rlip_elis_test {
      */
     public function test_importpreventmultipleimports() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/elis/core/lib/tasklib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/tasklib.php');
 
-        $DB->delete_records('elis_scheduled_tasks');
+        $DB->delete_records('local_eliscore_sched_tasks');
         $DB->delete_records(RLIP_SCHEDULE_TABLE);
 
-        $filepath = '/block_rlip_phpunit/';
+        $filepath = '/local_datahub_phpunit/';
         $filename = 'userfile2.csv';
-        set_config('schedule_files_path', $filepath, 'rlipimport_version1elis');
-        set_config('user_schedule_file', $filename, 'rlipimport_version1elis');
+        set_config('schedule_files_path', $filepath, 'dhimport_version1elis');
+        set_config('user_schedule_file', $filename, 'dhimport_version1elis');
 
         // Set up the test directory.
         $testdir = $CFG->dataroot.$filepath;
@@ -159,14 +159,14 @@ class version1elisscheduledimport_testcase extends rlip_elis_test {
 
         // Create the job.
         $data = array(
-            'plugin' => 'rlipimport_version1elis',
+            'plugin' => 'dhimport_version1elis',
             'period' => '5m',
-            'type' => 'rlipimport'
+            'type' => 'dhimport'
         );
         $taskid1 = rlip_schedule_add_job($data);
 
         // Run the import with a time in the past so it stops immediately.
-        $taskname1 = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid1));
+        $taskname1 = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid1));
         $result1 = run_ipjob($taskname1, -1);
 
         // Validate the first import run was started.
@@ -180,26 +180,26 @@ class version1elisscheduledimport_testcase extends rlip_elis_test {
         $taskid2 = rlip_schedule_add_job($data);
 
         // Get the initial duplicate job lastruntime and nextruntime values.
-        $initlastruntime = $DB->get_field('elis_scheduled_tasks', 'lastruntime', array('id' => $taskid2));
-        $initnextruntime = $DB->get_field('elis_scheduled_tasks', 'nextruntime', array('id' => $taskid2));
+        $initlastruntime = $DB->get_field('local_eliscore_sched_tasks', 'lastruntime', array('id' => $taskid2));
+        $initnextruntime = $DB->get_field('local_eliscore_sched_tasks', 'nextruntime', array('id' => $taskid2));
 
         // Emulate the ELIS cron adjusting the job run times.
-        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid2));
+        $task = $DB->get_record('local_eliscore_sched_tasks', array('id' => $taskid2));
         $task->lastruntime = time();
         $nextruntime = cron_next_run_time($task->lastruntime, (array)$task);
         $task->nextruntime = $nextruntime;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         // Attempt to do another import run.
-        $taskname2 = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid2));
+        $taskname2 = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid2));
         $result2 = run_ipjob($taskname2);
 
         // Validate that the second import run attempt fails.
         $this->assertEquals(false, $result2);
 
         // Get the later lastruntime and nextruntime values.
-        $lastruntime = $DB->get_field('elis_scheduled_tasks', 'lastruntime', array('id' => $taskid2));
-        $nextruntime = $DB->get_field('elis_scheduled_tasks', 'nextruntime', array('id' => $taskid2));
+        $lastruntime = $DB->get_field('local_eliscore_sched_tasks', 'lastruntime', array('id' => $taskid2));
+        $nextruntime = $DB->get_field('local_eliscore_sched_tasks', 'nextruntime', array('id' => $taskid2));
 
         // Validate that the job run time values are back to initial values.
         $this->assertEquals($initlastruntime, $lastruntime);

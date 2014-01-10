@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage blocks_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once($CFG->dirroot.'/blocks/rlip/form/rlip_log_filter_forms.php');
+require_once($CFG->dirroot.'/local/datahub/form/rlip_log_filter_forms.php');
 require_once($CFG->dirroot.'/user/filters/lib.php');
 
 /**
@@ -139,18 +138,18 @@ class rlip_log_filtering {
 
         switch ($fieldname) {
             case 'tasktype':
-                $display_string = get_string('logtasktype', 'block_rlip');
-                $options = array(0 => get_string('import', 'block_rlip'),
-                                 1 => get_string('export', 'block_rlip'));
+                $display_string = get_string('logtasktype', 'local_datahub');
+                $options = array(0 => get_string('import', 'local_datahub'),
+                                 1 => get_string('export', 'local_datahub'));
                 return new user_filter_simpleselect('tasktype', $display_string, $advanced, 'export', $options);
             case 'execution':
-                $display_string = get_string('logexecution', 'block_rlip');
-                $options = array('> 0' => get_string('automatic', 'block_rlip'),
-                                 '= 0' => get_string('manual', 'block_rlip'));
+                $display_string = get_string('logexecution', 'local_datahub');
+                $options = array('> 0' => get_string('automatic', 'local_datahub'),
+                                 '= 0' => get_string('manual', 'local_datahub'));
                 return new rlip_log_filter_operationselect('execution', $display_string, $advanced,
                                                            'targetstarttime', $options);
             case 'actualstarttime':
-                $display_string = get_string('logstart', 'block_rlip');
+                $display_string = get_string('logstart', 'local_datahub');
                 return new user_filter_date('actualstartttime', $display_string, $advanced, 'starttime');
             default:
                 return null;

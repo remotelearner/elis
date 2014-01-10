@@ -16,28 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+    require_once(elispm::lib('data/curriculumstudent.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+}
 
 /**
  * Test user program enrolment functions.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_user_program_enrolment_testcase extends rlip_elis_test {
 
@@ -70,7 +75,7 @@ class elis_user_program_enrolment_testcase extends rlip_elis_test {
         $record->lastname = 'testlastname';
         $record->country = 'CA';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_create($record, 'bogus');
 
@@ -89,8 +94,8 @@ class elis_user_program_enrolment_testcase extends rlip_elis_test {
 
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
-        $userid = $DB->get_field('crlm_user', 'id', array('idnumber' => 'testidnumber'));
-        $this->assertTrue($DB->record_exists('crlm_curriculum_assignment', array('userid' => $userid)));
+        $userid = $DB->get_field(user::TABLE, 'id', array('idnumber' => 'testidnumber'));
+        $this->assertTrue($DB->record_exists(curriculumstudent::TABLE, array('userid' => $userid)));
     }
 
     /**
@@ -100,7 +105,7 @@ class elis_user_program_enrolment_testcase extends rlip_elis_test {
      */
     public function test_elis_user_program_unenrolment_import($actioncreate, $actiondelete) {
         global $DB;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
 
         $this->test_elis_user_program_enrolment_import($actioncreate, $actiondelete);
@@ -112,8 +117,8 @@ class elis_user_program_enrolment_testcase extends rlip_elis_test {
 
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
 
-        $userid = $DB->get_field('crlm_user', 'id', array('idnumber' => 'testidnumber'));
-        $this->assertFalse($DB->record_exists('crlm_curriculum_assignment', array('userid' => $userid)));
+        $userid = $DB->get_field(user::TABLE, 'id', array('idnumber' => 'testidnumber'));
+        $this->assertFalse($DB->record_exists(curriculumstudent::TABLE, array('userid' => $userid)));
     }
 
     /**
@@ -122,7 +127,7 @@ class elis_user_program_enrolment_testcase extends rlip_elis_test {
      */
     public function test_enrolmentinstancesupportsunderscores() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/curriculumstudent.class.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -144,7 +149,7 @@ class elis_user_program_enrolment_testcase extends rlip_elis_test {
         ));
         $user->save();
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
 
         // Create action.

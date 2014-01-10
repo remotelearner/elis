@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Unit test for validating all handling of the user set hierarchy and related context functionality.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_userset_hierarchy_testcase extends rlip_elis_test {
 
@@ -43,7 +43,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_top_level_userset_hierarchy_on_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -51,7 +51,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record = new stdClass;
         $record->name = 'usersetname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_create($record, 'bogus');
 
@@ -74,7 +74,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_child_userset_hierarchy_on_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -87,7 +87,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record->name = 'childname';
         $record->parent = 'parentname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_create($record, 'bogus');
 
@@ -114,7 +114,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_promotion_to_top_level_userset_hierarchy_on_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -131,7 +131,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record->name = 'childname';
         $record->parent = 'top';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_update($record, 'bogus');
 
@@ -155,7 +155,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_demotion_to_child_userset_hierarchy_on_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -172,7 +172,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record->name = 'childname';
         $record->parent = 'parentname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_update($record, 'bogus');
 
@@ -200,7 +200,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_changed_parent_userset_hierarchy_on_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -221,7 +221,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record->name = 'childname';
         $record->parent = 'finalparentname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_update($record, 'bogus');
 
@@ -249,7 +249,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_userset_hierarchy_on_standalone_top_level_userset_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -264,7 +264,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record = new stdClass;
         $record->name = 'usersetname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_delete($record, 'bogus');
 
@@ -281,7 +281,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_userset_hierarchy_on_standalone_child_userset_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -300,7 +300,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record = new stdClass;
         $record->name = 'childname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_delete($record, 'bogus');
 
@@ -335,7 +335,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_userset_hierarchy_on_parent_top_level_userset_recursive_delete($recursive) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -364,7 +364,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record->name = 'parentname';
         $record->recursive = $recursive;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_delete($record, 'bogus');
 
@@ -380,7 +380,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_userset_hierarchy_on_parent_top_level_userset_delete_and_promote() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -399,7 +399,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record = new stdClass;
         $record->name = 'parentname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_delete($record, 'bogus');
 
@@ -432,7 +432,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_userset_hierarchy_on_parent_non_top_level_userset_recursive_delete($recursive) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -465,7 +465,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record->name = 'parentname';
         $record->recursive = $recursive;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_delete($record, 'bogus');
 
@@ -495,7 +495,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_userset_hierarchy_on_parent_non_top_level_userset_delete_and_promote() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -518,7 +518,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record = new stdClass;
         $record->name = 'parentname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_delete($record, 'bogus');
 
@@ -551,7 +551,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_userset_hierarchy_on_grandparent_non_top_level_userset_recursive_delete($recursive) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -587,7 +587,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record->name = 'grandparentname';
         $record->recursive = $recursive;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_delete($record, 'bogus');
 
@@ -620,7 +620,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
      */
     public function test_userset_hierarchy_on_grandparent_non_top_level_userset_delete_and_promote() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/userset.class.php'));
         require_once(elispm::file('accesslib.php'));
 
@@ -656,7 +656,7 @@ class elis_userset_hierarchy_testcase extends rlip_elis_test {
         $record = new stdClass;
         $record->name = 'grandparentname';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->cluster_delete($record, 'bogus');
 

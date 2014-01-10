@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1
+ * @package    dhexport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_exportplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_exportplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/csv_delay.class.php');
 
 /**
  * Class for validating that filesystem logging works during exports
- * @group rlipexport_version1
- * @group block_rlip
+ * @group dhexport_version1
+ * @group local_datahub
  */
 class version1exportfilesystemlogging_testcase extends rlip_test {
 
@@ -63,7 +63,7 @@ class version1exportfilesystemlogging_testcase extends rlip_test {
 
         // Setup.
         $this->load_csv_data();
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         // Set the filepath to the dataroot.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
@@ -74,19 +74,19 @@ class version1exportfilesystemlogging_testcase extends rlip_test {
 
         // Obtain plugin.
         $manual = false;
-        $plugin = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin, $manual);
+        $plugin = rlip_dataplugin_factory::factory('dhexport_version1', null, $fileplugin, $manual);
         ob_start();
         $plugin->run(0, 0, 1);
         $ui = ob_get_contents(); // TBD: test this UI string!
         ob_end_clean();
 
         // Expected error.
-        $expectederror = get_string('exportexceedstimelimit', 'block_rlip')."\n";
+        $expectederror = get_string('exportexceedstimelimit', 'local_datahub')."\n";
 
         // Validate that a log file was created.
         $plugintype = 'export';
-        $plugin = 'rlipexport_version1';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhexport_version1';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         // Get most recent record.
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
         foreach ($records as $record) {
@@ -119,10 +119,10 @@ class version1exportfilesystemlogging_testcase extends rlip_test {
     public function test_version1exportinvalidlogpath() {
         global $CFG, $DB, $USER;
 
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
-        set_config('logfilelocation', 'invalidlogpath', 'rlipexport_version1');
+        set_config('logfilelocation', 'invalidlogpath', 'dhexport_version1');
 
         $filepath = $CFG->dataroot.'/invalidlogpath';
 
@@ -131,7 +131,7 @@ class version1exportfilesystemlogging_testcase extends rlip_test {
 
         // Setup.
         $this->load_csv_data();
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         // No writing actually happens.
         $file = $CFG->dataroot.'/bogus';
@@ -139,7 +139,7 @@ class version1exportfilesystemlogging_testcase extends rlip_test {
 
         // Obtain plugin.
         $manual = true;
-        $plugin = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin, $manual);
+        $plugin = rlip_dataplugin_factory::factory('dhexport_version1', null, $fileplugin, $manual);
         ob_start();
         $plugin->run();
         $ui = ob_get_contents(); // TBD: test this UI string!

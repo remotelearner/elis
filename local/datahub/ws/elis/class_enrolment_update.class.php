@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -26,7 +26,7 @@ require_once(dirname(__FILE__).'/../../lib.php');
 /**
  * Update Class enrolment webservices method.
  */
-class block_rldh_elis_class_enrolment_update extends external_api {
+class local_datahub_elis_class_enrolment_update extends external_api {
 
     /**
      * Require ELIS dependencies if ELIS is installed, otherwise return false.
@@ -34,8 +34,8 @@ class block_rldh_elis_class_enrolment_update extends external_api {
      */
     public static function require_elis_dependencies() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/student.class.php'));
             require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
             return true;
@@ -101,7 +101,7 @@ class block_rldh_elis_class_enrolment_update extends external_api {
         global $USER, $DB;
 
         if (static::require_elis_dependencies() !== true) {
-            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+            throw new moodle_exception('ws_function_requires_elis', 'local_datahub');
         }
 
         static $completestatuses = array(
@@ -116,21 +116,21 @@ class block_rldh_elis_class_enrolment_update extends external_api {
         $params = self::validate_parameters(self::class_enrolment_update_parameters(), array('data' => $data));
 
         // Context validation.
-        $context = get_context_instance(CONTEXT_USER, $USER->id);
+        $context = context_user::instance($USER->id);
         self::validate_context($context);
 
         $data = (object)$data;
 
         // Parse class
         if (empty($data->class_idnumber) || !($classid = $DB->get_field(pmclass::TABLE, 'id', array('idnumber' => $data->class_idnumber)))) {
-            throw new data_object_exception('ws_class_enrolment_update_fail_invalid_class', 'block_rlip', '', $data);
+            throw new data_object_exception('ws_class_enrolment_update_fail_invalid_class', 'local_datahub', '', $data);
         }
 
         // Capability checking.
-        require_capability('elis/program:class_enrol', context_elis_class::instance($classid));
+        require_capability('local/elisprogram:class_enrol', \local_elisprogram\context\pmclass::instance($classid));
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         $userparams = array();
         $userid = $importplugin->get_userid_from_record($data, '', $userparams);
@@ -149,11 +149,11 @@ class block_rldh_elis_class_enrolment_update extends external_api {
                     $a->userparams .= "{$userfield}: '{$uservalue}'";
                 }
             }
-            throw new data_object_exception('ws_class_enrolment_update_fail_invalid_user', 'block_rlip', '', $a);
+            throw new data_object_exception('ws_class_enrolment_update_fail_invalid_user', 'local_datahub', '', $a);
         }
 
         if (!($stuid = $DB->get_field(student::TABLE, 'id', array('classid' => $classid, 'userid' => $userid)))) {
-            throw new data_object_exception('ws_class_enrolment_update_fail_missing_enrolment', 'block_rlip', '', $data);
+            throw new data_object_exception('ws_class_enrolment_update_fail_missing_enrolment', 'local_datahub', '', $data);
         }
 
         $stu = new student($stuid);
@@ -171,7 +171,7 @@ class block_rldh_elis_class_enrolment_update extends external_api {
                     }
                 }
             } else {
-                throw new data_object_exception('ws_class_enrolment_update_fail_invalid_completestatus', 'block_rlip', '', $data);
+                throw new data_object_exception('ws_class_enrolment_update_fail_invalid_completestatus', 'local_datahub', '', $data);
             }
         }
         if (isset($data->grade) && is_numeric($data->grade)) {
@@ -187,14 +187,14 @@ class block_rldh_elis_class_enrolment_update extends external_api {
             if ($enrolmenttime = $importplugin->parse_date($data->enrolmenttime)) {
                 $record->enrolmenttime = $enrolmenttime;
             } else {
-                throw new data_object_exception('ws_class_enrolment_update_fail_invalid_enrolmenttime', 'block_rlip', '', $data);
+                throw new data_object_exception('ws_class_enrolment_update_fail_invalid_enrolmenttime', 'local_datahub', '', $data);
             }
         }
         if (isset($data->completetime)) {
             if ($completetime = $importplugin->parse_date($data->completetime)) {
                 $record->completetime = $completetime;
             } else {
-                throw new data_object_exception('ws_class_enrolment_update_fail_invalid_completetime', 'block_rlip', '', $data);
+                throw new data_object_exception('ws_class_enrolment_update_fail_invalid_completetime', 'local_datahub', '', $data);
             }
         }
 
@@ -204,12 +204,12 @@ class block_rldh_elis_class_enrolment_update extends external_api {
         // Respond.
         if (!empty($stu->id)) {
             return array(
-                'messagecode' => get_string('ws_class_enrolment_update_success_code', 'block_rlip'),
-                'message' => get_string('ws_class_enrolment_update_success_msg', 'block_rlip'),
+                'messagecode' => get_string('ws_class_enrolment_update_success_code', 'local_datahub'),
+                'message' => get_string('ws_class_enrolment_update_success_msg', 'local_datahub'),
                 'record' => $stu->to_array(),
             );
         } else {
-            throw new data_object_exception('ws_class_enrolment_update_fail', 'block_rlip');
+            throw new data_object_exception('ws_class_enrolment_update_fail', 'local_datahub');
         }
     }
 

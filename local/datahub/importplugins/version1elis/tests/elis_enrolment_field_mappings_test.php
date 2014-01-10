@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/tests/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
 
 /**
  * Class for validating that field mappings work correctly during the ELIS enrolment import.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
     /**
@@ -62,7 +62,7 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     private function init_mapping() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/lib.php');
 
         foreach ($this->mapping as $standardfieldname => $customfieldname) {
             $mapping = new stdClass;
@@ -81,7 +81,7 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     private function create_test_user() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $user = new user(array(
             'idnumber' => 'testuseridnumber',
@@ -103,7 +103,7 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     private function run_enrolment_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1elis_importprovider_mockenrolment($data);
@@ -117,8 +117,8 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_program_enrolment_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculumstudent.class.php');
 
         $this->init_mapping();
 
@@ -146,8 +146,8 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_program_enrolment_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculumstudent.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculumstudent.class.php');
 
         $this->init_mapping();
 
@@ -178,8 +178,8 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_track_enrolment_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $this->init_mapping();
 
@@ -210,8 +210,8 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_track_enrolment_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/curriculum.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/track.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/track.class.php');
 
         $this->init_mapping();
 
@@ -245,8 +245,8 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_userset_enrolment_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/clusterassignment.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $this->init_mapping();
 
@@ -274,8 +274,8 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_userset_enrolment_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/clusterassignment.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/clusterassignment.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
 
         $this->init_mapping();
 
@@ -310,9 +310,9 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_student_enrolment_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
 
         $this->init_mapping();
 
@@ -363,9 +363,9 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_student_enrolment_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
 
         $this->init_mapping();
 
@@ -419,9 +419,9 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_student_enrolment_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/student.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/student.class.php');
 
         $this->init_mapping();
 
@@ -466,9 +466,9 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_instructor_enrolment_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/instructor.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/instructor.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
         $this->init_mapping();
 
@@ -511,9 +511,9 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_instructor_enrolment_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/instructor.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/instructor.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
         $this->init_mapping();
 
@@ -559,9 +559,9 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_instructor_enrolment_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/course.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/instructor.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/pmclass.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/instructor.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
         $this->init_mapping();
 
@@ -600,7 +600,7 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_user_enrolment_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $this->init_mapping();
 
@@ -636,7 +636,7 @@ class elis_enrolment_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_user_enrolment_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         $this->init_mapping();
 

@@ -16,29 +16,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-$file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
+$file = get_plugin_directory('dhfile', 'csv').'/csv.class.php';
 require_once($file);
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 /**
  * Class for testing database logging with the version 1 plugin
- * @group block_rlip
- * @group rlipimport_version1
+ * @group local_datahub
+ * @group dhimport_version1
  */
 class version1databaselogging_testcase extends rlip_test {
 
@@ -51,7 +51,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     private function log_with_message_exists($message = null) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         if ($message === null) {
             $message = 'All lines from import file memoryfile were successfully processed.';
@@ -83,7 +83,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     private function run_user_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1_importprovider_loguser($data);
@@ -99,7 +99,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     private function run_course_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1_importprovider_logcourse($data);
@@ -115,7 +115,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     private function run_enrolment_import($data) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1_importprovider_logenrolment($data);
@@ -176,7 +176,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogssuccessmessageonuserupdate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         $data = array(
             'entity' => 'user',
@@ -232,7 +232,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogssuccessmessageonuserdelete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         set_config('siteguest', 0);
         set_config('siteadmins', 0);
@@ -295,7 +295,7 @@ class version1databaselogging_testcase extends rlip_test {
         set_config('hiddensections', 0, 'moodlecourse');
         set_config('coursedisplay', 1, 'moodlecourse');
 
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $data = array(
@@ -318,7 +318,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingdoesnotlogsuccessmessageonfailedcoursecreate() {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $data = array(
@@ -342,8 +342,8 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogssuccessmessageoncourseupdate() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         // Prevent problem with cached contexts.
@@ -401,8 +401,8 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogssuccessmessageoncoursedelete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         // Prevent problem with cached contexts.
@@ -439,7 +439,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingdoesnotlogsuccessmessageonfailedcoursedelete() {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $data = array(
@@ -526,7 +526,7 @@ class version1databaselogging_testcase extends rlip_test {
     public function test_version1dblogginglogssuccessmessageonenrolmentdelete() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/user/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
         require_once($CFG->dirroot.'/lib/enrollib.php');
 
         // Prevent problem with cached contexts.
@@ -555,7 +555,7 @@ class version1databaselogging_testcase extends rlip_test {
 
         $roleid = create_role('rlipname', 'rlipshortname', 'rlipdescription');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
 
         $data = array(
             'entity' => 'enrolment',
@@ -615,7 +615,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogscorrectfilenameonsuccess() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         $data = array(
             'entity' => 'user',
@@ -659,7 +659,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingsuccesstrackingstorescorrectvaluesviaapi() {
         global $CFG, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Set up the logger object.
         $logger = new rlip_dblogger_import();
@@ -733,7 +733,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingstorescorrectvaluesonrun() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Capture the earliest possible start time.
         $mintime = time();
@@ -782,7 +782,7 @@ class version1databaselogging_testcase extends rlip_test {
                    endtime >= :minendtime AND
                    endtime <= :maxendtime";
         $params = array(
-            'plugin' => 'rlipimport_version1',
+            'plugin' => 'dhimport_version1',
             'filesuccesses' => 1,
             'filefailures' => 1,
             'minstarttime' => $mintime,
@@ -800,7 +800,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingstorescorrectfilenameonrun() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Set the log file name to a fixed value.
         $filepath = $CFG->dataroot;
@@ -808,7 +808,7 @@ class version1databaselogging_testcase extends rlip_test {
         // Set up a "user" import provider, using a single fixed file.
         // MUST copy file to temp area 'cause it'll be deleted after import.
         $testfile = dirname(__FILE__).'/fixtures/userfile.csv';
-        $tempdir = $CFG->dataroot.'/block_rlip_phpunit/';
+        $tempdir = $CFG->dataroot.'/local_datahub_phpunit/';
         $file = $tempdir.'userfile.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
@@ -835,8 +835,8 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1manualimportobeysmaxruntime() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($CFG->dirroot.'/local/datahub/tests/other/csv_delay.class.php');
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         // Set the log file name to a fixed value.
@@ -844,7 +844,7 @@ class version1databaselogging_testcase extends rlip_test {
         // Set up a "user" import provider, using a single fixed file.
         // MUST copy file to temp area 'cause it'll be deleted after import.
         $testfile = dirname(__FILE__).'/fixtures/userfile2.csv';
-        $tempdir = $CFG->dataroot.'/block_rlip_phpunit/';
+        $tempdir = $CFG->dataroot.'/local_datahub_phpunit/';
         $file = $tempdir.'userfile2.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
@@ -870,7 +870,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1scheduledimportobeysmaxruntime() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         // Set the log file name to a fixed value.
@@ -879,7 +879,7 @@ class version1databaselogging_testcase extends rlip_test {
         // Set up a "user" import provider, using a single fixed file.
         // MUST copy file to temp area 'cause it'll be deleted after import.
         $testfile = dirname(__FILE__).'/fixtures/userfile2.csv';
-        $tempdir = $CFG->dataroot.'/block_rlip_phpunit/';
+        $tempdir = $CFG->dataroot.'/local_datahub_phpunit/';
         $file = $tempdir.'userfile2.csv';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $file);
@@ -906,27 +906,27 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1importfromsavedstate() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Set up the import file path & entities filenames.
         // Note: schedule_files_path now relative to $CFG->dataroot
         //       must copy them there.
-        $relimportpath = '/block_rlip_phpunit/';
+        $relimportpath = '/local_datahub_phpunit/';
         $testdir = $CFG->dataroot.$relimportpath;
-        set_config('schedule_files_path', $relimportpath, 'rlipimport_version1');
-        set_config('user_schedule_file', 'userfile2.csv', 'rlipimport_version1');
-        set_config('course_schedule_file', 'course.csv', 'rlipimport_version1');
-        set_config('enrolment_schedule_file', 'enroll.csv', 'rlipimport_version1');
+        set_config('schedule_files_path', $relimportpath, 'dhimport_version1');
+        set_config('user_schedule_file', 'userfile2.csv', 'dhimport_version1');
+        set_config('course_schedule_file', 'course.csv', 'dhimport_version1');
+        set_config('enrolment_schedule_file', 'enroll.csv', 'dhimport_version1');
         @copy(dirname(__FILE__).DIRECTORY_SEPARATOR.'fixtures/userfile2.csv', $testdir.'userfile2.csv');
         @copy(dirname(__FILE__).DIRECTORY_SEPARATOR.'fixtures/course.csv', $testdir.'course.csv');
         @copy(dirname(__FILE__).DIRECTORY_SEPARATOR.'fixtures/enroll.csv', $testdir.'enroll.csv');
 
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipimport_version1',
+            'plugin' => 'dhimport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipimport'
+            'type' => 'dhimport'
         );
         $taskid = rlip_schedule_add_job($data);
 
@@ -935,9 +935,9 @@ class version1databaselogging_testcase extends rlip_test {
         $task->id = $taskid;
         $task->id = $taskid;
         $task->nextruntime = 99;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
-        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('plugin' => 'rlipimport_version1'));
+        $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('plugin' => 'dhimport_version1'));
         $job->nextruntime = 99;
         $state = new stdClass;
         $state->result = false;
@@ -951,13 +951,13 @@ class version1databaselogging_testcase extends rlip_test {
 
         // MUST copy the userfile2.csv file to process into temp location
         // ... where it would be left if state != NULL.
-        $temppath = sprintf($CFG->dataroot.RLIP_IMPORT_TEMPDIR, 'rlipimport_version1');
-        mkdir($CFG->dataroot.'/rlip/rlipimport_version1');
-        mkdir($CFG->dataroot.'/rlip/rlipimport_version1/temp');
+        $temppath = sprintf($CFG->dataroot.RLIP_IMPORT_TEMPDIR, 'dhimport_version1');
+        mkdir($CFG->dataroot.'/datahub/dhimport_version1');
+        mkdir($CFG->dataroot.'/datahub/dhimport_version1/temp');
         copy(dirname(__FILE__).'/fixtures/userfile2.csv', $temppath.'/userfile2.csv');
 
         // Run the import.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
         // Verify the 1st & 2nd lines were NOT processed.
         $notexists1 = $DB->record_exists('user', array('username' => 'testusername'));
@@ -979,17 +979,17 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingstorescorrectfilenameonrunwithmoodlefile() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_importprovider_moodlefile.class.php');
 
         // Set the filepath to a fixed value.
         $filepath = $CFG->dataroot;
 
         // Store it at the system context.
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
 
         // File path and name.
-        $filepath = $CFG->dirroot.'/blocks/rlip/importplugins/version1/tests/fixtures/';
+        $filepath = $CFG->dirroot.'/local/datahub/importplugins/version1/tests/fixtures/';
         $filename = 'userfile.csv';
 
         // File information.
@@ -1072,7 +1072,7 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogscorrectcountsformanualimport() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         $data = array(
                 array(
@@ -1153,8 +1153,8 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dblogginglogscorrectuseridformanualimport() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         $USER->id = 9999;
@@ -1181,7 +1181,7 @@ class version1databaselogging_testcase extends rlip_test {
      * Validates the standard failure message
      */
     public function test_version1dblogginglogsfailuremessage() {
-        set_config('createorupdate', 0, 'rlipimport_version1');
+        set_config('createorupdate', 0, 'dhimport_version1');
 
         $data = array(
             'entity' => 'user',
@@ -1209,33 +1209,33 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_version1dbloggingsetsallfieldsduringscheduledimportrun() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
-        $DB->delete_records('elis_scheduled_tasks');
+        $DB->delete_records('local_eliscore_sched_tasks');
         $DB->delete_records(RLIP_SCHEDULE_TABLE);
 
         // Set the file path to a fixed value.
         $filepath = $CFG->dataroot;
 
         // Store it at the system context.
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
 
         // File path and name.
         $filename = 'userscheduledimport.csv';
         // File WILL BE DELETED after import so must copy to moodledata area
         // Note: file_path now relative to moodledata ($CFG->dataroot).
-        $filepath = '/block_rlip_phpunit/';
+        $filepath = '/local_datahub_phpunit/';
         $testdir = $CFG->dataroot.$filepath;
         @mkdir($testdir, 0777, true);
         @copy(dirname(__FILE__)."/fixtures/{$filename}", $testdir.$filename);
 
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipimport_version1',
+            'plugin' => 'dhimport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipimport'
+            'type' => 'dhimport'
         );
         $taskid = rlip_schedule_add_job($data);
 
@@ -1243,10 +1243,10 @@ class version1databaselogging_testcase extends rlip_test {
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = 99;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipimport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhimport_version1'));
         $job->nextruntime = 99;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
@@ -1254,11 +1254,11 @@ class version1databaselogging_testcase extends rlip_test {
         $starttime = time();
 
         // Set up config for plugin so the scheduler knows about our csv file.
-        set_config('schedule_files_path', $filepath, 'rlipimport_version1');
-        set_config('user_schedule_file', $filename, 'rlipimport_version1');
+        set_config('schedule_files_path', $filepath, 'dhimport_version1');
+        set_config('user_schedule_file', $filename, 'dhimport_version1');
 
         // Run the import.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         $message = 'One or more lines from import file userscheduledimport.csv failed because they contain data errors. ';
@@ -1289,7 +1289,7 @@ class version1databaselogging_testcase extends rlip_test {
                    entitytype = :entitytype";
         $params = array(
             'export' => 0,
-            'plugin' => 'rlipimport_version1',
+            'plugin' => 'dhimport_version1',
             'userid' => $USER->id,
             'targetstarttime' => 99,
             'starttime' => $starttime,
@@ -1326,7 +1326,7 @@ class version1databaselogging_testcase extends rlip_test {
     public function test_nonwritablelogpathlogscorrectendtime() {
         global $DB;
 
-        set_config('logfilelocation', 'adirectorythatshouldnotexist', 'rlipimport_version1');
+        set_config('logfilelocation', 'adirectorythatshouldnotexist', 'dhimport_version1');
 
         $data = array(
             'action'    => 'create',
@@ -1390,15 +1390,15 @@ class version1databaselogging_testcase extends rlip_test {
      */
     public function test_maxruntimeexceededlogscorrectendtime() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/tests/other/file_delay.class.php');
+        require_once($CFG->dirroot.'/local/datahub/tests/other/csv_delay.class.php');
+        require_once($CFG->dirroot.'/local/datahub/tests/other/file_delay.class.php');
 
-        $importfile = $CFG->dirroot.'/blocks/rlip/importplugins/version1/tests/fixtures/userfiledelay.csv';
+        $importfile = $CFG->dirroot.'/local/datahub/importplugins/version1/tests/fixtures/userfiledelay.csv';
         $provider = new rlip_importprovider_file_delay($importfile, 'user');
 
         // Run the import.
         $mintime = time();
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider);
         $importplugin->run(0, 0, 1);
         $maxtime = time();
 

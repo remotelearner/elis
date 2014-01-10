@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 require_once('../../../../config.php');
-$file = get_plugin_directory('rlipexport', 'version1').'/lib.php';
+$file = get_plugin_directory('dhexport', 'version1').'/lib.php';
 require_once($file);
 
 //permissions checking
 require_login();
 
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
 //handle submitted actions
-$baseurl = $CFG->wwwroot.'/blocks/rlip/exportplugins/version1/config_fields.php';
+$baseurl = $CFG->wwwroot.'/local/datahub/exportplugins/version1/config_fields.php';
 rlipexport_version1_config::handle_field_action($baseurl);
 
 //page header
@@ -44,8 +43,8 @@ echo $OUTPUT->header();
 
 //initialize the display table
 $table = new html_table();
-$table->head = array(get_string('profilefieldname', 'rlipexport_version1'),
-                     get_string('columnheader', 'rlipexport_version1'), '', '', '');
+$table->head = array(get_string('profilefieldname', 'dhexport_version1'),
+                     get_string('columnheader', 'dhexport_version1'), '', '', '');
 $table->data = array();
 
 //fill table rows with selected field information
@@ -104,7 +103,7 @@ if (!empty($table->data)) {
 
     //button to revert headers to last saved state
     $attributes = array('type' => 'submit',
-                        'value' => get_string('revertheaders', 'rlipexport_version1'),
+                        'value' => get_string('revertheaders', 'dhexport_version1'),
                         'name' => 'revertfields');
     echo html_writer::empty_tag('input', $attributes);
     echo $OUTPUT->spacer(null, true);
@@ -112,7 +111,7 @@ if (!empty($table->data)) {
 
     //button to save changes to headers
     $attributes = array('type' => 'submit',
-                        'value' => get_string('updateheaders', 'rlipexport_version1'),
+                        'value' => get_string('updateheaders', 'dhexport_version1'),
                         'name' => 'updatefields');
     echo html_writer::empty_tag('input', $attributes);
     echo $OUTPUT->spacer(null, true);
@@ -132,15 +131,15 @@ if ($recordset = rlipexport_version1_config::get_available_fields()) {
 
 if (empty($options)) {
     if (empty($table->data)) {
-        echo html_writer::tag('span', get_string('profilefieldnotconfig', 'rlipexport_version1'));
+        echo html_writer::tag('span', get_string('profilefieldnotconfig', 'dhexport_version1'));
     } else {
-        echo html_writer::tag('span', get_string('profilefieldalladded', 'rlipexport_version1'));
+        echo html_writer::tag('span', get_string('profilefieldalladded', 'dhexport_version1'));
     }
 } else {
-    echo html_writer::tag('span', get_string('addfieldinstructions', 'rlipexport_version1'));
+    echo html_writer::tag('span', get_string('addfieldinstructions', 'dhexport_version1'));
     echo $OUTPUT->spacer(null, true);
 
-    $displaystring = get_string('addprofilefield', 'rlipexport_version1');
+    $displaystring = get_string('addprofilefield', 'dhexport_version1');
     echo $OUTPUT->single_select($baseurl, 'field', $options, '', array('' => $displaystring));
 }
 

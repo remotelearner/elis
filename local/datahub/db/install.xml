@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 logs and scheduling"
+<XMLDB PATH="local/eliscore/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 logs and scheduling"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="block_rlip_summary_logs" COMMENT="Storage for per-run errors and statistics" NEXT="block_rlip_schedule">
+    <TABLE NAME="local_datahub_summary_logs" COMMENT="Storage for per-run errors and statistics" NEXT="local_datahub_schedule">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" COMMENT="Tracks whether the task was an import or an export" NEXT="export"/>
         <FIELD NAME="export" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="plugin"/>
@@ -34,7 +34,7 @@
         <INDEX NAME="endtime_ix" UNIQUE="false" FIELDS="endtime" PREVIOUS="starttime_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="block_rlip_schedule" COMMENT="Scheduled DH imports and exports" PREVIOUS="block_rlip_summary_logs">
+    <TABLE NAME="local_datahub_schedule" COMMENT="Scheduled DH imports and exports" PREVIOUS="local_datahub_summary_logs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="schedule owner" PREVIOUS="id" NEXT="plugin"/>

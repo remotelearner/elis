@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlip
- * @subpackage blocks_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -31,7 +30,7 @@ require_once(dirname(__FILE__).'/../lib.php');
 /**
  * Uninstall hook for this export plugin
  */
-function xmldb_rlipexport_version1elis_uninstall() {
+function xmldb_dhexport_version1elis_uninstall() {
     global $DB;
     $dbman = $DB->get_manager();
 
@@ -42,7 +41,7 @@ function xmldb_rlipexport_version1elis_uninstall() {
     }
 
     //clear config_plugins entries
-    unset_all_config_for_plugin('rlipexport_version1elis');
+    unset_all_config_for_plugin('dhexport_version1elis');
 
     return true;
 }

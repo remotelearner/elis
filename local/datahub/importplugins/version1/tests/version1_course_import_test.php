@@ -16,25 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/eliscore/lib/rollover/backup/rollover_backup_controller.class.php');
+
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/data/userset.class.php');
+}
 
 /**
  * Class for version 1 course import correctness
- * @group block_rlip
- * @group rlipimport_version1
+ * @group local_datahub
+ * @group dhimport_version1
  */
 class version1courseimport_testcase extends rlip_test {
 
@@ -89,7 +94,7 @@ class version1courseimport_testcase extends rlip_test {
     protected function run_core_course_import($extradata, $usedefaultdata = true) {
         global $CFG;
 
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         if ($usedefaultdata) {
@@ -120,58 +125,58 @@ class version1courseimport_testcase extends rlip_test {
         $parentcategory = new stdClass;
         $parentcategory->name = 'parentcategory';
         $parentcategory->id = $DB->insert_record('course_categories', $parentcategory);
-        get_context_instance(CONTEXT_COURSECAT, $parentcategory->id);
+        context_coursecat::instance($parentcategory->id);
 
         // Child category.
         $childcategory = new stdClass;
         $childcategory->name = 'childcategory';
         $childcategory->parent = $parentcategory->id;
         $childcategory->id = $DB->insert_record('course_categories', $childcategory);
-        get_context_instance(CONTEXT_COURSECAT, $childcategory->id);
+        context_coursecat::instance($childcategory->id);
 
         // Duplicate parent and child in the form parent/child/parent/child.
         $duplicateparent1 = new stdClass;
         $duplicateparent1->name = 'duplicateparentcategory';
         $duplicateparent1->id = $DB->insert_record('course_categories', $duplicateparent1);
-        get_context_instance(CONTEXT_COURSECAT, $duplicateparent1->id);
+        context_coursecat::instance($duplicateparent1->id);
 
         $duplicatechild1 = new stdClass;
         $duplicatechild1->name = 'duplicatechildcategory';
         $duplicatechild1->parent = $duplicateparent1->id;
         $duplicatechild1->id = $DB->insert_record('course_categories', $duplicatechild1);
-        get_context_instance(CONTEXT_COURSECAT, $duplicatechild1->id);
+        context_coursecat::instance($duplicatechild1->id);
 
         $duplicateparent2 = new stdClass;
         $duplicateparent2->name = 'duplicateparentcategory';
         $duplicateparent2->parent = $duplicatechild1->id;
         $duplicateparent2->id = $DB->insert_record('course_categories', $duplicateparent2);
-        get_context_instance(CONTEXT_COURSECAT, $duplicateparent2->id);
+        context_coursecat::instance($duplicateparent2->id);
 
         $duplicatechild2 = new stdClass;
         $duplicatechild2->name = 'duplicatechildcategory';
         $duplicatechild2->parent = $duplicateparent2->id;
         $duplicatechild2->id = $DB->insert_record('course_categories', $duplicatechild2);
-        get_context_instance(CONTEXT_COURSECAT, $duplicatechild2->id);
+        context_coursecat::instance($duplicatechild2->id);
 
         // Parent category with two child categories, both with the same name.
         $nonuniqueparent = new stdClass;
         $nonuniqueparent->name = 'nonuniqueabsoluteparent';
         $nonuniqueparent->id = $DB->insert_record('course_categories', $nonuniqueparent);
-        get_context_instance(CONTEXT_COURSECAT, $nonuniqueparent->id);
+        context_coursecat::instance($nonuniqueparent->id);
 
         $nonuniquechild1 = new stdClass;
         $nonuniquechild1->name = 'nonuniqueabsolutechild';
         $nonuniquechild1->parent = $nonuniqueparent->id;
         $nonuniquechild1->id = $DB->insert_record('course_categories', $nonuniquechild1);
-        get_context_instance(CONTEXT_COURSECAT, $nonuniquechild1->id);
+        context_coursecat::instance($nonuniquechild1->id);
 
         $nonuniquechild2 = new stdClass;
         $nonuniquechild2->name = 'nonuniqueabsolutechild';
         $nonuniquechild2->parent = $nonuniqueparent->id;
         $nonuniquechild2->id = $DB->insert_record('course_categories', $nonuniquechild2);
-        get_context_instance(CONTEXT_COURSECAT, $nonuniquechild2->id);
+        context_coursecat::instance($nonuniquechild2->id);
 
-        build_context_path(true);
+        context_helper::build_all_paths(true);
     }
 
     /**
@@ -188,9 +193,9 @@ class version1courseimport_testcase extends rlip_test {
         $category->name = $name;
         $category->parent = $parent;
         $category->id = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $category->id);
+        context_coursecat::instance($category->id);
 
-        build_context_path(true);
+        context_helper::build_all_paths(true);
 
         return $category->name;
     }
@@ -261,7 +266,7 @@ class version1courseimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports course actions
      */
     public function test_version1importsupportscourseactions() {
-        $supports = plugin_supports('rlipimport', 'version1', 'course');
+        $supports = plugin_supports('dhimport', 'version1', 'course');
 
         $this->assertEquals($supports, array('create', 'update', 'delete'));
     }
@@ -270,7 +275,7 @@ class version1courseimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports the course create action
      */
     public function test_version1importsupportscoursecreate() {
-        $supports = plugin_supports('rlipimport', 'version1', 'course_create');
+        $supports = plugin_supports('dhimport', 'version1', 'course_create');
         $requiredfields = array('shortname', 'fullname', 'category');
 
         $this->assertEquals($supports, $requiredfields);
@@ -280,7 +285,7 @@ class version1courseimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports the course update action
      */
     public function test_version1importsupportscourseupdate() {
-        $supports = plugin_supports('rlipimport', 'version1', 'course_update');
+        $supports = plugin_supports('dhimport', 'version1', 'course_update');
         $requiredfields = array('shortname');
 
         $this->assertEquals($supports, $requiredfields);
@@ -291,7 +296,7 @@ class version1courseimport_testcase extends rlip_test {
      */
     public function test_version1importsetsrequiredcoursefieldsoncreate() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/version1.class.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/version1.class.php';
         require_once($file);
 
         // Run the import.
@@ -1207,8 +1212,8 @@ class version1courseimport_testcase extends rlip_test {
         $newcategory = new stdClass;
         $newcategory->name = $categoryid;
         $newcategory->id = $DB->insert_record('course_categories', $newcategory);
-        get_context_instance(CONTEXT_COURSECAT, $newcategory->id);
-        build_context_path(true);
+        context_coursecat::instance($newcategory->id);
+        context_helper::build_all_paths(true);
 
         // Run the import.
         $data = $this->get_core_course_data($categoryid);
@@ -1238,8 +1243,8 @@ class version1courseimport_testcase extends rlip_test {
         $newcategory = new stdClass;
         $newcategory->name =  $categoryid;
         $newcategory->id = $DB->insert_record('course_categories', $newcategory);
-        get_context_instance(CONTEXT_COURSECAT, $newcategory->id);
-        build_context_path(true);
+        context_coursecat::instance($newcategory->id);
+        context_helper::build_all_paths(true);
 
         $data = array(
             'action' => 'update',
@@ -2493,7 +2498,7 @@ class version1courseimport_testcase extends rlip_test {
      * Validate that the version 1 plugin supports course deletes
      */
     public function test_version1importsupportscoursedelete() {
-        $supports = plugin_supports('rlipimport', 'version1', 'course_delete');
+        $supports = plugin_supports('dhimport', 'version1', 'course_delete');
         $requiredfields = array('shortname');
         $this->assertEquals($supports, $requiredfields);
     }
@@ -2559,7 +2564,7 @@ class version1courseimport_testcase extends rlip_test {
 
         // Create a course-level role.
         $courseid = $DB->get_field('course', 'id', array('shortname' => 'deleteassociationsshortname'));
-        $coursecontext = get_context_instance(CONTEXT_COURSE, $courseid);
+        $coursecontext = context_course::instance($courseid);
         $roleid = create_role('deleterole', 'deleterole', 'deleterole');
         set_role_contextlevels($roleid, array(CONTEXT_COURSE));
 
@@ -2779,7 +2784,7 @@ class version1courseimport_testcase extends rlip_test {
      */
     public function test_version1importusescoursefieldmappings() {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         // Setup.
@@ -2879,7 +2884,7 @@ class version1courseimport_testcase extends rlip_test {
      */
     public function test_version1importcoursefieldimportpreventsstandardfielduse() {
         global $CFG, $DB;
-        $plugindir = get_plugin_directory('rlipimport', 'version1');
+        $plugindir = get_plugin_directory('dhimport', 'version1');
         require_once($plugindir.'/version1.class.php');
         require_once($plugindir.'/lib.php');
 

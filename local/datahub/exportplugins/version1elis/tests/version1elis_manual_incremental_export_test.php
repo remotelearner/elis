@@ -16,24 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1elis
+ * @package    dhexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
+require_once($CFG->dirroot.'/local/datahub/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
 require_once(dirname(__FILE__).'/../lib.php');
 require_once(dirname(__FILE__).'/other/mock_obj.php');
 
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/classmoodlecourse.class.php'));
     require_once(elispm::lib('data/course.class.php'));
     require_once(elispm::lib('data/pmclass.class.php'));
@@ -43,8 +43,8 @@ if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
 
 /**
  * Test class for validating basic export data during a manual, nonincremental export.
- * @group block_rlip
- * @group rlipexport_version1elis
+ * @group local_datahub
+ * @group dhexport_version1elis
  */
 class version1elismanualincrementalexport_testcase extends rlip_elis_test {
 
@@ -55,13 +55,13 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
      */
     protected function get_export_data($manual = true, $targetstarttime = 0, $lastruntime = 0) {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
         // Set the incremental time delta.
-        set_config('incrementaldelta', '1d', 'rlipexport_version1elis');
+        set_config('incrementaldelta', '1d', 'dhexport_version1elis');
 
         // Plugin for file IO.
         $fileplugin = new rlip_fileplugin_export();
@@ -131,8 +131,8 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         require_once(elispm::lib('data/'.$entitytype.'.class.php'));
 
         // Save the value for the custom field for the entity.
-        $contextlevel = context_elis_helper::get_level_from_name($entitytype);
-        $contextclass = context_elis_helper::get_class_for_level($contextlevel);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($entitytype);
+        $contextclass = \local_eliscore\context\helper::get_class_for_level($contextlevel);
         $context = $contextclass::instance($entity->id);
         $classname = 'field_data_'.$field->datatype;
         $fielddata = new $classname(array('fieldid' => $field->id));
@@ -157,11 +157,11 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
     private function create_test_field($contextlevelname = 'user', $name = 'testfieldname', $datatype, $uitype, $categoryid,
                                        $options = null, $defaultdata = null) {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
 
         // Category contextlevel.
-        $contextlevel = context_elis_helper::get_level_from_name($contextlevelname);
+        $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevelname);
         $fieldcategorycontextlevel = new field_category_contextlevel(array(
             'categoryid' => $categoryid,
             'contextlevel' => $contextlevel
@@ -253,16 +253,16 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
      */
     public function valid_header_provider() {
         $expectedheader = array(
-            get_string('header_firstname', 'rlipexport_version1elis'),
-            get_string('header_lastname', 'rlipexport_version1elis'),
-            get_string('header_username', 'rlipexport_version1elis'),
-            get_string('header_useridnumber', 'rlipexport_version1elis'),
-            get_string('header_courseidnumber', 'rlipexport_version1elis'),
-            get_string('header_startdate', 'rlipexport_version1elis'),
-            get_string('header_enddate', 'rlipexport_version1elis'),
-            get_string('header_status', 'rlipexport_version1elis'),
-            get_string('header_grade', 'rlipexport_version1elis'),
-            get_string('header_letter', 'rlipexport_version1elis')
+            get_string('header_firstname', 'dhexport_version1elis'),
+            get_string('header_lastname', 'dhexport_version1elis'),
+            get_string('header_username', 'dhexport_version1elis'),
+            get_string('header_useridnumber', 'dhexport_version1elis'),
+            get_string('header_courseidnumber', 'dhexport_version1elis'),
+            get_string('header_startdate', 'dhexport_version1elis'),
+            get_string('header_enddate', 'dhexport_version1elis'),
+            get_string('header_status', 'dhexport_version1elis'),
+            get_string('header_grade', 'dhexport_version1elis'),
+            get_string('header_letter', 'dhexport_version1elis')
         );
         return array(array($expectedheader));
     }
@@ -331,8 +331,8 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
      */
     public function necessary_associations_provider() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/classmoodlecourse.class.php'));
             require_once(elispm::lib('data/course.class.php'));
             require_once(elispm::lib('data/pmclass.class.php'));
@@ -377,8 +377,8 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
      */
     public function completion_status_provider() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/pmclass.class.php'));
 
             return array(
@@ -399,7 +399,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
      */
     public function test_exportrespects_completionstatus($status) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
 
         // Setup.
@@ -450,7 +450,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
     public function test_exportrespects_gradeletters($grade, $letter) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/course/lib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
         require_once(elispm::lib('data/classmoodlecourse.class.php'));
 
@@ -707,7 +707,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
      */
     public function test_export_respects_completiontime($completiontimeindex, $numrows) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/student.class.php'));
 
         // The times are provided in the test rather than in the dataprovider as the dataprovider is run at the start
@@ -742,14 +742,14 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
      */
     public function test_export_resetsstate() {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         // Data setup.
         $this->load_csv_data();
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         // Plugin for file IO.
         $fileplugin = new rlip_fileplugin_export();
@@ -771,7 +771,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
     }
 
     public function entity_provider() {
-        return array(array('user', 'crlm_user'));
+        return array(array('user', 'local_elisprogram_usr'));
     }
 
     /**
@@ -782,11 +782,11 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
     public function test_exportincludes_correct_customfield_header_info($entityname, $entitytable) {
         global $CFG, $DB;
 
-        $file = get_plugin_directory('rlipexport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhexport', 'version1elis').'/lib.php';
         require_once($file);
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         // Set up necessary custom field information in the database.
         // Create categpry.
@@ -801,16 +801,16 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         $this->assertEquals(count($data), 1);
 
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1elis'),
-                get_string('header_lastname', 'rlipexport_version1elis'),
-                get_string('header_username', 'rlipexport_version1elis'),
-                get_string('header_useridnumber', 'rlipexport_version1elis'),
-                get_string('header_courseidnumber', 'rlipexport_version1elis'),
-                get_string('header_startdate', 'rlipexport_version1elis'),
-                get_string('header_enddate', 'rlipexport_version1elis'),
-                get_string('header_status', 'rlipexport_version1elis'),
-                get_string('header_grade', 'rlipexport_version1elis'),
-                get_string('header_letter', 'rlipexport_version1elis'),
+                get_string('header_firstname', 'dhexport_version1elis'),
+                get_string('header_lastname', 'dhexport_version1elis'),
+                get_string('header_username', 'dhexport_version1elis'),
+                get_string('header_useridnumber', 'dhexport_version1elis'),
+                get_string('header_courseidnumber', 'dhexport_version1elis'),
+                get_string('header_startdate', 'dhexport_version1elis'),
+                get_string('header_enddate', 'dhexport_version1elis'),
+                get_string('header_status', 'dhexport_version1elis'),
+                get_string('header_grade', 'dhexport_version1elis'),
+                get_string('header_letter', 'dhexport_version1elis'),
                 'Header'
         );
 
@@ -827,7 +827,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -872,7 +872,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
         $this->load_csv_data();
 
         // Set up necessary custom field information in the database.
@@ -916,7 +916,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -966,7 +966,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -988,7 +988,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         $this->assertEquals(2, count($data));
         $row = $data[1];
         $this->assertEquals(11, count($row));
-        $marker = get_string('nodatemarker', 'rlipexport_version1');
+        $marker = get_string('nodatemarker', 'dhexport_version1');
         $this->assertEquals($marker, $row[10]);
     }
 
@@ -1005,7 +1005,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -1039,7 +1039,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -1071,7 +1071,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -1107,7 +1107,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -1138,7 +1138,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -1175,7 +1175,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -1205,7 +1205,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         $this->load_csv_data();
 
@@ -1214,16 +1214,16 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
 
         // Set up the expected output.
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1elis'),
-                get_string('header_lastname', 'rlipexport_version1elis'),
-                get_string('header_username', 'rlipexport_version1elis'),
-                get_string('header_useridnumber', 'rlipexport_version1elis'),
-                get_string('header_courseidnumber', 'rlipexport_version1elis'),
-                get_string('header_startdate', 'rlipexport_version1elis'),
-                get_string('header_enddate', 'rlipexport_version1elis'),
-                get_string('header_status', 'rlipexport_version1elis'),
-                get_string('header_grade', 'rlipexport_version1elis'),
-                get_string('header_letter', 'rlipexport_version1elis'),
+                get_string('header_firstname', 'dhexport_version1elis'),
+                get_string('header_lastname', 'dhexport_version1elis'),
+                get_string('header_username', 'dhexport_version1elis'),
+                get_string('header_useridnumber', 'dhexport_version1elis'),
+                get_string('header_courseidnumber', 'dhexport_version1elis'),
+                get_string('header_startdate', 'dhexport_version1elis'),
+                get_string('header_enddate', 'dhexport_version1elis'),
+                get_string('header_status', 'dhexport_version1elis'),
+                get_string('header_grade', 'dhexport_version1elis'),
+                get_string('header_letter', 'dhexport_version1elis'),
         );
         $expectedbody = array(
                 'exportfirstname',
@@ -1255,7 +1255,7 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set the export to be incremental.
-        set_config('nonincremental', 0, 'rlipexport_version1elis');
+        set_config('nonincremental', 0, 'dhexport_version1elis');
 
         // This loads a single user, so get_records only ever returns a single object.
         $this->load_csv_data();
@@ -1283,16 +1283,16 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
 
         // Set up the expected output.
         $expectedheader = array(
-                get_string('header_firstname', 'rlipexport_version1elis'),
-                get_string('header_lastname', 'rlipexport_version1elis'),
-                get_string('header_username', 'rlipexport_version1elis'),
-                get_string('header_useridnumber', 'rlipexport_version1elis'),
-                get_string('header_courseidnumber', 'rlipexport_version1elis'),
-                get_string('header_startdate', 'rlipexport_version1elis'),
-                get_string('header_enddate', 'rlipexport_version1elis'),
-                get_string('header_status', 'rlipexport_version1elis'),
-                get_string('header_grade', 'rlipexport_version1elis'),
-                get_string('header_letter', 'rlipexport_version1elis'),
+                get_string('header_firstname', 'dhexport_version1elis'),
+                get_string('header_lastname', 'dhexport_version1elis'),
+                get_string('header_username', 'dhexport_version1elis'),
+                get_string('header_useridnumber', 'dhexport_version1elis'),
+                get_string('header_courseidnumber', 'dhexport_version1elis'),
+                get_string('header_startdate', 'dhexport_version1elis'),
+                get_string('header_enddate', 'dhexport_version1elis'),
+                get_string('header_status', 'dhexport_version1elis'),
+                get_string('header_grade', 'dhexport_version1elis'),
+                get_string('header_letter', 'dhexport_version1elis'),
                 'Header',
                 'Header2'
         );

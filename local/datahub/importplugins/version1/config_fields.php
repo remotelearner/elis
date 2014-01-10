@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,27 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 require_once('../../../../config.php');
 
 //plugin directory
-$plugindir = get_plugin_directory('rlipimport', 'version1');
+$plugindir = get_plugin_directory('dhimport', 'version1');
 
 require_once($plugindir.'/version1.class.php');
 require_once($plugindir.'/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/form/rlip_importfield_form.class.php');
+require_once($CFG->dirroot.'/local/datahub/form/rlip_importfield_form.class.php');
 
 //permissions checking
 require_login();
 
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 require_capability('moodle/site:config', $context);
 
 $pluginwwwroot = str_replace($CFG->dirroot, $CFG->wwwroot, $plugindir);
@@ -67,7 +66,7 @@ if ($data = $form->get_data()) {
         rlipimport_version1_save_mapping($tab, $options, $data);
 
         //notify to the user that settings were saved
-        echo $OUTPUT->heading(get_string('mappingssaved', 'rlipimport_version1'));
+        echo $OUTPUT->heading(get_string('mappingssaved', 'dhimport_version1'));
     } else if (isset($data->reset)) {
         rlipimport_version1_reset_mappings($tab);
         redirect($baseurl."?tab={$tab}&resetmessage=1", '', 0);
@@ -80,13 +79,13 @@ if ($data = $form->get_data()) {
 $resetmessage = optional_param('resetmessage', 0, PARAM_INT);
 if ($resetmessage) {
     //notify the user that the settings were reset to defaults
-    echo $OUTPUT->heading(get_string('mappingsreset', 'rlipimport_version1'));
+    echo $OUTPUT->heading(get_string('mappingsreset', 'dhimport_version1'));
 }
 
 $cancelmessage = optional_param('cancelmessage', 0, PARAM_INT);
 if ($cancelmessage) {
     //notify the user that the settings were reset to DB values
-    echo $OUTPUT->heading(get_string('mappingscancelled', 'rlipimport_version1'));
+    echo $OUTPUT->heading(get_string('mappingscancelled', 'dhimport_version1'));
 }
 
 $mappingdata['tab'] = $tab;

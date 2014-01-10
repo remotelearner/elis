@@ -16,22 +16,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+    require_once(elispm::lib('data/curriculum.class.php'));
+    require_once(elispm::lib('data/curriculumcourse.class.php'));
+    require_once(elispm::lib('data/course.class.php'));
+    require_once(elispm::lib('data/coursetemplate.class.php'));
+    require_once(elispm::lib('data/pmclass.class.php'));
+    require_once(elispm::lib('data/user.class.php'));
+    require_once(elispm::lib('data/userset.class.php'));
+    require_once(elispm::lib('data/track.class.php'));
+}
 
 // Handy constants for readability.
 define('ELIS_ENTITY_EXISTS', true);
@@ -48,18 +59,18 @@ $notestsetup = array();
 
 /**
  * Test importing entities
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_entity_import_testcase extends rlip_elis_test {
 
     public $contexttotable = array(
-        'course'     => 'crlm_course',
-        'curr'       => 'crlm_curriculum',
-        'curriculum' => 'crlm_curriculum',
-        'track'      => 'crlm_track',
-        'class'      => 'crlm_class',
-        'cluster'    => 'crlm_cluster'
+        'course'     => 'local_elisprogram_crs',
+        'curr'       => 'local_elisprogram_pgm',
+        'curriculum' => 'local_elisprogram_pgm',
+        'track'      => 'local_elisprogram_trk',
+        'class'      => 'local_elisprogram_cls',
+        'cluster'    => 'local_elisprogram_uset'
     );
 
     public $testsetupdata = array(
@@ -1028,7 +1039,7 @@ class elis_entity_import_testcase extends rlip_elis_test {
     public function map_class($input, $shouldexist) {
         global $DB;
         if (array_key_exists('assignment', $input)) {
-            $input['courseid'] = $DB->get_field('crlm_course', 'id', array('idnumber' => $input['assignment']));
+            $input['courseid'] = $DB->get_field(course::TABLE, 'id', array('idnumber' => $input['assignment']));
             unset($input['assignment']);
         }
         $this->map_date_field($input, 'startdate');
@@ -1060,7 +1071,7 @@ class elis_entity_import_testcase extends rlip_elis_test {
 
         if (array_key_exists('track', $input)) {
             if ($shouldexist) {
-                $this->assertFalse(!$DB->get_record('crlm_track', array('idnumber' => $input['track'])));
+                $this->assertFalse(!$DB->get_record(track::TABLE, array('idnumber' => $input['track'])));
             }
             unset($input['track']);
         }
@@ -1091,7 +1102,7 @@ class elis_entity_import_testcase extends rlip_elis_test {
                 unset($input['parent']);
                 $input['parent'] = '0';
             } else {
-                $input['parent'] = $DB->get_field('crlm_cluster', 'id', array('name' => $input['parent']));
+                $input['parent'] = $DB->get_field(userset::TABLE, 'id', array('name' => $input['parent']));
             }
         }
         $this->map_bool_field($input, 'recursive');
@@ -1112,19 +1123,19 @@ class elis_entity_import_testcase extends rlip_elis_test {
     public function map_course($input, $shouldexist) {
         global $DB;
         if (array_key_exists('assignment', $input)) {
-            $this->assertEquals($shouldexist, $DB->record_exists('crlm_curriculum_course', array()));
+            $this->assertEquals($shouldexist, $DB->record_exists(curriculumcourse::TABLE, array()));
             unset($input['assignment']);
         }
         if (array_key_exists('syllabus', $input)) {
             $where  = $DB->sql_compare_text('syllabus').' = ?';
             $params = array(substr($input['syllabus'], 0, 32));
-            $this->assertEquals($shouldexist, $DB->record_exists_select('crlm_course', $where, $params));
+            $this->assertEquals($shouldexist, $DB->record_exists_select(course::TABLE, $where, $params));
             unset($input['syllabus']);
         }
         if (array_key_exists('link', $input)) {
             $mdlcourseid = $DB->get_field('course', 'id', array('shortname' => $input['link']));
             $this->assertEquals($shouldexist && $mdlcourseid !== false,
-                    $DB->record_exists('crlm_coursetemplate', array('location' => $mdlcourseid)));
+                    $DB->record_exists(coursetemplate::TABLE, array('location' => $mdlcourseid)));
             unset($input['link']);
         }
         return $input;
@@ -1142,7 +1153,7 @@ class elis_entity_import_testcase extends rlip_elis_test {
         if (array_key_exists('description', $input)) {
             $where  = $DB->sql_compare_text('description').' = ?';
             $params = array(substr($input['description'], 0, 32));
-            $this->assertEquals($shouldexist, $DB->record_exists_select('crlm_curriculum', $where, $params));
+            $this->assertEquals($shouldexist, $DB->record_exists_select(curriculum::TABLE, $where, $params));
             unset($input['description']);
         }
         return $input;
@@ -1158,7 +1169,7 @@ class elis_entity_import_testcase extends rlip_elis_test {
     public function map_track($input, $shouldexist) {
         global $DB;
         if (array_key_exists('assignment', $input)) {
-            $input['curid'] = $DB->get_field('crlm_curriculum', 'id', array('idnumber' => $input['assignment']));
+            $input['curid'] = $DB->get_field(curriculum::TABLE, 'id', array('idnumber' => $input['assignment']));
             unset($input['assignment']);
         }
         $this->map_bool_field($input, 'autocreate');
@@ -1171,7 +1182,7 @@ class elis_entity_import_testcase extends rlip_elis_test {
         if (array_key_exists('description', $input)) {
             $where  = $DB->sql_compare_text('description').' = ?';
             $params = array(substr($input['description'], 0, 32));
-            $this->assertEquals($shouldexist, $DB->record_exists_select('crlm_track', $where, $params));
+            $this->assertEquals($shouldexist, $DB->record_exists_select(track::TABLE, $where, $params));
             unset($input['description']);
         }
         return $input;
@@ -1191,10 +1202,10 @@ class elis_entity_import_testcase extends rlip_elis_test {
             return;
         }
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
-        set_config('enable_curriculum_expiration', true, 'elis_program');
+        set_config('enable_curriculum_expiration', true, 'local_elisprogram');
 
         $importdata = array(
             'action'  => $action,

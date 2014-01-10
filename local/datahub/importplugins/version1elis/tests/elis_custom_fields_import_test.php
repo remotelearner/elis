@@ -16,30 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
 
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Test custom fields functionality
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_user_custom_fields_testcase extends rlip_elis_test {
 
@@ -61,9 +61,9 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
     public function test_elis_userset_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name,
                                                           $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once($CFG->dirroot.'/elis/program/lib/data/userset.class.php');
+        require_once(elispm::lib('data/userset.class.php'));
 
         $fieldid = $this->create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, CONTEXT_ELIS_USERSET);
 
@@ -82,11 +82,11 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->name = 'testcluster';
         $record->{$name} = $data;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $usersetcontext = context_elis_userset::instance($DB->get_field('crlm_cluster', 'id', array('name' => 'testcluster')));
+        $usersetcontext = \local_elisprogram\context\userset::instance($DB->get_field(userset::TABLE, 'id', array('name' => 'testcluster')));
 
         $this->assert_field_values($datatype, $control, $fieldid, $usersetcontext->id, $expected);
 
@@ -98,7 +98,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->parent = 0;
         $record->{$name} = $updateddata;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
@@ -123,8 +123,9 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
     public function test_elis_class_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name,
                                                         $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
 
         if ($control === 'datetime' && is_array($expected)) {
             $expected = rlip_timestamp($expected[0], $expected[1], $expected[2], $expected[3], $expected[4], $expected[5]);
@@ -135,7 +136,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
                     $updateexpected[4], $updateexpected[5]);
         }
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
 
         $record = new stdClass;
@@ -154,11 +155,11 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->assignment = 'testcourseid';
         $record->{$name} = $data;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $classcontext = context_elis_class::instance($DB->get_field('crlm_class', 'id', array('idnumber' => 'testclassid')));
+        $classcontext = \local_elisprogram\context\pmclass::instance($DB->get_field(pmclass::TABLE, 'id', array('idnumber' => 'testclassid')));
 
         $this->assert_field_values($datatype, $control, $fieldid, $classcontext->id, $expected);
 
@@ -169,7 +170,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->idnumber = 'testclassid';
         $record->{$name} = $updateddata;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
@@ -194,8 +195,9 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
     public function test_elis_course_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name,
                                                          $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/course.class.php'));
 
         if ($control === 'datetime' && is_array($expected)) {
             $expected = rlip_timestamp($expected[0], $expected[1], $expected[2], $expected[3], $expected[4], $expected[5]);
@@ -206,7 +208,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
                     $updateexpected[4], $updateexpected[5]);
         }
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         $fieldid = $this->create_test_field($name, $datatype, $control, $inctime, $maxlength, $options, CONTEXT_ELIS_COURSE);
 
@@ -217,11 +219,11 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->idnumber = 'testcourseid';
         $record->{$name} = $data;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $coursecontext = context_elis_course::instance($DB->get_field('crlm_course', 'id', array('idnumber' => 'testcourseid')));
+        $coursecontext = \local_elisprogram\context\course::instance($DB->get_field(course::TABLE, 'id', array('idnumber' => 'testcourseid')));
 
         $this->assert_field_values($datatype, $control, $fieldid, $coursecontext->id, $expected);
 
@@ -233,7 +235,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->name = 'testcoure';
         $record->{$name} = $updateddata;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
@@ -258,8 +260,9 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
     public function test_elis_track_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name, $datatype,
                                                         $maxlength, $inctime, $options) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
+        require_once(elispm::lib('data/track.class.php'));
 
         if ($control === 'datetime' && is_array($expected)) {
             $expected = rlip_timestamp($expected[0], $expected[1], $expected[2], $expected[3], $expected[4], $expected[5]);
@@ -270,7 +273,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
                     $updateexpected[4], $updateexpected[5]);
         }
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
 
         $record = new stdClass;
@@ -290,11 +293,11 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->assignment = 'testprogramid';
         $record->{$name} = $data;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $trackcontext = context_elis_track::instance($DB->get_field('crlm_track', 'id', array('idnumber' => 'testtrackid')));
+        $trackcontext = \local_elisprogram\context\track::instance($DB->get_field(track::TABLE, 'id', array('idnumber' => 'testtrackid')));
 
         $this->assert_field_values($datatype, $control, $fieldid, $trackcontext->id, $expected);
 
@@ -304,7 +307,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->context = 'track';
         $record->idnumber = 'testtrackid';
         $record->{$name} = $updateddata;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
@@ -329,9 +332,10 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
     public function test_elis_program_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name,
                                                           $datatype, $maxlength, $inctime, $options) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
+        require_once(elispm::lib('data/curriculum.class.php'));
 
         if ($control === 'datetime' && is_array($expected)) {
             $expected = rlip_timestamp($expected[0], $expected[1], $expected[2], $expected[3], $expected[4], $expected[5]);
@@ -355,11 +359,11 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->name = 'testprogram';
         $record->{$name} = $data;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
-        $programcontext = context_elis_program::instance($DB->get_field('crlm_curriculum', 'id', array(
+        $programcontext = \local_elisprogram\context\program::instance($DB->get_field(curriculum::TABLE, 'id', array(
             'idnumber' => 'testprogramid'
         )));
 
@@ -373,7 +377,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->name = 'testprogram';
         $record->{$name} = $updateddata;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('course', (object)$record, 'bogus');
 
@@ -527,7 +531,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
     public function test_elis_user_custom_field_import($control, $data, $expected, $updateddata, $updateexpected, $name, $datatype,
                                                        $maxlength, $inctime, $options) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/user.class.php'));
 
@@ -556,11 +560,11 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->country = 'CA';
         $record->{$name} = $data;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
-        $usercontext = context_elis_user::instance($DB->get_field('crlm_user', 'id', array('idnumber' => 'testuserid')));
+        $usercontext = \local_elisprogram\context\user::instance($DB->get_field(user::TABLE, 'id', array('idnumber' => 'testuserid')));
 
         $this->assert_field_values($datatype, $control, $fieldid, $usercontext->id, $expected);
 
@@ -575,7 +579,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $record->country = 'CA';
         $record->{$name} = $updateddata;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
@@ -588,7 +592,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
      */
     public function testmenuofchoicesignorescarriagereturns() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::file('accesslib.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -622,7 +626,7 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         $user = new user();
         $user->reset_custom_field_list();
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
@@ -689,12 +693,12 @@ class elis_user_custom_fields_testcase extends rlip_elis_test {
         }
 
         ob_start();
-        var_dump($DB->get_records('elis_field_data_'.$datatype));
+        var_dump($DB->get_records('local_eliscore_fld_data_'.$datatype));
         $tmp = ob_get_contents();
         ob_end_clean();
         $msg = "No field data for {$control}: type = {$datatype}{$olddatatype}, fieldid = {$fieldid}, ";
-        $msg .= "contextid = {$usercontextid}, data = {$expected}\n elis_field_data_{$datatype} => {$tmp}\n";
+        $msg .= "contextid = {$usercontextid}, data = {$expected}\n local_eliscore_fld_data_{$datatype} => {$tmp}\n";
 
-        $this->assertTrue($DB->record_exists_select('elis_field_data_'.$datatype, $select, $params), $msg);
+        $this->assertTrue($DB->record_exists_select('local_eliscore_fld_data_'.$datatype, $select, $params), $msg);
     }
 }

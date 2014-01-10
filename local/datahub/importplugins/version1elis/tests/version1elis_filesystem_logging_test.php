@@ -16,30 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/file_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/delay_after_three.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/csv_delay.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/file_delay.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/delay_after_three.class.php');
 
 /**
  * Test filesystem logging.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class version1elisfilesystemlogging_testcase extends rlip_elis_test {
 
@@ -53,8 +53,8 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
      */
     protected function assert_data_produces_error($data, $expectederror, $entitytype, $importfilename = null) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Set the log file location.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
@@ -63,7 +63,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         // Run the import.
         $classname = "rlipimport_version1elis_importprovider_fslog{$entitytype}";
         $provider = new $classname($data, $importfilename);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider, null, true);
         // Suppress output for now.
         ob_start();
         $instance->run();
@@ -79,8 +79,8 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
 
         // Get logfile name.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1elis';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhimport_version1elis';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $testfilename = $filepath.'/'.$plugintype.'_version1elis_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         // Get most recent logfile.
 
@@ -158,7 +158,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         $category = new stdClass;
         $category->name = 'rlipname';
         $categoryid = $DB->insert_record('course_categories', $category);
-        $contextcoursecat = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $contextcoursecat = context_coursecat::instance($categoryid);
 
         // Create the course.
         $course = new stdClass;
@@ -167,7 +167,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         $course->category = $categoryid;
 
         $course = create_course($course);
-        get_context_instance(CONTEXT_COURSE, $course->id);
+        context_course::instance($course->id);
 
         return $course->id;
     }
@@ -207,7 +207,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
     private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
         global $DB;
 
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/lib.php';
         require_once($file);
 
         $record = new stdClass;
@@ -425,13 +425,13 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
 
         // Set the file path to the dataroot.
         $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR).RLIP_DEFAULT_LOG_PATH;
-        set_config('logfilelocation', '', 'rlipimport_version1elis');
+        set_config('logfilelocation', '', 'dhimport_version1elis');
 
         // Set up a "user" import provider, using a single fixed file.
         $filename = 'userfilenorecs.csv';
         // File WILL BE DELETED after import so must copy to moodledata area.
         // Note: file_path now relative to moodledata ($CFG->dataroot).
-        $filepathb = '/block_rlip_phpunit/';
+        $filepathb = '/local_datahub_phpunit/';
         $testdir = $CFG->dataroot.$filepathb;
         @mkdir($testdir, 0777, true);
         @copy(dirname(__FILE__)."/fixtures/{$filename}", $testdir.$filename);
@@ -439,7 +439,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
 
         // Run the import.
         $manual = true;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, $manual);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider, null, $manual);
         ob_start();
         $result = $importplugin->run(0, 0, 60); // Maxruntime 60 sec.
         $ui = ob_get_contents(); // TBD: test this UI string.
@@ -447,8 +447,8 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
 
         // Validate that a log file was created.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1elis';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhimport_version1elis';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $entity = 'user';
         // Get most recent record.
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
@@ -497,13 +497,13 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
 
         // Set the file path to the dataroot.
         $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR).RLIP_DEFAULT_LOG_PATH;
-        set_config('logfilelocation', '', 'rlipimport_version1elis');
+        set_config('logfilelocation', '', 'dhimport_version1elis');
 
         // Set up a "user" import provider, using a single fixed file.
         $filename = 'userfile2.csv';
         // File WILL BE DELETED after import so must copy to moodledata area.
         // Note: file_path now relative to moodledata ($CFG->dataroot).
-        $filepath = '/block_rlip_phpunit/';
+        $filepath = '/local_datahub_phpunit/';
         $testdir = $CFG->dataroot.$filepath;
         @mkdir($testdir, 0777, true);
         @copy(dirname(__FILE__)."/fixtures/{$filename}", $testdir.$filename);
@@ -511,7 +511,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
 
         // Run the import.
         $manual = true;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, $manual);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider, null, $manual);
         ob_start();
         $result = $importplugin->run(0, 0, 1); // Maxruntime 1 sec.
         $ui = ob_get_contents(); // TBD: test this UI string.
@@ -522,12 +522,12 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         $a->entity = $result->entity;
         $a->recordsprocessed = $result->linenumber - 1;
         $a->totalrecords = $result->filelines - 1;
-        $expectederror = get_string('manualimportexceedstimelimit_b', 'block_rlip', $a)."\n";
+        $expectederror = get_string('manualimportexceedstimelimit_b', 'local_datahub', $a)."\n";
 
         // Validate that a log file was created.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1elis';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhimport_version1elis';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $entity = 'user';
         // Get most recent record.
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
@@ -537,7 +537,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         }
         $testfilename = '/'.$plugintype.'_version1elis_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
 
-        $filename = self::get_current_logfile($CFG->dataroot.'/rlip/log/'.$testfilename);
+        $filename = self::get_current_logfile($CFG->dataroot.'/datahub/log/'.$testfilename);
 
         $this->assertTrue(file_exists($filename));
         // Fetch log line.
@@ -568,7 +568,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         global $CFG, $DB;
 
         // Set up the log file location.
-        set_config('logfilelocation', '', 'rlipimport_version1elis');
+        set_config('logfilelocation', '', 'dhimport_version1elis');
 
         // Our import data.
         $data = array(
@@ -582,7 +582,7 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         // Between reading the third and fourth entry.
         $provider = new rlip_importprovider_delay_after_three_users($data);
         $manual = true;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis', $provider, null, $manual);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis', $provider, null, $manual);
 
         // We should run out of time after processing the second real entry.
         ob_start();

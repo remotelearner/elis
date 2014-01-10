@@ -16,27 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/exportplugins/version1/lib.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1/lib.php');
+require_once($CFG->dirroot.'/local/datahub/exportplugins/version1elis/lib.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/lib.php');
 
 /**
  * Class for testing utility methods
- * @group block_rlip
+ * @group local_datahub
  */
 class utilitymethod_testcase extends rlip_test {
 
@@ -89,7 +89,7 @@ class utilitymethod_testcase extends rlip_test {
         // Calculate data.
         $basedata = array(
             'export' => 1,
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'userid' => 100,
             'targetstarttime' => 1000000001,
             'starttime' => 1000000002,
@@ -256,15 +256,15 @@ class utilitymethod_testcase extends rlip_test {
 
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipexport'
+            'type' => 'dhexport'
         );
 
         // Obtain scheduled task info.
         $taskid = rlip_schedule_add_job($data);
-        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        $task = $DB->get_record('local_eliscore_sched_tasks', array('id' => $taskid));
 
         // Obtain IP job info.
         list($name, $jobid) = explode('_', $task->taskname);
@@ -303,14 +303,14 @@ class utilitymethod_testcase extends rlip_test {
     public function test_updatingjob() {
         global $DB;
 
-        $DB->delete_records('elis_scheduled_tasks');
+        $DB->delete_records('local_eliscore_sched_tasks');
         $DB->delete_records(RLIP_SCHEDULE_TABLE);
 
         // Create a scheduled job.
-        $data = array('plugin' => 'rlipexport_version1',
+        $data = array('plugin' => 'dhexport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
-                      'type' => 'rlipexport');
+                      'type' => 'dhexport');
         $data['id'] = rlip_schedule_add_job($data);
 
         // Update the job.
@@ -330,26 +330,26 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_deletingjob() {
         global $DB;
-        $DB->delete_records('elis_scheduled_tasks');
+        $DB->delete_records('local_eliscore_sched_tasks');
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipexport'
+            'type' => 'dhexport'
         );
         $jobid = rlip_schedule_add_job($data);
 
         // Setup validation.
         $this->assertEquals($DB->count_records(RLIP_SCHEDULE_TABLE), 1);
-        $this->assertEquals($DB->count_records('elis_scheduled_tasks'), 1);
+        $this->assertEquals($DB->count_records('local_eliscore_sched_tasks'), 1);
 
         // Delete the job.
         rlip_schedule_delete_job($jobid);
 
         // Data validation.
         $this->assertEquals($DB->count_records(RLIP_SCHEDULE_TABLE), 0);
-        $this->assertEquals($DB->count_records('elis_scheduled_tasks'), 0);
+        $this->assertEquals($DB->count_records('local_eliscore_sched_tasks'), 0);
     }
 
     /**
@@ -373,10 +373,10 @@ class utilitymethod_testcase extends rlip_test {
         $userid = user_create_user($user);
 
         // Create a scheduled job.
-        $data = array('plugin' => 'rlipexport_version1',
+        $data = array('plugin' => 'dhexport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
-                      'type' => 'rlipexport',
+                      'type' => 'dhexport',
                       'userid' => $userid);
         $starttime = time();
         $ipid = rlip_schedule_add_job($data);
@@ -409,16 +409,16 @@ class utilitymethod_testcase extends rlip_test {
         global $CFG, $DB;
 
         // Set up the export file & path.
-        set_config('export_path', '', 'rlipexport_version1');
-        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
+        set_config('export_path', '', 'dhexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'dhexport_version1');
 
-        set_config('disableincron', 0, 'block_rlip');
+        set_config('disableincron', 0, 'local_datahub');
 
         // Create a scheduled job.
-        $data = array('plugin' => 'rlipexport_version1',
+        $data = array('plugin' => 'dhexport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
-                      'type' => 'rlipexport');
+                      'type' => 'dhexport');
         $taskid = rlip_schedule_add_job($data);
 
         // Change the last runtime to a value that is out of range on both records.
@@ -427,20 +427,20 @@ class utilitymethod_testcase extends rlip_test {
         // This is the value that will be transferred onto the job record after the run.
         $task->lastruntime = 1000000000;
         $task->nextruntime = 0;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhexport_version1'));
         $job->lastruntime = 0;
         $job->nextruntime = 0;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Run the job.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         // Obtain both records.
-        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        $task = $DB->get_record('local_eliscore_sched_tasks', array('id' => $taskid));
         list($name, $jobid) = explode('_', $task->taskname);
         $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
 
@@ -456,16 +456,16 @@ class utilitymethod_testcase extends rlip_test {
         global $CFG, $DB;
 
         // Set up the export file & path.
-        set_config('export_path', '', 'rlipexport_version1');
-        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
+        set_config('export_path', '', 'dhexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'dhexport_version1');
 
-        set_config('disableincron', 0, 'block_rlip');
+        set_config('disableincron', 0, 'local_datahub');
 
         // Create a scheduled job.
-        $data = array('plugin' => 'rlipexport_version1',
+        $data = array('plugin' => 'dhexport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
-                      'type' => 'rlipexport');
+                      'type' => 'dhexport');
         $taskid = rlip_schedule_add_job($data);
 
         $timenow = time();
@@ -473,20 +473,20 @@ class utilitymethod_testcase extends rlip_test {
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = $timenow;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhexport_version1'));
         $job->nextruntime = $timenow;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Run the job.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         $starttime = $timenow;
         run_ipjob($taskname);
 
         // Obtain both records.
-        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        $task = $DB->get_record('local_eliscore_sched_tasks', array('id' => $taskid));
         list($name, $jobid) = explode('_', $task->taskname);
         $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
 
@@ -506,17 +506,17 @@ class utilitymethod_testcase extends rlip_test {
         global $CFG, $DB;
 
         // Set up the export file & path.
-        set_config('export_path', '', 'rlipexport_version1');
-        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
+        set_config('export_path', '', 'dhexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'dhexport_version1');
 
         // Enable external cron.
-        set_config('disableincron', 1, 'block_rlip');
+        set_config('disableincron', 1, 'local_datahub');
 
         // Set up the tasks.
-        $data = array('plugin' => 'rlipexport_version1',
+        $data = array('plugin' => 'dhexport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
-                      'type' => 'rlipexport');
+                      'type' => 'dhexport');
         $taskid = rlip_schedule_add_job($data);
 
         // Set both tasks' times to known states.
@@ -524,20 +524,20 @@ class utilitymethod_testcase extends rlip_test {
         $task->id = $taskid;
         $task->lastruntime = 0;
         $task->nextruntime = 0;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhexport_version1'));
         $job->lastruntime = 1000000000;
         $job->nextruntime = 1000000001;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Run the job.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         // Obtain both records.
-        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        $task = $DB->get_record('local_eliscore_sched_tasks', array('id' => $taskid));
         list($name, $jobid) = explode('_', $task->taskname);
         $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
 
@@ -556,26 +556,26 @@ class utilitymethod_testcase extends rlip_test {
 
         // Set the log file location to the dataroot.
         $filepath = $CFG->dataroot;
-        set_config('logfilelocation', $filepath, 'rlipexport_version1');
+        set_config('logfilelocation', $filepath, 'dhexport_version1');
 
         // Enable internal cron.
-        set_config('disableincron', 0, 'block_rlip');
+        set_config('disableincron', 0, 'local_datahub');
 
         // Nonincremental export.
-        set_config('nonincremental', 1, 'rlipexport_version1');
+        set_config('nonincremental', 1, 'dhexport_version1');
 
         // Load in data needed for export.
         $this->load_export_csv_data();
 
         // Set up the export file & path.
-        set_config('export_path', '', 'rlipexport_version1');
-        set_config('export_file', 'rliptestexport.csv', 'rlipexport_version1');
+        set_config('export_path', '', 'dhexport_version1');
+        set_config('export_file', 'rliptestexport.csv', 'dhexport_version1');
 
         // Set up the tasks.
-        $data = array('plugin' => 'rlipexport_version1',
+        $data = array('plugin' => 'dhexport_version1',
                       'period' => '5m',
                       'label' => 'bogus',
-                      'type' => 'rlipexport');
+                      'type' => 'dhexport');
         $taskid = rlip_schedule_add_job($data);
 
         // Set both tasks' times to known states.
@@ -583,20 +583,20 @@ class utilitymethod_testcase extends rlip_test {
         $task->id = $taskid;
         $task->lastruntime = 0;
         $task->nextruntime = 0;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhexport_version1'));
         $job->lastruntime = 1000000000;
         $job->nextruntime = 1000000001;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Run the job with an impossibly small time limit.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname, -1);
 
         // Obtain job record.
-        $task = $DB->get_record('elis_scheduled_tasks', array('id' => $taskid));
+        $task = $DB->get_record('local_eliscore_sched_tasks', array('id' => $taskid));
         list($name, $jobid) = explode('_', $task->taskname);
         $job = $DB->get_record(RLIP_SCHEDULE_TABLE, array('id' => $jobid));
 
@@ -612,7 +612,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_countlogsrequiresuserrecord() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create log record.
         $this->create_db_log();
@@ -627,7 +627,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_countlogsreturnscorrectcount() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -646,7 +646,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogsreturnsemptyrecordset() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Fetch supposedly empty set.
         $logs = rlip_get_logs();
@@ -661,7 +661,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogsreturnsvalidrecordset() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -678,7 +678,7 @@ class utilitymethod_testcase extends rlip_test {
         unset($dbrecord->id);
         $record = new stdClass;
         $record->export = 1;
-        $record->plugin = 'rlipexport_version1';
+        $record->plugin = 'dhexport_version1';
         $record->userid = 100;
         $record->targetstarttime = 1000000001;
         $record->starttime = 1000000002;
@@ -702,7 +702,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogsusescorrectorder() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -727,7 +727,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogsrespectstasktypefilter() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -762,7 +762,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogsrespectsexecutionfilter() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -795,7 +795,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogsrespectsactualstarttimefilter() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -824,7 +824,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogsrespectpaging() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -860,14 +860,14 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogtablereturnsvalidtable() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Set appropriate display parameters.
         set_config('fullnamedisplay', 'firstname lastname');
         set_config('forcetimezone', 99);
 
         // Time format used in table.
-        $timeformat = get_string('displaytimeformat', 'block_rlip');
+        $timeformat = get_string('displaytimeformat', 'local_datahub');
 
         // Create a test user.
         $this->create_test_user();
@@ -881,33 +881,33 @@ class utilitymethod_testcase extends rlip_test {
 
         // Validate table header.
         $this->assertEquals($table->head, array(
-            get_string('logtasktype', 'block_rlip'),
-            get_string('logplugin', 'block_rlip'),
-            get_string('logexecution', 'block_rlip'),
-            get_string('loguser', 'block_rlip'),
-            get_string('logscheduledstart', 'block_rlip'),
-            get_string('logstart', 'block_rlip'),
-            get_string('logend', 'block_rlip'),
-            get_string('logfilesuccesses', 'block_rlip'),
-            get_string('logfilefailures', 'block_rlip'),
-            get_string('logstatus', 'block_rlip'),
-            get_string('logentitytype', 'block_rlip'),
-            get_string('logdownload', 'block_rlip')
+            get_string('logtasktype', 'local_datahub'),
+            get_string('logplugin', 'local_datahub'),
+            get_string('logexecution', 'local_datahub'),
+            get_string('loguser', 'local_datahub'),
+            get_string('logscheduledstart', 'local_datahub'),
+            get_string('logstart', 'local_datahub'),
+            get_string('logend', 'local_datahub'),
+            get_string('logfilesuccesses', 'local_datahub'),
+            get_string('logfilefailures', 'local_datahub'),
+            get_string('logstatus', 'local_datahub'),
+            get_string('logentitytype', 'local_datahub'),
+            get_string('logdownload', 'local_datahub')
         ));
 
         // Validate table data.
         $this->assertEquals(count($table->data), 1);
         $datum = reset($table->data);
         $this->assertEquals($datum, array(
-            get_string('export', 'block_rlip'),
-            get_string('pluginname', 'rlipexport_version1'),
-            get_string('automatic', 'block_rlip'),
+            get_string('export', 'local_datahub'),
+            get_string('pluginname', 'dhexport_version1'),
+            get_string('automatic', 'local_datahub'),
             'Test User',
             userdate(1000000001, $timeformat, 99, false),
             userdate(1000000002, $timeformat, 99, false),
             userdate(1000000003, $timeformat, 99, false),
             '1',
-            get_string('na', 'block_rlip'),
+            get_string('na', 'local_datahub'),
             'testmessage',
             'N/A',
             // ELIS-5199 The download link only appears when there is a valid file present on the filesystem.
@@ -919,14 +919,14 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogtablereturnsimportplugin() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
 
         // Create log record.
         $this->create_db_log(array('export' => 0,
-                                   'plugin' => 'rlipimport_version1'));
+                                   'plugin' => 'dhimport_version1'));
 
         // Obtain table data.
         $logs = rlip_get_logs();
@@ -937,8 +937,8 @@ class utilitymethod_testcase extends rlip_test {
 
         // Validate row data related to import plugins.
         $datum = reset($table->data);
-        $this->assertEquals($datum[0], get_string('import', 'block_rlip'));
-        $this->assertEquals($datum[1], get_string('pluginname', 'rlipimport_version1'));
+        $this->assertEquals($datum[0], get_string('import', 'local_datahub'));
+        $this->assertEquals($datum[1], get_string('pluginname', 'dhimport_version1'));
     }
 
     /**
@@ -946,7 +946,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogtablereturnsmanual() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -963,7 +963,7 @@ class utilitymethod_testcase extends rlip_test {
 
         // Validate row data related to manual run.
         $datum = reset($table->data);
-        $this->assertEquals($datum[2], get_string('manual', 'block_rlip'));
+        $this->assertEquals($datum[2], get_string('manual', 'local_datahub'));
     }
 
     /**
@@ -971,7 +971,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getlogtablereturnsnascheduledstarttime() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create a test user.
         $this->create_test_user();
@@ -988,7 +988,7 @@ class utilitymethod_testcase extends rlip_test {
 
         // Validate row data related to manual run.
         $datum = reset($table->data);
-        $this->assertEquals($datum[4], get_string('na', 'block_rlip'));
+        $this->assertEquals($datum[4], get_string('na', 'local_datahub'));
     }
 
     /**
@@ -996,13 +996,13 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_logtablerespectstimezones() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Force timezone to a particular value.
         set_config('forcetimezone', 10);
 
         // Time display format for all relevant fields.
-        $timeformat = get_string('displaytimeformat', 'block_rlip');
+        $timeformat = get_string('displaytimeformat', 'local_datahub');
 
         // Create a test user.
         $this->create_test_user();
@@ -1034,7 +1034,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_logtablehtml() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create table object.
         $table = new html_table();
@@ -1052,14 +1052,14 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_logtablehtmlreturnsemptymessage() {
         global $CFG, $OUTPUT;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create table object.
         $table = new html_table();
         $output = rlip_log_table_html($table);
 
         // Validation.
-        $this->assertEquals($output, $OUTPUT->heading(get_string('nologmessage', 'block_rlip')));
+        $this->assertEquals($output, $OUTPUT->heading(get_string('nologmessage', 'local_datahub')));
     }
 
     /**
@@ -1068,7 +1068,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_operationselectreturnscorrectsqlfilter() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_log_filtering.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_log_filtering.class.php');
 
         // Create filter class.
         $options = array('= 0' => 'label1',
@@ -1132,14 +1132,14 @@ class utilitymethod_testcase extends rlip_test {
         $logrec->unmetdependency = 0;
         $logrec->logfilepath = $CFG->dataroot;
         $logrec->export = 1;
-        $logrec->plugin = 'rlipexport_version1';
+        $logrec->plugin = 'dhexport_version1';
         // Input < 1 page of export log entries.
         for ($i = 0; $i < RLIP_LOGS_PER_PAGE - 2; ++$i) {
             $DB->insert_record(RLIP_LOG_TABLE, $logrec);
         }
 
         $logrec->export = 0;
-        $logrec->plugin = 'rlipimport_version1';
+        $logrec->plugin = 'dhimport_version1';
         // Input > 2 pages of import log entries.
         for ($i = 0; $i <= 2 * RLIP_LOGS_PER_PAGE; ++$i) {
             $DB->insert_record(RLIP_LOG_TABLE, $logrec);
@@ -1173,8 +1173,8 @@ class utilitymethod_testcase extends rlip_test {
         global $CFG;
 
         $dataroot = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR);
-        $exportpath = '/phpunit/rlip/exportlogpath';
-        $importpath = '/phpunit/rlip/importlogpath';
+        $exportpath = '/phpunit/datahub/exportlogpath';
+        $importpath = '/phpunit/datahub/importlogpath';
 
         $logfile = rlip_log_file_name('bogus', 'bogus', $exportpath);
         $this->assertTrue(file_exists($dataroot.$exportpath));
@@ -1220,39 +1220,38 @@ class utilitymethod_testcase extends rlip_test {
 
     /**
      * Validate that the block method before_delete()
-     * deletes all block_rlip tables & data
+     * deletes all local_datahub tables & data
      */
-    public function test_block_rlip_before_delete() {
+    public function test_local_datahub_before_delete() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/moodleblock.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/block_rlip.php');
-        require_once($CFG->dirroot.'/blocks/rlip/db/tasks.php');
+        require_once($CFG->dirroot.'/local/datahub/db/uninstall.php');
+        require_once($CFG->dirroot.'/local/datahub/db/tasks.php');
 
-        // Setup some bogus config_plugins settings and elis_scheduled_tasks.
-        set_config('bogus1', 1, 'rlipexport_version1');
-        set_config('bogus2', 1, 'rlipimport_version1');
+        // Setup some bogus config_plugins settings and local_eliscore_sched_tasks.
+        set_config('bogus1', 1, 'dhexport_version1');
+        set_config('bogus2', 1, 'dhimport_version1');
 
         // Add some bogus RLIP scheduled tasks.
         $testdata = array(
-            'type'   => 'rlipimport',
-            'plugin' => 'rlipimport_version1',
+            'type'   => 'dhimport',
+            'plugin' => 'dhimport_version1',
             'period' => '15m',
             'label'  => 'bogus'
         );
         rlip_schedule_add_job($testdata);
         rlip_schedule_add_job($testdata);
-        $testdata['type'] = 'rlipexport';
-        $testdata['plugin'] = 'rlipexport_version1';
+        $testdata['type'] = 'dhexport';
+        $testdata['plugin'] = 'dhexport_version1';
         rlip_schedule_add_job($testdata);
         rlip_schedule_add_job($testdata);
 
         // Add compress logs cron job.
-        $tasks[0]['plugin'] = 'block_rlip';
-        $DB->insert_record('elis_scheduled_tasks', $tasks[0]);
+        $tasks[0]['plugin'] = 'local_datahub';
+        $DB->insert_record('local_eliscore_sched_tasks', $tasks[0]);
 
-        // Call the RLIP block before_delete() method.
-        $blockobj = new block_rlip;
-        $blockobj->before_delete();
+        // Call the Datahub uninstall method.
+        xmldb_local_datahub_uninstall();
 
         // Test RLIP tables were deleted ....
         // Notes: $dbman->generator not overlay
@@ -1263,14 +1262,14 @@ class utilitymethod_testcase extends rlip_test {
             $this->assertTrue(false);
         } catch (Exception $e) {
             // Expected exception table not found.
-            $this->recreate_table('rlipexport_version1', RLIPEXPORT_VERSION1_FIELD_TABLE);
+            $this->recreate_table('dhexport_version1', RLIPEXPORT_VERSION1_FIELD_TABLE);
         }
         try {
             $DB->count_records(RLIPIMPORT_VERSION1_MAPPING_TABLE);
             $this->assertTrue(false);
         } catch (Exception $e) {
             // Expected exception table not found.
-            $this->recreate_table('rlipimport_version1', RLIPIMPORT_VERSION1_MAPPING_TABLE);
+            $this->recreate_table('dhimport_version1', RLIPIMPORT_VERSION1_MAPPING_TABLE);
         }
 
         try {
@@ -1278,38 +1277,38 @@ class utilitymethod_testcase extends rlip_test {
             $this->assertTrue(false);
         } catch (Exception $e) {
             // Expected exception table not found.
-            $this->recreate_table('rlipexport_version1elis', RLIPEXPORT_VERSION1ELIS_FIELD_TABLE);
+            $this->recreate_table('dhexport_version1elis', RLIPEXPORT_VERSION1ELIS_FIELD_TABLE);
         }
         try {
             $DB->count_records(RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE);
             $this->assertTrue(false);
         } catch (Exception $e) {
             // Expected exception table not found.
-            $this->recreate_table('rlipimport_version1elis', RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE);
+            $this->recreate_table('dhimport_version1elis', RLIPIMPORT_VERSION1ELIS_MAPPING_TABLE);
         }
 
         // Test RLIP elis schedule task deleted.
-        $iprecs = $DB->get_records_select('elis_scheduled_tasks', "taskname LIKE 'ipjob_%'");
+        $iprecs = $DB->get_records_select('local_eliscore_sched_tasks', "taskname LIKE 'ipjob_%'");
         $this->assertTrue(empty($iprecs));
 
-        $iprecs = $DB->get_records('elis_scheduled_tasks', array('plugin' => 'block_rlip'));
+        $iprecs = $DB->get_records('local_eliscore_sched_tasks', array('plugin' => 'local_datahub'));
         $this->assertTrue(empty($iprecs));
 
-        $iprecs = $DB->get_records('elis_scheduled_tasks', array('plugin' => 'block/rlip'));
+        $iprecs = $DB->get_records('local_eliscore_sched_tasks', array('plugin' => 'block_rlip'));
         $this->assertTrue(empty($iprecs));
 
         // Test RLIP config settings deleted.
-        $this->assertFalse(get_config('rlipexport_version1', 'bogus1'));
-        $this->assertFalse(get_config('rlipimport_version1', 'bogus2'));
+        $this->assertFalse(get_config('dhexport_version1', 'bogus1'));
+        $this->assertFalse(get_config('dhimport_version1', 'bogus2'));
     }
 
     /**
      * Validate that we can get notification emails configured for an import plugin
      */
     public function test_getnotificationemailsforimport() {
-        set_config('emailnotification', 'user1@domain1.com,user2@domain2.com', 'rlipimport_version1');
+        set_config('emailnotification', 'user1@domain1.com,user2@domain2.com', 'dhimport_version1');
 
-        $emails = rlip_get_notification_emails('rlipimport_version1');
+        $emails = rlip_get_notification_emails('dhimport_version1');
 
         $expectedresult = array('user1@domain1.com',
                                  'user2@domain2.com');
@@ -1321,9 +1320,9 @@ class utilitymethod_testcase extends rlip_test {
      * Validate that we can get notification emails configured for an export plugin
      */
     public function test_getnotificationemailsforexport() {
-        set_config('emailnotification', 'user1@domain1.com,user2@domain2.com', 'rlipexport_version1');
+        set_config('emailnotification', 'user1@domain1.com,user2@domain2.com', 'dhexport_version1');
 
-        $emails = rlip_get_notification_emails('rlipexport_version1');
+        $emails = rlip_get_notification_emails('dhexport_version1');
 
         $expectedresult = array('user1@domain1.com',
                                  'user2@domain2.com');
@@ -1335,9 +1334,9 @@ class utilitymethod_testcase extends rlip_test {
      * Validate that notification email retrieval handles empty case
      */
     public function test_getnotificationemailsreturnsemptyarrayforemptysetting() {
-        set_config('emailnotification', '', 'rlipimport_version1');
+        set_config('emailnotification', '', 'dhimport_version1');
 
-        $emails = rlip_get_notification_emails('rlipimport_version1');
+        $emails = rlip_get_notification_emails('dhimport_version1');
         $this->assertEquals($emails, array());
     }
 
@@ -1345,9 +1344,9 @@ class utilitymethod_testcase extends rlip_test {
      * Validate that notification email retrieval trims emails
      */
     public function test_getnotificationemailstrimswhitespacebetweenemails() {
-        set_config('emailnotification', 'user1@domain1.com , user2@domain2.com', 'rlipimport_version1');
+        set_config('emailnotification', 'user1@domain1.com , user2@domain2.com', 'dhimport_version1');
 
-        $emails = rlip_get_notification_emails('rlipimport_version1');
+        $emails = rlip_get_notification_emails('dhimport_version1');
 
         $expectedresult = array('user1@domain1.com', 'user2@domain2.com');
 
@@ -1358,9 +1357,9 @@ class utilitymethod_testcase extends rlip_test {
      * Validate that notification email retrieval removes empty email addresses
      */
     public function test_getnotificationemailsremovesemptyemails() {
-        set_config('emailnotification', 'user1@domain1.com, ,user2@domain2.com', 'rlipimport_version1');
+        set_config('emailnotification', 'user1@domain1.com, ,user2@domain2.com', 'dhimport_version1');
 
-        $emails = rlip_get_notification_emails('rlipimport_version1');
+        $emails = rlip_get_notification_emails('dhimport_version1');
 
         $expectedresult = array('user1@domain1.com',
                                  'user2@domain2.com');
@@ -1372,9 +1371,9 @@ class utilitymethod_testcase extends rlip_test {
      * Validate that notification email retrieval removes improperly formatted email addresses
      */
     public function test_getnoficiationemailsremovesinvalidemails() {
-        set_config('emailnotification', 'user1@domain1.com,bogus,user2@domain2.com', 'rlipimport_version1');
+        set_config('emailnotification', 'user1@domain1.com,bogus,user2@domain2.com', 'dhimport_version1');
 
-        $emails = rlip_get_notification_emails('rlipimport_version1');
+        $emails = rlip_get_notification_emails('dhimport_version1');
 
         $expectedresult = array('user1@domain1.com',
                                  'user2@domain2.com');
@@ -1416,7 +1415,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getemailarchivefilenameforimport() {
         $time = time();
-        $zipname = rlip_email_archive_name('rlipimport_version1', $time);
+        $zipname = rlip_email_archive_name('dhimport_version1', $time);
 
         $datedisplay = date('M_d_Y_His', $time);
         $expectedfilename = 'import_version1_scheduled_'.$datedisplay.'.zip';
@@ -1429,7 +1428,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getemailarchivefilenameforexport() {
         $time = time();
-        $zipname = rlip_email_archive_name('rlipexport_version1', $time);
+        $zipname = rlip_email_archive_name('dhexport_version1', $time);
 
         $datedisplay = date('M_d_Y_His', $time);
         $expectedfilename = 'export_version1_scheduled_'.$datedisplay.'.zip';
@@ -1442,7 +1441,7 @@ class utilitymethod_testcase extends rlip_test {
      */
     public function test_getemailarchivefilenameformanual() {
         $time = time();
-        $zipname = rlip_email_archive_name('rlipimport_version1', $time, true);
+        $zipname = rlip_email_archive_name('dhimport_version1', $time, true);
 
         $datedisplay = date('M_d_Y_His', $time);
         $expectedfilename = 'import_version1_manual_'.$datedisplay.'.zip';
@@ -1466,7 +1465,7 @@ class utilitymethod_testcase extends rlip_test {
 
             $summarylog = new stdClass;
             $summarylog->logpath = $newpath;
-            $summarylog->plugin = 'rlipimport_version1';
+            $summarylog->plugin = 'dhimport_version1';
             $summarylog->userid = 9999;
             $summarylog->targetstarttime = 0;
             $summarylog->starttime = 0;
@@ -1480,7 +1479,7 @@ class utilitymethod_testcase extends rlip_test {
             $logids[] = $DB->insert_record(RLIP_LOG_TABLE, $summarylog);
         }
 
-        $zipfilename = rlip_compress_logs_email('rlipimport_version1', $logids);
+        $zipfilename = rlip_compress_logs_email('dhimport_version1', $logids);
 
         for ($i = 1; $i <= 3; $i++) {
             // Clean up copies.
@@ -1517,7 +1516,7 @@ class utilitymethod_testcase extends rlip_test {
      * Validate edge case for log compression method
      */
     public function test_compresslogsforemailreturnsfalseforemptylist() {
-        $zipfilename = rlip_compress_logs_email('rlipimport_version1', array());
+        $zipfilename = rlip_compress_logs_email('dhimport_version1', array());
 
         $this->assertFalse($zipfilename);
     }
@@ -1531,7 +1530,7 @@ class utilitymethod_testcase extends rlip_test {
         // Create a summary log with an empty log file path.
         $summarylog = new stdClass;
         $summarylog->logpath = 'testpath';
-        $summarylog->plugin = 'rlipimport_version1';
+        $summarylog->plugin = 'dhimport_version1';
         $summarylog->userid = 9999;
         $summarylog->targetstarttime = 0;
         $summarylog->starttime = 0;
@@ -1545,7 +1544,7 @@ class utilitymethod_testcase extends rlip_test {
         $logid = $DB->insert_record(RLIP_LOG_TABLE, $summarylog);
 
         // Obtian the zip file name.
-        $zipfilename = rlip_compress_logs_email('rlipimport_version1', array($logid));
+        $zipfilename = rlip_compress_logs_email('dhimport_version1', array($logid));
 
         // Validate that the scenario was handled.
         $this->assertFalse($zipfilename);
@@ -1559,29 +1558,29 @@ class utilitymethod_testcase extends rlip_test {
         global $DB;
 
         // Set up the export file name.
-        set_config('export_file', 'export.csv', 'rlipexport_version1');
+        set_config('export_file', 'export.csv', 'dhexport_version1');
 
         // Disable running in the standard cron.
-        set_config('disableincron', '1', 'block_rlip');
+        set_config('disableincron', '1', 'local_datahub');
 
         // Create the job (doesn't really matter which plugin).
-        $data = array('plugin' => 'rlipexport_version1',
+        $data = array('plugin' => 'dhexport_version1',
                       'period' => '5m',
-                      'type' => 'rlipexport');
+                      'type' => 'dhexport');
         $taskid = rlip_schedule_add_job($data);
 
         // Set up the job to run on the next "cron".
-        $DB->execute("UPDATE {elis_scheduled_tasks}
+        $DB->execute("UPDATE {local_eliscore_sched_tasks}
                           SET nextruntime = ?", array(0));
         $DB->execute("UPDATE {".RLIP_SCHEDULE_TABLE."}
                       SET nextruntime = ?", array(0));
 
         // Run the export.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         // Validate that tasks are not run by checking that their next runtime values have not been changed..
-        $exists = $DB->record_exists('elis_scheduled_tasks', array('nextruntime' => 0));
+        $exists = $DB->record_exists('local_eliscore_sched_tasks', array('nextruntime' => 0));
         $this->assertTrue($exists);
 
         $exists = $DB->record_exists(RLIP_SCHEDULE_TABLE, array('nextruntime' => 0));
@@ -1593,7 +1592,7 @@ class utilitymethod_testcase extends rlip_test {
 
         return array(
             array($CFG->dataroot.'/myexport/', '/myexport'),
-            array($CFG->dataroot.'/rlip/import', '/rlip/import'),
+            array($CFG->dataroot.'/datahub/import', '/datahub/import'),
             array('/some/bad/path/on/the/filesystem', ''),
             array('/', ''),
             array('', '')

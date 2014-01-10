@@ -16,20 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dblogger.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/delay_after_three.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dblogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/delay_after_three.class.php');
 
 /**
  * DB logging class used to test the bare minimum functionality of the DB
@@ -60,7 +60,7 @@ class rlip_dblogger_test extends rlip_dblogger {
 
 /**
  * Class for validating generic database logging functionality.
- * @group block_rlip
+ * @group local_datahub
  */
 class databaselogging_testcase extends rlip_test {
 
@@ -98,7 +98,7 @@ class databaselogging_testcase extends rlip_test {
      */
     public function test_dbloggingsupportsmissingcolumns() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Obtain dblogger.
         $dblogger = new rlip_dblogger_import();
@@ -131,14 +131,14 @@ class databaselogging_testcase extends rlip_test {
      */
     public function test_dbloggingproducesoutputformanualimport() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Store it at the system context.
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
 
         // File path and name.
-        $filepath = $CFG->dirroot.'/blocks/rlip/importplugins/version1/tests/fixtures/';
+        $filepath = $CFG->dirroot.'/local/datahub/importplugins/version1/tests/fixtures/';
         $filename = 'userfile.csv';
 
         // File information.
@@ -160,7 +160,7 @@ class databaselogging_testcase extends rlip_test {
         $entitytypes = array('user', 'bogus', 'bogus');
         $fileids = array($fileid, false, false);
         $importprovider = new rlip_importprovider_moodlefile($entitytypes, $fileids);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $importprovider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $importprovider, null, true);
 
         // Run the import, collecting output.
         ob_start();
@@ -177,20 +177,20 @@ class databaselogging_testcase extends rlip_test {
      */
     public function test_dbloggingdoesnotproduceoutputforscheduledimport() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_csv.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_importprovider_csv.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Set up the import.
         // MUST copy file to temp area 'cause it'll be deleted after import.
         $entitytypes = array('user');
         $userfile = 'userfile.csv';
         $testfile = dirname(__FILE__).'/'.$userfile;
-        $tempdir = $CFG->dataroot.'/block_rlip_phpunit/';
+        $tempdir = $CFG->dataroot.'/local_datahub_phpunit/';
         @mkdir($tempdir, 0777, true);
         @copy($testfile, $tempdir.$userfile);
         $files = array('user' => $tempdir.$userfile);
         $importprovider = new rlip_importprovider_csv($entitytypes, $files);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $importprovider);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $importprovider);
 
         // Run the import, collecting output.
         ob_start();
@@ -211,11 +211,11 @@ class databaselogging_testcase extends rlip_test {
      */
     public function test_dbloggingdoesnotproduceoutputformanualexport() {
         global $CFG;
-        require_once(get_plugin_directory('rlipexport', 'version1').'/tests/other/rlip_fileplugin_nowrite.class.php');
+        require_once(get_plugin_directory('dhexport', 'version1').'/tests/other/rlip_fileplugin_nowrite.class.php');
 
         // Set up the export.
         $fileplugin = new rlip_fileplugin_nowrite();
-        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin, true);
+        $instance = rlip_dataplugin_factory::factory('dhexport_version1', null, $fileplugin, true);
 
         // Run the export, collecting output.
         ob_start();
@@ -232,11 +232,11 @@ class databaselogging_testcase extends rlip_test {
      */
     public function test_dbloggingdoesnotproduceoutputforscheduledexport() {
         global $CFG;
-        require_once(get_plugin_directory('rlipexport', 'version1').'/tests/other/rlip_fileplugin_nowrite.class.php');
+        require_once(get_plugin_directory('dhexport', 'version1').'/tests/other/rlip_fileplugin_nowrite.class.php');
 
         // Set up the export.
         $fileplugin = new rlip_fileplugin_nowrite();
-        $instance = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin);
+        $instance = rlip_dataplugin_factory::factory('dhexport_version1', null, $fileplugin);
 
         // Run the export, collecting output.
         ob_start();
@@ -344,7 +344,7 @@ class databaselogging_testcase extends rlip_test {
      */
     public function test_dbloggerobjectstorespathwhenruntimeexceeded() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Obtain the logging object.
         $dblogger = new rlip_dblogger_import();
@@ -368,7 +368,7 @@ class databaselogging_testcase extends rlip_test {
      */
     public function test_version1manualimportlogsruntimedatabaseerror() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Our import data.
         $data = array(
@@ -382,7 +382,7 @@ class databaselogging_testcase extends rlip_test {
         // fourth entry.
         $provider = new rlip_importprovider_delay_after_three_users($data);
         $manual = true;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, $manual);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, $manual);
 
         // We should run out of time after processing the second real entry.
         ob_start();

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="elis/core/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 elis export plugin"
+<XMLDB PATH="local/eliscore/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 elis export plugin"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="rlipexport_version1elis_fld" COMMENT="Custom fields used by version 1 elis export plugin">
+    <TABLE NAME="dhexport_version1elis_fld" COMMENT="Custom fields used by version 1 elis export plugin">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="fieldset"/>
         <FIELD NAME="fieldset" TYPE="char" LENGTH="127" NOTNULL="true" SEQUENCE="false" COMMENT="The extrafields set" PREVIOUS="id" NEXT="field"/>

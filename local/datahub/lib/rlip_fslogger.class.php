@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -100,7 +99,7 @@ class rlip_fslogger {
      * @return string The formatted time string
      */
     static function time_display($timestamp, $timezone) {
-        $format = get_string('logtimeformat', 'block_rlip');
+        $format = get_string('logtimeformat', 'local_datahub');
         return userdate($timestamp, $format, $timezone, false);
     }
 
@@ -316,10 +315,8 @@ class rlip_fslogger_factory {
     /**
      * Factory method to obtain a default file system logger object
      *
-     * @param string $plugin The plugin we are running, either rlipimport_* or
-     *                       rlipexport_*
-     * @param object $fileplugin The file plugin that should be used to write
-     *                           out log data
+     * @param string $plugin The plugin we are running, either dhimport_* or dhexport_*
+     * @param object $fileplugin The file plugin that should be used to write out log data
      * @param boolean $manual True on a manual run, false on a scheduled run
      */
     static function factory($plugin, $fileplugin, $manual = false) {
@@ -332,15 +329,15 @@ class rlip_fslogger_factory {
         $file = get_plugin_directory($type, $instance).'/'.$instance.'.class.php';
         if (!file_exists($file)) {
             //this should only happen during unit tests
-            require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+            require_once($CFG->dirroot.'/local/datahub/lib/rlip_fslogger.class.php');
             return new rlip_fslogger_linebased($fileplugin, $manual);
         }
         require_once($file);
 
         //determine classname
         $classname = $plugin;
-        $classname = str_replace('rlipexport_', 'rlip_exportplugin_', $classname);
-        $classname = str_replace('rlipimport_', 'rlip_importplugin_', $classname);
+        $classname = str_replace('dhexport_', 'rlip_exportplugin_', $classname);
+        $classname = str_replace('dhimport_', 'rlip_importplugin_', $classname);
 
         //ask the plugin to provide the logger
         return $classname::get_fs_logger($fileplugin, $manual);

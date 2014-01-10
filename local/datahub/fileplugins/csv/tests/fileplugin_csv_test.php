@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipfile_csv
+ * @package    dhfile_csv
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 /**
  * Class for testing the CSV file plugin
- * @group block_rlip
- * @group rlipfile_csv
+ * @group local_datahub
+ * @group dhfile_csv
  */
 class fileplugincsv_testcase extends rlip_test {
     /**
@@ -38,8 +38,8 @@ class fileplugincsv_testcase extends rlip_test {
      */
     public function test_fileplugincsvhandlesemptylines() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-        $file = get_plugin_directory('rlipfile', 'csv').'/csv.class.php';
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+        $file = get_plugin_directory('dhfile', 'csv').'/csv.class.php';
         require_once($file);
 
         // Fileplugin instance.

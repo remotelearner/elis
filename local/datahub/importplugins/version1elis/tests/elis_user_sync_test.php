@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Class for validating that ELIS / PM user actions propagate the appropriate users over to Moodle.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_user_sync_testcase extends rlip_elis_test {
 
@@ -44,7 +44,7 @@ class elis_user_sync_testcase extends rlip_elis_test {
      */
     public function test_user_sync_on_pm_user_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usermoodle.class.php'));
 
@@ -62,7 +62,7 @@ class elis_user_sync_testcase extends rlip_elis_test {
         $record->country = 'CA';
         $record->language = 'fr';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_create($record, 'bogus');
 
@@ -94,9 +94,9 @@ class elis_user_sync_testcase extends rlip_elis_test {
     public function test_user_custom_field_sync_on_user_create() {
         // NOTE: not testing all cases because ELIS handles the details and this seems to already work.
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+        require_once(elis::file('eliscore/fields/moodleprofile/custom_fields.php'));
         require_once(elispm::file('accesslib.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -158,7 +158,7 @@ class elis_user_sync_testcase extends rlip_elis_test {
         $record->language = 'fr';
         $record->testfieldshortname = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
@@ -177,7 +177,7 @@ class elis_user_sync_testcase extends rlip_elis_test {
      */
     public function test_user_sync_on_pm_user_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
 
         $origusercount = $DB->count_records('user');
@@ -209,7 +209,7 @@ class elis_user_sync_testcase extends rlip_elis_test {
         $record->country = 'FR';
         $record->language = 'en_us';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->user_update($record, 'bogus');
 
@@ -235,7 +235,7 @@ class elis_user_sync_testcase extends rlip_elis_test {
         // NOTE: not testing all cases because ELIS handles the details and this.
         // Seems to already work.
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::file('accesslib.php'));
         require_once(elispm::lib('data/user.class.php'));
@@ -303,7 +303,7 @@ class elis_user_sync_testcase extends rlip_elis_test {
         $record->email = 'testuser@email.com';
         $record->testfieldshortname = 1;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
@@ -321,9 +321,9 @@ class elis_user_sync_testcase extends rlip_elis_test {
      */
     public function test_user_multi_custom_field_on_user_create() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
-        require_once(elis::file('core/fields/moodle_profile/custom_fields.php'));
+        require_once(elis::file('eliscore/fields/moodleprofile/custom_fields.php'));
         require_once(elispm::file('accesslib.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once($CFG->dirroot.'/user/profile/lib.php');
@@ -409,18 +409,18 @@ class elis_user_sync_testcase extends rlip_elis_test {
         $record->language = 'en';
         $record->testfieldgender = 'Male/Female';
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', $record, 'bogus');
 
         // Validation.
-        $userid = $DB->get_field('crlm_user', 'id', array('username' => 'testuserusername'));
+        $userid = $DB->get_field(user::TABLE, 'id', array('username' => 'testuserusername'));
         $user = new user($userid);
         $user->load();
         $user = $user->to_object();
 
       /*
-        $datars = field_data::get_for_context_and_field(context_elis_user::instance($user->id), 'testfieldgender');
+        $datars = field_data::get_for_context_and_field(\local_elisprogram\context\user::instance($user->id), 'testfieldgender');
         foreach ($datars as $data) {
             ob_start();
             var_dump($data);

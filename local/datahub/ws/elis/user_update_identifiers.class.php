@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -24,7 +24,7 @@
 /**
  * Update user identifiers webservices method.
  */
-class block_rldh_elis_user_update_identifiers extends external_api {
+class local_datahub_elis_user_update_identifiers extends external_api {
 
     /**
      * Require ELIS dependencies if ELIS is installed, otherwise return false.
@@ -32,8 +32,8 @@ class block_rldh_elis_user_update_identifiers extends external_api {
      */
     public static function require_elis_dependencies() {
         global $CFG;
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-            require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+            require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
             require_once(elispm::lib('data/user.class.php'));
             require_once(dirname(__FILE__).'/../../importplugins/version1elis/version1elis.class.php');
             return true;
@@ -154,7 +154,7 @@ class block_rldh_elis_user_update_identifiers extends external_api {
         global $USER, $DB;
 
         if (static::require_elis_dependencies() !== true) {
-            throw new moodle_exception('ws_function_requires_elis', 'block_rlip');
+            throw new moodle_exception('ws_function_requires_elis', 'local_datahub');
         }
 
         // Parameter validation.
@@ -165,7 +165,7 @@ class block_rldh_elis_user_update_identifiers extends external_api {
         self::validate_context($context);
 
         // Initialize version1elis importplugin for utility functions.
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
 
         $userparams = array();
         $data = (object)$data;
@@ -185,11 +185,11 @@ class block_rldh_elis_user_update_identifiers extends external_api {
                     $a->userparams .= "{$userfield}: '{$uservalue}'";
                 }
             }
-            throw new data_object_exception('ws_user_update_identifiers_fail_invalid_user', 'block_rlip', '', $a);
+            throw new data_object_exception('ws_user_update_identifiers_fail_invalid_user', 'local_datahub', '', $a);
         }
 
         // Capability checking.
-        require_capability('elis/program:user_edit', context_elis_user::instance($userid));
+        require_capability('local/elisprogram:user_edit', \local_elisprogram\context\user::instance($userid));
 
         $user = new user($userid);
         $user->load();
@@ -220,8 +220,8 @@ class block_rldh_elis_user_update_identifiers extends external_api {
         }
 
         return array(
-            'messagecode' => get_string('ws_user_update_identifiers_success_code', 'block_rlip'),
-            'message' => get_string('ws_user_update_identifiers_success_msg', 'block_rlip'),
+            'messagecode' => get_string('ws_user_update_identifiers_success_code', 'local_datahub'),
+            'message' => get_string('ws_user_update_identifiers_success_msg', 'local_datahub'),
             'record' => array_merge($userrec, $userobj),
         );
     }

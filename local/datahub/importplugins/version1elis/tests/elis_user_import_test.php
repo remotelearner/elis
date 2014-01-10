@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/readmemory.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/user.class.php'));
 }
 
@@ -49,8 +49,8 @@ define('NO_TEST_SETUP', -1);
 
 /**
  * Test user import.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_user_import_testcase extends rlip_elis_test {
 
@@ -712,7 +712,7 @@ class elis_user_import_testcase extends rlip_elis_test {
     }
 
     /**
-     * Class mapping function to convert IP column to ELIS crlm_user DB field
+     * Class mapping function to convert IP column to ELIS user::TABLE DB field
      *
      * @param mixed $input       The input IP data fields
      * @param bool  $shouldexist Flag indicating whether the ELIS user should exist
@@ -752,7 +752,7 @@ class elis_user_import_testcase extends rlip_elis_test {
                 $where .= $DB->sql_compare_text('notes').' = ?';
                 $params[] = $notes;
             }
-            $this->assertFalse(!$DB->record_exists_select('crlm_user', $where, $params));
+            $this->assertFalse(!$DB->record_exists_select(user::TABLE, $where, $params));
         }
         return $input;
     }
@@ -765,7 +765,7 @@ class elis_user_import_testcase extends rlip_elis_test {
      */
     public function test_elis_user_import($action, $userdata, $setupindex, $elisexists, $mdlexists) {
         global $CFG, $DB;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         $CFG->siteguest = '';
@@ -800,7 +800,7 @@ class elis_user_import_testcase extends rlip_elis_test {
         ob_end_clean();
 
         ob_start();
-        var_dump($DB->get_records('crlm_user'));
+        var_dump($DB->get_records(user::TABLE));
         $crlmuser = ob_get_contents();
         ob_end_clean();
 
@@ -844,7 +844,7 @@ class elis_user_import_testcase extends rlip_elis_test {
         $record = $this->testsetupdata[0];
         $record['inactive'] = $data;
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('user', (object)$record, 'bogus');
 
@@ -872,23 +872,23 @@ class elis_user_import_testcase extends rlip_elis_test {
         $testuser->email = 'testemail@example.com';
 
         // Test false return when not enabled.
-        set_config('newuseremailenabled', '0', 'rlipimport_version1elis');
-        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1elis');
-        set_config('newuseremailtemplate', 'Test Body', 'rlipimport_version1elis');
+        set_config('newuseremailenabled', '0', 'dhimport_version1elis');
+        set_config('newuseremailsubject', 'Test Subject', 'dhimport_version1elis');
+        set_config('newuseremailtemplate', 'Test Body', 'dhimport_version1elis');
         $result = $importplugin->newuseremail($testuser);
         $this->assertFalse($result);
 
         // Test false return when enabled but empty template.
-        set_config('newuseremailenabled', '1', 'rlipimport_version1elis');
-        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1elis');
-        set_config('newuseremailtemplate', '', 'rlipimport_version1elis');
+        set_config('newuseremailenabled', '1', 'dhimport_version1elis');
+        set_config('newuseremailsubject', 'Test Subject', 'dhimport_version1elis');
+        set_config('newuseremailtemplate', '', 'dhimport_version1elis');
         $result = $importplugin->newuseremail($testuser);
         $this->assertFalse($result);
 
         // Test false return when enabled and has template, but user has empty email.
-        set_config('newuseremailenabled', '1', 'rlipimport_version1elis');
-        set_config('newuseremailsubject', 'Test Subject', 'rlipimport_version1elis');
-        set_config('newuseremailtemplate', 'Test Body', 'rlipimport_version1elis');
+        set_config('newuseremailenabled', '1', 'dhimport_version1elis');
+        set_config('newuseremailsubject', 'Test Subject', 'dhimport_version1elis');
+        set_config('newuseremailtemplate', 'Test Body', 'dhimport_version1elis');
         $testuser->email = '';
         $result = $importplugin->newuseremail($testuser);
         $this->assertFalse($result);
@@ -897,9 +897,9 @@ class elis_user_import_testcase extends rlip_elis_test {
         // Test success when enabled, has template text, and user has email.
         $testsubject = 'Test Subject';
         $testbody = 'Test Body';
-        set_config('newuseremailenabled', '1', 'rlipimport_version1elis');
-        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1elis');
-        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1elis');
+        set_config('newuseremailenabled', '1', 'dhimport_version1elis');
+        set_config('newuseremailsubject', $testsubject, 'dhimport_version1elis');
+        set_config('newuseremailtemplate', $testbody, 'dhimport_version1elis');
         $result = $importplugin->newuseremail($testuser);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -913,9 +913,9 @@ class elis_user_import_testcase extends rlip_elis_test {
         // Test that subject is replaced by empty string when not present.
         $testsubject = null;
         $testbody = 'Test Body';
-        set_config('newuseremailenabled', '1', 'rlipimport_version1elis');
-        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1elis');
-        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1elis');
+        set_config('newuseremailenabled', '1', 'dhimport_version1elis');
+        set_config('newuseremailsubject', $testsubject, 'dhimport_version1elis');
+        set_config('newuseremailtemplate', $testbody, 'dhimport_version1elis');
         $result = $importplugin->newuseremail($testuser);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);
@@ -930,9 +930,9 @@ class elis_user_import_testcase extends rlip_elis_test {
         $testsubject = 'Test Subject';
         $testbody = 'Test Body %%username%%';
         $expectedtestbody = 'Test Body '.$testuser->username;
-        set_config('newuseremailenabled', '1', 'rlipimport_version1elis');
-        set_config('newuseremailsubject', $testsubject, 'rlipimport_version1elis');
-        set_config('newuseremailtemplate', $testbody, 'rlipimport_version1elis');
+        set_config('newuseremailenabled', '1', 'dhimport_version1elis');
+        set_config('newuseremailsubject', $testsubject, 'dhimport_version1elis');
+        set_config('newuseremailtemplate', $testbody, 'dhimport_version1elis');
         $result = $importplugin->newuseremail($testuser);
         $this->assertNotEmpty($result);
         $this->assertInternalType('array', $result);

@@ -16,20 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 /**
  * Class for testing various functionality related to plugin factories
- * @group block_rlip
+ * @group local_datahub
  */
 class pluginfactories_testcase extends basic_testcase {
 
@@ -39,12 +39,12 @@ class pluginfactories_testcase extends basic_testcase {
      */
     public function test_datapluginfactorysetscorrectfilepluginforexport() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Setup.
         $fileplugin = rlip_fileplugin_factory::factory('bogus');
-        $exportplugin = rlip_dataplugin_factory::factory('rlipexport_version1', null, $fileplugin);
+        $exportplugin = rlip_dataplugin_factory::factory('dhexport_version1', null, $fileplugin);
         // Validation.
         $this->assertEquals($fileplugin, $exportplugin->get_file_plugin());
     }
@@ -55,7 +55,7 @@ class pluginfactories_testcase extends basic_testcase {
      */
     public function test_filepluginfactorysetsbrowserflag() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 
         // Setup.
         $fileplugin = rlip_fileplugin_factory::factory('', null, false, true);
@@ -69,17 +69,17 @@ class pluginfactories_testcase extends basic_testcase {
      */
     public function test_fsloggerfactoryinstantiatescorrectclass() {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
-        $file = get_plugin_directory('rlipimport', 'version1').'/rlip_import_version1_fslogger.class.php';
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fslogger.class.php');
+        $file = get_plugin_directory('dhimport', 'version1').'/rlip_import_version1_fslogger.class.php';
         require_once($file);
 
         // Setup.
-        $fslogger = rlip_fslogger_factory::factory('rlipexport_version1', null);
+        $fslogger = rlip_fslogger_factory::factory('dhexport_version1', null);
         // Validation.
         $this->assertInstanceOf('rlip_fslogger_linebased', $fslogger);
 
         // Setup.
-        $fslogger = rlip_fslogger_factory::factory('rlipimport_version1', null);
+        $fslogger = rlip_fslogger_factory::factory('dhimport_version1', null);
         // Validation.
         $this->assertInstanceOf('rlip_import_version1_fslogger', $fslogger);
     }

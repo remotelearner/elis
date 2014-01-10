@@ -16,19 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1elis
+ * @package    dhexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 
 /**
  * File plugin that just stores read records in memory
@@ -107,8 +107,8 @@ class rlipexport_version1elis_fileplugin_memoryexport extends rlip_fileplugin_ba
 
 /**
  * Class for testing export database logging for the "Version 1 ELIS" plugin
- * @group block_rlip
- * @group rlipexport_version1elis
+ * @group local_datahub
+ * @group dhexport_version1elis
  */
 class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
 
@@ -116,6 +116,13 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
      * Load in our test data from CSV files
      */
     protected function load_csv_data() {
+        global $CFG;
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/instructor.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
         $csvloc = dirname(__FILE__).'/fixtures';
         $dataset = $this->createCsvDataSet(array(
             course::TABLE => $csvloc.'/pmcourse.csv',
@@ -139,7 +146,7 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function run_export($targetstarttime = 0, $writedelay = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         global $CFG;
-        $file = get_plugin_directory('rlipexport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhexport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         // Set the log file location to the dataroot.
@@ -162,7 +169,7 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function test_exportdblogginglogsemptyexport() {
         global $CFG, $USER, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Lower bound on starttime.
         $starttime = time();
@@ -189,7 +196,7 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
                    unmetdependency = :unmetdependency";
         $params = array(
             'export' => 1,
-            'plugin' => 'rlipexport_version1elis',
+            'plugin' => 'dhexport_version1elis',
             'userid' => $USER->id,
             'starttime' => $starttime,
             'endtime' => $endtime,
@@ -210,10 +217,10 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function test_exportdblogginglogsnonemptyexport() {
         global $CFG, $USER, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Make sure the export is insensitive to time values.
-        set_config('nonincremental', 1, 'rlipexport_version1elis');
+        set_config('nonincremental', 1, 'dhexport_version1elis');
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
@@ -242,7 +249,7 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
                    unmetdependency = :unmetdependency";
         $params = array(
             'export' => 1,
-            'plugin' => 'rlipexport_version1elis',
+            'plugin' => 'dhexport_version1elis',
             'userid' => $USER->id,
             'starttime' => $starttime,
             'endtime' => $endtime,
@@ -264,21 +271,21 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function test_version1dbloggingsetsallfieldsduringscheduledrun() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Set up the export file path.
-        $filename = $CFG->dataroot.'/rliptestexport.csv';
-        set_config('export_file', $filename, 'rlipexport_version1');
+        $filename = $CFG->dataroot.'/dhtestexport.csv';
+        set_config('export_file', $filename, 'dhexport_version1');
 
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipexport'
+            'type' => 'dhexport'
         );
         $taskid = rlip_schedule_add_job($data);
 
@@ -286,17 +293,17 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = 99;
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipexport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhexport_version1'));
         $job->nextruntime = 99;
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Lower bound on starttime.
         $starttime = time();
         // Run the export.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
         // Upper bound on endtime.
         $endtime = time();
@@ -319,7 +326,7 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
         $datestr = date('M_j_Y_His', $starttime);
         $params = array(
             'export' => 1,
-            'plugin' => 'rlipexport_version1',
+            'plugin' => 'dhexport_version1',
             'userid' => $USER->id,
             'targetstarttime' => 99,
             'starttime' => $starttime,
@@ -328,7 +335,7 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
             'filefailures' => 0,
             'storedsuccesses' => 0,
             'storedfailures' => 0,
-            'statusmessage' => 'Export file rliptestexport_'.$datestr.'.csv successfully created.',
+            'statusmessage' => 'Export file dhtestexport_'.$datestr.'.csv successfully created.',
             'dbops' => -1,
             'unmetdependency' => 0
         );
@@ -359,17 +366,17 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
      */
     public function test_dblogginglogsruntimeexceeded($manual) {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
 
         // Make sure the export is insensitive to time values.
-        set_config('nonincremental', 1, 'rlipexport_version1elis');
+        set_config('nonincremental', 1, 'dhexport_version1elis');
         // Set up data for one course and one enroled user.
         $this->load_csv_data();
 
         $fileplugin = new rlip_fileplugin_export();
-        $plugin = rlip_dataplugin_factory::factory('rlipexport_version1elis', null, $fileplugin, $manual);
+        $plugin = rlip_dataplugin_factory::factory('dhexport_version1elis', null, $fileplugin, $manual);
         // Lower bound on starttime.
         $starttime = time();
         // Suppress output in the "manual" case.
@@ -396,7 +403,7 @@ class rlipexport_version1elis_databaselogging_testcase extends rlip_elis_test {
                    unmetdependency = :unmetdependency";
         $params = array(
             'export'          => 1,
-            'plugin'          => 'rlipexport_version1elis',
+            'plugin'          => 'dhexport_version1elis',
             'userid'          => $USER->id,
             'targetstarttime' => 0,
             'starttime'       => $starttime,

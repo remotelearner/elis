@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage core
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -79,7 +78,7 @@ abstract class rlip_dataplugin {
      */
     static function get_fs_logger($fileplugin, $manual) {
         global $CFG;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fslogger.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fslogger.class.php');
 
         return new rlip_fslogger_linebased($fileplugin, $manual);
     }
@@ -94,12 +93,9 @@ class rlip_dataplugin_factory {
     /**
      * Factory method
      *
-     * @param string $plugin The name of the plugin to create, either rlipimport_*
-     *                       or rlipexport_*
-     * @param object $importprovider The import provider to use, if obtaining
-     *                               an import plugin
-     * @param object $fileplugin The file plugin to use, if obtaining an export
-     *                           plugin
+     * @param string $plugin The name of the plugin to create, either dhimport_* or dhexport_*
+     * @param object $importprovider The import provider to use, if obtaining an import plugin
+     * @param object $fileplugin The file plugin to use, if obtaining an export plugin
      * @param flag   $manual The type of import, true if done manually
      */
     static function factory($plugin, $importprovider = NULL, $fileplugin = NULL, $manual = false) {
@@ -108,13 +104,13 @@ class rlip_dataplugin_factory {
         //split into plugin type and name
         list($plugintype, $pluginname) = explode('_', $plugin);
 
-        if ($plugintype == 'rlipimport') {
+        if ($plugintype == 'dhimport') {
             //import plugin
-            $path = "{$CFG->dirroot}/blocks/rlip/importplugins/";
+            $path = "{$CFG->dirroot}/local/datahub/importplugins/";
             $classname = "rlip_importplugin_";
         } else {
             //export plugin
-            $path = "{$CFG->dirroot}/blocks/rlip/exportplugins/";
+            $path = "{$CFG->dirroot}/local/datahub/exportplugins/";
             $classname = "rlip_exportplugin_";
         }
 
@@ -125,7 +121,7 @@ class rlip_dataplugin_factory {
         //load class definition
         require_once($path);
         //obtain the plugin instance
-        if ($plugintype == 'rlipimport') {
+        if ($plugintype == 'dhimport') {
             //import
             return new $classname($importprovider, $manual);
         } else {

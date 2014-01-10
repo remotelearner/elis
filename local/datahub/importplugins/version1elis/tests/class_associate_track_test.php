@@ -16,25 +16,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/silent_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/silent_fslogger.class.php');
 
 /**
  * Class for testing track-class association creation during class instance create and update actions.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_class_associate_track_testcase extends rlip_elis_test {
     /**
@@ -42,7 +42,7 @@ class elis_class_associate_track_testcase extends rlip_elis_test {
      */
     static protected function get_overlay_tables() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elis::lib('data/customfield.class.php'));
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
@@ -50,13 +50,13 @@ class elis_class_associate_track_testcase extends rlip_elis_test {
         require_once(elispm::lib('data/pmclass.class.php'));
         require_once(elispm::lib('data/track.class.php'));
 
-        return array(course::TABLE => 'elis_program',
-                     curriculum::TABLE => 'elis_program',
-                     curriculumcourse::TABLE => 'elis_program',
-                     field::TABLE => 'elis_core',
-                     pmclass::TABLE => 'elis_program',
-                     track::TABLE => 'elis_program',
-                     trackassignment::TABLE => 'elis_program');
+        return array(course::TABLE => 'local_elisprogram',
+                     curriculum::TABLE => 'local_elisprogram',
+                     curriculumcourse::TABLE => 'local_elisprogram',
+                     field::TABLE => 'local_eliscore',
+                     pmclass::TABLE => 'local_elisprogram',
+                     track::TABLE => 'local_elisprogram',
+                     trackassignment::TABLE => 'local_elisprogram');
     }
 
     /**
@@ -64,13 +64,13 @@ class elis_class_associate_track_testcase extends rlip_elis_test {
      */
     static protected function get_ignored_tables() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/coursetemplate.class.php'));
         require_once(elispm::lib('data/student.class.php'));
 
         return array('context' => 'moodle',
-                     coursetemplate::TABLE => 'elis_program',
-                     student::TABLE => 'elis_program');
+                     coursetemplate::TABLE => 'local_elisprogram',
+                     student::TABLE => 'local_elisprogram');
     }
 
     /**
@@ -96,7 +96,7 @@ class elis_class_associate_track_testcase extends rlip_elis_test {
      */
     public function test_associate_track_during_class_create($autoenrol, $dbautoenrol) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/curriculumcourse.class.php'));
@@ -132,7 +132,7 @@ class elis_class_associate_track_testcase extends rlip_elis_test {
             $record->autoenrol = $autoenrol;
         }
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_create($record, 'bogus');
 
@@ -155,7 +155,7 @@ class elis_class_associate_track_testcase extends rlip_elis_test {
      */
     public function test_associate_track_during_class_update($autoenrol, $dbautoenrol) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/course.class.php'));
         require_once(elispm::lib('data/curriculum.class.php'));
         require_once(elispm::lib('data/curriculumcourse.class.php'));
@@ -196,7 +196,7 @@ class elis_class_associate_track_testcase extends rlip_elis_test {
             $record->autoenrol = $autoenrol;
         }
 
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1elis');
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->class_update($record, 'bogus');
 

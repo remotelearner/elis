@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1elis
+ * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/tests/other/rlip_mock_provider.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1/tests/other/rlip_mock_provider.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/tests/other/rlip_mock_provider.class.php');
 
 /**
  * Class for validating that field mappings work correctly during the ELIS user import.
- * @group block_rlip
- * @group rlipimport_version1elis
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
 class elis_user_field_mappings_testcase extends rlip_elis_test {
     // Store the mapping we will use.
@@ -82,7 +82,7 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
      */
     private function init_mapping() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1elis/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/importplugins/version1elis/lib.php');
 
         foreach ($this->mapping as $standardfieldname => $customfieldname) {
             $mapping = new stdClass;
@@ -101,8 +101,8 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
      */
     private function create_custom_field() {
         global $CFG;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
 
         // Field category.
         $fieldcategory = new field_category(array('name' => 'testcategoryname'));
@@ -131,7 +131,7 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
      */
     private function run_user_import($data, $usedefaultdata = true) {
         global $CFG;
-        $file = get_plugin_directory('rlipimport', 'version1elis').'/version1elis.class.php';
+        $file = get_plugin_directory('dhimport', 'version1elis').'/version1elis.class.php';
         require_once($file);
 
         $provider = new rlipimport_version1elis_importprovider_mockuser($data);
@@ -145,9 +145,9 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_user_create() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/accesslib.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/accesslib.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $this->init_mapping();
 
@@ -223,7 +223,7 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
         $this->assertEquals('testusercomments', $record->comments);
         $this->assertEquals('testusernotes', $record->notes);
 
-        $instance = context_elis_user::instance(1);
+        $instance = \local_elisprogram\context\user::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -237,8 +237,8 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_user_update() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/core/lib/data/customfield.class.php');
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/eliscore/lib/data/customfield.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $this->init_mapping();
 
@@ -323,7 +323,7 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
         $this->assertEquals('updatedtestusercomments', $record->comments);
         $this->assertEquals('updatedtestusernotes', $record->notes);
 
-        $instance = context_elis_user::instance(1);
+        $instance = \local_elisprogram\context\user::instance(1);
 
         $this->assertTrue($DB->record_exists(field_data_int::TABLE, array(
             'fieldid' => $customfieldid,
@@ -337,7 +337,7 @@ class elis_user_field_mappings_testcase extends rlip_elis_test {
      */
     public function test_mapping_applied_during_user_delete() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/elis/program/lib/data/user.class.php');
+        require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
 
         $this->init_mapping();
 

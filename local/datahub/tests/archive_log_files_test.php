@@ -16,24 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 
 /**
  * Class for validating that log files are correctly archived in all scenarios
- * @group block_rlip
+ * @group local_datahub
  */
 class archivelogfile_testcase extends rlip_test {
     /**
@@ -56,19 +56,19 @@ class archivelogfile_testcase extends rlip_test {
         global $CFG;
 
         $runs = array(
-                array('import', 'rlipimport_version1', ''),
-                array('import', 'rlipimport_version1', RLIP_DEFAULT_LOG_PATH),
-                array('export', 'rlipexport_version1', ''),
-                array('export', 'rlipexport_version1', RLIP_DEFAULT_LOG_PATH),
+                array('import', 'dhimport_version1', ''),
+                array('import', 'dhimport_version1', RLIP_DEFAULT_LOG_PATH),
+                array('export', 'dhexport_version1', ''),
+                array('export', 'dhexport_version1', RLIP_DEFAULT_LOG_PATH),
         );
 
-        if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             // Add the PM plugins if applicable.
             $pmruns = array(
-                    array('import', 'rlipimport_version1elis', ''),
-                    array('import', 'rlipimport_version1elis', RLIP_DEFAULT_LOG_PATH),
-                    array('export', 'rlipexport_version1elis', ''),
-                    array('export', 'rlipexport_version1elis', RLIP_DEFAULT_LOG_PATH),
+                    array('import', 'dhimport_version1elis', ''),
+                    array('import', 'dhimport_version1elis', RLIP_DEFAULT_LOG_PATH),
+                    array('export', 'dhexport_version1elis', ''),
+                    array('export', 'dhexport_version1elis', RLIP_DEFAULT_LOG_PATH),
             );
 
             $runs = array_merge($runs, $pmruns);
@@ -88,7 +88,7 @@ class archivelogfile_testcase extends rlip_test {
      */
     public function test_logfilesarchived($plugintype, $plugin, $logfilelocation) {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/local/datahub/fileplugins/log/log.class.php');
         require_once($CFG->libdir.'/filestorage/zip_archive.php');
 
         // Clean-up any existing log & zip files.
@@ -98,7 +98,7 @@ class archivelogfile_testcase extends rlip_test {
         // Set up the log path.
         set_config('logfilelocation', $logfilelocation, $plugin);
 
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $format = get_string('logfile_timestamp', 'local_datahub');
 
         $USER->timezone = 99;
         // Create some log files to be zipped by the cron job.
@@ -137,9 +137,9 @@ class archivelogfile_testcase extends rlip_test {
         }
 
         // Validate that the zip file name corresponds to the plugin.
-        // E.g. pugin is 'rlipimport_version1' and file name starts with 'import_version1_'.
+        // E.g. pugin is 'dhimport_version1' and file name starts with 'import_version1_'.
         $parts = explode('/', $zipfiles[0]);
-        $this->assertStringStartsWith($plugin.'_', 'rlip'.$parts[count($parts) - 1]);
+        $this->assertStringStartsWith($plugin.'_', 'dh'.$parts[count($parts) - 1]);
 
         // Delete the test zip.
         @unlink($zipfiles[0]);

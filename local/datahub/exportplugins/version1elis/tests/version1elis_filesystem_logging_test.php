@@ -16,21 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipexport_version1elis
+ * @package    dhexport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/course.class.php'));
     require_once(elispm::lib('data/pmclass.class.php'));
     require_once(elispm::lib('data/student.class.php'));
@@ -39,8 +39,8 @@ if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
 
 /**
  * Class for testing export filesystem logging for the "Version 1 ELIS" plugin
- * @group block_rlip
- * @group rlipexport_version1elis
+ * @group local_datahub
+ * @group dhexport_version1elis
  */
 class version1elisfilesytemlogging_testcase extends rlip_elis_test {
 
@@ -66,8 +66,8 @@ class version1elisfilesytemlogging_testcase extends rlip_elis_test {
      */
     public function dataprovider_exporttype() {
         return array(
-                array(false, get_string('exportexceedstimelimit', 'block_rlip')."\n"),
-                array(true, get_string('manualexportexceedstimelimit', 'block_rlip')."\n")
+                array(false, get_string('exportexceedstimelimit', 'local_datahub')."\n"),
+                array(true, get_string('manualexportexceedstimelimit', 'local_datahub')."\n")
         );
     }
 
@@ -81,18 +81,18 @@ class version1elisfilesytemlogging_testcase extends rlip_elis_test {
      */
     public function test_filesystemlogginglogsruntimeexceeded($manual, $expectederror) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/exportplugins/version1elis/tests/other/rlip_fileplugin_export.class.php');
 
         // Setup.
         $this->load_csv_data();
-        set_config('nonincremental', 1, 'rlipexport_version1elis');
+        set_config('nonincremental', 1, 'dhexport_version1elis');
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
-        set_config('export_path', '/rlip/rlipexport_version1elis', 'rlipexport_version1elis');
-        set_config('export_file', 'rlipexport_version1elis.csv', 'rlipexport_version1elis');
+        set_config('export_path', '/datahub/dhexport_version1elis', 'dhexport_version1elis');
+        set_config('export_file', 'dhexport_version1elis.csv', 'dhexport_version1elis');
 
         $fileplugin = new rlip_fileplugin_export();
-        $plugin = rlip_dataplugin_factory::factory('rlipexport_version1elis', null, $fileplugin, $manual);
+        $plugin = rlip_dataplugin_factory::factory('dhexport_version1elis', null, $fileplugin, $manual);
         // Suppress output.
         ob_start();
         $plugin->run(0, 0, -1);
@@ -108,7 +108,7 @@ class version1elisfilesytemlogging_testcase extends rlip_elis_test {
         // Validate log file existence existence.
         // Set the filepath to the dataroot.
         $plugintype = 'export';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $logtype = $manual ? 'manual' : 'scheduled';
 
         $testfilename = $filepath.'/'.$plugintype.'_version1elis_'.$logtype.'_'.userdate($starttime, $format).'.log';

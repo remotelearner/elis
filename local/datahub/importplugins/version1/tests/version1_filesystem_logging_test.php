@@ -16,26 +16,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    rlipimport_version1
+ * @package    dhimport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once(dirname(__FILE__).'/../../../../../elis/core/test_config.php');
+require_once(dirname(__FILE__).'/../../../../../local/eliscore/test_config.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/rlip_test.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
 // Libs.
 require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 global $CFG;
-require_once($CFG->dirroot.'/blocks/rlip/lib.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importplugin.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/csv_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/file_delay.class.php');
-require_once($CFG->dirroot.'/blocks/rlip/tests/other/delay_after_three.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/csv_delay.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/file_delay.class.php');
+require_once($CFG->dirroot.'/local/datahub/tests/other/delay_after_three.class.php');
 
 /**
  * Class that fetches import files for the user import
@@ -99,8 +99,8 @@ class rlipimport_version1_importprovider_fslogenrolment extends rlipimport_versi
 
 /**
  * Test filesystem logging.
- * @group block_rlip
- * @group rlipimport_version1
+ * @group local_datahub
+ * @group dhimport_version1
  */
 class version1filesystemlogging_testcase extends rlip_test {
 
@@ -141,8 +141,8 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     protected function assert_data_produces_error($data, $expectederror, $entitytype) {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_fileplugin.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_dataplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_dataplugin.class.php');
 
         // Set the log file location.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
@@ -151,7 +151,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         // Run the import.
         $classname = "rlipimport_version1_importprovider_fslog{$entitytype}";
         $provider = new $classname($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, true);
         // Suppress output for now.
         ob_start();
         $instance->run();
@@ -168,8 +168,8 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         // Get logfile name.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhimport_version1';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $testfilename = $filepath.'/'.$plugintype.'_version1_manual_'.$entitytype.'_'.userdate($starttime, $format).'.log';
         // Get most recent logfile.
 
@@ -251,7 +251,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         $category = new stdClass;
         $category->name = 'rlipname';
         $categoryid = $DB->insert_record('course_categories', $category);
-        $contextcoursecat = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $contextcoursecat = context_coursecat::instance($categoryid);
 
         // Create the course.
         $course = new stdClass;
@@ -260,7 +260,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         $course->category = $categoryid;
 
         $course = create_course($course);
-        get_context_instance(CONTEXT_COURSE, $course->id);
+        context_course::instance($course->id);
 
         return $course->id;
     }
@@ -300,7 +300,7 @@ class version1filesystemlogging_testcase extends rlip_test {
     private function create_mapping_record($entitytype, $standardfieldname, $customfieldname) {
         global $DB;
 
-        $file = get_plugin_directory('rlipimport', 'version1').'/lib.php';
+        $file = get_plugin_directory('dhimport', 'version1').'/lib.php';
         require_once($file);
 
         $record = new stdClass;
@@ -1036,7 +1036,7 @@ class version1filesystemlogging_testcase extends rlip_test {
     public function test_version1importloggingsupportsusercreateorupdate() {
         global $CFG, $DB;
 
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Create mapping records.
         $this->create_mapping_record('user', 'username', 'customusername');
@@ -1062,7 +1062,7 @@ class version1filesystemlogging_testcase extends rlip_test {
             'customcountry' => 'CA'
         );
         $provider = new rlipimport_version1_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, true);
         ob_start();
         $instance->run();
         ob_end_clean();
@@ -1105,7 +1105,7 @@ class version1filesystemlogging_testcase extends rlip_test {
             'customfirstname' => 'updatedrlipfirstname'
         );
         $provider = new rlipimport_version1_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, true);
         ob_start();
         $instance->run();
         ob_end_clean();
@@ -1132,7 +1132,7 @@ class version1filesystemlogging_testcase extends rlip_test {
     public function test_version1importloggingsupportscoursecreateorupdate() {
         global $CFG, $DB;
 
-        set_config('createorupdate', 1, 'rlipimport_version1');
+        set_config('createorupdate', 1, 'dhimport_version1');
 
         // Create mapping records.
         $this->create_mapping_record('course', 'shortname', 'customshortname');
@@ -1148,7 +1148,7 @@ class version1filesystemlogging_testcase extends rlip_test {
             'customcategory' => 'rlipcategory'
         );
         $provider = new rlipimport_version1_importprovider_fslogcourse($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, true);
         ob_start();
         $instance->run();
         ob_end_clean();
@@ -1166,7 +1166,7 @@ class version1filesystemlogging_testcase extends rlip_test {
                       'customshortname' => 'rlipshortname',
                       'customfullname' => 'updatedrlipfullname');
         $provider = new rlipimport_version1_importprovider_fslogcourse($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, true);
         ob_start();
         $instance->run();
         ob_end_clean();
@@ -1594,7 +1594,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         // Base data used every time.
@@ -1694,7 +1694,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         $group = new stdClass;
@@ -1797,11 +1797,11 @@ class version1filesystemlogging_testcase extends rlip_test {
         global $DB;
 
         // Set up dependencies.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         // Make sure they already have a role assignment.
@@ -1911,11 +1911,11 @@ class version1filesystemlogging_testcase extends rlip_test {
         global $DB;
 
         // Set up dependencies.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         // Make sure they already have a role assignment.
@@ -2049,11 +2049,11 @@ class version1filesystemlogging_testcase extends rlip_test {
         require_once($CFG->dirroot.'/group/lib.php');
 
         // Set up dependencies.
-        set_config('creategroupsandgroupings', 1, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 1, 'dhimport_version1');
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         $grouping = new stdClass;
@@ -2424,7 +2424,7 @@ class version1filesystemlogging_testcase extends rlip_test {
     public function test_version1importlogssuccesfulcourseroleassignmentdelete() {
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         // Base data used every time.
@@ -2507,7 +2507,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         $enrol = new stdClass;
@@ -2596,7 +2596,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         $enrol = new stdClass;
@@ -2702,7 +2702,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         $userid = $this->create_test_user();
         $this->create_test_course();
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipname'));
-        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $context = context_coursecat::instance($categoryid);
         $roleid = $this->create_test_role();
 
         // Base data used every time.
@@ -2785,7 +2785,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         // Set up dependencies.
         $userid = $this->create_test_user();
         $seconduserid = $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
-        $context = get_context_instance(CONTEXT_USER, $seconduserid);
+        $context = context_user::instance($seconduserid);
         $roleid = $this->create_test_role();
 
         // Base data used every time.
@@ -2869,7 +2869,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         // Set up dependencies.
         $userid = $this->create_test_user();
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
         $roleid = $this->create_test_role();
 
         // Base data used every time.
@@ -3005,7 +3005,7 @@ class version1filesystemlogging_testcase extends rlip_test {
     public function test_version1importlogsinvaliduseroncourseenrolmentandroleassignmentcreate($data, $message) {
         // Set up dependencies.
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         // Create mapping records.
@@ -3046,7 +3046,7 @@ class version1filesystemlogging_testcase extends rlip_test {
     public function test_version1importlogsinvaliduseroncourseroleassignmentcreate($data, $message) {
         // Set up dependencies.
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         // Create mapping records.
@@ -3091,7 +3091,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         $userid = $this->create_test_user();
         $this->create_test_course();
         $categoryid = $DB->get_field('course_categories', 'id', array('name' => 'rlipname'));
-        $context = get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        $context = context_coursecat::instance($categoryid);
         $roleid = $this->create_test_role();
 
         // Create mapping records.
@@ -3132,7 +3132,7 @@ class version1filesystemlogging_testcase extends rlip_test {
     public function test_version1importlogsinvaliduseronuserroleassignmentcreate($data, $message) {
         // Set up dependencies.
         $seconduserid = $this->create_test_user('rlipusername2', 'rlipuser@rlipdomain2.com', 'rlipidnumber2');
-        $context = get_context_instance(CONTEXT_USER, $seconduserid);
+        $context = context_user::instance($seconduserid);
         $roleid = $this->create_test_role();
 
         // Create mapping records.
@@ -3372,11 +3372,11 @@ class version1filesystemlogging_testcase extends rlip_test {
         $category = new stdClass;
         $category->name = 'rlipname';
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        context_coursecat::instance($categoryid);
 
         // Create a duplicate category.
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        context_coursecat::instance($categoryid);
 
         $data = array(
             'action' => 'create',
@@ -3407,7 +3407,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         // Create mapping record.
         $this->create_mapping_record('enrolment', 'group', 'customgroup');
 
-        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 0, 'dhimport_version1');
 
         $data = array(
             'action' => 'create',
@@ -3542,7 +3542,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         $group->name = 'rlipname';
         groups_create_group($group);
 
-        set_config('creategroupsandgroupings', 0, 'rlipimport_version1');
+        set_config('creategroupsandgroupings', 0, 'dhimport_version1');
 
         $data = array(
             'action' => 'create',
@@ -3626,7 +3626,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         $group = new stdClass;
@@ -3731,7 +3731,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         $group = new stdClass;
@@ -3856,7 +3856,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $userid = $this->create_test_user();
         $courseid = $this->create_test_course();
-        $context = get_context_instance(CONTEXT_COURSE, $courseid);
+        $context = context_course::instance($courseid);
         $roleid = $this->create_test_role();
 
         // Enable manual enrolments.
@@ -3981,7 +3981,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         set_config('siteadmins', $adminuser->id);
 
         $userid = $this->create_test_user();
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
         $roleid = $this->create_test_role();
 
         // Base data used every time.
@@ -4401,11 +4401,11 @@ class version1filesystemlogging_testcase extends rlip_test {
         $category = new stdClass;
         $category->name = 'rlipname';
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        context_coursecat::instance($categoryid);
 
         // Create a duplicate category.
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        context_coursecat::instance($categoryid);
 
         $data = array(
             'action' => 'delete',
@@ -4503,11 +4503,11 @@ class version1filesystemlogging_testcase extends rlip_test {
         $category = new stdClass;
         $category->name = 'rlipname';
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        context_coursecat::instance($categoryid);
 
         // Create a duplicate category.
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        context_coursecat::instance($categoryid);
 
         $data = array(
             'action' => 'create',
@@ -4541,11 +4541,11 @@ class version1filesystemlogging_testcase extends rlip_test {
         $category = new stdClass;
         $category->name = 'rlipname';
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        context_coursecat::instance($categoryid);
 
         // Create a duplicate category.
         $categoryid = $DB->insert_record('course_categories', $category);
-        get_context_instance(CONTEXT_COURSECAT, $categoryid);
+        context_coursecat::instance($categoryid);
 
         $data = array(
             'action' => 'create',
@@ -4646,7 +4646,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         $expectederror .= "created. customemail value of \"test@user.com\" refers to a user that already exists.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
 
-        set_config('allowduplicateemails', '1', 'rlipimport_version1');
+        set_config('allowduplicateemails', '1', 'dhimport_version1');
 
         $expectederror = "[user.csv line 2] User with username \"validusername\", email \"test@user.com\" successfully created.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
@@ -4973,6 +4973,14 @@ class version1filesystemlogging_testcase extends rlip_test {
         $data->name = $name;
         $data->datatype = $datatype;
         $data->categoryid = $categoryid;
+        $data->startyear = null;
+        $data->endyear = null;
+        $data->startmonth = null;
+        $data->endmonth = null;
+        $data->startday = null;
+        $data->endday = null;
+        $data->param1 = null;
+        $data->param2 = null;
 
         if ($param1 !== null) {
             // Set the select options.
@@ -6194,11 +6202,11 @@ class version1filesystemlogging_testcase extends rlip_test {
         // Pass manual and then scheduled and a timestamp and verify that the name is correct.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1';
+        $plugin = 'dhimport_version1';
         $manual = true;
         $entity = 'user';
         $timestamp = time();
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $entity = 'user';
 
         $filename = rlip_log_file_name($plugintype, $plugin, '', $entity, $manual, $timestamp);
@@ -6220,8 +6228,8 @@ class version1filesystemlogging_testcase extends rlip_test {
             $this->markTestSkipped('This test will always fail when run as root.');
         }
 
-        require_once($CFG->dirroot.'/blocks/rlip/fileplugins/log/log.class.php');
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/fileplugins/log/log.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         $filepath = $CFG->dataroot.'/invalidlogpath';
 
@@ -6238,7 +6246,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         }
         mkdir($filepath, 0100);
 
-        set_config('logfilelocation', 'invalidlogpath', 'rlipimport_version1');
+        set_config('logfilelocation', 'invalidlogpath', 'dhimport_version1');
 
         // Do a fake import that should create an error in the database.
         // Check for that error.
@@ -6259,7 +6267,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $provider = new rlipimport_version1_importprovider_fsloguser($data);
         $manual = true;
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, $manual);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, $manual);
 
         // For now suppress output generated.
         ob_start();
@@ -6292,7 +6300,7 @@ class version1filesystemlogging_testcase extends rlip_test {
     public function test_version1importlogmanual() {
         global $CFG, $DB, $USER;
 
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        require_once($CFG->dirroot.'/local/datahub/importplugins/version1/version1.class.php');
 
         // Set the file path to the dataroot.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
@@ -6314,7 +6322,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $provider = new rlipimport_version1_importprovider_fsloguser($data);
         $manual = true;
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, $manual);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, $manual);
         // For now suppress output generated.
         ob_start();
         $instance->run();
@@ -6322,9 +6330,9 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         // Create filename to check for existence.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1';
+        $plugin = 'dhimport_version1';
         $manual = true;
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $entity = 'user';
         $starttime = $DB->get_field(RLIP_LOG_TABLE, 'starttime', array('id'=>'1'));
         $testfilename = $filepath.'/'.$plugintype.'_version1_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
@@ -6342,9 +6350,9 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     public function test_version1importlogscheduled() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/lib/rlip_importprovider_moodlefile.class.php');
+        require_once($CFG->dirroot.'/local/datahub/lib/rlip_importprovider_moodlefile.class.php');
 
-        $DB->delete_records('elis_scheduled_tasks');
+        $DB->delete_records('local_eliscore_sched_tasks');
         $DB->delete_records(RLIP_SCHEDULE_TABLE);
 
         // Set the file path to the dataroot.
@@ -6354,17 +6362,17 @@ class version1filesystemlogging_testcase extends rlip_test {
         $filename = 'userscheduledimport.csv';
         // File WILL BE DELETED after import so must copy to moodledata area.
         // Note: file_path now relative to moodledata ($CFG->dataroot).
-        $filepath = '/block_rlip_phpunit/';
+        $filepath = '/local_datahub_phpunit/';
         $testdir = $CFG->dataroot.$filepath;
         @mkdir($testdir, 0777, true);
         @copy(dirname(__FILE__)."/fixtures/{$filename}", $testdir.$filename);
 
         // Create a scheduled job.
         $data = array(
-            'plugin' => 'rlipimport_version1',
+            'plugin' => 'dhimport_version1',
             'period' => '5m',
             'label' => 'bogus',
-            'type' => 'rlipimport',
+            'type' => 'dhimport',
             'userid' => $USER->id
         );
         $taskid = rlip_schedule_add_job($data);
@@ -6376,19 +6384,19 @@ class version1filesystemlogging_testcase extends rlip_test {
         $task = new stdClass;
         $task->id = $taskid;
         $task->nextruntime = $starttime + DAYSECS; // Tomorrow?
-        $DB->update_record('elis_scheduled_tasks', $task);
+        $DB->update_record('local_eliscore_sched_tasks', $task);
 
         $job = new stdClass;
-        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'rlipimport_version1'));
+        $job->id = $DB->get_field(RLIP_SCHEDULE_TABLE, 'id', array('plugin' => 'dhimport_version1'));
         $job->nextruntime = $starttime + DAYSECS; // Tomorrow?
         $DB->update_record(RLIP_SCHEDULE_TABLE, $job);
 
         // Set up config for plugin so the scheduler knows about our csv file.
-        set_config('schedule_files_path', $filepath, 'rlipimport_version1');
-        set_config('user_schedule_file', $filename, 'rlipimport_version1');
+        set_config('schedule_files_path', $filepath, 'dhimport_version1');
+        set_config('user_schedule_file', $filename, 'dhimport_version1');
 
         // Run the import.
-        $taskname = $DB->get_field('elis_scheduled_tasks', 'taskname', array('id' => $taskid));
+        $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
         // Get timestamp from summary log.
@@ -6397,14 +6405,14 @@ class version1filesystemlogging_testcase extends rlip_test {
             $starttime = $record->starttime;
             break;
         }
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $format = get_string('logfile_timestamp', 'local_datahub');
 
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1';
+        $plugin = 'dhimport_version1';
         $manual = true;
         $entity = 'user';
         $testfilename = $plugintype.'_version1_scheduled_'.$entity.'_'.userdate($starttime, $format).'.log';
-        $testfilename = self::get_current_logfile($CFG->dataroot.'/rlip/log/'.$testfilename);
+        $testfilename = self::get_current_logfile($CFG->dataroot.'/datahub/log/'.$testfilename);
 
         $exists = file_exists($testfilename);
         $this->assertTrue($exists);
@@ -6419,7 +6427,7 @@ class version1filesystemlogging_testcase extends rlip_test {
       */
     public function test_version1importlogsequentiallogfiles() {
         global $CFG, $DB, $USER;
-        require_once($CFG->dirroot.'/blocks/rlip/importplugins/version1/version1.class.php');
+        require_once($CFG->dirroot.'/local/datahub/importplugins/version1/version1.class.php');
 
         // Set the file path to the dataroot.
         $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
@@ -6444,7 +6452,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         // Loop through w/o deleting logs and see what happens.
         for ($i = 0; $i <= 15; $i++) {
-            $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, $manual);
+            $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, $manual);
             // For now suppress output generated.
             ob_start();
             $instance->run();
@@ -6452,10 +6460,10 @@ class version1filesystemlogging_testcase extends rlip_test {
 
             // Create filename to check for existence.
             $plugintype = 'import';
-            $plugin = 'rlipimport_version1';
+            $plugin = 'dhimport_version1';
             $manual = true;
             $entity = 'user';
-            $format = get_string('logfile_timestamp', 'block_rlip');
+            $format = get_string('logfile_timestamp', 'local_datahub');
             // Get most recent record.
             $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
             foreach ($records as $record) {
@@ -6487,13 +6495,13 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         // Set the file path to the dataroot.
         $filepath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR).RLIP_DEFAULT_LOG_PATH;
-        set_config('logfilelocation', '', 'rlipimport_version1');
+        set_config('logfilelocation', '', 'dhimport_version1');
 
         // Set up a "user" import provider, using a single fixed file.
         $filename = 'userfile2.csv';
         // File WILL BE DELETED after import so must copy to moodledata area.
         // Note: file_path now relative to moodledata ($CFG->dataroot).
-        $filepath = '/block_rlip_phpunit/';
+        $filepath = '/local_datahub_phpunit/';
         $testdir = $CFG->dataroot.$filepath;
         @mkdir($testdir, 0777, true);
         @copy(dirname(__FILE__)."/fixtures/{$filename}", $testdir.$filename);
@@ -6501,7 +6509,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         // Run the import.
         $manual = true;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, $manual);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, $manual);
         ob_start();
         $result = $importplugin->run(0, 0, 1); // Maxruntime 1 sec.
         $ui = ob_get_contents(); // TBD: test this UI string.
@@ -6512,12 +6520,12 @@ class version1filesystemlogging_testcase extends rlip_test {
         $a->entity = $result->entity;
         $a->recordsprocessed = $result->linenumber - 1;
         $a->totalrecords = $result->filelines - 1;
-        $expectederror = get_string('manualimportexceedstimelimit_b', 'block_rlip', $a)."\n";
+        $expectederror = get_string('manualimportexceedstimelimit_b', 'local_datahub', $a)."\n";
 
         // Validate that a log file was created.
         $plugintype = 'import';
-        $plugin = 'rlipimport_version1';
-        $format = get_string('logfile_timestamp', 'block_rlip');
+        $plugin = 'dhimport_version1';
+        $format = get_string('logfile_timestamp', 'local_datahub');
         $entity = 'user';
         // Get most recent record.
         $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
@@ -6526,7 +6534,7 @@ class version1filesystemlogging_testcase extends rlip_test {
             break;
         }
         $testfilename = $plugintype.'_version1_manual_'.$entity.'_'.userdate($starttime, $format).'.log';
-        $filename = self::get_current_logfile($CFG->dataroot.'/rlip/log/'.$testfilename);
+        $filename = self::get_current_logfile($CFG->dataroot.'/datahub/log/'.$testfilename);
 
         // Echo "testVersion1ImportLogsRuntimeError(): logfile ?=> {$filename}\n";.
         $this->assertTrue(file_exists($filename));
@@ -6558,7 +6566,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         global $CFG, $DB;
 
         // Set up the log file location.
-        set_config('logfilelocation', '', 'rlipimport_version1');
+        set_config('logfilelocation', '', 'dhimport_version1');
 
         // Our import data.
         $data = array(
@@ -6572,7 +6580,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         // Between reading the third and fourth entry.
         $provider = new rlip_importprovider_delay_after_three_users($data);
         $manual = true;
-        $importplugin = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, $manual);
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, $manual);
 
         // We should run out of time after processing the second real entry.
         ob_start();
@@ -6900,7 +6908,7 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     public function test_version1importlogsmissingactioncolumnonuserimport() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create mapping record.
         $this->create_mapping_record('user', 'action', 'customaction');
@@ -6925,7 +6933,7 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     public function test_version1importlogsmissingusercolumngroup() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create mapping record.
         $this->create_mapping_record('user', 'username', 'customusername');
@@ -6975,7 +6983,7 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     public function test_version1importlogsmissingactioncolumnoncourseimport() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create mapping record.
         $this->create_mapping_record('course', 'action', 'customaction');
@@ -6999,7 +7007,7 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     public function test_version1importlogsmissingcoursecolumn() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create mapping record.
         $this->create_mapping_record('course', 'shortname', 'customshortname');
@@ -7023,7 +7031,7 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     public function test_version1importlogsmissingactioncolumnonenrolmentimport() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create mapping record.
         $this->create_mapping_record('enrolment', 'action', 'customaction');
@@ -7047,7 +7055,7 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     public function test_version1importlogsmissingenrolmentcolumn() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create mapping record.
         $this->create_mapping_record('enrolment', 'role', 'customrole');
@@ -7076,7 +7084,7 @@ class version1filesystemlogging_testcase extends rlip_test {
      */
     public function test_version1importlogsmissingenrolmentcolumns() {
         global $CFG, $DB;
-        require_once($CFG->dirroot.'/blocks/rlip/lib.php');
+        require_once($CFG->dirroot.'/local/datahub/lib.php');
 
         // Create mapping record.
         $this->create_mapping_record('enrolment', 'context', 'customcontext');
@@ -7151,7 +7159,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         $roleid = $this->create_test_role();
 
         // Assign a role.
-        $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+        $systemcontext = context_system::instance();
         role_assign($roleid, $userid, $systemcontext->id);
 
         // Run the import and validate.
@@ -7214,7 +7222,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
         // Run the import.
         $provider = new rlipimport_version1_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, true);
         // Suppress output for now.
         ob_start();
         $instance->run();
@@ -7232,7 +7240,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
         // Run the import.
         $provider = new rlipimport_version1_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, true);
         $instance->run();
 
         $data = array(
@@ -7248,7 +7256,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
         // Run the import.
         $provider = new rlipimport_version1_importprovider_fsloguser($data);
-        $instance = rlip_dataplugin_factory::factory('rlipimport_version1', $provider, null, true);
+        $instance = rlip_dataplugin_factory::factory('dhimport_version1', $provider, null, true);
         $instance->run();
 
         // Create update error ...

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
@@ -24,26 +24,26 @@
  */
 
 $dirname = dirname(__FILE__);
-require_once($dirname.'/../../../elis/core/test_config.php');
+require_once($dirname.'/../../../local/eliscore/test_config.php');
 global $CFG;
 require_once($dirname.'/other/rlip_test.class.php');
 
 // Libs.
 require_once($dirname.'/../lib.php');
 require_once($CFG->libdir.'/externallib.php');
-if (file_exists($CFG->dirroot.'/elis/program/lib/setup.php')) {
-    require_once($CFG->dirroot.'/elis/program/lib/setup.php');
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
     require_once(elispm::lib('data/pmclass.class.php'));
     require_once(elispm::lib('data/usermoodle.class.php'));
     require_once($dirname.'/../ws/elis/class_delete.class.php');
 }
 
 /**
- * Tests webservice method block_rldh_elis_class_delete.
- * @group block_rlip
- * @group block_rlip_ws
+ * Tests webservice method local_datahub_elis_class_delete.
+ * @group local_datahub
+ * @group local_datahub_ws
  */
-class block_rlip_ws_elis_class_delete_testcase extends rlip_test_ws {
+class local_datahub_ws_elis_class_delete_testcase extends rlip_test_ws {
 
     /**
      * Test successful class deletion.
@@ -51,7 +51,7 @@ class block_rlip_ws_elis_class_delete_testcase extends rlip_test_ws {
     public function test_success() {
         global $DB;
 
-        $this->give_permissions(array('elis/program:class_delete'));
+        $this->give_permissions(array('local/elisprogram:class_delete'));
 
         $course = new course(array(
             'idnumber' => 'testcourse',
@@ -66,18 +66,18 @@ class block_rlip_ws_elis_class_delete_testcase extends rlip_test_ws {
         ));
         $pmclass->save();
 
-        $response = block_rldh_elis_class_delete::class_delete(array('idnumber' => 'testclass'));
+        $response = local_datahub_elis_class_delete::class_delete(array('idnumber' => 'testclass'));
 
         $this->assertNotEmpty($response);
         $this->assertInternalType('array', $response);
 
         // Verify unique message code.
         $this->assertArrayHasKey('messagecode', $response);
-        $this->assertEquals(get_string('ws_class_delete_success_code', 'block_rlip'), $response['messagecode']);
+        $this->assertEquals(get_string('ws_class_delete_success_code', 'local_datahub'), $response['messagecode']);
 
         // Verify human-readable message.
         $this->assertArrayHasKey('message', $response);
-        $this->assertEquals(get_string('ws_class_delete_success_msg', 'block_rlip'), $response['message']);
+        $this->assertEquals(get_string('ws_class_delete_success_msg', 'local_datahub'), $response['message']);
     }
 
     /**
@@ -122,7 +122,7 @@ class block_rlip_ws_elis_class_delete_testcase extends rlip_test_ws {
         global $DB;
 
         if ($giveperms === true) {
-            $this->give_permissions(array('elis/program:class_delete'));
+            $this->give_permissions(array('local/elisprogram:class_delete'));
         }
 
         $course = new course(array(
@@ -138,6 +138,6 @@ class block_rlip_ws_elis_class_delete_testcase extends rlip_test_ws {
         ));
         $pmclass->save();
 
-        $response = block_rldh_elis_class_delete::class_delete($params);
+        $response = local_datahub_elis_class_delete::class_delete($params);
     }
 }

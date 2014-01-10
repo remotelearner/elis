@@ -16,29 +16,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_rlip
+ * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-require_once($CFG->dirroot . '/blocks/rlip/lib.php');
+defined('MOODLE_INTERNAL') || die;
 
-//todo: convert setting to be part of block_rlip rather than rlip
+require_once($CFG->dirroot.'/local/datahub/lib.php');
 
-//add all IP-related entities to the standard Moodle admin tree
-rlip_admintree_setup($ADMIN);
+if ($hassiteconfig) {
+    // Add all IP-related entities to the standard Moodle admin tree
+    rlip_admintree_setup($ADMIN);
 
-//start of "scheduling" section
-$settings->add(new admin_setting_heading('block_rlip/scheduling',
-                                         get_string('rlip_global_scheduling', 'block_rlip'),
-                                         ''));
+    $settings = new admin_settingpage('local_datahub', get_string('datahub_settings', 'local_datahub'));
+    $ADMIN->add('localplugins', $settings);
 
-//setting for disabling in Moodle cron
-if (empty($CFG->forcedatahubcron)) {
-    $settings->add(new admin_setting_configcheckbox('block_rlip/disableincron', get_string('disableincron', 'block_rlip'),
-        get_string('configdisableincron', 'block_rlip'), ''));
-} else {
-    $settings->add(new admin_setting_heading('block_rlip/disableincron_override', '', get_string('cronforcedinconfig', 'block_rlip')));
+    // Start of "scheduling" section
+    $settings->add(new admin_setting_heading('local_datahub/scheduling', get_string('rlip_global_scheduling', 'local_datahub'), ''));
+
+    // Setting for disabling in Moodle cron
+    if (empty($CFG->forcedatahubcron)) {
+        $settings->add(new admin_setting_configcheckbox('local_datahub/disableincron', get_string('disableincron', 'local_datahub'),
+            get_string('configdisableincron', 'local_datahub'), ''));
+    } else {
+        $settings->add(new admin_setting_heading('local_datahub/disableincron_override', '', get_string('cronforcedinconfig', 'local_datahub')));
+    }
 }
