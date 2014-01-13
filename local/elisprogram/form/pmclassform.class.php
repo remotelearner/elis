@@ -423,7 +423,7 @@ class pmclassform extends cmform {
 
         if(!empty($this->_customdata['obj']) && !empty($this->_customdata['obj']->maxstudents)){
             if($data['maxstudents'] < $this->_customdata['obj']->maxstudents && $data['maxstudents'] < student::count_enroled($this->_customdata['obj']->id)) {
-                $context = get_context_instance(CONTEXT_SYSTEM);
+                $context = context_system::instance();
                 if(!has_capability('local/elisprogram:overrideclasslimit', $context)) {
                     $errors['maxstudents'] = get_string('error_n_overenrol', 'local_elisprogram');
                 }

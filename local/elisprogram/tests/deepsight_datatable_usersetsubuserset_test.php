@@ -231,7 +231,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
         $perm = 'local/elisprogram:userset_view';
         foreach ($permissions as $contexttype => $ids) {
             if ($contexttype === 'system') {
-                $this->give_permission_for_context($USER->id, $perm, get_context_instance(CONTEXT_SYSTEM));
+                $this->give_permission_for_context($USER->id, $perm, context_system::instance());
             } else {
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {
@@ -341,7 +341,7 @@ class deepsight_datatable_usersetsubuserset_testcase extends deepsight_datatable
         $perm = 'local/elisprogram:userset_edit';
         foreach ($permissions as $contexttype => $ids) {
             if ($contexttype === 'system') {
-                $this->give_permission_for_context($USER->id, $perm, get_context_instance(CONTEXT_SYSTEM));
+                $this->give_permission_for_context($USER->id, $perm, context_system::instance());
             } else {
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {

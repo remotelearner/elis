@@ -476,10 +476,14 @@ function pm_assign_instructor_from_mdl($eventdata) {
 function pm_assign_student_from_mdl($eventdata) {
     global $CFG, $DB;
 
-    // First check if this is a standard Moodle context
-    $context = context::instance_by_id($eventdata->contextid, IGNORE_MISSING);
+    // First check if this is a standard Moodle context.
+    try {
+        $context = context::instance_by_id($eventdata->contextid, IGNORE_MISSING);
+    } catch (\Exception $e) {
+        $context = null;
+    }
 
-    // If not, try checking to see if this is a custom ELIS context
+    // If not, try checking to see if this is a custom ELIS context.
     if (!$context) {
         $context = \local_eliscore\context\base::instance_by_id($eventdata->contextid, IGNORE_MISSING);
     }
@@ -648,7 +652,7 @@ function pm_notify_role_assign_handler($eventdata){
         if ($roleusers = get_users_by_capability($context, 'local/elisprogram:notify_classenrol')) {
             $users = $users + $roleusers;
         }
-        if ($roleusers = get_users_by_capability(get_system_context(), 'local/elisprogram:notify_classenrol')) {
+        if ($roleusers = get_users_by_capability(context_system::instance(), 'local/elisprogram:notify_classenrol')) {
             $users = $users + $roleusers;
         }
     }
@@ -754,7 +758,7 @@ function pm_notify_track_assign_handler($eventdata){
     }
 
     /// We get all context assigns, so check that this is a class. If not, we're done.
-    $context = get_system_context();
+    $context = context_system::instance();
 
     /// Make sure this is a valid user.
     $enroluser = new user($eventdata->userid);

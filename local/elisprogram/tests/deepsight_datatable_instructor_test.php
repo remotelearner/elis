@@ -322,7 +322,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', context_system::instance());
 
         foreach ($associations as $association) {
             $association = new instructor($association);
@@ -405,7 +405,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', context_system::instance());
 
         foreach ($associations as $association) {
             $association = new student($association);
@@ -468,7 +468,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:assign_class_instructor', context_system::instance());
 
         // Create associations.
         foreach ($students as $student) {
@@ -713,7 +713,7 @@ class deepsight_datatable_instructor_testcase extends deepsight_datatable_search
         foreach ($perms as $perm => $contexts) {
             foreach ($contexts as $level => $ids) {
                 if ($level === 'system') {
-                    $this->give_permission_for_context($USER->id, $perm, get_context_instance(CONTEXT_SYSTEM));
+                    $this->give_permission_for_context($USER->id, $perm, context_system::instance());
                 } else {
                     foreach ($ids as $id) {
                         $ctxclass = '\local_elisprogram\context\\'.$level;

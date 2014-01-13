@@ -153,7 +153,7 @@ class curriculumstudent extends elis_data_object {
             return true;
         }
 
-        $context = get_system_context();
+        $context = context_system::instance();
 
         /// Make sure this is a valid user.
         $enroluser = new user($this->userid);
@@ -261,7 +261,7 @@ class curriculumstudent extends elis_data_object {
             return true;
         }
 
-        $context = get_system_context();
+        $context = context_system::instance();
 
         // Send notifications
         $message = new notification();

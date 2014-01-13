@@ -133,14 +133,14 @@ class elis_graded_users_iterator {
             return false;
         }
 
-        $coursecontext = get_context_instance(CONTEXT_COURSE, $this->course->id);
-        $relatedcontexts = get_related_contexts_string($coursecontext);
+        $coursecontext = context_course::instance($this->course->id);
+        list($relatedcontextsstring, $relatedcontextsparams) = $DB->get_in_or_equal($coursecontext->get_parent_context_ids(true), SQL_PARAMS_NAMED);
 
         list($gradebookroles_sql, $params) =
             $DB->get_in_or_equal(explode(',', $CFG->gradebookroles), SQL_PARAMS_NAMED, 'grbr');
         list($enrolledsql, $enrolledparams) = get_enrolled_sql($coursecontext, '', 0, $this->onlyactive);
 
-        $params = array_merge($params, $enrolledparams);
+        $params = array_merge($params, $enrolledparams, $relatedcontextsparams);
 
         if ($this->groupid) {
             $groupsql = "INNER JOIN {groups_members} gm ON gm.userid = u.id";
@@ -187,7 +187,7 @@ class elis_graded_users_iterator {
                                   SELECT DISTINCT ra.userid
                                     FROM {role_assignments} ra
                                    WHERE ra.roleid $gradebookroles_sql
-                                     AND ra.contextid $relatedcontexts
+                                     AND ra.contextid $relatedcontextsstring
                              ) rainner ON rainner.userid = u.id
                          WHERE u.deleted = 0 {$req_users}
                              $groupwheresql
@@ -197,7 +197,7 @@ class elis_graded_users_iterator {
         if (!empty($this->grade_items)) {
             $itemids = array_keys($this->grade_items);
             list($itemidsql, $grades_params) = $DB->get_in_or_equal($itemids, SQL_PARAMS_NAMED, 'items');
-            $params = array_merge($params, $grades_params);
+            $params = array_merge($params, $grades_params, $relatedcontextsparams);
             // $params contents: gradebookroles, enrolledparams, groupid (for $groupwheresql) and itemids
 
             $grades_sql = "SELECT g.* $ofields
@@ -209,7 +209,7 @@ class elis_graded_users_iterator {
                                       SELECT DISTINCT ra.userid
                                         FROM {role_assignments} ra
                                        WHERE ra.roleid $gradebookroles_sql
-                                         AND ra.contextid $relatedcontexts
+                                         AND ra.contextid $relatedcontextsstring
                                   ) rainner ON rainner.userid = u.id
                               WHERE u.deleted = 0 {$req_users}
                               AND g.itemid $itemidsql
@@ -627,13 +627,13 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
         foreach ($moodleclasses as $class) {
             $pmclass = $class->pmclass;
 
-            $context = get_context_instance(CONTEXT_COURSE, $class->moodlecourseid);
+            $context = context_course::instance($class->moodlecourseid);
             $moodlecourse = $DB->get_record('course', array('id' => $class->moodlecourseid));
 
             // Get CM enrolment information (based on Moodle enrolments)
             // IMPORTANT: this record set must be sorted using the Moodle
             // user ID
-            $relatedcontextsstring = get_related_contexts_string($context);
+            list($relatedcontextsstring, $relatedcontextsparams) = $DB->get_in_or_equal($context->get_parent_context_ids(true), SQL_PARAMS_NAMED);
             $sql = "SELECT DISTINCT u.id AS muid, u.username, cu.id AS cmid, stu.*
                       FROM {user} u
                       JOIN {role_assignments} ra ON u.id = ra.userid
@@ -643,8 +643,8 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                        AND ra.contextid {$relatedcontextsstring}
                        {$outerusercondition}
                   ORDER BY muid ASC";
-
-            $causers = $DB->get_recordset_sql($sql, $userparams);
+            $params = array_merge($userparams, $relatedcontextsparams);
+            $causers = $DB->get_recordset_sql($sql, $params);
 
             if (empty($causers)) {
                 // nothing to see here, move on
@@ -2298,7 +2298,7 @@ function pm_mymoodle_redirect($editing = false) {
         return false;
     }
 
-    if (has_capability('moodle/site:config', get_context_instance(CONTEXT_SYSTEM))) {
+    if (has_capability('moodle/site:config', context_system::instance())) {
         //don't force admins to redirect
         return false;
     }

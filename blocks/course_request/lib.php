@@ -49,7 +49,7 @@ function block_course_request_can_do_request() {
 
     require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 
-    $context = get_context_instance(CONTEXT_SYSTEM);
+    $context = context_system::instance();
 
     //handle system context in case no courses are set up
     if (has_capability('block/course_request:request', $context)) {

@@ -354,7 +354,7 @@ class deepsight_datatable_trackuser_testcase extends deepsight_datatable_searchr
             $context = null;
             switch($level) {
                 case 'system':
-                    $permcontext = get_context_instance(CONTEXT_SYSTEM);
+                    $permcontext = context_system::instance();
                     break;
                 case 'program':
                     $permcontext = \local_elisprogram\context\program::instance($id);
@@ -452,7 +452,7 @@ class deepsight_datatable_trackuser_testcase extends deepsight_datatable_searchr
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', context_system::instance());
 
         foreach ($associations as $association) {
             $usertrack = new usertrack($association);

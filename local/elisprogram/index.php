@@ -28,7 +28,7 @@ require_once dirname(__FILE__) . '/lib/setup.php';
 /// This is the main entry point for the program management system. It can be called from anywhere.
 /// By using this, we can manage all application-specific handling easier.
 
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_context(context_system::instance());
 
 $pages = array(
     // Learning Plan

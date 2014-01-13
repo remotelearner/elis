@@ -241,7 +241,7 @@ class deepsight_datatable_useruserset_testcase extends deepsight_datatable_searc
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:userset_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:userset_enrol', context_system::instance());
 
         // Construct test table.
         $table = new deepsight_datatable_useruserset_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
@@ -349,7 +349,7 @@ class deepsight_datatable_useruserset_testcase extends deepsight_datatable_searc
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:userset_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:userset_enrol', context_system::instance());
 
         foreach ($associations as $association) {
             $clusterassignment = new clusterassignment($association);

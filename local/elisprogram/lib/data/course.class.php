@@ -578,7 +578,7 @@ class course extends data_object_with_custom_fields {
             return true;
         }
 
-        $context = get_system_context();
+        $context = context_system::instance();
 
         /// Make sure this is a valid user.
         $enroluser = new user($user->userid);

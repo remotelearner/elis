@@ -34,7 +34,7 @@ $ajax     = optional_param('ajax', 0, PARAM_BOOL);
 
 $PAGE->set_url('/local/elisprogram/help.php');
 $PAGE->set_pagelayout('popup');
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_context(context_system::instance());
 
 if ($ajax) {
     @header('Content-Type: text/plain; charset=utf-8');

@@ -52,7 +52,7 @@ class block_course_request extends block_base {
             return $this->content;
         }
 
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
 
         $this->content = new object();
         $this->content->text = '';

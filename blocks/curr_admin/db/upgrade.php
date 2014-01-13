@@ -49,7 +49,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
     $result = true;
 
     if ($oldversion < 2009010102) {
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
 
         if ($role = $DB->get_record('role', array('shortname' => 'curriculumadmin'))) {
             if ($role->name == 'Bundle Administrator') {
@@ -629,7 +629,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
         $roleid = $DB->get_field('role', 'id', array('shortname' => 'curriculumadmin'));
 
         if (!empty($roleid)) {
-            $context = get_context_instance(CONTEXT_SYSTEM);
+            $context = context_system::instance();
             require_once(dirname(__FILE__) . '/access.php');
 
             if (!empty($block_curr_admin_capabilities)) {
@@ -650,7 +650,7 @@ function xmldb_block_curr_admin_upgrade($oldversion = 0) {
 
         if (!empty($moodleclasses)) {
             foreach ($moodleclasses as $class) {
-                $context = get_context_instance(CONTEXT_COURSE, $class->moodlecourseid);
+                $context = context_course::instance($class->moodlecourseid);
 
                 list($gradebookrolessql, $params) = $DB->get_in_or_equal(explode(',', $CFG->gradebookroles), SQL_PARAMS_NAMED, 'grbr0', false);
                 $sql = "DELETE cmce

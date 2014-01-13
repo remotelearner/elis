@@ -290,7 +290,7 @@ class student extends elis_data_object {
                     $muserid = $muser->id;
                 }
 
-                $context = get_context_instance(CONTEXT_COURSE, $moodlecourseid);
+                $context = context_course::instance($moodlecourseid);
                 if (!is_enrolled($context, $muserid)) {
                     $flag = false;
                     if (empty($USER) || !isset($USER->id)) {
@@ -445,14 +445,14 @@ class student extends elis_data_object {
                     ($course = $this->_db->get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
                 // If its a Moodle class...
                 $replace = array(fullname($pmuser), $course->fullname);
-                if (!($context = get_context_instance(CONTEXT_COURSE, $course->id))) {
+                if (!($context = context_course::instance($course->id))) {
                     print_error('invalidcontext');
                     return false;
                 }
             } else {
                 $pmclass = new pmclass($this->classid);
                 $replace = array(fullname($pmuser), $pmclass->course->name);
-                if (!($context = get_system_context())) {
+                if (!($context = context_system::instance())) {
                     print_error('invalidcontext');
                     return false;
                 }
@@ -1060,7 +1060,7 @@ class student extends elis_data_object {
             $pmclass = new pmclass($classid);
             if (empty(elis::$config->local_elisprogram->force_unenrol_in_moodle)) {
                 $mcourse = $pmclass->get_moodle_course_id();
-                $ctx = $mcourse ? get_context_instance(CONTEXT_COURSE, $mcourse) : 0;
+                $ctx = $mcourse ? context_course::instance($mcourse) : 0;
             }
 
             foreach ($users as $user) {
@@ -2139,7 +2139,7 @@ class student extends elis_data_object {
         }
 
         if (!empty($student->moodlecourseid)) {
-            if (!($context = get_context_instance(CONTEXT_COURSE, $student->moodlecourseid))) {
+            if (!($context = context_course::instance($student->moodlecourseid))) {
                 if (in_cron()) {
                     mtrace(get_string('invalidcontext'));
                 } else {
@@ -2148,7 +2148,7 @@ class student extends elis_data_object {
                 return true;
             }
         } else {
-            $context = get_system_context();
+            $context = context_system::instance();
         }
 
         $message = new notification();
@@ -2225,7 +2225,7 @@ class student extends elis_data_object {
         }
 
         if (!empty($student->moodlecourseid)) {
-            if (!($context = get_context_instance(CONTEXT_COURSE, $student->moodlecourseid))) {
+            if (!($context = context_course::instance($student->moodlecourseid))) {
                 if (in_cron()) {
                     mtrace(get_string('invalidcontext'));
                 } else {
@@ -2234,7 +2234,7 @@ class student extends elis_data_object {
                 return true;
             }
         } else {
-            $context = get_system_context();
+            $context = context_system::instance();
         }
 
         $message = new notification();

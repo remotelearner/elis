@@ -274,7 +274,7 @@ class block_curr_admin extends block_base {
 
         ));
 
-        if (has_capability('moodle/course:managegroups', get_context_instance(CONTEXT_COURSE, $SITE->id))) {
+        if (has_capability('moodle/course:managegroups', context_course::instance($SITE->id))) {
             if (elis::$config->elisprogram_usetgroups->site_course_userset_groups) {
                 $pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'pmplugins_userset_groups'), block_curr_admin_get_item_css_class('manageclusters'));
             }
@@ -298,7 +298,7 @@ class block_curr_admin extends block_base {
             $pages[] = new menuitem('managetracks', new menuitempage('trackpage'), null, '', block_curr_admin_get_item_css_class('managetracks'));
         }
 
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
         if (has_capability('local/elisprogram:config', $syscontext)) {
             $pages[] = new menuitem('configmanager',
                                     new menuitempage('url_page',

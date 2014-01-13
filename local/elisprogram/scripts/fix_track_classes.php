@@ -34,7 +34,7 @@ require_once(elispm::lib('data/track.class.php'));
 global $DB, $FULLME, $OUTPUT, $PAGE;
 
 if (isset($_SERVER['REMOTE_ADDR'])) {
-    $PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+    $PAGE->set_context(context_system::instance());
     $PAGE->set_pagelayout('standard');
     $PAGE->set_url($FULLME);
     $PAGE->set_title(get_string('health_trackcheck', 'local_elisprogram'));

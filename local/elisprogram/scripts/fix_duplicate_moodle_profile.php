@@ -33,7 +33,7 @@ global $CFG, $DB, $FULLME, $OUTPUT, $PAGE;
 
 if (isset($_SERVER['REMOTE_ADDR'])) {
     require_login();
-    $context = get_context_instance(CONTEXT_SYSTEM);
+    $context = context_system::instance();
     require_capability('moodle/site:config', $context); // WAS :doanything
     $PAGE->set_context($context);
     $PAGE->set_pagelayout('standard');

@@ -30,7 +30,7 @@ require_once(elispm::lib('deprecatedlib.php'));
 require_once(elispm::lib('data/user.class.php'));
 
 //needed to use $OUTPUT when displaying summary info
-$sys_context = get_context_instance(CONTEXT_SYSTEM);
+$sys_context = context_system::instance();
 $PAGE->set_context($sys_context);
 
 //determine which program we are operating on (or 'na' for non-program courses)

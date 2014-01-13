@@ -65,7 +65,7 @@ class certificatelistpage extends pm_page {
             return false;
         }
 
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
         return has_capability('local/elisprogram:viewownreports', $context);
     }
 

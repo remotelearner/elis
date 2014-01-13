@@ -673,13 +673,14 @@ function userset_groups_add_member($groupid, $userid) {
     if($group_record = $DB->get_record('groups', array('id' => $groupid))) {
 
         //this works even for the site-level "course"
-        $context = get_context_instance(CONTEXT_COURSE, $group_record->courseid);
-        $filter = get_related_contexts_string($context);
+        $context = context_course::instance($group_record->courseid);
+        list($filtersql, $filterparams) = $DB->get_in_or_equal($context->get_parent_context_ids(true), SQL_PARAMS_NAMED);
 
         //if the user doesn't have an appropriate role, a group assignment
         //will not work, so avoid assigning in that case
-        $select = "userid = :userid and contextid {$filter}";
+        $select = "userid = :userid and contextid {$filtersql}";
         $params = array('userid' => $userid);
+        $params = array_merge($params, $filterparams);
 
         if (!$DB->record_exists_select('role_assignments', $select, $params)) {
             return;

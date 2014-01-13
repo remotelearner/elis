@@ -66,7 +66,7 @@ class trackassignmentgetavailableusers_testcase extends elis_database_test {
 
         // Set up a test role that allows users to enrol users in tracks.
         $roleid = create_role('trackenrol', 'trackenrol', 'trackenrol');
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
         assign_capability('local/elisprogram:track_enrol', CAP_ALLOW, $roleid, $syscontext->id);
 
         // Set up our current user.
@@ -347,7 +347,7 @@ class trackassignmentgetavailableusers_testcase extends elis_database_test {
 
         // Set up our test role.
         $roleid = create_role('testrole', 'testrole', 'testrole');
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
         assign_capability('local/elisprogram:track_enrol_userset_user', CAP_ALLOW, $roleid, $syscontext->id);
 
         // Perform the role necessary assignment.

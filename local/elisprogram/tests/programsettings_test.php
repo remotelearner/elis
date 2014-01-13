@@ -69,7 +69,7 @@ class programsettings_testcase extends elis_database_test {
         set_config('siteguest', '');
 
         // Obtain the system context.
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
 
         // Set up the current user global.
         $user = new stdClass;

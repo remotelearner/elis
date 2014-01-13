@@ -118,7 +118,7 @@ abstract class deepsightpage extends pm_page {
      * @return bool Whether the user can see and manage current associations.
      */
     public function can_do_default() {
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
         return has_capability('local/elisprogram:manage', $context);
     }
 

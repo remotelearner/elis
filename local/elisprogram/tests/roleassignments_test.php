@@ -225,7 +225,7 @@ class roleassignments_testcase extends elis_database_test {
      * Test the role assignment interface to determine if it is properly finding our custom contexts
      */
     public function test_roletablecontexts() {
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
         $roletable = new roleTable($context, 3);
 
         $allcontextlevels = array(
@@ -292,7 +292,7 @@ class roleassignments_testcase extends elis_database_test {
         $admin = get_admin();
 
         $role = $DB->get_record('role', array('shortname' => 'editingteacher'));
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
 
         $this->assertTrue(assign_capability('local/elisprogram:notify_classenrol', CAP_ALLOW, $role->id, $syscontext->id));
         $syscontext->mark_dirty();

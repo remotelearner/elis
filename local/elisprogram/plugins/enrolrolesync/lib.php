@@ -45,9 +45,8 @@ class enrolment_role_sync {
         $student_roleid = get_config('elisprogram_enrolrolesync', 'student_role');
         $instructor_roleid = get_config('elisprogram_enrolrolesync', 'instructor_role');
 
-        if (!($context = get_context_instance_by_id($data->contextid))) {
-            $context = get_context_instance($data->contextid, $data->itemid);
-        }
+        global $DB;
+        $context = $DB->get_record('context', array('id' => $data->contextid));
         if (!empty($context) && $context->contextlevel == CONTEXT_ELIS_CLASS) {
             //assignment is on a PM class instance
 

@@ -97,7 +97,7 @@ class classmoodlecourse extends elis_data_object {
             /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
 
-            if (!$context = get_context_instance(CONTEXT_COURSE, $this->moodlecourseid)) {
+            if (!$context = context_course::instance($this->moodlecourseid)) {
                 return false;
             }
 
@@ -156,7 +156,7 @@ class classmoodlecourse extends elis_data_object {
             /// This has to be put here in case we have a site config reload.
             $CFG    = $GLOBALS['CFG'];
 
-            if (!$context = get_context_instance(CONTEXT_COURSE, $this->moodlecourseid)) {
+            if (!$context = context_course::instance($this->moodlecourseid)) {
                 return false;
             }
 

@@ -53,7 +53,7 @@ class permissions_testcase extends elis_database_test {
         $this->assertFalse($this->has_associate_and_manage_capability());
         $this->assertFalse($this->has_program_view_capability());
 
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
 
         $assigninguser = new user(array(
             'idnumber' => 'testuserid',

@@ -30,7 +30,7 @@ $id = required_param('id', PARAM_INT);
 
 require_login();
 
-$context = get_context_instance_by_id($id);
+$context = context::instance_by_id($id);
 
 if ((! $context) || (($context->contextlevel != CONTEXT_ELIS_CLASS) && ($context->contextlevel != CONTEXT_ELIS_COURSE))) {
     print_string('results_unknown_classcourse', RESULTS_ENGINE_LANG_FILE);

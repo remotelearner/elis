@@ -268,7 +268,7 @@ class deepsight_datatable_programuserset_testcase extends deepsight_datatable_se
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', context_system::instance());
 
         // Construct test table.
         $table = new deepsight_datatable_programuserset_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
@@ -371,7 +371,7 @@ class deepsight_datatable_programuserset_testcase extends deepsight_datatable_se
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', context_system::instance());
 
         foreach ($associations as $association) {
             $clustercurriculum = new clustercurriculum($association);
@@ -459,7 +459,7 @@ class deepsight_datatable_programuserset_testcase extends deepsight_datatable_se
         // Set up capabilities.
         foreach ($contextstoassign as $contexttype => $ids) {
             if ($contexttype === 'system') {
-                $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
+                $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', context_system::instance());
             } else {
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {

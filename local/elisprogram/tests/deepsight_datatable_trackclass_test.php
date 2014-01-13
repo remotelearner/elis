@@ -322,7 +322,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
         $USER = $this->setup_permissions_test();
 
         // We're not interested in permissions for this test, so give associate permission globally.
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', context_system::instance());
 
         foreach ($programcourse as $association) {
             $association = new curriculumcourse($association);
@@ -419,7 +419,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', context_system::instance());
 
         // We're not interested in the class > course > program > track requirement for this test, so assign all courses to all
         // programs.
@@ -525,7 +525,7 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
         // Set up capabilities.
         foreach ($contextstoassign as $contexttype => $ids) {
             if ($contexttype === 'system') {
-                $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', get_context_instance(CONTEXT_SYSTEM));
+                $this->give_permission_for_context($USER->id, 'local/elisprogram:associate', context_system::instance());
             } else {
                 foreach ($ids as $contextinstanceid) {
                     switch($contexttype) {

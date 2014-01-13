@@ -53,7 +53,7 @@ class waitlistaddform extends cmform {
                 $enrol_options[] = $mform->createElement('radio', 'enrol[' . $student->userid . ']', '', get_string('yes'), 1);
                 $enrol_options[] = $mform->createElement('radio', 'enrol[' . $student->userid . ']', '', get_string('no'), 0);
 
-                $context = get_context_instance(CONTEXT_SYSTEM);
+                $context = context_system::instance();
 
                 if(has_capability('local/elisprogram:overrideclasslimit', $context)) {
                     $mform->addElement('hidden', 'grade[' . $student->userid . ']', $student->grade);
@@ -85,7 +85,7 @@ class waitlistaddform extends cmform {
                 $enrol_options[] = $mform->createElement('radio', 'enrol[' . $id . ']', '', get_string('yes'), 1);
                 $enrol_options[] = $mform->createElement('radio', 'enrol[' . $id . ']', '', get_string('no'), 0);
 
-                $context = get_context_instance(CONTEXT_SYSTEM);
+                $context = context_system::instance();
 
                 if(has_capability('local/elisprogram:overrideclasslimit', $context)) {
                     $enrol_options[] = $mform->createElement('radio', 'enrol[' . $id . ']', '', get_string('over_enrol', 'local_elisprogram'), 2);

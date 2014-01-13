@@ -54,9 +54,9 @@ if (fnmatch($block->instance->pagetypepattern, 'course-view-') && !empty($COURSE
 }
 
 if ($COURSE->id == SITEID) {
-    $context = get_context_instance(CONTEXT_SYSTEM);
+    $context = context_system::instance();
 } else {
-    $context = get_context_instance(CONTEXT_COURSE, $COURSE->id);
+    $context = context_course::instance($COURSE->id);
 }
 
 require_capability('block/enrol_survey:take', $context);

@@ -252,7 +252,7 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', context_system::instance());
 
         // Construct test table.
         $table = new deepsight_datatable_usertrack_available_mock($DB, 'test', 'http://localhost', 'testuniqid');
@@ -350,7 +350,7 @@ class deepsight_datatable_usertrack_testcase extends deepsight_datatable_searchr
 
         // Set up permissions.
         $USER = $this->setup_permissions_test();
-        $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', get_context_instance(CONTEXT_SYSTEM));
+        $this->give_permission_for_context($USER->id, 'local/elisprogram:track_enrol', context_system::instance());
 
         foreach ($associations as $association) {
             $usertrack = new usertrack($association);

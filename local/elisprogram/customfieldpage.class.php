@@ -41,7 +41,7 @@ class customfieldpage extends pm_page {
     }
 
     function can_do_default() {
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
         return has_capability('local/elisprogram:config', $context) || has_capability('local/elisprogram:manage', $context);
     }
 

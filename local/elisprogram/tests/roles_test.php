@@ -98,7 +98,7 @@ class roles_testcase extends elis_database_test {
         $assigninguser->save();
 
         // Need the system context for role assignments.
-        $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+        $systemcontext = context_system::instance();
 
         // Set up the role that allows a user to assign roles but only to userset members.
         $permissionsroleid = create_role('permissionsrole', 'permissionsrole', 'permissionsrole');
@@ -178,7 +178,7 @@ class roles_testcase extends elis_database_test {
         $assigninguser->save();
 
         // Need the system context for role assignments.
-        $systemcontext = get_context_instance(CONTEXT_SYSTEM);
+        $systemcontext = context_system::instance();
 
         // Set up the role that allows a user to assign roles but only to userset members.
         $permissionsroleid = create_role('permissionsrole', 'permissionsrole', 'permissionsrole');

@@ -38,7 +38,7 @@ class healthpage extends pm_page {
     const SEVERITY_CRITICAL = 'critical';
 
     function can_do_default() {
-        $context = get_context_instance(CONTEXT_SYSTEM);
+        $context = context_system::instance();
         return has_capability('moodle/site:config', $context);
     }
 

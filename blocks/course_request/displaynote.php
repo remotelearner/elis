@@ -30,7 +30,7 @@ global $DB, $ME, $OUTPUT, $PAGE;
 
 $id = required_param('id', PARAM_INT);
 
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 
 require_capability('block/course_request:request', $context);
 

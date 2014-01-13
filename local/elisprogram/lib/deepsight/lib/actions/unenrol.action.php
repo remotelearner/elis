@@ -87,7 +87,7 @@ class deepsight_action_unenrol extends deepsight_action_confirm {
             if ($mcourse->valid() && $muser) {
                 $mcourse = $mcourse->current()->moodlecourseid;
                 if ($mcourse) {
-                    $ctx = get_context_instance(CONTEXT_COURSE, $mcourse);
+                    $ctx = context_course::instance($mcourse);
                     if ($DB->record_exists_select('role_assignments', "userid = ? AND contextid = ? AND component != 'enrol_elis'",
                                                   array($muser->id, $ctx->id))) {
                         // User is assigned a role other than via the elis enrolment plugin.

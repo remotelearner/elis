@@ -78,7 +78,7 @@ class pmentities_testcase extends elis_database_test {
      * @return array An array containg the role for the creator / editor role
      */
     private function create_roles($entity) {
-        $syscontext = get_context_instance(CONTEXT_SYSTEM);
+        $syscontext = context_system::instance();
 
         $role1 = create_role($entity.'_creator', $entity.'_creator', $entity.'_creator');
         assign_capability('local/elisprogram:'.$entity.'_view', CAP_ALLOW, $role1, $syscontext->id);
@@ -102,7 +102,7 @@ class pmentities_testcase extends elis_database_test {
         // Setup the editor role to be the default role for the program context.
         elis::$config->local_elisprogram->default_curriculum_role_id = $reid;
 
-        $sysctx = get_context_instance(CONTEXT_SYSTEM);
+        $sysctx = context_system::instance();
 
         // Assign the test user the creator role.
         role_assign($rcid, 100, $sysctx->id);
@@ -137,7 +137,7 @@ class pmentities_testcase extends elis_database_test {
         // Setup the editor role to be the default role for the track context.
         elis::$config->local_elisprogram->default_track_role_id = $reid;
 
-        $sysctx = get_context_instance(CONTEXT_SYSTEM);
+        $sysctx = context_system::instance();
 
         // Assign the test user the creator role.
         role_assign($rcid, $USER->id, $sysctx->id);
@@ -176,7 +176,7 @@ class pmentities_testcase extends elis_database_test {
         // Setup the editor role to be the default role for the course context.
         elis::$config->local_elisprogram->default_course_role_id = $reid;
 
-        $sysctx = get_context_instance(CONTEXT_SYSTEM);
+        $sysctx = context_system::instance();
 
         // Assign the test user the creator role.
         role_assign($rcid, $USER->id, $sysctx->id);
@@ -211,7 +211,7 @@ class pmentities_testcase extends elis_database_test {
         // Setup the editor role to be the default role for the class context.
         elis::$config->local_elisprogram->default_class_role_id = $reid;
 
-        $sysctx = get_context_instance(CONTEXT_SYSTEM);
+        $sysctx = context_system::instance();
 
         // Assign the test user the creator role.
         role_assign($rcid, $USER->id, $sysctx->id);
@@ -249,7 +249,7 @@ class pmentities_testcase extends elis_database_test {
         // Setup the editor role to be the default role for the userset context.
         elis::$config->local_elisprogram->default_cluster_role_id = $reid;
 
-        $sysctx = get_context_instance(CONTEXT_SYSTEM);
+        $sysctx = context_system::instance();
 
         // Assign the test user the creator role.
         role_assign($rcid, $USER->id, $sysctx->id);
