@@ -253,6 +253,10 @@ class deepsight_datatable_trackclass_testcase extends deepsight_datatable_search
         $table->set_trackid($tabletrackid);
 
         $actualresults = $table->get_search_results(array(), array(), 0, 20);
+        // Remove 'canmanage' property (this is tested later).
+        foreach ($actualresults[0] as &$result) {
+            unset($result['canmanage']);
+        }
         $this->assert_search_results($expectedresults, $expectedtotal, $actualresults);
     }
 

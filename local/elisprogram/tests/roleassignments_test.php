@@ -327,7 +327,7 @@ class roleassignments_testcase extends elis_database_test {
 /**
  * Test role table.
  */
-class roleTable extends define_role_table_advanced {
+class roleTable extends core_role_define_role_table_advanced {
     /**
      * Get all context levels.
      * return array All context levels.
