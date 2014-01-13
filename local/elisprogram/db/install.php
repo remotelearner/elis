@@ -24,10 +24,50 @@
  */
 
 function xmldb_local_elisprogram_install() {
-    global $CFG;
+    global $CFG, $DB;
 
     require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
     require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php');
+
+    // Migrate component.
+    $migrator = new \local_elisprogram\install\migration\elis26();
+    if ($migrator->old_component_installed() === true) {
+        $migrator->migrate();
+
+        // Migrate old custom context levels.
+        $ctxoldnewmap = array(
+            1001 => 11,
+            1002 => 12,
+            1003 => 13,
+            1004 => 14,
+            1005 => 15,
+            1006 => 16
+        );
+        foreach ($ctxoldnewmap as $oldctxlevel => $newctxlevel) {
+            // Update context table.
+            $sql = 'UPDATE {context} SET contextlevel = ? WHERE contextlevel = ?';
+            $params = array($newctxlevel, $oldctxlevel);
+            $DB->execute($sql, $params);
+
+            // Update role context levels.
+            $sql = 'UPDATE {role_context_levels} SET contextlevel = ? WHERE contextlevel = ?';
+            $params = array($newctxlevel, $oldctxlevel);
+            $DB->execute($sql, $params);
+        }
+
+        // Migrate capabilities.
+        $oldcapprefix = 'elis/program';
+        $newcapprefix = 'local/elisprogram';
+        $sql = 'SELECT * FROM {role_capabilities} WHERE capability LIKE ?';
+        $params = array($oldcapprefix.'%');
+        $rolecaps = $DB->get_recordset_sql($sql, $params);
+        foreach ($rolecaps as $rolecaprec) {
+            $updaterec = new stdClass;
+            $updaterec->id = $rolecaprec->id;
+            $updaterec->capability = str_replace($oldcapprefix, $newcapprefix, $rolecaprec->capability);
+            $DB->update_record('role_capabilities', $updaterec);
+        }
+    }
 
     // Install custom context levels.
      \local_eliscore\context\helper::set_custom_levels(\local_elisprogram\context\contextinfo::get_contextinfo());
@@ -54,4 +94,8 @@ function xmldb_local_elisprogram_install() {
     pm_set_config('notify_addedtowaitlist_user', 1);
     pm_set_config('notify_enroledfromwaitlist_user', 1);
     pm_set_config('notify_incompletecourse_user', 1);
+
+    // Ensure ELIS scheduled tasks is initialized.
+    require_once($CFG->dirroot.'/local/eliscore/lib/tasklib.php');
+    elis_tasks_update_definition('local_elisprogram');
 }

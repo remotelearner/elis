@@ -25,12 +25,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../../config.php');
+global $CFG;
+require_once($CFG->dirroot . '/local/elisprogram/lib/setup.php');
+require_once(elis::lib('data/customfield.class.php'));
+
 /**
  * Sets up the fields necessary for enabling cluster groups
  *
  * @return  boolean  Returns true to indicate success
  */
 function xmldb_elisprogram_usetgroups_install() {
+
+    // Migrate component.
+    $oldcmp = 'pmplugins_userset_groups';
+    $newcmp = 'elisprogram_usetgroups';
+    $upgradestepfuncname = 'elisprogram_usetgroups_pre26upgradesteps';
+    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    if ($migrator->old_component_installed() === true) {
+        $migrator->migrate();
+    }
+
     //set up the cluster group category
     $group_category = new field_category();
     $group_category->name = get_string('userset_group_category', 'elisprogram_usetgroups');
@@ -73,4 +88,64 @@ function xmldb_elisprogram_usetgroups_install() {
     field_owner::ensure_field_owner_exists($field, 'manual', $owner_options);
 
     return true;
+}
+
+/**
+ * Run all upgrade steps from before elis 2.6.
+ *
+ * @param int $oldversion The currently installed version of the old component.
+ * @return bool Success/Failure.
+ */
+function elisprogram_usetgroups_pre26upgradesteps($oldversion) {
+    global $CFG, $THEME, $DB;
+    $dbman = $DB->get_manager();
+
+    $result = true;
+
+    if ($oldversion < 2011072600) {
+        // Rename fields.
+        $fieldnames = array('group', 'groupings');
+        foreach ($fieldnames as $fieldname) {
+            $field = field::find(new field_filter('shortname', 'cluster_'.$fieldname));
+            if ($field->valid()) {
+                $field = $field->current();
+                $field->shortname = 'userset_'.$fieldname;
+                $field->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011072600, 'pmplugins', 'userset_groups');
+    }
+
+    if ($result && $oldversion < 2011101300) {
+        // Rename field help.
+        $fieldmap = array('userset_group'
+                          => 'elisprogram_usetgroups/userset_group',
+                          'userset_groupings'
+                          => 'elisprogram_usetgroups/autoenrol_groupings');
+        foreach ($fieldmap as $key => $val) {
+            $field = field::find(new field_filter('shortname', $key));
+            if ($field->valid()) {
+                $field = $field->current();
+                if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                    $owner->fieldid = $field->id;
+                    $owner->plugin = 'manual';
+                    //$owner->exclude = 0; // TBD
+                    $owner->params = serialize(array('required'    => 0,
+                                                 'edit_capability' => '',
+                                                 'view_capability' => '',
+                                                 'control'         => 'checkbox',
+                                                 'columns'         => 30,
+                                                 'rows'            => 10,
+                                                 'maxlength'       => 2048,
+                                                 'help_file'       => $val));
+                    $owner->save();
+                }
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101300, 'pmplugins', 'userset_groups');
+    }
+
+    return $result;
 }

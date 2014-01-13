@@ -25,12 +25,27 @@
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once(dirname(__FILE__).'/../../../../../config.php');
+global $CFG;
+require_once($CFG->dirroot . '/local/elisprogram/lib/setup.php');
+require_once(elis::lib('data/customfield.class.php'));
+
 /**
  * Install function for this plugin
  *
  * @return  boolean  true  Returns true to satisfy install procedure
  */
 function xmldb_elisprogram_usetthemes_install() {
+
+    // Migrate component.
+    $oldcmp = 'pmplugins_userset_themes';
+    $newcmp = 'elisprogram_usetthemes';
+    $upgradestepfuncname = 'elisprogram_usetthemes_pre26upgradesteps';
+    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    if ($migrator->old_component_installed() === true) {
+        $migrator->migrate();
+    }
+
     //set up the cluster theme category
     $theme_category = new field_category();
     $theme_category->name = get_string('userset_theme_category', 'elisprogram_usetthemes');
@@ -73,4 +88,81 @@ function xmldb_elisprogram_usetthemes_install() {
     field_owner::ensure_field_owner_exists($theme_field, 'manual', $owner_options);
 
     return true;
+}
+
+/**
+ * Run all upgrade steps from before elis 2.6.
+ *
+ * @param int $oldversion The currently installed version of the old component.
+ * @return bool Success/Failure.
+ */
+function elisprogram_usetthemes_pre26upgradesteps($oldversion) {
+    global $CFG, $THEME, $DB;
+    $dbman = $DB->get_manager();
+
+    $result = true;
+
+    if ($oldversion < 2011071300) {
+        // Rename fields.
+        $fieldnames = array('theme', 'themepriority');
+        foreach ($fieldnames as $fieldname) {
+            $field = field::find(new field_filter('shortname', 'cluster_'.$fieldname));
+
+            if ($field->valid()) {
+                $field = $field->current();
+                $field->shortname = '_elis_userset_'.$fieldname;
+                $field->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011071300, 'pmplugins', 'userset_themes');
+    }
+
+    if ($result && $oldversion < 2011101800) {
+        // Userset -> 'User Set'.
+        $fieldnames = array('theme', 'themepriority');
+        foreach ($fieldnames as $fieldname) {
+            $fname = '_elis_userset_'. $fieldname;
+            $field = field::find(new field_filter('shortname', $fname));
+
+            if ($field->valid()) {
+                $field = $field->current();
+                // Add help file.
+                if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                    $owner->fieldid = $field->id;
+                    $owner->plugin = 'manual';
+                    //$owner->exclude = 0; // TBD
+                    $owner->param_help_file = "elisprogram_usetthemes/{$fname}";
+                    $owner->save();
+                }
+
+                $category = $field->category;
+                if (stripos($category->name, 'Userset') !== false) {
+                    $category->name = str_ireplace('Userset', 'User Set', $category->name);
+                    $category->save();
+                }
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101800, 'pmplugins', 'userset_themes');
+    }
+
+    if ($oldversion < 2013020400) {
+        // Rename field if it is still 'Cluster Theme'.
+        $field = field::find(new field_filter('shortname', '_elis_userset_theme'));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            $category = $field->category;
+            if ($category->name == 'Cluster Theme') {
+                // The field name hasn't been changed from the old default.
+                $category->name = get_string('userset_theme_category', 'elisprogram_usetthemes');
+                $category->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2013020400, 'pmplugins', 'userset_themes');
+    }
+
+    return $result;
 }

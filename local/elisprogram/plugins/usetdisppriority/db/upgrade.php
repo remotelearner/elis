@@ -28,67 +28,10 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot . '/local/elisprogram/lib/setup.php');
-require_once(elis::lib('data/customfield.class.php'));
 require_once(elis::plugin_file('elisprogram_usetdisppriority', 'lib.php'));
 
 function xmldb_elisprogram_usetdisppriority_upgrade($oldversion = 0) {
-    global $CFG, $THEME, $DB;
-    $dbman = $DB->get_manager();
-
     $result = true;
-
-    if ($oldversion < 2011071200) {
-        // rename field
-        $field = field::find(new field_filter('shortname', '_elis_cluster_display_priority'));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            $field->shortname = USERSET_DISPLAY_PRIORITY_FIELD;
-            $field->save();
-
-            $category = $field->category;
-            if ($category->name == 'Cluster Display Settings') {
-                // the field name hasn't been changed from the old default
-                $category->name = get_string('display_settings_category_name', 'elisprogram_usetdisppriority');
-                $category->save();
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011071200, 'elisprogram', 'usetdisppriority');
-    }
-
-    if ($result && $oldversion < 2011101200) {
-        $field = field::find(new field_filter('shortname', USERSET_DISPLAY_PRIORITY_FIELD));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
-                $owner->fieldid = $field->id;
-                $owner->plugin = 'manual';
-                //$owner->exclude = 0; // TBD
-                $owner->param_help_file = 'elisprogram_usetdisppriority/display_priority';
-                $owner->save();
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011101200, 'elisprogram', 'usetdisppriority');
-    }
-
-    if ($result && $oldversion < 2011101800) {
-        // Userset -> 'User Set'
-        $field = field::find(new field_filter('shortname', USERSET_DISPLAY_PRIORITY_FIELD));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            $category = $field->category;
-            if (stripos($category->name, 'Userset') !== false) {
-                $category->name = str_ireplace('Userset', 'User Set', $category->name);
-                $category->save();
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011101800, 'elisprogram', 'usetdisppriority');
-    }
 
     return $result;
 }

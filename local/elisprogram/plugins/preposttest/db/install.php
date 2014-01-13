@@ -41,6 +41,15 @@ function xmldb_elisprogram_preposttest_install() {
     require_once elispm::lib('setup.php');
     require_once elis::lib('data/customfield.class.php');
 
+    // Migrate component.
+    $oldcmp = 'pmplugins_pre_post_test';
+    $newcmp = 'elisprogram_preposttest';
+    $upgradestepfuncname = 'elisprogram_preposttest_pre26upgradesteps';
+    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    if ($migrator->old_component_installed() === true) {
+        $migrator->migrate();
+    }
+
     // Pre-test field
     $field = new field();
     $field->shortname = PRE_TEST_FIELD;
@@ -90,4 +99,46 @@ function xmldb_elisprogram_preposttest_install() {
     }
 
     return true;
+}
+
+/**
+ * Run all upgrade steps from before elis 2.6.
+ *
+ * @param int $oldversion The currently installed version of the old component.
+ * @return bool Success/Failure.
+ */
+function elisprogram_preposttest_pre26upgradesteps($oldversion) {
+    $result = true;
+
+    if ($result && $oldversion < 2011101200) {
+        $field = field::find(new field_filter('shortname', PRE_TEST_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                $owner->fieldid = $field->id;
+                $owner->plugin = 'manual';
+                //$owner->exclude = 0; // TBD
+                $owner->param_help_file = 'elisprogram_preposttest/pre_test';
+                $owner->save();
+            }
+        }
+
+        $field = field::find(new field_filter('shortname', POST_TEST_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                $owner->fieldid = $field->id;
+                $owner->plugin = 'manual';
+                //$owner->exclude = 0; // TBD
+                $owner->param_help_file = 'elisprogram_preposttest/post_test';
+                $owner->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'pre_post_test');
+    }
+
+    return $result;
 }

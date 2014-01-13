@@ -29,6 +29,7 @@ require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once elispm::file('plugins/usetdisppriority/lib.php');
+require_once(elis::lib('data/customfield.class.php'));
 
 /**
  * Install function for this plugin
@@ -39,6 +40,15 @@ function xmldb_elisprogram_usetdisppriority_install() {
     global $CFG;
 
     require_once elispm::lib('setup.php');
+
+    // Migrate component.
+    $oldcmp = 'pmplugins_userset_display_priority';
+    $newcmp = 'elisprogram_usetdisppriority';
+    $upgradestepfuncname = 'elisprogram_usetdisppriority_pre26upgradesteps';
+    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    if ($migrator->old_component_installed() === true) {
+        $migrator->migrate();
+    }
 
     $field = new field();
     $field->shortname = USERSET_DISPLAY_PRIORITY_FIELD;
@@ -65,4 +75,72 @@ function xmldb_elisprogram_usetdisppriority_install() {
     }
 
     return true;
+}
+
+/**
+ * Run all upgrade steps from before elis 2.6.
+ *
+ * @param int $oldversion The currently installed version of the old component.
+ * @return bool Success/Failure.
+ */
+function elisprogram_usetdisppriority_pre26upgradesteps($oldversion) {
+    global $CFG, $THEME, $DB;
+    $dbman = $DB->get_manager();
+
+    $result = true;
+
+    if ($oldversion < 2011071200) {
+        // Rename field.
+        $field = field::find(new field_filter('shortname', '_elis_cluster_display_priority'));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            $field->shortname = USERSET_DISPLAY_PRIORITY_FIELD;
+            $field->save();
+
+            $category = $field->category;
+            if ($category->name == 'Cluster Display Settings') {
+                // The field name hasn't been changed from the old default.
+                $category->name = get_string('display_settings_category_name', 'elisprogram_usetdisppriority');
+                $category->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011071200, 'pmplugins', 'userset_display_priority');
+    }
+
+    if ($result && $oldversion < 2011101200) {
+        $field = field::find(new field_filter('shortname', USERSET_DISPLAY_PRIORITY_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                $owner->fieldid = $field->id;
+                $owner->plugin = 'manual';
+                //$owner->exclude = 0; // TBD
+                $owner->param_help_file = 'elisprogram_usetdisppriority/display_priority';
+                $owner->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'userset_display_priority');
+    }
+
+    if ($result && $oldversion < 2011101800) {
+        // Userset -> 'User Set'.
+        $field = field::find(new field_filter('shortname', USERSET_DISPLAY_PRIORITY_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            $category = $field->category;
+            if (stripos($category->name, 'Userset') !== false) {
+                $category->name = str_ireplace('Userset', 'User Set', $category->name);
+                $category->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101800, 'pmplugins', 'userset_display_priority');
+    }
+
+    return $result;
 }

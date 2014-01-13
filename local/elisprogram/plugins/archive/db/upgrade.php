@@ -28,43 +28,10 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
-require_once(elis::lib('data/customfield.class.php'));
 require_once(elis::plugin_file('elisprogram_archive', 'lib.php'));
 
 function xmldb_elisprogram_archive_upgrade($oldversion = 0) {
     $result = true;
-
-    if ($result && $oldversion < 2011100700) {
-        // rename field
-        $field = field::find(new field_filter('shortname', '_elis_curriculum_archive'));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            $field->shortname = ARCHIVE_FIELD;
-            $field->name = get_string('archive_field_name', 'elisprogram_archive');
-            $field->save();
-        }
-
-        upgrade_plugin_savepoint($result, 2011100700, 'elisprogram', 'archive');
-    }
-
-    if ($result && $oldversion < 2011101200) {
-        $field = field::find(new field_filter('shortname', ARCHIVE_FIELD));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
-                $owner->fieldid = $field->id;
-                $owner->plugin = 'manual';
-                //$owner->exclude = 0; // TBD
-                $owner->param_help_file = 'elisprogram_archive/archive_program';
-                $owner->save();
-            }
-
-        }
-
-        upgrade_plugin_savepoint($result, 2011101200, 'elisprogram', 'archive');
-    }
 
     return $result;
 }

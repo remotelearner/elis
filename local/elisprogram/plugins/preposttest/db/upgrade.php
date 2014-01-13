@@ -28,41 +28,10 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
-require_once(elis::lib('data/customfield.class.php'));
 require_once elispm::file('plugins/preposttest/lib.php');
 
 function xmldb_elisprogram_preposttest_upgrade($oldversion = 0) {
     $result = true;
-
-    if ($result && $oldversion < 2011101200) {
-        $field = field::find(new field_filter('shortname', PRE_TEST_FIELD));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
-                $owner->fieldid = $field->id;
-                $owner->plugin = 'manual';
-                //$owner->exclude = 0; // TBD
-                $owner->param_help_file = 'elisprogram_preposttest/pre_test';
-                $owner->save();
-            }
-        }
-
-        $field = field::find(new field_filter('shortname', POST_TEST_FIELD));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
-                $owner->fieldid = $field->id;
-                $owner->plugin = 'manual';
-                //$owner->exclude = 0; // TBD
-                $owner->param_help_file = 'elisprogram_preposttest/post_test';
-                $owner->save();
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011101200, 'elisprogram', 'preposttest');
-    }
 
     return $result;
 }

@@ -41,6 +41,15 @@ function xmldb_elisprogram_archive_install() {
     require_once elispm::lib('setup.php');
     require_once elis::lib('data/customfield.class.php');
 
+    // Migrate component.
+    $oldcmp = 'pmplugins_archive';
+    $newcmp = 'elisprogram_archive';
+    $upgradestepfuncname = 'elisprogram_archive_pre26upgradesteps';
+    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    if ($migrator->old_component_installed() === true) {
+        $migrator->migrate();
+    }
+
     // Archive field
     $field = new field();
     $field->shortname = ARCHIVE_FIELD;
@@ -79,3 +88,46 @@ function xmldb_elisprogram_archive_install() {
     return true;
 }
 
+/**
+ * Run all upgrade steps from before elis 2.6.
+ *
+ * @param int $oldversion The currently installed version of the old component.
+ * @return bool Success/Failure.
+ */
+function elisprogram_archive_pre26upgradesteps($oldversion) {
+    $result = true;
+
+    if ($result && $oldversion < 2011100700) {
+        // rename field
+        $field = field::find(new field_filter('shortname', '_elis_curriculum_archive'));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            $field->shortname = ARCHIVE_FIELD;
+            $field->name = get_string('archive_field_name', 'elisprogram_archive');
+            $field->save();
+        }
+
+        upgrade_plugin_savepoint($result, 2011100700, 'pmplugins', 'archive');
+    }
+
+    if ($result && $oldversion < 2011101200) {
+        $field = field::find(new field_filter('shortname', ARCHIVE_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                $owner->fieldid = $field->id;
+                $owner->plugin = 'manual';
+                //$owner->exclude = 0; // TBD
+                $owner->param_help_file = 'elisprogram_archive/archive_program';
+                $owner->save();
+            }
+
+        }
+
+        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'archive');
+    }
+
+    return $result;
+}

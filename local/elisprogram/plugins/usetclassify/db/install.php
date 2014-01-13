@@ -42,6 +42,18 @@ function xmldb_elisprogram_usetclassify_install() {
     require_once elis::lib('data/customfield.class.php');
     require_once elispm::file('plugins/usetclassify/usersetclassification.class.php');
 
+    // Migrate component.
+    $oldcmp = 'pmplugins_userset_classification';
+    $newcmp = 'elisprogram_usetclassify';
+    $upgradestepfuncname = 'elisprogram_usetclassify_pre26upgradesteps';
+    $tablechanges = array(
+        'crlm_cluster_classification' => 'elisprogram_usetclassify'
+    );
+    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname, $tablechanges);
+    if ($migrator->old_component_installed() === true) {
+        $migrator->migrate();
+    }
+
     $field = new field();
     $field->shortname = USERSET_CLASSIFICATION_FIELD;
     $field->name = get_string('classification_field_name', 'elisprogram_usetclassify');
@@ -86,4 +98,127 @@ function xmldb_elisprogram_usetclassify_install() {
     $default->save();
 
     return true;
+}
+
+/**
+ * Run all upgrade steps from before elis 2.6.
+ *
+ * @param int $oldversion The currently installed version of the old component.
+ * @return bool Success/Failure.
+ */
+function elisprogram_usetclassify_pre26upgradesteps($oldversion) {
+    global $CFG, $THEME, $DB;
+    $dbman = $DB->get_manager();
+
+    $result = true;
+
+    if ($oldversion < 2011071400) {
+        // Rename field.
+        $field = field::find(new field_filter('shortname', '_elis_cluster_classification'));
+
+        if ($field->valid()) {
+            $field = $field->current();
+
+            $field->shortname = USERSET_CLASSIFICATION_FIELD;
+            if ($field->name == 'Cluster classification') {
+                // Rhe field name hasn't been changed from the old default.
+                $field->name = get_string('classification_field_name', 'elisprogram_usetclassify');
+            }
+            $field->save();
+
+            $category = $field->category;
+            if ($category->name == 'Cluster classification') {
+                // The field name hasn't been changed from the old default.
+                $category->name = get_string('classification_category_name', 'elisprogram_usetclassify');
+                $category->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011071400, 'pmplugins', 'userset_classification');
+    }
+
+    if ($result && $oldversion < 2011101200) {
+
+        $field = field::find(new field_filter('shortname', USERSET_CLASSIFICATION_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
+                $owner->fieldid = $field->id;
+                $owner->plugin = 'manual';
+                //$owner->exclude = 0; // TBD
+                $owner->param_help_file = 'elisprogram_usetclassify/cluster_classification';
+                $owner->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101200, 'pmplugins', 'userset_classification');
+    }
+
+    if ($result && $oldversion < 2011101800) {
+        // Userset -> 'User Set'.
+        $field = field::find(new field_filter('shortname', USERSET_CLASSIFICATION_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            if (stripos($field->name, 'Userset') !== false) {
+                $field->name = str_ireplace('Userset', 'User Set', $field->name);
+                $field->save();
+            }
+
+            $category = $field->category;
+            if (stripos($category->name, 'Userset') !== false) {
+                $category->name = str_ireplace('Userset', 'User Set', $category->name);
+                $category->save();
+            }
+        }
+
+        upgrade_plugin_savepoint($result, 2011101800, 'pmplugins', 'userset_classification');
+    }
+
+    if ($result && $oldversion < 2011110300) {
+        // Make sure to rename the default classification name from "Cluster" to "User set".
+        require_once(elispm::file('plugins/usetclassify/usersetclassification.class.php'));
+
+        // Make sure there are no custom fields with invalid categories.
+        pm_fix_orphaned_fields();
+
+        $field = field::find(new field_filter('shortname', USERSET_CLASSIFICATION_FIELD));
+
+        if ($field->valid()) {
+            $field = $field->current();
+            $category = $field->category;
+
+            $default = usersetclassification::find(new field_filter('shortname', 'regular'));
+
+            if ($default->valid()) {
+                $default = $default->current();
+                $default->name = get_string('cluster', 'local_elisprogram');
+                $default->save();
+            }
+
+            // Upgrade field owner data for the default User Set field.
+            $field = field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_USERSET, $category);
+
+            $owners = field_owner::find(new field_filter('fieldid', $field->id));
+
+            if ($owners->valid()) {
+                foreach ($owners as $owner) {
+                    if ($owner->plugin == 'cluster_classification') {
+                        $owner->plugin = 'userset_classification';
+
+                        $owner->save();
+                    } else if ($owner->plugin == 'manual') {
+                        $owner->param_options_source = 'userset_classifications';
+                        $owner->param_help_file = 'elisprogram_usetclassify/cluster_classification';
+                        $owner->save();
+                    }
+                }
+            }
+
+            upgrade_plugin_savepoint($result, 2011110300, 'pmplugins', 'userset_classification');
+        }
+    }
+
+    return $result;
 }

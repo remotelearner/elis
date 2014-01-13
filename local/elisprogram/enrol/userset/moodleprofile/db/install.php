@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elisprogram_enrolrolesync
+ * @package    usetenrol_moodleprofile
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
@@ -30,27 +30,38 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @return  boolean  true  Returns true to satisfy install procedure
  */
-function xmldb_elisprogram_enrolrolesync_install() {
-
+function xmldb_usetenrol_moodleprofile_install() {
     // Migrate component.
-    $oldcmp = 'pmplugins_enrolment_role_sync';
-    $newcmp = 'elisprogram_enrolrolesync';
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp);
+    $oldcmp = 'usersetenrol_moodle_profile';
+    $newcmp = 'usetenrol_moodleprofile';
+    $upgradestepfuncname = 'usetenrol_moodleprofile_pre26upgradesteps';
+    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }
+}
 
-    //set the student role based on the old value
-    $old_student_roleid = get_config('local_elisprogram', 'enrolment_role_sync_student_role');
-    if ($old_student_roleid !== null) {
-        set_config('student_role', $old_student_roleid, 'elisprogram_enrolrolesync');
+/**
+ * Run all upgrade steps from before elis 2.6.
+ *
+ * @param int $oldversion The currently installed version of the old component.
+ * @return bool Success/Failure.
+ */
+function usetenrol_moodleprofile_pre26upgradesteps($oldversion) {
+    global $CFG, $THEME, $DB, $OUTPUT;
+
+    $dbman = $DB->get_manager();
+    $result = true;
+
+    if ($result && $oldversion < 2011120800) {
+        // Fix plugin name.
+        $sql = "UPDATE {".clusterassignment::TABLE."} SET plugin = 'moodleprofile' WHERE plugin = 'profile'";
+
+        $DB->execute($sql);
+
+        // Userset enrol savepoint reached.
+        upgrade_plugin_savepoint(true, 2011120800, 'usersetenrol', 'moodle_profile');
     }
 
-    //set the instructor role based on the old value
-    $old_instructor_roleid = get_config('local_elisprogram', 'enrolment_role_sync_instructor_role');
-    if ($old_instructor_roleid !== null) {
-        set_config('instructor_role', $old_instructor_roleid, 'elisprogram_enrolrolesync');
-    }
-
-    return true;
+    return $result;
 }

@@ -31,72 +31,7 @@ require_once($CFG->dirroot . '/local/elisprogram/lib/setup.php');
 require_once(elis::lib('data/customfield.class.php'));
 
 function xmldb_elisprogram_usetthemes_upgrade($oldversion = 0) {
-    global $CFG, $THEME, $DB;
-    $dbman = $DB->get_manager();
-
     $result = true;
-
-    if ($oldversion < 2011071300) {
-        // rename fields
-        $fieldnames = array('theme', 'themepriority');
-        foreach ($fieldnames as $fieldname) {
-            $field = field::find(new field_filter('shortname', 'cluster_'.$fieldname));
-
-            if ($field->valid()) {
-                $field = $field->current();
-                $field->shortname = '_elis_userset_'.$fieldname;
-                $field->save();
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011071300, 'elisprogram', 'usetthemes');
-    }
-
-    if ($result && $oldversion < 2011101800) {
-        // Userset -> 'User Set'
-        $fieldnames = array('theme', 'themepriority');
-        foreach ($fieldnames as $fieldname) {
-            $fname = '_elis_userset_'. $fieldname;
-            $field = field::find(new field_filter('shortname', $fname));
-
-            if ($field->valid()) {
-                $field = $field->current();
-                // Add help file
-                if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
-                    $owner->fieldid = $field->id;
-                    $owner->plugin = 'manual';
-                    //$owner->exclude = 0; // TBD
-                    $owner->param_help_file = "elisprogram_usetthemes/{$fname}";
-                    $owner->save();
-                }
-
-                $category = $field->category;
-                if (stripos($category->name, 'Userset') !== false) {
-                    $category->name = str_ireplace('Userset', 'User Set', $category->name);
-                    $category->save();
-                }
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011101800, 'elisprogram', 'usetthemes');
-    }
-
-    if ($oldversion < 2013020400) {
-        // rename field if it is still 'Cluster Theme'
-        $field = field::find(new field_filter('shortname', '_elis_userset_theme'));
-
-        if ($field->valid()) {
-            $field = $field->current();
-            $category = $field->category;
-            if ($category->name == 'Cluster Theme') {
-                // the field name hasn't been changed from the old default
-                $category->name = get_string('userset_theme_category', 'elisprogram_usetthemes');
-                $category->save();
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2013020400, 'elisprogram', 'usetthemes');
-    }
 
     return $result;
 }

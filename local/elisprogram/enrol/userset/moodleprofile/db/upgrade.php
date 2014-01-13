@@ -26,22 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 function xmldb_usetenrol_moodleprofile_upgrade($oldversion=0) {
-    global $CFG, $THEME, $DB, $OUTPUT;
-
-    $dbman = $DB->get_manager();
     $result = true;
-
-    if ($result && $oldversion < 2011120800) {
-    	//fix plugin name
-    	$sql = "UPDATE {".clusterassignment::TABLE."}
-    	        SET plugin = 'moodle_profile'
-    	        WHERE plugin = 'profile'";
-
-    	$DB->execute($sql);
-
-        // userset enrol savepoint reached
-        upgrade_plugin_savepoint(true, 2011120800, 'usetenrol', 'moodleprofile');
-    }
 
     return $result;
 }

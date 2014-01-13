@@ -28,59 +28,9 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/../../../../../config.php');
 global $CFG;
 require_once($CFG->dirroot . '/local/elisprogram/lib/setup.php');
-require_once(elis::lib('data/customfield.class.php'));
 
 function xmldb_elisprogram_usetgroups_upgrade($oldversion = 0) {
-    global $CFG, $THEME, $DB;
-    $dbman = $DB->get_manager();
-
     $result = true;
-
-    if ($oldversion < 2011072600) {
-        // rename fields
-        $fieldnames = array('group', 'groupings');
-        foreach ($fieldnames as $fieldname) {
-            $field = field::find(new field_filter('shortname', 'cluster_'.$fieldname));
-            if ($field->valid()) {
-                $field = $field->current();
-                $field->shortname = 'userset_'. $fieldname;
-                $field->save();
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011072600, 'elisprogram', 'usetgroups');
-    }
-
-    if ($result && $oldversion < 2011101300) {
-        // rename field help
-        $fieldmap = array('userset_group'
-                          => 'elisprogram_usetgroups/userset_group',
-                          'userset_groupings'
-                          => 'elisprogram_usetgroups/autoenrol_groupings');
-        foreach ($fieldmap as $key => $val) {
-            $field = field::find(new field_filter('shortname', $key));
-            if ($field->valid()) {
-                $field = $field->current();
-                if ($owner = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual'])) {
-                    //error_log("elisprogram_usetgroups::upgrading help_file for '{$key}' to '{$val}'");
-                    $owner->fieldid = $field->id;
-                    $owner->plugin = 'manual';
-                    //$owner->exclude = 0; // TBD
-                    $owner->params = serialize(array('required'    => 0,
-                                                 'edit_capability' => '',
-                                                 'view_capability' => '',
-                                                 'control'         => 'checkbox',
-                                                 'columns'         => 30,
-                                                 'rows'            => 10,
-                                                 'maxlength'       => 2048,
-                                                 'help_file'       => $val));
-                    $owner->save();
-                }
-            }
-        }
-
-        upgrade_plugin_savepoint($result, 2011101300, 'elisprogram', 'usetgroups');
-    }
 
     return $result;
 }
