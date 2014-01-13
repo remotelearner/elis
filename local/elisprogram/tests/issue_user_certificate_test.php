@@ -47,7 +47,7 @@ require_once(elispm::lib('certificate.php'));
 class issue_user_certificate_testcase extends elis_database_test {
 
     /**
-     * This function tests issuing a user a certificate by inserting the record in the crlm_certificate_issued table
+     * This function tests issuing a user a certificate by inserting the record in the local_elisprogram_certissued table
      */
     public function test_issue_user_certificate() {
         global $DB;
@@ -61,10 +61,10 @@ class issue_user_certificate_testcase extends elis_database_test {
 
         $result = pm_issue_user_certificate($certsettingid, $user, $certissued);
 
-        $record = $DB->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
+        $record = $DB->get_record('local_elisprogram_certissued', array('timeissued' => '1357851284'));
 
         $conditions = array('cm_userid' => 20, 'cert_setting_id' => 1, 'timeissued' => 1357851284);
-        $DB->delete_records('crlm_certificate_issued', $conditions);
+        $DB->delete_records('local_elisprogram_certissued', $conditions);
 
         // Cannot test for the certificate code or time created, because both values are generated at runtime.
         $expected = array();
@@ -92,7 +92,7 @@ class issue_user_certificate_testcase extends elis_database_test {
 
         $result = pm_issue_user_certificate($certsettingid, $user, $certissued);
 
-        $record = $DB->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
+        $record = $DB->get_record('local_elisprogram_certissued', array('timeissued' => '1357851284'));
 
         $this->assertEquals(false, $record);
         $this->assertEquals(true, $result);
@@ -114,7 +114,7 @@ class issue_user_certificate_testcase extends elis_database_test {
         $CFG->debug = DEBUG_NONE;
         $result = pm_issue_user_certificate($certsettingid, $user, $certissued);
 
-        $record = $DB->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
+        $record = $DB->get_record('local_elisprogram_certissued', array('timeissued' => '1357851284'));
 
         $this->assertEquals(false, $record);
         $this->assertEquals(false, $result);
@@ -136,7 +136,7 @@ class issue_user_certificate_testcase extends elis_database_test {
         $CFG->debug = DEBUG_NONE;
         $result = pm_issue_user_certificate($certsettingid, $user, $certissued);
 
-        $record = $DB->get_record('crlm_certificate_issued', array('timeissued' => '1357851284'));
+        $record = $DB->get_record('local_elisprogram_certissued', array('timeissued' => '1357851284'));
 
         $this->assertEquals(false, $record);
         $this->assertEquals(false, $result);

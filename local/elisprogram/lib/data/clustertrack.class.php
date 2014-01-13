@@ -38,7 +38,7 @@ require_once(elispm::lib('data/usertrack.class.php'));
 require_once(elispm::lib('data/track.class.php'));
 
 class clustertrack extends elis_data_object {
-    const TABLE = 'crlm_cluster_track';
+    const TABLE = 'local_elisprogram_uset_trk';
 
     var $verbose_name = 'clustertrack';
 

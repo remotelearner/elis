@@ -149,7 +149,7 @@ class bulkuserpage extends selectionpage {
         if (empty($data->_selection)) {
             print_error('no_items_selected', 'local_elisprogram', $this->get_basepage()->url);
         } else {
-            $usersstring = implode(', ', array_map('fullname', $DB->get_records_select('crlm_user', 'id in ('.implode(',',$data->_selection).')')));
+            $usersstring = implode(', ', array_map('fullname', $DB->get_records_select('local_elisprogram_usr', 'id in ('.implode(',',$data->_selection).')')));
             $buttoncontinue = new single_button(
                                   new moodle_url('index.php',
                                                  array('s' => $this->pagename,
@@ -357,8 +357,8 @@ class no_moodle_user_filter extends user_filter_type {
      * @return string the filtering condition or null if the filter is disabled
      */
     function get_sql_filter($data) {
-        $sql = "(NOT EXISTS (SELECT _u.id FROM {user} _u WHERE _u.idnumber = {crlm_user}.{$this->_field})
-              OR NOT EXISTS (SELECT _um.id FROM {crlm_user_moodle} _um WHERE _um.cuserid = {crlm_user}.id))";
+        $sql = "(NOT EXISTS (SELECT _u.id FROM {user} _u WHERE _u.idnumber = {local_elisprogram_usr}.{$this->_field})
+              OR NOT EXISTS (SELECT _um.id FROM {local_elisprogram_usr_mdl} _um WHERE _um.cuserid = {local_elisprogram_usr}.id))";
         return array($sql, array());
     }
 

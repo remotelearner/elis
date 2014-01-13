@@ -221,7 +221,7 @@ class deepsight_datatable_enrolled extends deepsight_datatable_user {
      */
     protected function get_join_sql(array $filters=array()) {
         $joinsql = parent::get_join_sql($filters);
-        $joinsql[] = 'JOIN {crlm_class_enrolment} enrol ON enrol.classid='.$this->classid.' AND enrol.userid = element.id';
+        $joinsql[] = 'JOIN {local_elisprogram_cls_enrol} enrol ON enrol.classid='.$this->classid.' AND enrol.userid = element.id';
         return $joinsql;
     }
 

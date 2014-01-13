@@ -33,7 +33,7 @@ require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
 require_once elispm::lib('data/pmclass.class.php');
 
-define ('ENGINETABLE', 'crlm_results');
+define ('ENGINETABLE', 'local_elisprogram_res');
 
 class resultsengine extends elis_data_object {
     const TABLE = ENGINETABLE;
@@ -72,7 +72,7 @@ class resultsengine extends elis_data_object {
 }
 
 class resultsengineaction extends elis_data_object {
-    const TABLE = 'crlm_results_action';
+    const TABLE = 'local_elisprogram_res_action';
     const LANG_FILE = 'local_elisprogram';
 
     static public $_unset = -1;

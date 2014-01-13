@@ -450,7 +450,7 @@ class context_elis_track extends context_elis {
             $sql = "INSERT INTO {context_temp} (id, path, depth)
                     SELECT ctx.id, ".$DB->sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
                       FROM {context} ctx
-                      JOIN {crlm_track} trk ON (trk.id = ctx.instanceid AND ctx.contextlevel = ".CONTEXT_ELIS_TRACK.")
+                      JOIN {local_elisprogram_trk} trk ON (trk.id = ctx.instanceid AND ctx.contextlevel = ".CONTEXT_ELIS_TRACK.")
                       JOIN {context} pctx ON (pctx.instanceid = trk.curid AND pctx.contextlevel = ".CONTEXT_ELIS_PROGRAM.")
                      WHERE pctx.path IS NOT NULL AND pctx.depth > 0
                            $ctxemptyclause";
@@ -658,7 +658,7 @@ class context_elis_course extends context_elis {
                            path=".$DB->sql_concat("'$base/'", 'id')."
                      WHERE contextlevel=".CONTEXT_ELIS_COURSE."
                            AND EXISTS (SELECT 'x'
-                                         FROM {crlm_course} ep
+                                         FROM {local_elisprogram_crs} ep
                                         WHERE ep.id = {context}.instanceid)
                            $emptyclause";
             $DB->execute($sql);
@@ -851,7 +851,7 @@ class context_elis_class extends context_elis {
             $sql = "INSERT INTO {context_temp} (id, path, depth)
                     SELECT ctx.id, ".$DB->sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
                       FROM {context} ctx
-                      JOIN {crlm_class} cls ON (cls.id = ctx.instanceid AND ctx.contextlevel = ".CONTEXT_ELIS_CLASS.")
+                      JOIN {local_elisprogram_cls} cls ON (cls.id = ctx.instanceid AND ctx.contextlevel = ".CONTEXT_ELIS_CLASS.")
                       JOIN {context} pctx ON (pctx.instanceid = cls.courseid AND pctx.contextlevel = ".CONTEXT_ELIS_COURSE.")
                      WHERE pctx.path IS NOT NULL AND pctx.depth > 0
                            $ctxemptyclause";

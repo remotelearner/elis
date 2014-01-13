@@ -33,7 +33,7 @@ require_once elispm::lib('lib.php');
 require_once elispm::lib('deprecatedlib.php');
 require_once elispm::lib('data/pmclass.class.php');
 
-define ('ACTIONTABLE', 'crlm_results_action');
+define ('ACTIONTABLE', 'local_elisprogram_res_action');
 
 class resultsengineaction extends elis_data_object {
     const TABLE = ACTIONTABLE;

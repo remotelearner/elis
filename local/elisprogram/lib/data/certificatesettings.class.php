@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/../../../../config.php');
 require_once(elis::lib('data/data_object.class.php'));
 require_once(elis::lib('table.class.php'));
-define('CERT_SETTINGS_TABLE', 'crlm_certificate_settings');
+define('CERT_SETTINGS_TABLE', 'local_elisprogram_certcfg');
 
 /**
  * Data object for certificate settings.
@@ -105,7 +105,7 @@ class certificatesettings extends elis_data_object {
 
     /**
      * This function loads a record from an object passed as a parameter.
-     * @param object $data Object of properties and values that exists in the crlm_certificate_settings table as columns/values.
+     * @param object $data Object of properties and values that exists in the local_elisprogram_certcfg table as columns/values.
      */
     public function set_from_data($data) {
         $this->_load_data_from_record($data, true);

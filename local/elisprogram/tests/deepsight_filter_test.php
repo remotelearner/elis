@@ -256,14 +256,14 @@ class deepsight_filter_testcase extends elis_database_test {
         $tests[] = array(
                 array('enrolled'),
                 array(
-                        '(SELECT id FROM {crlm_class_enrolment} WHERE classid = ? AND userid=element.id) IS NOT NULL',
+                        '(SELECT id FROM {local_elisprogram_cls_enrol} WHERE classid = ? AND userid=element.id) IS NOT NULL',
                         array(1)
                 )
         );
         $tests[] = array(
                 array('notenrolled'),
                 array(
-                        '(SELECT id FROM {crlm_class_enrolment} WHERE classid = ? AND userid=element.id) IS NULL',
+                        '(SELECT id FROM {local_elisprogram_cls_enrol} WHERE classid = ? AND userid=element.id) IS NULL',
                         array(1)
                 )
         );
@@ -445,7 +445,7 @@ class deepsight_filter_testcase extends elis_database_test {
             $user->username = 'testuser'.$i;
             $user->idnumber = 'testuser'.$i;
             $user->city = $city;
-            $DB->insert_record('crlm_user', $user);
+            $DB->insert_record('local_elisprogram_usr', $user);
         }
 
         // Expected choices, in order.
@@ -479,13 +479,13 @@ class deepsight_filter_testcase extends elis_database_test {
 
         // Assert we get an exception if we don't specify a choices field.
         try {
-            $filter = new deepsight_filter_searchselect($DB, $name, $label, $fielddata, $endpoint, 'crlm_user');
+            $filter = new deepsight_filter_searchselect($DB, $name, $label, $fielddata, $endpoint, 'local_elisprogram_usr');
             $this->assertTrue(false);
         } catch (Exception $e) {
             $this->assertTrue(true);
         }
 
-        $filter = new deepsight_filter_searchselect($DB, $name, $label, $fielddata, $endpoint, 'crlm_user', 'city');
+        $filter = new deepsight_filter_searchselect($DB, $name, $label, $fielddata, $endpoint, 'local_elisprogram_usr', 'city');
 
         $jsopts = $filter->get_js_opts();
         $this->assertInternalType('array', $jsopts);
@@ -547,14 +547,14 @@ class deepsight_filter_testcase extends elis_database_test {
             $user->username = 'testuser'.$i;
             $user->idnumber = 'testuser'.$i;
             $user->city = $city;
-            $DB->insert_record('crlm_user', $user);
+            $DB->insert_record('local_elisprogram_usr', $user);
         }
 
         $name = 'searchselect';
         $label = 'Search Select';
         $endpoint = 'test.php';
         $fielddata = array('city' => 'City');
-        $filter = new deepsight_filter_searchselect($DB, $name, $label, $fielddata, $endpoint, 'crlm_user', 'city');
+        $filter = new deepsight_filter_searchselect($DB, $name, $label, $fielddata, $endpoint, 'local_elisprogram_usr', 'city');
 
         $_POST['val'] = $filterdata;
         $response = $filter->respond_to_js();
@@ -613,7 +613,7 @@ class deepsight_filter_testcase extends elis_database_test {
         $label = 'Search Select';
         $endpoint = 'test.php';
         $fielddata = array('city' => 'City');
-        $filter = new deepsight_filter_searchselect($DB, $name, $label, $fielddata, $endpoint, 'crlm_user', 'city');
+        $filter = new deepsight_filter_searchselect($DB, $name, $label, $fielddata, $endpoint, 'local_elisprogram_usr', 'city');
 
         $filtersql = $filter->get_filter_sql($filterdata);
 

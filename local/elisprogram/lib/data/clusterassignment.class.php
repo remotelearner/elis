@@ -39,7 +39,7 @@ class clusterassignment extends elis_data_object {
 	 var $display;       // STRING - A description of the cluster.
 	 */
 
-    const TABLE = 'crlm_cluster_assignments';
+    const TABLE = 'local_elisprogram_uset_asign';
 
     /**
      * User ID-number

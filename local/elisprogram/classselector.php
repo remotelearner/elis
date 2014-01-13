@@ -102,7 +102,7 @@ if (empty($alphawhere) and empty($searchwhere)) {
 $colheader1 = get_string('results_course_desc_header', 'local_elisprogram');
 $colheader2 = get_string('results_id_number_header', 'local_elisprogram');
 
-$from = "{$CFG->prefix}crlm_course cd RIGHT JOIN {$CFG->prefix}crlm_class cls ON cd.id = cls.courseid ";
+$from = "{$CFG->prefix}local_elisprogram_crs cd RIGHT JOIN {$CFG->prefix}local_elisprogram_cls cls ON cd.id = cls.courseid ";
 $table->set_sql($columns, $from, $where, $params);
 $table->define_baseurl($baseurl);
 $table->collapsible(false);

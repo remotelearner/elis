@@ -250,8 +250,8 @@ class certificatelistpage extends pm_page {
         );
 
         $select = "SELECT cls.idnumber ";
-        $from   = "FROM {crlm_class} cls ".
-                  "INNER JOIN {crlm_class_enrolment} clsenrol ON cls.id = clsenrol.classid ";
+        $from   = "FROM {local_elisprogram_cls} cls ".
+                  "INNER JOIN {local_elisprogram_cls_enrol} clsenrol ON cls.id = clsenrol.classid ";
         $where  = "WHERE clsenrol.userid = :userid AND cls.courseid = :courseid AND ".
                   "clsenrol.completetime = :timeissued ";
 

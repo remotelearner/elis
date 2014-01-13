@@ -35,7 +35,7 @@ class deepsight_datatable_user extends deepsight_datatable_standard {
     /**
      * @var string The main table results are pulled from. This forms that FROM clause.
      */
-    protected $main_table = 'crlm_user';
+    protected $main_table = 'local_elisprogram_usr';
 
     /**
      * Gets an array of available filters.

@@ -52,9 +52,9 @@ class legacydatamigration_testcase extends elis_database_test {
             field_owner::TABLE => elispm::file('tests/fixtures/user_field_owner.csv'),
             course::TABLE => elispm::file('tests/fixtures/pmcourse.csv'),
             curriculum::TABLE => elispm::file('tests/fixtures/curriculum.csv'),
-            'crlm_environment' => elispm::file('tests/fixtures/environment.csv'),
-            'crlm_tag' => elispm::file('tests/fixtures/tag.csv'),
-            'crlm_tag_instance' => elispm::file('tests/fixtures/tag_instance.csv'),
+            'local_elisprogram_env' => elispm::file('tests/fixtures/environment.csv'),
+            'local_elisprogram_tag' => elispm::file('tests/fixtures/tag.csv'),
+            'local_elisprogram_tag_inst' => elispm::file('tests/fixtures/tag_instance.csv'),
         ));
         $this->loadDataSet($dataset);
     }
@@ -74,7 +74,7 @@ class legacydatamigration_testcase extends elis_database_test {
            'timecreated' => 1327958800,
            'timemodified' => 1327958800
         );
-        $tagid = $DB->insert_record('crlm_tag', $tag);
+        $tagid = $DB->insert_record('local_elisprogram_tag', $tag);
 
         $taginstance = (object)array(
            'instancetype' => 'cur',
@@ -84,12 +84,12 @@ class legacydatamigration_testcase extends elis_database_test {
            'timecreated' => 1327958800,
            'timemodified' => 132795880
         );
-        $DB->insert_record('crlm_tag_instance', $taginstance);
+        $DB->insert_record('local_elisprogram_tag_inst', $taginstance);
 
         // Migrate the legacy tag data to new ELIS fields.
         pm_migrate_tags();
 
-        $this->assertTrue(!$DB->get_records('crlm_tag_instance', array('tagid' => $tagid)));
+        $this->assertTrue(!$DB->get_records('local_elisprogram_tag_inst', array('tagid' => $tagid)));
 
         // Initialize the program object.
         $program = new curriculum(1);

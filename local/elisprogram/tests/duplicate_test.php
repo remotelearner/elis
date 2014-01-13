@@ -126,7 +126,7 @@ class duplicate_testcase extends elis_database_test {
 
         $id = $return['classes'][''];
 
-        $record = $DB->get_record('crlm_class', array('id' => $id));
+        $record = $DB->get_record('local_elisprogram_cls', array('id' => $id));
 
         // We want to validate that the  unique idnumber is "test - test_3".
         $expectedvalue = 'test - test.3';
@@ -158,7 +158,7 @@ class duplicate_testcase extends elis_database_test {
         $this->assertTrue(is_array($return['curricula']));
 
         $id = $return['curricula'][''];
-        $record = $DB->get_record('crlm_curriculum', array('id' => $id));
+        $record = $DB->get_record('local_elisprogram_pgm', array('id' => $id));
 
         // We want to validate that the  unique idnumber is "test - test.3".
         $expectedvalue = 'test - test.3';
@@ -193,7 +193,7 @@ class duplicate_testcase extends elis_database_test {
         $this->assertTrue(is_array($return['courses']));
 
         $id = $return['courses'][''];
-        $record = $DB->get_record('crlm_course', array('id' => $id));
+        $record = $DB->get_record('local_elisprogram_crs', array('id' => $id));
 
         // We want to validate that the  unique idnumber is "test - test.3".
         $expectedvalue = 'test - test.3';
@@ -229,7 +229,7 @@ class duplicate_testcase extends elis_database_test {
         $this->assertTrue(is_array($return['tracks']));
 
         $id = $return['tracks'][''];
-        $record = $DB->get_record('crlm_track', array('id'=>$id));
+        $record = $DB->get_record('local_elisprogram_trk', array('id'=>$id));
 
         // We want to validate that the  unique idnumber is "test - test.3".
         $expectedvalue = 'test - test.3';
@@ -257,7 +257,7 @@ class duplicate_testcase extends elis_database_test {
         $track->track_auto_create();
 
         // Nothing is returned, so get most recent class created.
-        $records = $DB->get_records('crlm_class', null, "id DESC");
+        $records = $DB->get_records('local_elisprogram_cls', null, "id DESC");
         foreach ($records as $record) {
             $return = $record;
             break;
@@ -270,7 +270,7 @@ class duplicate_testcase extends elis_database_test {
 
     /**
      * Test to ensure that the auto-generated class ID number values do not overflow the maximum length of the
-     * crlm_class.idnumber field
+     * local_elisprogram_cls.idnumber field
      */
     public function test_trackautocreatevalidation_doesnotoverflowidnumberfield() {
         global $DB;
@@ -290,7 +290,7 @@ class duplicate_testcase extends elis_database_test {
         $track->track_auto_create();
 
         // Nothing is returned, so get most recent class created.
-        $records = $DB->get_records('crlm_class', null, 'id DESC');
+        $records = $DB->get_records('local_elisprogram_cls', null, 'id DESC');
         foreach ($records as $record) {
             $return = $record;
             break;
@@ -303,7 +303,7 @@ class duplicate_testcase extends elis_database_test {
 
     /**
      * Test to ensure that the auto-generated class ID number values do not overflow the maximum length of the
-     * crlm_class.idnumber field when multiple copies of the same class are created which require an incrementing iterator
+     * local_elisprogram_cls.idnumber field when multiple copies of the same class are created which require an incrementing iterator
      * to be appended to the idnumber value are used.
      */
     public function test_trackautocreatevalidation_doesnotoverflowidnumberfieldwithiterators() {
@@ -329,7 +329,7 @@ class duplicate_testcase extends elis_database_test {
         $track->track_auto_create();
 
         // Get most recent class records created.
-        $records = $DB->get_records('crlm_class', array(), "id DESC", 'id, idnumber', 0, 3);
+        $records = $DB->get_records('local_elisprogram_cls', array(), "id DESC", 'id, idnumber', 0, 3);
 
         // We want to test in the order they were created.
         $records = array_reverse($records);

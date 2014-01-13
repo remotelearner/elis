@@ -36,7 +36,7 @@ require_once elispm::lib('data/student.class.php');
 require_once elispm::file('form/curriculumcourseform.class.php');
 
 class curriculumcourse extends elis_data_object {
-    const TABLE = 'crlm_curriculum_course';
+    const TABLE = 'local_elisprogram_pgm_crs';
 
     var $verbose_name = 'curriculumcourse';
     var $_dbloaded = TRUE;
@@ -891,7 +891,7 @@ function curriculumcourse_count_curriculum_records($crsid, $namesearch = '', $al
  * Returns a list of records based on the course id
  *
  * @param int courseid Course id
- * @return recordset crlm_curriculum_course objects
+ * @return recordset local_elisprogram_pgm_crs objects
  */
 function curriculumcourse_get_list_by_course($courseid) {
     global $DB;
@@ -902,7 +902,7 @@ function curriculumcourse_get_list_by_course($courseid) {
  * Returns a list of records base on the curriculum id
  *
  * @param int curriculumid Curriculum id
- * @return recordset crlm_curriculum_course objects
+ * @return recordset local_elisprogram_pgm_crs objects
  */
 function curriculumcourse_get_list_by_curr($curriculumid) {
     global $DB;
@@ -910,7 +910,7 @@ function curriculumcourse_get_list_by_curr($curriculumid) {
 }
 
 class courseprerequisite extends elis_data_object {
-    const TABLE = 'crlm_course_prerequisite';
+    const TABLE = 'local_elisprogram_crs_prereq';
 
     static $associations = array(
         'curriculumcourse' => array(
@@ -928,7 +928,7 @@ class courseprerequisite extends elis_data_object {
 }
 
 class coursecorequisite extends elis_data_object {
-    const TABLE = 'crlm_course_corequisite';
+    const TABLE = 'local_elisprogram_crs_coreq';
 
     static $associations = array(
         'curriculumcourse' => array(

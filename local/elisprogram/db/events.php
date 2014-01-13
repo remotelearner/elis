@@ -103,7 +103,7 @@ $handlers = array (
         'schedule'          => 'instant'
      ),
 
-    'crlm_class_completed' => array (
+    'local_elisprogram_cls_completed' => array (
         'handlerfile'       => '/local/elisprogram/lib/lib.php',
         'handlerfunction'   => 'pm_course_complete',
         'schedule'          => 'instant'

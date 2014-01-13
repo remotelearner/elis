@@ -64,8 +64,8 @@ class pmentities_testcase extends elis_database_test {
     protected function load_csv_data() {
         $dataset = $this->createCsvDataSet(array(
             'user' => elispm::file('tests/fixtures/mdluser.csv'),
-            'crlm_course' => elispm::file('tests/fixtures/pmcourse.csv'),
-            'crlm_curriculum' => elispm::file('tests/fixtures/curriculum.csv'),
+            'local_elisprogram_crs' => elispm::file('tests/fixtures/pmcourse.csv'),
+            'local_elisprogram_pgm' => elispm::file('tests/fixtures/curriculum.csv'),
         ));
         $this->loadDataSet($dataset);
     }

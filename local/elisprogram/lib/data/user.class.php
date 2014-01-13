@@ -47,7 +47,7 @@ require_once $CFG->dirroot . '/user/filters/user_filter_forms.php';
 require_once $CFG->dirroot . '/user/profile/lib.php';
 
 class user extends data_object_with_custom_fields {
-    const TABLE = 'crlm_user';
+    const TABLE = 'local_elisprogram_usr';
 
     var $verbose_name = 'user';
 
@@ -1475,7 +1475,7 @@ class pm_custom_field_filter extends user_filter_type {
         $name = 'ex_elisfield'.$counter++;
         $sql = 'EXISTS (SELECT * FROM {'. $this->_field->data_table() ."} data
                         JOIN {context} ctx ON ctx.id = data.contextid
-                        WHERE ctx.instanceid = {crlm_user}.id
+                        WHERE ctx.instanceid = {local_elisprogram_usr}.id
                           AND ctx.contextlevel = ".CONTEXT_ELIS_USER."
                           AND data.fieldid = {$this->_field->id}
                           AND ". $DB->sql_like('data.data', ":{$name}", false) .')';

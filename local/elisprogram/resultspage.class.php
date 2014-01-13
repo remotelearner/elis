@@ -127,7 +127,7 @@ abstract class enginepage extends pm_page {
         // If a button hasn't been pressed we have to look in the db.
         if ($type == -1) {
             $params = array('resultsid' => $this->get_engine_id());
-            if (! $type = $DB->get_field('crlm_results_action', 'actiontype', $params, IGNORE_MULTIPLE)) {
+            if (! $type = $DB->get_field('local_elisprogram_res_action', 'actiontype', $params, IGNORE_MULTIPLE)) {
                 $type = ACTION_TYPE_TRACK;
             }
         }
@@ -630,7 +630,7 @@ class class_enginepage extends enginepage {
         global $DB;
 
         $classid  = $this->required_param('id', PARAM_INT);
-        $courseid = $DB->get_field('crlm_class', 'courseid', array('id' => $classid));
+        $courseid = $DB->get_field('local_elisprogram_cls', 'courseid', array('id' => $classid));
         return $courseid;
     }
 

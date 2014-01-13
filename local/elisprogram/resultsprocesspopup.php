@@ -38,12 +38,12 @@ if ((! $context) || (($context->contextlevel != CONTEXT_ELIS_CLASS) && ($context
 }
 
 $capability = 'local/elisprogram:course_edit';
-$table      = 'crlm_course';
+$table      = 'local_elisprogram_crs';
 $fields     = 'id, name as idnumber';
 
 if ($context->contextlevel == CONTEXT_ELIS_CLASS) {
     $capability = 'local/elisprogram:class_edit';
-    $table      = 'crlm_class';
+    $table      = 'local_elisprogram_cls';
     $fields     = 'id, idnumber';
 }
 

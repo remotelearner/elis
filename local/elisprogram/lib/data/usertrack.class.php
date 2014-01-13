@@ -36,7 +36,7 @@ require_once elispm::lib('data/track.class.php');
 
 class usertrack extends elis_data_object {
 
-    const TABLE = 'crlm_user_track';
+    const TABLE = 'local_elisprogram_usr_trk';
     var $verbose_name = 'usertrack';
 
     /**

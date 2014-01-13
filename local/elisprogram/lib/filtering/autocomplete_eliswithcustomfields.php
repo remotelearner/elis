@@ -37,6 +37,15 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
         1006 => 'cluster'
     );
 
+    protected $tablemap = array(
+        'curriculum' => 'local_elisprogram_pgm',
+        'track' => 'local_elisprogram_trk',
+        'course' => 'local_elisprogram_crs',
+        'class' => 'local_elisprogram_cls',
+        'user' => 'local_elisprogram_usr',
+        'cluster' => 'local_elisprogram_uset',
+    );
+
     protected $custom_fields_data_tables = array(
         'char' => 'elis_field_data_char',
         'text' => 'elis_field_data_text'
@@ -80,7 +89,7 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
         if (!isset($options['contextlevel']) || !isset($this->context_level_map[$options['contextlevel']])) {
             print_error('autocomplete_nocontext', 'local_elisprogram');
         }
-        $this->instancetable = 'crlm_'.$this->context_level_map[$options['contextlevel']];
+        $this->instancetable = $this->tablemap[$this->context_level_map[$options['contextlevel']]];
         $this->contextlevel = $options['contextlevel'];
 
         if (!empty($options['forced_custom_field_vals']) && is_array($options['forced_custom_field_vals'])) {

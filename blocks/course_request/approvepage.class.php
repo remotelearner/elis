@@ -545,7 +545,7 @@ class pending_requests_page_table extends display_table {
             return get_string('newcourse', 'block_course_request');
         }
         if (!isset($this->coursename_cache[$courseid])) {
-            $this->coursename_cache[$courseid] = $DB->get_field('crlm_course', 'name', array('id' => $courseid));
+            $this->coursename_cache[$courseid] = $DB->get_field('local_elisprogram_crs', 'name', array('id' => $courseid));
         }
         return $this->coursename_cache[$courseid];
     }

@@ -93,12 +93,12 @@ class deepsight_filter_enrolmentstatus extends deepsight_filter_switch {
 
         if (isset($data) && $data === 'notenrolled') {
             return array(
-                '(SELECT id FROM {crlm_class_enrolment} WHERE classid = ? AND userid=element.id) IS NULL',
+                '(SELECT id FROM {local_elisprogram_cls_enrol} WHERE classid = ? AND userid=element.id) IS NULL',
                 array($this->classid)
             );
         } else if (isset($data) && $data === 'enrolled') {
             return array(
-                '(SELECT id FROM {crlm_class_enrolment} WHERE classid = ? AND userid=element.id) IS NOT NULL',
+                '(SELECT id FROM {local_elisprogram_cls_enrol} WHERE classid = ? AND userid=element.id) IS NOT NULL',
                 array($this->classid)
             );
         } else {

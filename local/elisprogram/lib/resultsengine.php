@@ -82,17 +82,17 @@ function results_engine_manual($context) {
 
     $level       = CONTEXT_ELIS_CLASS;
     $courselevel = CONTEXT_ELIS_COURSE;
-    $tables = '{crlm_class} cc'
+    $tables = '{local_elisprogram_cls} cc'
             .' JOIN {context} c ON c.instanceid=cc.id AND c.contextlevel=?'
-            .' JOIN {crlm_results} cr ON cr.contextid=c.id';
+            .' JOIN {local_elisprogram_res} cr ON cr.contextid=c.id';
     $where = array('cc.id = ?');
 
     if ($context->contextlevel == $courselevel) {
         $level    = $courselevel;
-        $tables = '{crlm_class} cc'
-                .' JOIN {crlm_course} ccd ON ccd.id=cc.courseid'
+        $tables = '{local_elisprogram_cls} cc'
+                .' JOIN {local_elisprogram_crs} ccd ON ccd.id=cc.courseid'
                 .' JOIN {context} c ON c.instanceid=ccd.id AND c.contextlevel=?'
-                .' JOIN {crlm_results} cr ON cr.contextid=c.id';
+                .' JOIN {local_elisprogram_res} cr ON cr.contextid=c.id';
         $where = array('ccd.id = ?');
     }
 
@@ -196,23 +196,23 @@ function results_engine_get_active() {
 
     // Get course level instances that have not been overriden or already run.
     $sql = 'SELECT '. implode(', ', $fields)
-         .' FROM {crlm_results} cr'
+         .' FROM {local_elisprogram_res} cr'
          .' JOIN {context} c ON c.id = cr.contextid AND c.contextlevel=?'
-         .' JOIN {crlm_course} cou ON cou.id = c.instanceid'
-         .' JOIN {crlm_class} cls ON cls.courseid = cou.id'
+         .' JOIN {local_elisprogram_crs} cou ON cou.id = c.instanceid'
+         .' JOIN {local_elisprogram_cls} cls ON cls.courseid = cou.id'
          .' JOIN {context} c2 on c2.instanceid=cls.id AND c2.contextlevel=?'
-         .' LEFT JOIN {crlm_results} cr2 ON cr2.contextid=c2.id AND cr2.active=1'
-         .' LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cls.id'
+         .' LEFT JOIN {local_elisprogram_res} cr2 ON cr2.contextid=c2.id AND cr2.active=1'
+         .' LEFT JOIN {local_elisprogram_res_clslog} crcl ON crcl.classid=cls.id'
          .' WHERE cr.active=1'
          .  ' AND ((cr.eventtriggertype = ? AND crcl.daterun IS NULL) OR cr.eventtriggertype=?)'
          .  ' AND cr2.active IS NULL'
          .' UNION'
     // Get class level instances that have not been already run.
          .' SELECT '. implode(', ', $fields)
-         .' FROM {crlm_results} cr'
+         .' FROM {local_elisprogram_res} cr'
          .' JOIN {context} c ON c.id = cr.contextid AND c.contextlevel=?'
-         .' JOIN {crlm_class} cls ON cls.id = c.instanceid'
-         .' LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cls.id'
+         .' JOIN {local_elisprogram_cls} cls ON cls.id = c.instanceid'
+         .' LEFT JOIN {local_elisprogram_res_clslog} crcl ON crcl.classid=cls.id'
          .' WHERE cr.active=1'
          .  ' AND ((cr.eventtriggertype = ? AND crcl.daterun IS NULL) OR cr.eventtriggertype=?)';
 
@@ -241,10 +241,10 @@ function results_engine_get_students($class) {
     global $DB;
     $params = array('classid' => $class->id);
     $fields = array('id', 'userid', 'grade', 'locked');
-    $table  = 'crlm_class_enrolment';
+    $table  = 'local_elisprogram_cls_enrol';
 
     if ($class->criteriatype > 0) {
-        $table = 'crlm_class_graded';
+        $table = 'local_elisprogram_cls_graded';
         $params['completionid'] = $class->criteriatype;
     }
 
@@ -261,8 +261,8 @@ function results_engine_get_students($class) {
 
         $sql = 'SELECT DISTINCT '. implode(',', $fields)
              .' FROM {'. $table .'} g'
-             .' LEFT JOIN {crlm_results_class_log} c ON c.classid = g.classid'
-             .' LEFT JOIN {crlm_results_student_log} l ON l.userid=g.userid AND l.classlogid=c.id'
+             .' LEFT JOIN {local_elisprogram_res_clslog} c ON c.classid = g.classid'
+             .' LEFT JOIN {local_elisprogram_res_stulog} l ON l.userid=g.userid AND l.classlogid=c.id'
              .' WHERE '. implode(' AND ', $criteria) .' AND l.action IS NULL';
         $students = $DB->get_records_sql($sql);
 
@@ -311,7 +311,7 @@ function results_engine_process($class) {
 
     $params = array('resultsid' => $class->engineid);
     $fields = 'id, actiontype, minimum, maximum, trackid, classid, fieldid, fielddata';
-    $actions = $DB->get_records('crlm_results_action', $params, '', $fields);
+    $actions = $DB->get_records('local_elisprogram_res_action', $params, '', $fields);
 
     $fieldids = array();
     $classids = array();
@@ -333,15 +333,15 @@ function results_engine_process($class) {
         }
     }
 
-    $classes = $DB->get_records_list('crlm_class', 'id', $classids);
-    $tracks  = $DB->get_records_list('crlm_track', 'id', $trackids);
+    $classes = $DB->get_records_list('local_elisprogram_cls', 'id', $classids);
+    $tracks  = $DB->get_records_list('local_elisprogram_trk', 'id', $trackids);
 
     // Log that the class has been processed
     $log = new stdClass();
     $log->classid       = $class->id;
     $log->datescheduled = $class->scheduleddate;
     $log->daterun       = $class->rundate;
-    $classlogid = $DB->insert_record('crlm_results_class_log', $log);
+    $classlogid = $DB->insert_record('local_elisprogram_res_clslog', $log);
 
     $log = new stdClass();
     $log->classlogid = $classlogid;
@@ -416,7 +416,7 @@ function results_engine_process($class) {
             $obj->id = $do->id;
             $log->action     = get_string($message, RESULTS_ENGINE_LANG_FILE, $obj);
             $log->userid     = $student->userid;
-            $DB->insert_record('crlm_results_student_log', $log, false);
+            $DB->insert_record('local_elisprogram_res_stulog', $log, false);
         }
     }
 

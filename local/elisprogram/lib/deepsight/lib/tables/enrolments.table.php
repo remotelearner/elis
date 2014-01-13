@@ -190,8 +190,8 @@ class deepsight_datatable_enrolments extends deepsight_datatable_user {
         list($filtersql, $filterparams) = parent::get_filter_sql($filters);
 
         $additionalfilters = array(
-            '(SELECT id FROM {crlm_class_instructor} WHERE classid = '.$this->classid.' AND userid=element.id) IS NULL',
-            '(SELECT id FROM {crlm_wait_list} WHERE classid = '.$this->classid.' AND userid=element.id) IS NULL',
+            '(SELECT id FROM {local_elisprogram_cls_nstrct} WHERE classid = '.$this->classid.' AND userid=element.id) IS NULL',
+            '(SELECT id FROM {local_elisprogram_waitlist} WHERE classid = '.$this->classid.' AND userid=element.id) IS NULL',
         );
 
         // Permissions.
@@ -217,7 +217,7 @@ class deepsight_datatable_enrolments extends deepsight_datatable_user {
      */
     protected function get_join_sql(array $filters=array()) {
         $joinsql = parent::get_join_sql($filters);
-        $joinsql[] = 'LEFT JOIN {crlm_class_enrolment} enrol ON enrol.classid='.$this->classid.' AND enrol.userid = element.id';
+        $joinsql[] = 'LEFT JOIN {local_elisprogram_cls_enrol} enrol ON enrol.classid='.$this->classid.' AND enrol.userid = element.id';
         return $joinsql;
     }
 

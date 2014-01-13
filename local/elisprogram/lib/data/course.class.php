@@ -35,7 +35,7 @@ require_once elispm::lib('data/curriculumcourse.class.php');
 require_once elispm::lib('data/pmclass.class.php');
 
 class course extends data_object_with_custom_fields {
-    const TABLE = 'crlm_course';
+    const TABLE = 'local_elisprogram_crs';
 
     static $config_default_prefix = 'crsdft';
 
@@ -928,7 +928,7 @@ function course_count_records($namesearch = '', $alpha = '', $contexts = null) {
 }
 
 class coursecompletion extends elis_data_object {
-    const TABLE = 'crlm_course_completion';
+    const TABLE = 'local_elisprogram_crs_cmp';
 
     protected $_dbfield_courseid;
     protected $_dbfield_idnumber;

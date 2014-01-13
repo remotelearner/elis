@@ -272,7 +272,7 @@ class pm_context_set {
     function _track_allowed($id) {
         global $DB;
         if (isset($this->contexts['curriculum'])
-            && $DB->record_exists_select('crlm_track',
+            && $DB->record_exists_select('local_elisprogram_trk',
                                                "id = $id AND curid IN (".implode(',',$this->contexts['curriculum']).')')) {
             return true;
         }
@@ -282,7 +282,7 @@ class pm_context_set {
     function _course_allowed($id) {
         global $DB;
         if (isset($this->contexts['curriculum'])
-            && $DB->record_exists_select('crlm_curriculum_course',
+            && $DB->record_exists_select('local_elisprogram_pgm_crs',
                                                "courseid = $id AND curriculumid IN (".implode(',',$this->contexts['curriculum']).')')) {
             return true;
         }
@@ -292,23 +292,23 @@ class pm_context_set {
     function _class_allowed($id) {
         global $DB;
         if (isset($this->contexts['course'])
-            && $DB->record_exists_select('crlm_class',
+            && $DB->record_exists_select('local_elisprogram_cls',
                                                  "id = $id AND courseid IN (".implode(',',$this->contexts['course']).')')) {
             return true;
         }
         if (isset($this->contexts['track'])
-            && $DB->record_exists_select('crlm_track_class',
+            && $DB->record_exists_select('local_elisprogram_trk_cls',
                                                  "classid = $id AND trackid IN (".implode(',',$this->contexts['track']).')')) {
             return true;
         }
         if (isset($this->contexts['curriculum']))  {
             $sql = "SELECT 'x'
-                      FROM {crlm_track_class} trkcls
-                      JOIN {crlm_track} trk ON trk.id = trkcls.trackid
+                      FROM {local_elisprogram_trk_cls} trkcls
+                      JOIN {local_elisprogram_trk} trk ON trk.id = trkcls.trackid
                      WHERE trkcls.classid = $id AND trk.curid IN (".implode(',',$this->contexts['curriculum']).")
               UNION SELECT 'x'
-                      FROM {crlm_curriculum_course} curcrs
-                      JOIN {crlm_class} cls ON curcrs.courseid = cls.courseid
+                      FROM {local_elisprogram_pgm_crs} curcrs
+                      JOIN {local_elisprogram_cls} cls ON curcrs.courseid = cls.courseid
                      WHERE cls.id = $id AND curcrs.curriculumid IN (".implode(',',$this->contexts['curriculum']).')';
             if ($DB->record_exists_sql($sql)) {
                 return true;

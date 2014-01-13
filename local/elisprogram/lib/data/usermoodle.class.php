@@ -35,7 +35,7 @@ require_once elis::lib('data/data_object.class.php');
  * Class that represents an association between a Moodle user and a PM user
  */
 class usermoodle extends elis_data_object {
-    const TABLE = 'crlm_user_moodle';
+    const TABLE = 'local_elisprogram_usr_mdl';
 
     static $validation_rules = array(
         array('validation_helper', 'is_unique_cuserid_muserid'),

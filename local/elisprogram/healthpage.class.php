@@ -253,7 +253,7 @@ class health_duplicate_enrolments extends crlm_health_check_base {
 }
 
 /**
- * Checks that the crlm_class_moodle table doesn't contain any links to stale
+ * Checks that the local_elisprogram_cls_mdl table doesn't contain any links to stale
  * CM class records.
  */
 class health_stale_cm_class_moodle extends crlm_health_check_base {
@@ -294,7 +294,7 @@ class health_stale_cm_class_moodle extends crlm_health_check_base {
 }
 
 /**
- * Checks that the crlm_curriculum_course table doesn't contain any links to
+ * Checks that the local_elisprogram_pgm_crs table doesn't contain any links to
  * stale CM course records.
  */
 class health_curriculum_course extends crlm_health_check_base {
@@ -753,7 +753,7 @@ class duplicate_course_los extends crlm_health_check_base {
     var $count; // count of max course with duplicate completion elements
     function __construct() {
         global $DB;
-        $sql = "SELECT MAX(count) FROM (SELECT COUNT('x') AS count FROM {crlm_course_completion} GROUP BY courseid, idnumber) duplos";
+        $sql = "SELECT MAX(count) FROM (SELECT COUNT('x') AS count FROM {local_elisprogram_crs_cmp} GROUP BY courseid, idnumber) duplos";
         $this->count = $DB->get_field_sql($sql);
     }
     function exists() {

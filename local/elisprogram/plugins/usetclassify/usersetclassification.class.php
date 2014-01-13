@@ -32,7 +32,7 @@ require_once elis::lib('data/data_object_with_custom_fields.class.php');
 require_once elispm::lib('contexts.php');
 
 class usersetclassification extends elis_data_object {
-    const TABLE = 'crlm_cluster_classification';
+    const TABLE = 'elisprogram_usetclassify';
 
     protected $_dbfield_shortname;
     protected $_dbfield_name;

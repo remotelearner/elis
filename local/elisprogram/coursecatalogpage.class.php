@@ -841,7 +841,7 @@ YUI().use("datasource", "datatable-sort", "dom", "event", function(Y) {
 }
 
 if (!defined('ENVTABLE')) {
-    define('ENVTABLE', 'crlm_environment');
+    define('ENVTABLE', 'local_elisprogram_env');
 }
 
 class waitlisttable extends yui_table {

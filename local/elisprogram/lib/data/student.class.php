@@ -39,8 +39,8 @@ require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/waitlist.class.php');
 
-define ('STUTABLE', 'crlm_class_enrolment');
-define ('GRDTABLE', 'crlm_class_graded');
+define ('STUTABLE', 'local_elisprogram_cls_enrol');
+define ('GRDTABLE', 'local_elisprogram_cls_graded');
 
 define ('STUSTATUS_NOTCOMPLETE', 0);
 define ('STUSTATUS_FAILED',      1);
@@ -416,7 +416,7 @@ class student extends elis_data_object {
         parent::save(); // no return val
         if ($this->completestatusid != STUSTATUS_NOTCOMPLETE) {
             require_once elispm::lib('notifications.php');
-            events_trigger('crlm_class_completed', $this);
+            events_trigger('local_elisprogram_cls_completed', $this);
 
             // Does the user receive a notification?
             $sendtouser       = elis::$config->local_elisprogram->notify_classcompleted_user;

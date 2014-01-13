@@ -36,7 +36,7 @@ function get_profilefields() {
     global $CFG, $DB;
 
     //get elis user fields as it appears in the db
-    $sql = 'SELECT u.* FROM {crlm_user} u HAVING min(id)'; // TBD
+    $sql = 'SELECT u.* FROM {local_elisprogram_usr} u HAVING min(id)'; // TBD
     $profile_fields = get_object_vars(current($DB->get_records_sql($sql)));
 
     //unset any fields that should never be allowed to be changed eg. the id field

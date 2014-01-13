@@ -89,13 +89,13 @@ class autocreatemoodlecourse_testcase extends elis_database_test {
         // Get the new returned id.
         $id = $return['classes'][1];
 
-        $recordexists = $DB->record_exists('crlm_class_moodle', array('classid' => $id));
+        $recordexists = $DB->record_exists('local_elisprogram_cls_mdl', array('classid' => $id));
 
         // We want to validate that a link to the new moodle course was created.
         $this->assertTrue($recordexists);
 
         // Get the new course id.
-        $record = $DB->get_record('crlm_class_moodle', array('classid' => $id));
+        $record = $DB->get_record('local_elisprogram_cls_mdl', array('classid' => $id));
         $courseexists = $DB->record_exists('course', array('id' => $record->moodlecourseid));
 
         // We want to validate that new moodle course was created.
@@ -117,13 +117,13 @@ class autocreatemoodlecourse_testcase extends elis_database_test {
         // Make sure that moodle_attach_class returns true.
         $this->assertTrue($result);
 
-        $recordexists = $DB->record_exists('crlm_class_moodle', array('classid' => $clsid));
+        $recordexists = $DB->record_exists('local_elisprogram_cls_mdl', array('classid' => $clsid));
 
         // We want to validate that a link to the new moodle course was created.
         $this->assertTrue($recordexists);
 
         // Get the new course id.
-        $record = $DB->get_record('crlm_class_moodle', array('classid' => $clsid));
+        $record = $DB->get_record('local_elisprogram_cls_mdl', array('classid' => $clsid));
         $courseexists = $DB->record_exists('course', array('id' => $record->moodlecourseid));
 
         // We want to validate that new moodle course was created.

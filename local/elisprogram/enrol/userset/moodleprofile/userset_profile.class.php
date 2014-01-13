@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(elis::lib('data/data_object.class.php'));
 
 class userset_profile extends elis_data_object {
-    const TABLE = 'crlm_cluster_profile';
+    const TABLE = 'local_elisprogram_uset_prfle';
 
     protected $_dbfield_clusterid;
     protected $_dbfield_fieldid;

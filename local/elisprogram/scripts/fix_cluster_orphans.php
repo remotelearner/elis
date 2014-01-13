@@ -55,7 +55,7 @@ foreach ($clusters as $clusid => $clusdata) {
             $newclusdata->parent = 0;
             $newclusdata->depth = 1;
 
-            // Update the records in crlm_cluster table
+            // Update the records in local_elisprogram_uset table
             $result = $DB->update_record(userset::TABLE, $newclusdata);
 
             // Blank out the depth and path for associated records and child records in context table

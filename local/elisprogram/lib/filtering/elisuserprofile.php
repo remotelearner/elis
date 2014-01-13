@@ -40,7 +40,7 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
     //this maps entities to their appropriate database tables
     var $tables = array(
         'up' => array(
-            'crlm_user'            => 'u',
+            'local_elisprogram_usr'            => 'u',
             'elis_field_data_char' => 'updc',
             'elis_field_data_int'  => 'updi',
             'elis_field_data_num'  => 'updn',
@@ -182,8 +182,8 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
 
         $options['tables'] = $this->tables[$group]; // TBD: default?
         $options['dbfield'] = $name; // TBD: default?
-        if (isset($this->tables[$group]['crlm_user'])) {
-            $options['talias'] = $this->tables[$group]['crlm_user']; // default table?
+        if (isset($this->tables[$group]['local_elisprogram_usr'])) {
+            $options['talias'] = $this->tables[$group]['local_elisprogram_usr']; // default table?
         } else {
             $options['talias'] = ''; // TBD???
             error_log("elisuserprofile::make_filter_options_custom(options, $group, $name) ... setting 'talias' empty!");
@@ -192,8 +192,8 @@ class generalized_filter_elisuserprofile extends generalized_filter_multifilter 
         switch ($name) {
             case 'fullname':
                 //combine the firstname and lastname into a fullname field
-                $firstname = $this->tables[$group]['crlm_user'] .'.firstname';
-                $lastname  = $this->tables[$group]['crlm_user'] .'.lastname';
+                $firstname = $this->tables[$group]['local_elisprogram_usr'] .'.firstname';
+                $lastname  = $this->tables[$group]['local_elisprogram_usr'] .'.lastname';
                 $options['dbfield'] = $DB->sql_concat($firstname, "' '", $lastname);
                 $options['talias'] = '';
                 //todo: find a better way to do this

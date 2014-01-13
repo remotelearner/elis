@@ -214,9 +214,9 @@ class course_enginestatuspage extends enginestatuspage {
     protected $tableid = 'results_engine_course_status';
     protected $columns = array('idnumber', 'datescheduled', 'daterun');
     protected $fields  = 'cc.id, cc.idnumber, MAX(crcl.datescheduled) as datescheduled, MAX(crcl.daterun) as daterun';
-    protected $from    = '{crlm_class} cc LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cc.id';
+    protected $from    = '{local_elisprogram_cls} cc LEFT JOIN {local_elisprogram_res_clslog} crcl ON crcl.classid=cc.id';
     protected $where   = 'cc.courseid=? GROUP BY cc.id, cc.idnumber';
-    protected $count   = 'SELECT COUNT(1) FROM {crlm_class} WHERE courseid=?';
+    protected $count   = 'SELECT COUNT(1) FROM {local_elisprogram_cls} WHERE courseid=?';
     protected $sort    = 'idnumber';
 
     /**
@@ -285,7 +285,7 @@ class course_enginestatuspage extends enginestatuspage {
         global $DB;
 
         $params =  array('id' => $this->required_param('id', PARAM_INT));
-        $course = $DB->get_record('crlm_course', $params, 'id, name');
+        $course = $DB->get_record('local_elisprogram_crs', $params, 'id, name');
         return $course;
     }
 
@@ -327,9 +327,9 @@ class class_enginestatuspage extends enginestatuspage {
     protected $tableid = 'results_engine_class_status';
     protected $columns = array('fullname', 'actions', 'daterun');
     protected $fields  = 'cu.id, cu.firstname, cu.lastname, GROUP_CONCAT(crsl.action) as actions, MAX(crsl.daterun) as daterun';
-    protected $from    = '{crlm_class_enrolment} cce JOIN {crlm_user} cu ON cu.id=cce.userid LEFT JOIN {crlm_results_class_log} crcl ON crcl.classid=cce.classid LEFT JOIN {crlm_results_student_log} crsl ON crsl.userid=cce.userid AND crsl.classlogid=crcl.id';
+    protected $from    = '{local_elisprogram_cls_enrol} cce JOIN {local_elisprogram_usr} cu ON cu.id=cce.userid LEFT JOIN {local_elisprogram_res_clslog} crcl ON crcl.classid=cce.classid LEFT JOIN {local_elisprogram_res_stulog} crsl ON crsl.userid=cce.userid AND crsl.classlogid=crcl.id';
     protected $where   = 'cce.classid=? GROUP BY cu.id, cu.firstname, cu.lastname';
-    protected $count   = 'SELECT COUNT(1) FROM {crlm_class_enrolment} WHERE classid=?';
+    protected $count   = 'SELECT COUNT(1) FROM {local_elisprogram_cls_enrol} WHERE classid=?';
     protected $sort    = 'lastname';
 
     /**
@@ -372,7 +372,7 @@ class class_enginestatuspage extends enginestatuspage {
         global $DB;
 
         $classid  = $this->required_param('id', PARAM_INT);
-        $courseid = $DB->get_field('crlm_class', 'courseid', array('id' => $classid));
+        $courseid = $DB->get_field('local_elisprogram_cls', 'courseid', array('id' => $classid));
         return $courseid;
     }
 
@@ -403,8 +403,8 @@ class class_enginestatuspage extends enginestatuspage {
         global $DB;
 
         $sql = 'SELECT cls.id, cls.idnumber, crs.name'
-             .' FROM {crlm_class} cls'
-             .' JOIN {crlm_course} crs ON crs.id = cls.courseid'
+             .' FROM {local_elisprogram_cls} cls'
+             .' JOIN {local_elisprogram_crs} crs ON crs.id = cls.courseid'
              .' WHERE cls.id=?';
 
         $params = array('id' => $this->required_param('id', PARAM_INT));

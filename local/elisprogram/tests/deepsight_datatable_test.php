@@ -241,7 +241,7 @@ class deepsight_datatable_testcase extends elis_database_test {
             $user = new stdClass;
             $user->firstname = 'Test';
             $user->lastname = 'User '.$i;
-            $id = $DB->insert_record('crlm_user', $user);
+            $id = $DB->insert_record('local_elisprogram_usr', $user);
             $generatedids[] = $id;
             $SESSION->{$bulklistparam}[$id] = $id;
         }
@@ -320,7 +320,7 @@ class deepsight_datatable_testcase extends elis_database_test {
             $user->username = 'testuser'.$i;
             $user->idnumber = 'testuser'.$i;
             $user->city = $city;
-            $DB->insert_record('crlm_user', $user);
+            $DB->insert_record('local_elisprogram_usr', $user);
         }
 
         $name = 'datatable';

@@ -34,7 +34,7 @@ require_once(elispm::lib('data/clustercurriculum.class.php'));
 require_once(elis::plugin_file('usetenrol_moodleprofile', 'userset_profile.class.php'));
 
 class userset extends data_object_with_custom_fields {
-    const TABLE = 'crlm_cluster';
+    const TABLE = 'local_elisprogram_uset';
 
     public $verbose_name = 'user set';
 

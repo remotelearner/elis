@@ -29,7 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once elis::lib('data/data_object.class.php');
 
 class coursetemplate extends elis_data_object {
-    const TABLE = 'crlm_coursetemplate';
+    const TABLE = 'local_elisprogram_crs_tpl';
 
     static $associations = array(
         'course' => array(

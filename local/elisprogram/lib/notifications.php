@@ -110,7 +110,7 @@ class message {
 }
 
 class notificationlog extends elis_data_object {
-    const TABLE = 'crlm_notification_log';
+    const TABLE = 'local_elisprogram_notifylog';
 
     var $verbose_name = 'notificationlog';
 
@@ -181,7 +181,7 @@ class notification extends message {
      * @param char $message The text of the message.
      * @param object $userto A Moodle generic user object, or a PM user class object that the message is to.
      * @param object $userfrom A Moodle generic user object, or a PM user class object that the message is from.
-     * @param object $logevent Information to log to 'crlm_notification_log' (can include fields userto, fromuserid,
+     * @param object $logevent Information to log to 'local_elisprogram_notifylog' (can include fields userto, fromuserid,
      *                         instance, data, timecreated).
      *
      */
@@ -279,7 +279,7 @@ class notification extends message {
                 } else {
                     $newlog->timecreated = time();
                 }
-                $DB->insert_record('crlm_notification_log', $newlog);
+                $DB->insert_record('local_elisprogram_notifylog', $newlog);
             }
         }
     }
@@ -770,7 +770,7 @@ function pm_notify_track_assign_handler($eventdata){
     }
 
     /// Get the track record from the track id.
-    if (!($track = $DB->get_record('crlm_track', array('id'=> $eventdata->trackid)))) {
+    if (!($track = $DB->get_record('local_elisprogram_trk', array('id'=> $eventdata->trackid)))) {
         if (in_cron()) {
             mtrace(get_string('notrack', 'local_elisprogram'));
         } else {
@@ -823,7 +823,7 @@ function pm_notify_track_assign_handler($eventdata){
  * @uses   $CFG
  * @uses   $DB
  *
- * @param  stdClass  $eventdata  The appropriate crlm_class_instructor record
+ * @param  stdClass  $eventdata  The appropriate local_elisprogram_cls_nstrct record
  * @return bool always returns true
  */
 function pm_notify_instructor_assigned_handler($eventdata) {
@@ -891,7 +891,7 @@ function pm_notify_instructor_assigned_handler($eventdata) {
  * Takes an instructor unassignment and deletes the appropriate
  * Moodle course role assignments
  *
- * @param  stdClass  $eventdata  The appropriate crlm_class_instructor record
+ * @param  stdClass  $eventdata  The appropriate local_elisprogram_cls_nstrct record
  * @return bool always returns true
  */
 function pm_notify_instructor_unassigned_handler($eventdata) {

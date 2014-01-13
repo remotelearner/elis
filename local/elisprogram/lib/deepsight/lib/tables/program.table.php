@@ -34,7 +34,7 @@ class deepsight_datatable_program extends deepsight_datatable_standard {
     /**
      * @var string The main table results are pulled from. This forms that FROM clause.
      */
-    protected $main_table = 'crlm_curriculum';
+    protected $main_table = 'local_elisprogram_pgm';
 
     /**
      * Gets an array of available filters.

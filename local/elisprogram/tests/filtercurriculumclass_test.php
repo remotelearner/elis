@@ -53,7 +53,7 @@ class filtercurriculumclass_testcase extends elis_database_test {
         $pmclass = $datagenerator->create_pmclass(array('courseid' => $course->id));
 
         $dataset = $this->createCsvDataSet(array(
-            'crlm_environment' => elispm::file('tests/fixtures/environment.csv')
+            'local_elisprogram_env' => elispm::file('tests/fixtures/environment.csv')
         ));
         $this->loadDataSet($dataset);
 

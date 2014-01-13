@@ -194,7 +194,7 @@ class pm_moodle_user_to_pm_testcase extends elis_database_test {
         $this->assertTrue($result);
 
         // Get ELIS user.
-        $cu = $DB->get_record('crlm_user', array('username' => $mu->username));
+        $cu = $DB->get_record('local_elisprogram_usr', array('username' => $mu->username));
         $this->assertNotEmpty($cu);
         $this->assertEquals($mu->idnumber, $cu->idnumber);
 
@@ -209,7 +209,7 @@ class pm_moodle_user_to_pm_testcase extends elis_database_test {
 
         // Get usermoodle record.
         $params = array('cuserid' => $cu->id, 'muserid' => $mu->id, 'idnumber' => $cu->idnumber);
-        $usermoodle = $DB->get_record('crlm_user_moodle', $params);
+        $usermoodle = $DB->get_record('local_elisprogram_usr_mdl', $params);
         $this->assertNotEmpty($usermoodle);
     }
 }

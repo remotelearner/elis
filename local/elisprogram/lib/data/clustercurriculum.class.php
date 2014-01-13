@@ -36,7 +36,7 @@ require_once(elispm::lib('data/user.class.php'));
 
 class clustercurriculum extends elis_data_object {
 
-    const TABLE = 'crlm_cluster_curriculum';
+    const TABLE = 'local_elisprogram_uset_pgm';
 
     /**
      * User ID-number

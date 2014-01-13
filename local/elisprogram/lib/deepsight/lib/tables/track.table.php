@@ -35,7 +35,7 @@ class deepsight_datatable_track extends deepsight_datatable_standard {
     /**
      * @var string The main table results are pulled from. This forms that FROM clause.
      */
-    protected $main_table = 'crlm_track';
+    protected $main_table = 'local_elisprogram_trk';
 
     /**
      * Gets an array of available filters.

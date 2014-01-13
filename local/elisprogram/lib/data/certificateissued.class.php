@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(dirname(__FILE__).'/../../../../config.php');
 require_once(elis::lib('data/data_object.class.php'));
 require_once(elis::lib('table.class.php'));
-define('CERT_ISSUED_TABLE', 'crlm_certificate_issued');
+define('CERT_ISSUED_TABLE', 'local_elisprogram_certissued');
 
 /**
  * Data object for issued certificates.
@@ -89,7 +89,7 @@ class certificateissued extends elis_data_object {
 
     /**
      * This function loads a record from an object passed as a parameter.
-     * @param object $data Object of properties and values that exists in the crlm_certificate_issued table as columns/values.
+     * @param object $data Object of properties and values that exists in the local_elisprogram_certissued table as columns/values.
      */
     public function set_from_data($data) {
         $this->_load_data_from_record($data, true);
@@ -107,8 +107,8 @@ function get_user_certificates($cmuserid) {
     global $DB;
     $sql = 'SELECT ci.id, ci.cm_userid, ci.cert_code, ci.timeissued, cs.entity_id, cs.entity_type, cs.id AS csid,
                    cs.cert_border, cs.cert_seal, cs.cert_template
-              FROM {crlm_certificate_issued} ci
-        INNER JOIN {crlm_certificate_settings} cs ON ci.cert_setting_id = cs.id
+              FROM {local_elisprogram_certissued} ci
+        INNER JOIN {local_elisprogram_certcfg} cs ON ci.cert_setting_id = cs.id
              WHERE ci.cm_userid = :cm_userid AND cs.disable = 0
           ORDER BY cs.entity_type ASC, cs.entity_id ASC, ci.timeissued ASC';
     $param  = array('cm_userid' => $cmuserid);
@@ -129,5 +129,5 @@ function entity_certificate_code_exists($code) {
         return true;
     }
 
-    return $DB->record_exists('crlm_certificate_issued', array('cert_code' => $code));
+    return $DB->record_exists('local_elisprogram_certissued', array('cert_code' => $code));
 }

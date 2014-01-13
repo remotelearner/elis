@@ -243,7 +243,7 @@ abstract class certificatepage extends pm_page {
 
     /**
      * This function retrieves a record by it's id
-     * @param int $id ID record for crlm_certificate_settings record
+     * @param int $id ID record for local_elisprogram_certcfg record
      * @return object|bool Record object or false if something went wrong
      */
     public function get_data_object_by_id($id) {
@@ -271,7 +271,7 @@ abstract class certificatepage extends pm_page {
     }
 
     /**
-     * This function returns a crlm_certificate_setting record based on a matching entity id and entity type
+     * This function returns a local_elisprogram_certcfg record based on a matching entity id and entity type
      * @param int $entityid The entity type id
      * @param string $entitytype The entity type string
      * @return object|bool Record object or false if nothing was found
@@ -387,7 +387,7 @@ class course_certificatepage extends certificatepage {
         $id      = $this->optional_param('id', 0, PARAM_INT);
         $target  = $this->get_new_page(array('action' => 'edit', 'id' => $id), true);
 
-        // Look for an existing record in the crlm_certificate_settings table.
+        // Look for an existing record in the local_elisprogram_certcfg table.
         $type    = CERTIFICATE_ENTITY_TYPE_COURSE;
         $params  = array('id' => $id, 'entity_id' => $id, 'entity_type' => $type);
 

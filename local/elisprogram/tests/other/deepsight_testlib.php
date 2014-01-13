@@ -460,7 +460,7 @@ class deepsight_datatable_mock extends deepsight_datatable_standard {
             return array();
         }
 
-        $sql = 'SELECT id, firstname, lastname FROM {crlm_user} WHERE id IN ('.implode(', ', array_fill(0, count($ids), '?')).')';
+        $sql = 'SELECT id, firstname, lastname FROM {local_elisprogram_usr} WHERE id IN ('.implode(', ', array_fill(0, count($ids), '?')).')';
         $results = $this->DB->get_recordset_sql($sql, $ids);
         $pageresults = array_flip($ids);
         foreach ($results as $result) {
@@ -487,12 +487,12 @@ class deepsight_datatable_mock extends deepsight_datatable_standard {
         $sortsql = $this->get_sort_sql($sort);
 
         // Get the number of results in the full dataset.
-        $query = 'SELECT count(1) as count FROM {crlm_user} element '.$joinsql.' '.$filtersql;
+        $query = 'SELECT count(1) as count FROM {local_elisprogram_usr} element '.$joinsql.' '.$filtersql;
         $results = $this->DB->get_record_sql($query, $filterparams);
         $totalresults = $results->count;
 
         // Generate and execute query for a single page of results.
-        $query = 'SELECT '.implode(', ', $selectfields).' FROM {crlm_user} element '.$joinsql.' '.$filtersql.' '.$sortsql;
+        $query = 'SELECT '.implode(', ', $selectfields).' FROM {local_elisprogram_usr} element '.$joinsql.' '.$filtersql.' '.$sortsql;
         $results = $this->DB->get_recordset_sql($query, $filterparams, 0, 20);
 
         return array($results, $totalresults);

@@ -49,15 +49,15 @@ foreach ($currs as $cur) {
     // mtrace("\ncur: {$cur->id} - courses = ". var_sdump($currcourses));
     if (count($currcourses) == 1) {
         $currcourse = current($currcourses);
-        $currclasses = $DB->get_records('crlm_class', array('courseid' => $currcourse->courseid), '', 'id');
+        $currclasses = $DB->get_records('local_elisprogram_cls', array('courseid' => $currcourse->courseid), '', 'id');
         // mtrace("\ncur: {$cur->id} - classes = ". var_sdump($currclasses));
         if (empty($currclasses)) {
             continue;
         }
-        $currasses = $DB->get_recordset_select('crlm_curriculum_assignment', 'curriculumid = ? AND locked = 1 AND completed = ? AND timecompleted > 0',
+        $currasses = $DB->get_recordset_select('local_elisprogram_pgm_assign', 'curriculumid = ? AND locked = 1 AND completed = ? AND timecompleted > 0',
                           array($cur->id, STUSTATUS_PASSED));
         foreach ($currasses as $currass) {
-            $classenrolments = $DB->get_records_select('crlm_class_enrolment', 'userid = ? AND classid IN ('.implode(',', array_keys($currclasses)).')',
+            $classenrolments = $DB->get_records_select('local_elisprogram_cls_enrol', 'userid = ? AND classid IN ('.implode(',', array_keys($currclasses)).')',
                                    array($currass->userid));
             if (count($classenrolments) != 1) {
                 continue;
@@ -66,8 +66,8 @@ foreach ($currs as $cur) {
             $classiscompleted = $classenrolment->locked && $classenrolment->completestatusid == STUSTATUS_PASSED && $classenrolment->completetime != 0;
             if ($classiscompleted && $classenrolment->completetime != $currass->timecompleted) {
                 $currass->timecompleted = $classenrolment->completetime;
-                $DB->update_record('crlm_curriculum_assignment', $currass);
-                $fixed_cnt++; 
+                $DB->update_record('local_elisprogram_pgm_assign', $currass);
+                $fixed_cnt++;
             }
         }
     }

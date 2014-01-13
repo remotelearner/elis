@@ -33,7 +33,7 @@ require_once elispm::lib('data/student.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('notifications.php');
 
-define ('WAITLISTTABLE', 'crlm_wait_list');
+define ('WAITLISTTABLE', 'local_elisprogram_waitlist');
 
 class waitlist extends elis_data_object {
     const LANG_FILE = 'local_elisprogram'; // TBD

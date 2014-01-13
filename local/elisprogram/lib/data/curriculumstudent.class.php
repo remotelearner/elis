@@ -44,7 +44,7 @@ define('CURR_EXPIRE_ENROL_START',    1);
 define('CURR_EXPIRE_ENROL_COMPLETE', 2);
 
 class curriculumstudent extends elis_data_object {
-    const TABLE = 'crlm_curriculum_assignment';
+    const TABLE = 'local_elisprogram_pgm_assign';
 
     var $verbose_name = 'curriculumstudent';
     var $curid;

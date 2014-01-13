@@ -137,7 +137,7 @@ class course_catalog_page_testcase extends elis_database_test {
             // Ignore the redirect error message because we are not testing that here.
         }
 
-        $enrolmenttime = $DB->get_field('crlm_class_enrolment', 'enrolmenttime', array('classid' => 100, 'userid' => 103));
+        $enrolmenttime = $DB->get_field('local_elisprogram_cls_enrol', 'enrolmenttime', array('classid' => 100, 'userid' => 103));
         $difference = abs($now - $enrolmenttime);
         $this->assertLessThanOrEqual(1, $difference); // Allow for 1 second variance, just in case.
     }

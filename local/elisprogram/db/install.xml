@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="crlm_class" COMMENT="crlm_class table retrofitted from MySQL" NEXT="crlm_class_enrolment">
+    <TABLE NAME="local_elisprogram_cls" COMMENT="local_elisprogram_cls table retrofitted from MySQL" NEXT="local_elisprogram_cls_enrol">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="idnumber"/>
@@ -30,7 +30,7 @@
         <INDEX NAME="enddate_ix" UNIQUE="false" FIELDS="enddate" PREVIOUS="idnumber_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_class_enrolment" COMMENT="crlm_class_enrolment table retrofitted from MySQL" PREVIOUS="crlm_class" NEXT="crlm_class_graded">
+    <TABLE NAME="local_elisprogram_cls_enrol" COMMENT="local_elisprogram_cls_enrol table retrofitted from MySQL" PREVIOUS="local_elisprogram_cls" NEXT="local_elisprogram_cls_graded">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
         <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
@@ -53,12 +53,12 @@
         <INDEX NAME="completestatusid_ix" UNIQUE="false" FIELDS="completestatusid" PREVIOUS="completetime_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_class_graded" COMMENT="Elements from crlm_course_completion that have been recorded for a given class of that course." PREVIOUS="crlm_class_enrolment" NEXT="crlm_class_instructor">
+    <TABLE NAME="local_elisprogram_cls_graded" COMMENT="Elements from local_elisprogram_crs_cmp that have been recorded for a given class of that course." PREVIOUS="local_elisprogram_cls_enrol" NEXT="local_elisprogram_cls_nstrct">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
-        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key id of crlm_class." PREVIOUS="id" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key if of crlm_user." PREVIOUS="classid" NEXT="completionid"/>
-        <FIELD NAME="completionid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key id of crlm_course_completion." PREVIOUS="userid" NEXT="grade"/>
+        <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key id of local_elisprogram_cls." PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key if of local_elisprogram_usr." PREVIOUS="classid" NEXT="completionid"/>
+        <FIELD NAME="completionid" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="The foreign key id of local_elisprogram_crs_cmp." PREVIOUS="userid" NEXT="grade"/>
         <FIELD NAME="grade" TYPE="number" LENGTH="10" NOTNULL="false" UNSIGNED="false" DEFAULT="0" SEQUENCE="false" DECIMALS="5" COMMENT="The numeric grade (0-100)." PREVIOUS="completionid" NEXT="locked"/>
         <FIELD NAME="locked" TYPE="int" LENGTH="2" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="If locked, will not be updated by external systems." PREVIOUS="grade" NEXT="timegraded"/>
         <FIELD NAME="timegraded" TYPE="int" LENGTH="10" NOTNULL="false" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time that the activity was graded in Moodle" PREVIOUS="locked" NEXT="timemodified"/>
@@ -74,7 +74,7 @@
         <INDEX NAME="completion_idx" UNIQUE="false" FIELDS="completionid" COMMENT="Index of completion id's." PREVIOUS="class_user_idx"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_class_instructor" COMMENT="crlm_class_instructor table retrofitted from MySQL" PREVIOUS="crlm_class_graded" NEXT="crlm_class_moodle">
+    <TABLE NAME="local_elisprogram_cls_nstrct" COMMENT="local_elisprogram_cls_nstrct table retrofitted from MySQL" PREVIOUS="local_elisprogram_cls_graded" NEXT="local_elisprogram_cls_mdl">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
         <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
@@ -90,7 +90,7 @@
         <INDEX NAME="mdl_currclasinst_use_ix" UNIQUE="false" FIELDS="userid" PREVIOUS="mdl_currclasinst_cla_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_class_moodle" COMMENT="crlm_class_moodle table retrofitted from MySQL" PREVIOUS="crlm_class_instructor" NEXT="crlm_course">
+    <TABLE NAME="local_elisprogram_cls_mdl" COMMENT="local_elisprogram_cls_mdl table retrofitted from MySQL" PREVIOUS="local_elisprogram_cls_nstrct" NEXT="local_elisprogram_crs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
         <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="moodlecourseid"/>
@@ -105,7 +105,7 @@
         <KEY NAME="mdl_currclasmood_clamoo_uix" TYPE="unique" FIELDS="classid, moodlecourseid" PREVIOUS="primary"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="crlm_course" COMMENT="crlm_course table retrofitted from MySQL" PREVIOUS="crlm_class_moodle" NEXT="crlm_course_completion">
+    <TABLE NAME="local_elisprogram_crs" COMMENT="local_elisprogram_crs table retrofitted from MySQL" PREVIOUS="local_elisprogram_cls_mdl" NEXT="local_elisprogram_crs_cmp">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="code"/>
@@ -133,10 +133,10 @@
         <INDEX NAME="credits_ix" UNIQUE="false" FIELDS="credits" PREVIOUS="name_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_course_completion" COMMENT="Defines any extra elements that must be completed for a course." PREVIOUS="crlm_course" NEXT="crlm_course_corequisite">
+    <TABLE NAME="local_elisprogram_crs_cmp" COMMENT="Defines any extra elements that must be completed for a course." PREVIOUS="local_elisprogram_crs" NEXT="local_elisprogram_crs_coreq">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
-        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key to crlm_course." PREVIOUS="id" NEXT="idnumber"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key to local_elisprogram_crs." PREVIOUS="id" NEXT="idnumber"/>
         <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" COMMENT="Unique identifier used to link with external grade elements." PREVIOUS="courseid" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Normal language name to give grade element." PREVIOUS="idnumber" NEXT="description"/>
         <FIELD NAME="description" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" COMMENT="Text field for further description of the element." PREVIOUS="name" NEXT="completion_grade"/>
@@ -150,7 +150,7 @@
         <INDEX NAME="courseid_idx" UNIQUE="false" FIELDS="courseid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_course_corequisite" COMMENT="crlm_course_corequisite table retrofitted from MySQL" PREVIOUS="crlm_course_completion" NEXT="crlm_course_prerequisite">
+    <TABLE NAME="local_elisprogram_crs_coreq" COMMENT="local_elisprogram_crs_coreq table retrofitted from MySQL" PREVIOUS="local_elisprogram_crs_cmp" NEXT="local_elisprogram_crs_prereq">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="curriculumcourseid"/>
         <FIELD NAME="curriculumcourseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
@@ -164,7 +164,7 @@
         <INDEX NAME="mdl_currcourcore_cou_ix" UNIQUE="false" FIELDS="courseid" PREVIOUS="mdl_currcourcore_cur_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_course_prerequisite" COMMENT="crlm_course_prerequisite table retrofitted from MySQL" PREVIOUS="crlm_course_corequisite" NEXT="crlm_curriculum">
+    <TABLE NAME="local_elisprogram_crs_prereq" COMMENT="local_elisprogram_crs_prereq table retrofitted from MySQL" PREVIOUS="local_elisprogram_crs_coreq" NEXT="local_elisprogram_pgm">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="curriculumcourseid"/>
         <FIELD NAME="curriculumcourseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
@@ -178,7 +178,7 @@
         <INDEX NAME="mdl_currcourprer_cou_ix" UNIQUE="false" FIELDS="courseid" PREVIOUS="mdl_currcourprer_cur_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_curriculum" COMMENT="crlm_curriculum table retrofitted from MySQL" PREVIOUS="crlm_course_prerequisite" NEXT="crlm_curriculum_assignment">
+    <TABLE NAME="local_elisprogram_pgm" COMMENT="local_elisprogram_pgm table retrofitted from MySQL" PREVIOUS="local_elisprogram_crs_prereq" NEXT="local_elisprogram_pgm_assign">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="idnumber"/>
         <FIELD NAME="idnumber" TYPE="char" LENGTH="100" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="name"/>
@@ -199,7 +199,7 @@
         <INDEX NAME="name_ix" UNIQUE="false" FIELDS="name"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_curriculum_assignment" COMMENT="crlm_curriculum_assignment table retrofitted from MySQL" PREVIOUS="crlm_curriculum" NEXT="crlm_curriculum_course">
+    <TABLE NAME="local_elisprogram_pgm_assign" COMMENT="local_elisprogram_pgm_assign table retrofitted from MySQL" PREVIOUS="local_elisprogram_pgm" NEXT="local_elisprogram_pgm_crs">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="curriculumid"/>
@@ -222,7 +222,7 @@
         <INDEX NAME="certificatecode_ix" UNIQUE="false" FIELDS="certificatecode" PREVIOUS="completed_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_curriculum_course" COMMENT="crlm_curriculum_course table retrofitted from MySQL" PREVIOUS="crlm_curriculum_assignment" NEXT="crlm_environment">
+    <TABLE NAME="local_elisprogram_pgm_crs" COMMENT="local_elisprogram_pgm_crs table retrofitted from MySQL" PREVIOUS="local_elisprogram_pgm_assign" NEXT="local_elisprogram_env">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="curriculumid"/>
         <FIELD NAME="curriculumid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="courseid"/>
@@ -242,7 +242,7 @@
         <INDEX NAME="mdl_currcurrcour_cou_ix" UNIQUE="false" FIELDS="courseid" PREVIOUS="mdl_currcurrcour_cur_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_environment" COMMENT="crlm_environment table retrofitted from MySQL" PREVIOUS="crlm_curriculum_course" NEXT="crlm_tag">
+    <TABLE NAME="local_elisprogram_env" COMMENT="local_elisprogram_env table retrofitted from MySQL" PREVIOUS="local_elisprogram_pgm_crs" NEXT="local_elisprogram_tag">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="description"/>
@@ -254,7 +254,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="crlm_tag" COMMENT="crlm_tag table retrofitted from MySQL" PREVIOUS="crlm_environment" NEXT="crlm_tag_instance">
+    <TABLE NAME="local_elisprogram_tag" COMMENT="local_elisprogram_tag table retrofitted from MySQL" PREVIOUS="local_elisprogram_env" NEXT="local_elisprogram_tag_inst">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="description"/>
@@ -266,7 +266,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="crlm_tag_instance" COMMENT="crlm_tag_instance table retrofitted from MySQL" PREVIOUS="crlm_tag" NEXT="crlm_user">
+    <TABLE NAME="local_elisprogram_tag_inst" COMMENT="local_elisprogram_tag_inst table retrofitted from MySQL" PREVIOUS="local_elisprogram_tag" NEXT="local_elisprogram_usr">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="instancetype"/>
         <FIELD NAME="instancetype" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="instanceid"/>
@@ -281,7 +281,7 @@
         <KEY NAME="mdl_currtaginst_insinstag_uix" TYPE="unique" FIELDS="instancetype, instanceid, tagid" PREVIOUS="primary"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="crlm_user" COMMENT="crlm_user table retrofitted from MySQL" PREVIOUS="crlm_tag_instance" NEXT="crlm_cluster">
+    <TABLE NAME="local_elisprogram_usr" COMMENT="local_elisprogram_usr table retrofitted from MySQL" PREVIOUS="local_elisprogram_tag_inst" NEXT="local_elisprogram_uset">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="username"/>
         <FIELD NAME="username" TYPE="char" LENGTH="100" NOTNULL="false" SEQUENCE="false" PREVIOUS="id" NEXT="password"/>
@@ -323,7 +323,7 @@
         <INDEX NAME="idnumber_ix" UNIQUE="false" FIELDS="idnumber" PREVIOUS="username_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_cluster" COMMENT="Cluster definitions." PREVIOUS="crlm_user" NEXT="crlm_usercluster">
+    <TABLE NAME="local_elisprogram_uset" COMMENT="Cluster definitions." PREVIOUS="local_elisprogram_usr" NEXT="local_elisprogram_usr_uset">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Data name" PREVIOUS="id" NEXT="display"/>
@@ -335,7 +335,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="crlm_usercluster" COMMENT="Contains cluster assignments for CM users." PREVIOUS="crlm_cluster" NEXT="crlm_config">
+    <TABLE NAME="local_elisprogram_usr_uset" COMMENT="Contains cluster assignments for CM users." PREVIOUS="local_elisprogram_uset" NEXT="local_elisprogram_config">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The CM user id" PREVIOUS="id" NEXT="clusterid"/>
@@ -351,7 +351,7 @@
         <INDEX NAME="cluster_idx" UNIQUE="false" FIELDS="clusterid" PREVIOUS="user_idx"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_config" COMMENT="The config elements for the curriculum management system." PREVIOUS="crlm_usercluster" NEXT="crlm_coursetemplate">
+    <TABLE NAME="local_elisprogram_config" COMMENT="The config elements for the curriculum management system." PREVIOUS="local_elisprogram_usr_uset" NEXT="local_elisprogram_crs_tpl">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name of the config element" PREVIOUS="id" NEXT="value"/>
@@ -364,7 +364,7 @@
         <INDEX NAME="name_ix" UNIQUE="true" FIELDS="name"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_coursetemplate" COMMENT="Course templates" PREVIOUS="crlm_config" NEXT="crlm_user_track">
+    <TABLE NAME="local_elisprogram_crs_tpl" COMMENT="Course templates" PREVIOUS="local_elisprogram_config" NEXT="local_elisprogram_usr_trk">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="location"/>
@@ -378,7 +378,7 @@
         <INDEX NAME="courseid_ix" UNIQUE="true" FIELDS="courseid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_user_track" COMMENT="User enrolment in tracks" PREVIOUS="crlm_coursetemplate" NEXT="crlm_notification_log">
+    <TABLE NAME="local_elisprogram_usr_trk" COMMENT="User enrolment in tracks" PREVIOUS="local_elisprogram_crs_tpl" NEXT="local_elisprogram_notifylog">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to user id" PREVIOUS="id" NEXT="trackid"/>
@@ -393,7 +393,7 @@
         <INDEX NAME="userid_trackid_ix" UNIQUE="true" FIELDS="userid, trackid" PREVIOUS="trackid_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_notification_log" COMMENT="Contains logs of notifications for events." PREVIOUS="crlm_user_track" NEXT="crlm_track">
+    <TABLE NAME="local_elisprogram_notifylog" COMMENT="Contains logs of notifications for events." PREVIOUS="local_elisprogram_usr_trk" NEXT="local_elisprogram_trk">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="event"/>
         <FIELD NAME="event" TYPE="char" LENGTH="166" NOTNULL="false" SEQUENCE="false" COMMENT="The event used." PREVIOUS="id" NEXT="instance"/>
@@ -411,7 +411,7 @@
         <INDEX NAME="event_inst_fuser_ix" UNIQUE="false" FIELDS="fromuserid, instance, event" COMMENT="An index based on the event, from user and instance." PREVIOUS="event_inst_user_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_track" COMMENT="Track table" PREVIOUS="crlm_notification_log" NEXT="crlm_track_class">
+    <TABLE NAME="local_elisprogram_trk" COMMENT="Track table" PREVIOUS="local_elisprogram_notifylog" NEXT="local_elisprogram_trk_cls">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="curid"/>
         <FIELD NAME="curid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Curriculum id" PREVIOUS="id" NEXT="idnumber"/>
@@ -431,7 +431,7 @@
         <INDEX NAME="track_curr_idx" UNIQUE="false" FIELDS="curid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_track_class" COMMENT="Track class table" PREVIOUS="crlm_track" NEXT="crlm_cluster_profile">
+    <TABLE NAME="local_elisprogram_trk_cls" COMMENT="Track class table" PREVIOUS="local_elisprogram_trk" NEXT="local_elisprogram_uset_prfle">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="trackid"/>
         <FIELD NAME="trackid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Track id number" PREVIOUS="id" NEXT="classid"/>
@@ -450,7 +450,7 @@
         <INDEX NAME="track_courseid_idx" UNIQUE="false" FIELDS="courseid" PREVIOUS="track_classid_idx"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_cluster_profile" COMMENT="Profile fields to use for automatic cluster association." PREVIOUS="crlm_track_class" NEXT="crlm_cluster_assignments">
+    <TABLE NAME="local_elisprogram_uset_prfle" COMMENT="Profile fields to use for automatic cluster association." PREVIOUS="local_elisprogram_trk_cls" NEXT="local_elisprogram_uset_asign">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="clusterid"/>
         <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Cluster ID" PREVIOUS="id" NEXT="fieldid"/>
@@ -464,7 +464,7 @@
         <INDEX NAME="clusterid_idx" UNIQUE="false" FIELDS="clusterid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_cluster_assignments" COMMENT="Cluster assignments from cluster plugins." PREVIOUS="crlm_cluster_profile" NEXT="crlm_cluster_curriculum">
+    <TABLE NAME="local_elisprogram_uset_asign" COMMENT="Cluster assignments from cluster plugins." PREVIOUS="local_elisprogram_uset_prfle" NEXT="local_elisprogram_uset_pgm">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="clusterid"/>
         <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Cluster ID" PREVIOUS="id" NEXT="userid"/>
@@ -481,7 +481,7 @@
         <INDEX NAME="userid_idx" UNIQUE="false" FIELDS="userid" PREVIOUS="clusterid_idx"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_cluster_curriculum" COMMENT="Association between clusters and curricula" PREVIOUS="crlm_cluster_assignments" NEXT="crlm_cluster_track">
+    <TABLE NAME="local_elisprogram_uset_pgm" COMMENT="Association between clusters and curricula" PREVIOUS="local_elisprogram_uset_asign" NEXT="local_elisprogram_uset_trk">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="clusterid"/>
         <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to cluster id" PREVIOUS="id" NEXT="curriculumid"/>
@@ -495,7 +495,7 @@
         <INDEX NAME="cluster_idx" UNIQUE="false" FIELDS="clusterid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_cluster_track" COMMENT="Association between clusters and tracks" PREVIOUS="crlm_cluster_curriculum" NEXT="crlm_wait_list">
+    <TABLE NAME="local_elisprogram_uset_trk" COMMENT="Association between clusters and tracks" PREVIOUS="local_elisprogram_uset_pgm" NEXT="local_elisprogram_waitlist">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="clusterid"/>
         <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="Foreign key to cluster id" PREVIOUS="id" NEXT="trackid"/>
@@ -511,7 +511,7 @@
         <INDEX NAME="cluster_idx" UNIQUE="false" FIELDS="clusterid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_wait_list" COMMENT="Wait list for classes" PREVIOUS="crlm_cluster_track" NEXT="crlm_user_moodle">
+    <TABLE NAME="local_elisprogram_waitlist" COMMENT="Wait list for classes" PREVIOUS="local_elisprogram_uset_trk" NEXT="local_elisprogram_usr_mdl">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
         <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
@@ -524,7 +524,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="crlm_user_moodle" COMMENT="Association between Moodle and CM users" PREVIOUS="crlm_wait_list" NEXT="crlm_results">
+    <TABLE NAME="local_elisprogram_usr_mdl" COMMENT="Association between Moodle and CM users" PREVIOUS="local_elisprogram_waitlist" NEXT="local_elisprogram_res">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="cuserid"/>
         <FIELD NAME="cuserid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="muserid"/>
@@ -533,14 +533,14 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="cuserid_fk"/>
-        <KEY NAME="cuserid_fk" TYPE="foreign" FIELDS="cuserid" REFTABLE="crlm_user" REFFIELDS="id" PREVIOUS="primary" NEXT="muserid_fk"/>
+        <KEY NAME="cuserid_fk" TYPE="foreign" FIELDS="cuserid" REFTABLE="local_elisprogram_usr" REFFIELDS="id" PREVIOUS="primary" NEXT="muserid_fk"/>
         <KEY NAME="muserid_fk" TYPE="foreign" FIELDS="muserid" REFTABLE="user" REFFIELDS="id" PREVIOUS="cuserid_fk"/>
       </KEYS>
       <INDEXES>
         <INDEX NAME="idnumber_idx" UNIQUE="true" FIELDS="idnumber"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_results" COMMENT="results engine settings" PREVIOUS="crlm_user_moodle" NEXT="crlm_results_action">
+    <TABLE NAME="local_elisprogram_res" COMMENT="results engine settings" PREVIOUS="local_elisprogram_usr_mdl" NEXT="local_elisprogram_res_action">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="contextid"/>
         <FIELD NAME="contextid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="active"/>
@@ -559,7 +559,7 @@
         <INDEX NAME="contextid_idx" UNIQUE="true" FIELDS="contextid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_results_action" COMMENT="results engine action settings" PREVIOUS="crlm_results" NEXT="crlm_results_class_log">
+    <TABLE NAME="local_elisprogram_res_action" COMMENT="results engine action settings" PREVIOUS="local_elisprogram_res" NEXT="local_elisprogram_res_clslog">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="resultsid"/>
         <FIELD NAME="resultsid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="actiontype"/>
@@ -578,7 +578,7 @@
         <INDEX NAME="resultsid_idx" UNIQUE="false" FIELDS="resultsid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_results_class_log" COMMENT="results engine class logs" PREVIOUS="crlm_results_action" NEXT="crlm_results_student_log">
+    <TABLE NAME="local_elisprogram_res_clslog" COMMENT="results engine class logs" PREVIOUS="local_elisprogram_res_action" NEXT="local_elisprogram_res_stulog">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classid"/>
         <FIELD NAME="classid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="datescheduled"/>
@@ -593,7 +593,7 @@
         <INDEX NAME="classid_idx" UNIQUE="false" FIELDS="classid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_results_student_log" COMMENT="results engine student logs" PREVIOUS="crlm_results_class_log" NEXT="crlm_certificate_settings">
+    <TABLE NAME="local_elisprogram_res_stulog" COMMENT="results engine student logs" PREVIOUS="local_elisprogram_res_clslog" NEXT="local_elisprogram_certcfg">
 
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="classlogid"/>
@@ -610,7 +610,7 @@
         <INDEX NAME="classlogid_idx" UNIQUE="false" FIELDS="classlogid"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_certificate_settings" COMMENT="Certificate settings for ELIS entity instances and types" PREVIOUS="crlm_results_student_log" NEXT="crlm_certificate_issued">
+    <TABLE NAME="local_elisprogram_certcfg" COMMENT="Certificate settings for ELIS entity instances and types" PREVIOUS="local_elisprogram_res_stulog" NEXT="local_elisprogram_certissued">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="entity_id"/>
         <FIELD NAME="entity_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ELIS entity instance id" PREVIOUS="id" NEXT="entity_type"/>
@@ -629,11 +629,11 @@
         <INDEX NAME="ent_id_type_idx" UNIQUE="true" FIELDS="entity_id, entity_type" COMMENT="Entity id and type unique index"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="crlm_certificate_issued" COMMENT="Certificates that have been issued." PREVIOUS="crlm_certificate_settings">
+    <TABLE NAME="local_elisprogram_certissued" COMMENT="Certificates that have been issued." PREVIOUS="local_elisprogram_certcfg">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="cm_userid"/>
         <FIELD NAME="cm_userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="ELIS curriculum user id" PREVIOUS="id" NEXT="cert_setting_id"/>
-        <FIELD NAME="cert_setting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="crlm_certificate_settings foreign key" PREVIOUS="cm_userid" NEXT="cert_code"/>
+        <FIELD NAME="cert_setting_id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="local_elisprogram_certcfg foreign key" PREVIOUS="cm_userid" NEXT="cert_code"/>
         <FIELD NAME="cert_code" TYPE="char" LENGTH="40" NOTNULL="true" SEQUENCE="false" COMMENT="Unique certificate code" PREVIOUS="cert_setting_id" NEXT="timeissued"/>
         <FIELD NAME="timeissued" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time certificate was issued to user" PREVIOUS="cert_code" NEXT="timecreated"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Time created field" PREVIOUS="timeissued"/>

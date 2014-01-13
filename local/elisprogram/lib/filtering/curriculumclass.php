@@ -236,14 +236,14 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
 
     protected $tables = array(
         'curriculum' => array(
-            'crlm_curriculum' => 'cur',
-            'crlm_curriculum_assignment' => 'cura',
+            'local_elisprogram_pgm' => 'cur',
+            'local_elisprogram_pgm_assign' => 'cura',
         ),
         'course' => array(
-            'crlm_course' => 'cou',
+            'local_elisprogram_crs' => 'cou',
         ),
         'class' => array(
-            'crlm_class' => 'cls',
+            'local_elisprogram_cls' => 'cls',
          ),
     );
 
@@ -406,7 +406,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
                 switch ($name) {
                     case 'name':
                         $options['choices'] = array();
-                        $records = $DB->get_recordset('crlm_curriculum', null, 'name', 'id, name');
+                        $records = $DB->get_recordset('local_elisprogram_pgm', null, 'name', 'id, name');
                         foreach ($records as $record) {
                             $options['choices'][$record->id] = $record->name;
                         }
@@ -417,7 +417,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
                         $path  = $CFG->wwwroot .'/local/elisprogram/lib/filtering/helpers/courses.php';
                         $PAGE->requires->yui_module('moodle-elis_core-dependentselect', 'M.elis_core.init_dependentselect', array($id, $child, $path));
                         $options['numeric'] = 1;
-                        $options['talias'] = $this->tables[$group]['crlm_curriculum'];
+                        $options['talias'] = $this->tables[$group]['local_elisprogram_pgm'];
                         $options['dbfield'] = 'id';
                         $options['multiple'] = 'multiple';
                         break;
@@ -427,7 +427,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
                 }
                 //curriculum customfield filter condition, linking users to to curricula based on
                 //curriculum assignments and curriculum-course associations
-                $options['wrapper'] = ' INNER JOIN {crlm_curriculum_assignment} cca
+                $options['wrapper'] = ' INNER JOIN {local_elisprogram_pgm_assign} cca
                                                 ON c.instanceid = cca.curriculumid';
 
                 //use EXISTS clause because we might need to connect based on several conditions
@@ -445,7 +445,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
                 switch ($name) {
                     case 'name':
                         $options['choices'] = array();
-                        $records = $DB->get_recordset('crlm_course', null, 'name', 'id, name');
+                        $records = $DB->get_recordset('local_elisprogram_crs', null, 'name', 'id, name');
                         foreach ($records as $record) {
                             $options['choices'][$record->id] = $record->name;
                         }
@@ -456,7 +456,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
                         $path  = $CFG->wwwroot .'/local/elisprogram/lib/filtering/helpers/classes.php';
                         $PAGE->requires->yui_module('moodle-elis_core-dependentselect', 'M.elis_core.init_dependentselect', array($id, $child, $path));
                         $options['numeric'] = 1;
-                        $options['talias'] = $this->tables['class']['crlm_class'];
+                        $options['talias'] = $this->tables['class']['local_elisprogram_cls'];
                         $options['dbfield'] = 'courseid';
                         $options['multiple'] = 'multiple';
                         break;
@@ -464,39 +464,39 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
                     default:
                         break;
                 }
-                $options['wrapper'] = ' INNER JOIN {crlm_class} cls
+                $options['wrapper'] = ' INNER JOIN {local_elisprogram_cls} cls
                                                 ON c.instanceid = cls.courseid';
                 break;
 
             case 'class':
-                $options['wrapper'] = ' INNER JOIN {crlm_class} cls
+                $options['wrapper'] = ' INNER JOIN {local_elisprogram_cls} cls
                                                 ON c.instanceid = cls.id';
                 switch ($name) {
                     case 'idnumber':
                         $options['choices'] = array();
-                        $records = $DB->get_recordset('crlm_class', null, 'idnumber', 'id, idnumber');
+                        $records = $DB->get_recordset('local_elisprogram_cls', null, 'idnumber', 'id, idnumber');
                         foreach ($records as $record) {
                             $options['choices'][$record->id] = $record->idnumber;
                         }
                         unset($records);
 
                         $options['numeric']  = 1;
-                        $options['talias']   = $this->tables[$group]['crlm_class'];
+                        $options['talias']   = $this->tables[$group]['local_elisprogram_cls'];
                         $options['dbfield']  = 'id';
                         $options['multiple'] = 'multiple';
                         break;
 
                     case 'environmentid':
                         $options['choices'] = array();
-                        $records = $DB->get_recordset('crlm_environment', null, 'name', 'id, name');
+                        $records = $DB->get_recordset('local_elisprogram_env', null, 'name', 'id, name');
                         foreach ($records as $record) {
                             $options['choices'][$record->id] = $record->name;
                         }
                         unset($records);
 
                         $options['numeric']    = 1;
-                        $options['talias']     = $this->tables[$group]['crlm_class'];
-                        $options['table']      = 'crlm_class';
+                        $options['talias']     = $this->tables[$group]['local_elisprogram_cls'];
+                        $options['table']      = 'local_elisprogram_cls';
                         $options['dbfield']    = 'environmentid';
                         $options['multiple']   = 'multiple';
                         $options['wrapper']    = '';

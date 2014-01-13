@@ -35,7 +35,7 @@ require_once elispm::lib('data/pmclass.class.php');
 require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('data/student.class.php');
 
-define ('INSTABLE', 'crlm_class_instructor');
+define ('INSTABLE', 'local_elisprogram_cls_nstrct');
 
 class instructor extends elis_data_object {
     const TABLE = INSTABLE;

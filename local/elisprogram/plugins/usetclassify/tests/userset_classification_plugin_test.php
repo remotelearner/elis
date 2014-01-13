@@ -45,7 +45,7 @@ class usersetclassification_testcase extends elis_database_test {
      */
     public function test_install() {
         global $DB;
-        $DB->delete_records('crlm_cluster_classification');
+        $DB->delete_records('elisprogram_usetclassify');
         require_once(dirname(__FILE__).'/../db/install.php');
 
         $this->assertTrue(xmldb_elisprogram_usetclassify_install());

@@ -42,7 +42,7 @@ require_once elispm::lib('contexts.php');
 require_once elispm::file('form/pmclassform.class.php');
 
 class pmclass extends data_object_with_custom_fields {
-    const TABLE = 'crlm_class';
+    const TABLE = 'local_elisprogram_cls';
 
     var $verbose_name = 'class';
     var $autocreate;
@@ -437,7 +437,7 @@ class pmclass extends data_object_with_custom_fields {
     public static function check_for_moodle_courses($pmuserid = 0) {
         global $DB;
 
-        //crlm_class_moodle moodlecourseid
+        //local_elisprogram_cls_mdl moodlecourseid
         $sql = 'SELECT cm.id
                 FROM {'.classmoodlecourse::TABLE.'} cm
                 LEFT JOIN {course} c ON cm.moodlecourseid = c.id
@@ -713,7 +713,7 @@ class pmclass extends data_object_with_custom_fields {
     /**
      * Auto create a class requiring a course id for minimum info
      *
-     * @param array param array with key - crlm_class property ('courseid' minimum)
+     * @param array param array with key - local_elisprogram_cls property ('courseid' minimum)
      * value - property value
      *
      * @return mixed course id if created, false if error encountered

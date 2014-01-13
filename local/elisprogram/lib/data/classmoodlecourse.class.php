@@ -39,7 +39,7 @@ define ('CLSMDLENROLAUTO', 0);          // Automatically assign roles in Moodle 
 define ('CLSMDLENROLCHOICE', 1);        // Allow user to choose at time of assignment.
 
 class classmoodlecourse extends elis_data_object {
-    const TABLE = 'crlm_class_moodle';
+    const TABLE = 'local_elisprogram_cls_mdl';
 
     static $associations = array(
         'pmclass' => array(
@@ -454,10 +454,10 @@ function moodle_attach_class($clsid, $mdlid, $siteconfig = '', $enrolinstructor 
 function moodle_detach_class($clsid, $mdlid) {
     global $DB;
 
-    /// Delete the crlm_class_moodle record
+    /// Delete the local_elisprogram_cls_mdl record
     $select = 'classid = ? AND moodlecourseid = ?';
     $params = array($clsid, $mdlid);
-    return $DB->delete_records_select('crlm_class_moodle', $select, $params);
+    return $DB->delete_records_select('local_elisprogram_cls_mdl', $select, $params);
 }
 
 function moodle_get_classes() {

@@ -40,7 +40,7 @@ require_once elispm::lib('data/usertrack.class.php');
 require_once elispm::lib('deprecatedlib.php');
 
 class track extends data_object_with_custom_fields {
-    const TABLE = 'crlm_track';
+    const TABLE = 'local_elisprogram_trk';
 
     var $verbose_name = 'track';
     var $autocreate;
@@ -559,7 +559,7 @@ class trackassignment extends elis_data_object {
 
     var $verbose_name = 'trackassignment';
 
-    const TABLE = 'crlm_track_class';
+    const TABLE = 'local_elisprogram_trk_cls';
 
     /**
      * User ID-number
@@ -622,7 +622,7 @@ class trackassignment extends elis_data_object {
      * the class id
      *
      * @return mixed Returns an array key - track id, value - id of record
-     * in crlm_track_class table
+     * in local_elisprogram_trk_cls table
      */
     function get_assigned_tracks() {
 
@@ -783,7 +783,7 @@ class trackassignment extends elis_data_object {
         $trackid = $this->_db->get_field(track::TABLE, 'id', array('curid' => $this->track->curid,
                                                             'defaulttrack' => 1));
         if (false === $trackid) {
-            cm_error('Error #1001: selecting field from crlm_track table');
+            cm_error('Error #1001: selecting field from local_elisprogram_trk table');
         }
 
         // Check if class is assigned to default track
@@ -1036,7 +1036,7 @@ function track_count_records($namesearch = '', $alpha = '', $curriculumid = 0, $
  *
  * @param int curid curriculum id
  *
- * @return mixed array of crlm_track objects or false if
+ * @return mixed array of local_elisprogram_trk objects or false if
  * nothing was found
  */
 function track_get_list_from_curr($curid) {

@@ -110,7 +110,7 @@ if ($survey_form->is_cancelled()) {
                     $elis_user->__set($key, $fd);
                 } catch (Exception $e) {
                     // ignore invalid property exception!
-                    error_log("/blocks/enrol_survey/survey.php: Warning - invalid property of crlm_user: '{$key}'");
+                    error_log("/blocks/enrol_survey/survey.php: Warning - invalid property of local_elisprogram_usr: '{$key}'");
                 }
                 if ($key == 'language') { // special case $USER->lang
                     $key = 'lang';

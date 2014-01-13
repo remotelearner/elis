@@ -702,7 +702,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
 
                 //todo: use table constant
                 $sql = "SELECT grades.*, mu.id AS muid
-                          FROM {crlm_class_graded} grades
+                          FROM {local_elisprogram_cls_graded} grades
                     INNER JOIN {".user::TABLE."} cu ON grades.userid = cu.id
                     INNER JOIN {user} mu ON cu.idnumber = mu.idnumber
                          WHERE grades.classid = :classid
@@ -914,7 +914,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
 
                                     $grade_element->timemodified = $timenow;
                                     //todo: use class constant
-                                    $DB->update_record('crlm_class_graded', $grade_element);
+                                    $DB->update_record('local_elisprogram_cls_graded', $grade_element);
                                 }
                             }
                         } else {
@@ -929,7 +929,7 @@ function pm_synchronize_moodle_class_grades($moodleuserid = 0) {
                             /// If completed, lock it.
                             $grade_element->locked = ($grade_element->grade >= $element->completion_grade) ? 1 : 0;
                             //todo: use class constant
-                            $DB->insert_record('crlm_class_graded', $grade_element);
+                            $DB->insert_record('local_elisprogram_cls_graded', $grade_element);
                         }
                     }
                 }
@@ -1217,7 +1217,7 @@ function pm_moodle_user_to_pm($mu) {
         }
     }
 
-    //specifically tell the user save not to use the crlm_user_moodle for syncing
+    //specifically tell the user save not to use the local_elisprogram_usr_mdl for syncing
     //because the record hasn't been inserted yet (see below)
     try {
         $cu->save(false);
@@ -1622,7 +1622,7 @@ function pm_migrate_tags() {
                            'cls' => 'pmclass');
 
     //lookup on all tags
-    $tag_lookup = $DB->get_records('crlm_tag', null, '', 'id, name');
+    $tag_lookup = $DB->get_records('local_elisprogram_tag', null, '', 'id, name');
     foreach ($tag_lookup as $id => $tag) {
         $tag_lookup[$id] = $tag->name;
     }
@@ -1635,7 +1635,7 @@ function pm_migrate_tags() {
             $contextclass = context_elis_helper::get_class_for_level($contextlevel);
 
         //make sure one or more tags are used at the current context level
-        if ($DB->record_exists('crlm_tag_instance', array('instancetype' => $instancetype))) {
+        if ($DB->record_exists('local_elisprogram_tag_inst', array('instancetype' => $instancetype))) {
 
             //used to reference the category name
             $category = new field_category(array('name' => get_string('misc_category', 'local_elisprogram')));
@@ -1649,7 +1649,7 @@ function pm_migrate_tags() {
 
             //determine tag options
             $options = array();
-            if ($records = $DB->get_recordset('crlm_tag', null, 'name', 'DISTINCT name')) {
+            if ($records = $DB->get_recordset('local_elisprogram_tag', null, 'name', 'DISTINCT name')) {
                 foreach ($records as $record) {
                     $options[] = $record->name;
                 }
@@ -1663,16 +1663,16 @@ function pm_migrate_tags() {
                                                                            'view_capability' => ''));
 
             //clean up any tags with invalid instancids
-            $sql = "DELETE FROM {crlm_tag_instance}
+            $sql = "DELETE FROM {local_elisprogram_tag_inst}
                     WHERE NOT EXISTS (
                         SELECT 'x' FROM {".$tables[$instancetype]::TABLE."} ct
-                        WHERE ct.id = {crlm_tag_instance}.instanceid)
-                    AND {crlm_tag_instance}.instancetype = '$instancetype'";
+                        WHERE ct.id = {local_elisprogram_tag_inst}.instanceid)
+                    AND {local_elisprogram_tag_inst}.instancetype = '$instancetype'";
             $success = $DB->execute($sql);
 
             //set up data for all relevant entries
             $sql = "SELECT instanceid, GROUP_CONCAT(tagid) AS tagids, data
-                    FROM {crlm_tag_instance}
+                    FROM {local_elisprogram_tag_inst}
                     WHERE instancetype = ?
                     GROUP BY instanceid";
             if ($success && $records = $DB->get_recordset_sql($sql, array($instancetype))) {
@@ -1691,7 +1691,7 @@ function pm_migrate_tags() {
             //find all tags that have associated custom data and create a separate
             //custom field for each one
             $sql = "SELECT DISTINCT tagid
-                    FROM {crlm_tag_instance}
+                    FROM {local_elisprogram_tag_inst}
                     WHERE instancetype = ?
                     AND data != ''";
             if ($records = $DB->get_recordset_sql($sql, array($instancetype))) {
@@ -1711,7 +1711,7 @@ function pm_migrate_tags() {
             //set the data on all entities of the corresponding type for each tag
             //custom data entity that is set
             $sql = "SELECT instanceid, tagid, data
-                    FROM {crlm_tag_instance}
+                    FROM {local_elisprogram_tag_inst}
                     WHERE instancetype = ?
                     AND data != ''";
             if ($records = $DB->get_recordset_sql($sql, array($instancetype))) {
@@ -1754,7 +1754,7 @@ function pm_migrate_environments() {
                            pmclass::TABLE => 'class');
 
     //lookup on all tags
-    $environment_lookup = $DB->get_records('crlm_environment', null, '', 'id, name');
+    $environment_lookup = $DB->get_records('local_elisprogram_env', null, '', 'id, name');
     foreach ($environment_lookup as $id => $environment) {
         $environment_lookup[$id] = $environment->name;
     }
@@ -1781,7 +1781,7 @@ function pm_migrate_environments() {
 
             //determine environment options
             $options = array();
-            if ($records = $DB->get_recordset('crlm_environment', null, 'name', 'DISTINCT name')) {
+            if ($records = $DB->get_recordset('local_elisprogram_env', null, 'name', 'DISTINCT name')) {
                 foreach ($records as $record) {
                     $options[] = $record->name;
                 }
@@ -1858,7 +1858,7 @@ function pm_fix_duplicate_class_enrolments() {
     $dbman = $DB->get_manager();
 
     // Delete duplicate class completion element grades
-    $xmldbtable = new xmldb_table('crlm_class_graded_temp');
+    $xmldbtable = new xmldb_table('local_elisprogram_cls_grdtmp');
 
     if ($dbman->table_exists($xmldbtable)) {
         $dbman->drop_table($xmldbtable);
@@ -1867,19 +1867,19 @@ function pm_fix_duplicate_class_enrolments() {
     $result = true;
 
     // Create a temporary table
-    $result = $result && $DB->execute("CREATE TABLE {$CFG->prefix}crlm_class_graded_temp LIKE {$CFG->prefix}crlm_class_graded");
+    $result = $result && $DB->execute("CREATE TABLE {$CFG->prefix}local_elisprogram_cls_grdtmp LIKE {$CFG->prefix}local_elisprogram_cls_graded");
 
     // Store the unique values in the temporary table
-    $sql = "INSERT INTO {$CFG->prefix}crlm_class_graded_temp
+    $sql = "INSERT INTO {$CFG->prefix}local_elisprogram_cls_grdtmp
             SELECT MAX(id) AS id, classid, userid, completionid, grade, locked, timegraded, timemodified
-            FROM {$CFG->prefix}crlm_class_graded
+            FROM {$CFG->prefix}local_elisprogram_cls_graded
             GROUP BY classid, userid, completionid, locked";
 
     $result = $result && $DB->execute($sql);
 
     // Detect if there are still duplicates in the temporary table
     $sql = "SELECT COUNT(*) AS count, classid, userid, completionid, grade, locked, timegraded, timemodified
-            FROM {$CFG->prefix}crlm_class_graded_temp
+            FROM {$CFG->prefix}local_elisprogram_cls_grdtmp
             GROUP BY classid, userid, completionid
             ORDER BY count DESC, classid ASC, userid ASC, completionid ASC";
 
@@ -1897,7 +1897,7 @@ function pm_fix_duplicate_class_enrolments() {
 
                     // Look for the earliest locked grade record for this user and keep that (if any are locked)
                     $sql2 = "SELECT id, grade, locked, timegraded
-                             FROM {crlm_class_graded}
+                             FROM {local_elisprogram_cls_graded}
                              WHERE classid = $classid
                              AND userid = $userid
                              ORDER BY timegraded ASC";
@@ -1930,7 +1930,7 @@ function pm_fix_duplicate_class_enrolments() {
                     }
 
                     if (!empty($select)) {
-                        $result = $result && $DB->delete_records_select('crlm_class_graded_temp', $select, $params);
+                        $result = $result && $DB->delete_records_select('local_elisprogram_cls_grdtmp', $select, $params);
                     }
                 }
             }
@@ -1938,10 +1938,10 @@ function pm_fix_duplicate_class_enrolments() {
     }
 
     // Drop the real table
-    $result = $result && $DB->execute("DROP TABLE {$CFG->prefix}crlm_class_graded");
+    $result = $result && $DB->execute("DROP TABLE {$CFG->prefix}local_elisprogram_cls_graded");
 
     // Replace the real table with the temporary table that now only contains unique values.
-    $result = $result && $DB->execute("ALTER TABLE {$CFG->prefix}crlm_class_graded_temp RENAME TO {$CFG->prefix}crlm_class_graded");
+    $result = $result && $DB->execute("ALTER TABLE {$CFG->prefix}local_elisprogram_cls_grdtmp RENAME TO {$CFG->prefix}local_elisprogram_cls_graded");
 
     return $result;
 }
@@ -2081,7 +2081,7 @@ function pm_fix_duplicate_pm_users() {
     $dbman = $DB->get_manager();
 
     // Delete duplicate class completion element grades
-    $xmldbtable = new xmldb_table('crlm_user_idnumber_temp');
+    $xmldbtable = new xmldb_table('local_elisprogram_usr_idntmp');
 
     if ($dbman->table_exists($xmldbtable)) {
         $dbman->drop_table($xmldbtable);
@@ -2090,11 +2090,11 @@ function pm_fix_duplicate_pm_users() {
     $result = true;
 
     // Create temporary table for storing qualifying idnumbers
-    $table = new xmldb_table('crlm_user_idnumber_temp');
+    $table = new xmldb_table('local_elisprogram_usr_idntmp');
     $table->add_field('idnumber', XMLDB_TYPE_CHAR, '255', NULL, XMLDB_NOTNULL);
     $dbman->create_table($table);
 
-    $sql = "INSERT INTO {crlm_user_idnumber_temp}
+    $sql = "INSERT INTO {local_elisprogram_usr_idntmp}
             SELECT idnumber
             FROM {".user::TABLE."}
             GROUP BY idnumber
@@ -2106,7 +2106,7 @@ function pm_fix_duplicate_pm_users() {
     $admin = get_admin();
 
     // Look up the list of duplicate idnumbers
-    if ($rs = $DB->get_recordset('crlm_user_idnumber_temp')) {
+    if ($rs = $DB->get_recordset('local_elisprogram_usr_idntmp')) {
         foreach ($rs as $record) {
 
             // Store whether we're currently on the first user record, whose idnumber
@@ -2180,7 +2180,7 @@ function pm_fix_duplicate_pm_users() {
     }
 
     // Drop the temp table
-    $result = $result && $DB->execute("DROP TABLE {crlm_user_idnumber_temp}");
+    $result = $result && $DB->execute("DROP TABLE {local_elisprogram_usr_idntmp}");
 
     return $result;
 }
@@ -2727,7 +2727,7 @@ function pm_issue_course_certificates() {
 
     // Find all courses having certificate settings and are enabled.
     $params = array('entity_type' => CERTIFICATE_ENTITY_TYPE_COURSE, 'disable' => 0);
-    $certcourses = $DB->get_recordset('crlm_certificate_settings', $params, '', 'id, entity_id');
+    $certcourses = $DB->get_recordset('local_elisprogram_certcfg', $params, '', 'id, entity_id');
 
     if (empty($certcourses)) {
         return $status;
@@ -2738,7 +2738,7 @@ function pm_issue_course_certificates() {
          * certificates for those classes
          */
         $subselect = "SELECT * ";
-        $subfrom   = "FROM {crlm_certificate_issued} certissued ";
+        $subfrom   = "FROM {local_elisprogram_certissued} certissued ";
         $subwhere  = "WHERE certissued.cert_setting_id = :certsettingid AND ".
                       "certissued.cm_userid = clsenrol.userid AND clsenrol.completetime = certissued.timeissued ";
 
@@ -2749,8 +2749,8 @@ function pm_issue_course_certificates() {
             'certsettingid' => $certcoursesetting->id
         );
         $select = "SELECT clsenrol.userid, clsenrol.completetime ";
-        $from   = "FROM {crlm_class} cmclass ".
-                  "INNER JOIN {crlm_class_enrolment} clsenrol ON clsenrol.classid = cmclass.id ";
+        $from   = "FROM {local_elisprogram_cls} cmclass ".
+                  "INNER JOIN {local_elisprogram_cls_enrol} clsenrol ON clsenrol.classid = cmclass.id ";
         $where  = "WHERE clsenrol.completestatusid = :completestatus AND clsenrol.locked = :locked AND ".
                   "cmclass.courseid = :courseid AND ".
                   "NOT EXISTS ($subselect $subfrom $subwhere) ORDER BY clsenrol.userid ";
@@ -2768,7 +2768,7 @@ function pm_issue_course_certificates() {
  * Generate certificate codes for each applicable user and insert a record in in the certificate_issued table
  * @param int $certsettingid Certificate setting id (foreign key)
  * @param recordset $users A record set of users eligible to recevie certificates
- * @param object $dataclass crlm_certificate_issued data ojbect
+ * @param object $dataclass local_elisprogram_certissued data ojbect
  * @return bool True if the record was inserted or false is something went wrong
  */
 function pm_issue_user_certificate($certsettingid, $users, $dataclass) {

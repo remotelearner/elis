@@ -98,7 +98,7 @@ $colheader1 = get_string('results_track_name_header', 'local_elisprogram');
 $colheader2 = get_string('results_track_desc_header', 'local_elisprogram');
 
 
-$table->set_sql($columns, "{$CFG->prefix}crlm_track", $where, $params);
+$table->set_sql($columns, "{$CFG->prefix}local_elisprogram_trk", $where, $params);
 $table->define_baseurl($baseurl);
 $table->collapsible(false);
 $table->define_columns(array('name', 'description'));

@@ -37,7 +37,7 @@ require_once elispm::lib('data/user.class.php');
 require_once elispm::lib('datedelta.class.php');
 
 class curriculum extends data_object_with_custom_fields {
-    const TABLE = 'crlm_curriculum';
+    const TABLE = 'local_elisprogram_pgm';
 
     var $verbose_name = 'program';
 
