@@ -302,6 +302,10 @@ function userset_moodleprofile_update($cluster) {
 function cluster_profile_update_handler($userdata) {
     global $DB, $CFG;
 
+    if (!empty($userdata->deleted)) {
+        return true;
+    }
+
     // make sure a CM user exists
     pm_moodle_user_to_pm($userdata);
 
