@@ -108,6 +108,15 @@ class migrator {
                 $dbman->rename_table($oldtable, $newname);
             }
         }
+
+        // Check for a few old unused tables and just drop them if they exist.
+        $removetables = array('crlm_config', 'crlm_usercluster');
+        foreach ($removetables as $removetable) {
+            $oldtable = new \xmldb_table($removetable);
+            if ($dbman->table_exists($oldtable)) {
+                $dbman->drop_table($oldtable);
+            }
+        }
     }
 
     /**

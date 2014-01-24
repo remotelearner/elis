@@ -323,7 +323,7 @@
         <INDEX NAME="idnumber_ix" UNIQUE="false" FIELDS="idnumber" PREVIOUS="username_ix"/>
       </INDEXES>
     </TABLE>
-    <TABLE NAME="local_elisprogram_uset" COMMENT="Cluster definitions." PREVIOUS="local_elisprogram_usr" NEXT="local_elisprogram_usr_uset">
+    <TABLE NAME="local_elisprogram_uset" COMMENT="Cluster definitions." PREVIOUS="local_elisprogram_usr" NEXT="local_elisprogram_crs_tpl">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
         <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Data name" PREVIOUS="id" NEXT="display"/>
@@ -335,36 +335,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="local_elisprogram_usr_uset" COMMENT="Contains cluster assignments for CM users." PREVIOUS="local_elisprogram_uset" NEXT="local_elisprogram_config">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
-        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The CM user id" PREVIOUS="id" NEXT="clusterid"/>
-        <FIELD NAME="clusterid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" COMMENT="The cluster assigned to." PREVIOUS="userid" NEXT="autoenrol"/>
-        <FIELD NAME="autoenrol" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether users should be autoenrolled in tracks associated with this cluster." PREVIOUS="clusterid" NEXT="leader"/>
-        <FIELD NAME="leader" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Whether or not the user is a cluster leader" PREVIOUS="autoenrol"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="user_idx" UNIQUE="false" FIELDS="userid" NEXT="cluster_idx"/>
-        <INDEX NAME="cluster_idx" UNIQUE="false" FIELDS="clusterid" PREVIOUS="user_idx"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="local_elisprogram_config" COMMENT="The config elements for the curriculum management system." PREVIOUS="local_elisprogram_usr_uset" NEXT="local_elisprogram_crs_tpl">
-      <FIELDS>
-        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="name"/>
-        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Name of the config element" PREVIOUS="id" NEXT="value"/>
-        <FIELD NAME="value" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" COMMENT="The configuration value" PREVIOUS="name"/>
-      </FIELDS>
-      <KEYS>
-        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
-      </KEYS>
-      <INDEXES>
-        <INDEX NAME="name_ix" UNIQUE="true" FIELDS="name"/>
-      </INDEXES>
-    </TABLE>
-    <TABLE NAME="local_elisprogram_crs_tpl" COMMENT="Course templates" PREVIOUS="local_elisprogram_config" NEXT="local_elisprogram_usr_trk">
+    <TABLE NAME="local_elisprogram_crs_tpl" COMMENT="Course templates" PREVIOUS="local_elisprogram_uset" NEXT="local_elisprogram_usr_trk">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="courseid"/>
         <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="location"/>
