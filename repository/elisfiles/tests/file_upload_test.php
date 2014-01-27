@@ -87,8 +87,19 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
      * This function initializes all of the setup steps required by each step.
      */
     protected function setUp() {
+        global $DB;
         parent::setUp();
         $this->setAdminUser();
+
+        // Create elisfiles repository records
+        $elisfiles = new stdClass;
+        $elisfiles->type = 'elisfiles';
+        $elisfiles->id = $DB->insert_record('repository', $elisfiles);
+        $efinst = new stdClass;
+        $efinst->typeid = $elisfiles->id;
+        $efinst->name = 'ELIS Files';
+        $efinst->contextid = SYSCONTEXTID;
+        $DB->insert_record('repository_instances', $efinst);
     }
 
     /**
@@ -272,20 +283,11 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
 
             $repository = $DB->get_record_sql($sql, array('elisfiles'));
 
-            if ($repository) {
-                try {
-                    $repo = new repository_elisfiles('elisfiles', context_system::instance(),
-                            array('ajax' => false,
-                                  'name' => $repository->name,
-                                  'type' => 'elisfiles'
-                            )
-                    );
-                } catch (Exception $e) {
-                    $this->markTestSkipped();
-                }
-            } else {
-                $this->markTestSkipped();
-            }
+            $repo = new repository_elisfiles('elisfiles', context_system::instance(), array(
+                'ajax' => false,
+                'name' => $repository->name,
+                'type' => 'elisfiles'
+            ));
         } else {
             $this->markTestSkipped();
         }

@@ -107,8 +107,19 @@ class repository_elisfiles_utility_methods_testcase extends elis_database_test {
      * This function initializes all of the setup steps required by each step.
      */
     protected function setUp() {
+        global $DB;
         parent::setUp();
         $this->setAdminUser();
+
+        // Create elisfiles repository records
+        $elisfiles = new stdClass;
+        $elisfiles->type = 'elisfiles';
+        $elisfiles->id = $DB->insert_record('repository', $elisfiles);
+        $efinst = new stdClass;
+        $efinst->typeid = $elisfiles->id;
+        $efinst->name = 'ELIS Files';
+        $efinst->contextid = SYSCONTEXTID;
+        $DB->insert_record('repository_instances', $efinst);
     }
 
     /**

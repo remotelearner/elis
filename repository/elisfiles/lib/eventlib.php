@@ -327,7 +327,7 @@ function elis_files_userset_assigned($usersetinfo) {
         return true;
     }
 
-    $context = context_elis_userset::instance($userset->id);
+    $context = \local_elisprogram\context\userset::instance($userset->id);
 
     $sql = 'SELECT ra.*
             FROM {role_assignments} ra
@@ -431,7 +431,7 @@ function elis_files_userset_deassigned($usersetinfo) {
         return true;
     }
 
-    $context = context_elis_userset::instance($userset->id);
+    $context = \local_elisprogram\context\userset::instance($userset->id);
 
     $sql = 'SELECT rc.*
             FROM {role_assignments} ra

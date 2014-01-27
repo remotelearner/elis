@@ -1725,7 +1725,7 @@ class repository_elisfiles extends repository {
         /// Get the context instance for where we originated viewing this browser from.
         //error_log("check_editing_permissions({$id}, {$shared}, {$oid}, {$uuid}, {$userid})");
         if (!empty($oid)) {
-            $userset_context = context_elis_userset::instance($oid);
+            $userset_context = \local_elisprogram\context\userset::instance($oid);
         }
         if ($id == SITEID) {
             $context = context_system::instance();
@@ -1782,7 +1782,7 @@ class repository_elisfiles extends repository {
         /// Get the context instance for where we originated viewing this browser from.
         //error_log("check_viewing_permissions({$id}, {$shared}, {$oid}, {$uuid}, {$userid})");
         if (!empty($oid)) {
-            $userset_context = context_elis_userset::instance($oid);
+            $userset_context = \local_elisprogram\context\userset::instance($oid);
         }
         if ($id == SITEID) {
             $context = context_system::instance();

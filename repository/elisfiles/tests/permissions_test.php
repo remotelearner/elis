@@ -254,8 +254,19 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
      * This function initializes all of the setup steps required by each step.
      */
     protected function setUp() {
+        global $DB;
         parent::setUp();
         $this->setAdminUser();
+
+        // Create elisfiles repository records
+        $elisfiles = new stdClass;
+        $elisfiles->type = 'elisfiles';
+        $elisfiles->id = $DB->insert_record('repository', $elisfiles);
+        $efinst = new stdClass;
+        $efinst->typeid = $elisfiles->id;
+        $efinst->name = 'ELIS Files';
+        $efinst->contextid = SYSCONTEXTID;
+        $DB->insert_record('repository_instances', $efinst);
     }
 
     /**
@@ -797,7 +808,7 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
         role_assign($roleid, $USER->id, $systemcontext->id);
 
         // Assign the "view userset content" role to the test user
-        $usersetcontext = context_elis_userset::instance($userset->id);
+        $usersetcontext = \local_elisprogram\context\userset::instance($userset->id);
         $roleid = $this->assign_role_capability('repository/elisfiles:viewusersetcontent', 100);
         role_assign($roleid, $USER->id, $usersetcontext->id);
 

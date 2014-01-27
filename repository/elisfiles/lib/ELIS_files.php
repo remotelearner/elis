@@ -1674,11 +1674,11 @@ class ELIS_files {
 
         // Make sure that the optional table we are about to check actually exists.
         $dbman = $DB->get_manager();
-        if (!$dbman->table_exists('crlm_cluster')) {
+        if (!$dbman->table_exists('local_elisprogram_uset')) {
             return false;
         }
 
-        if (!$userset = $DB->get_record('crlm_cluster', array('id'=> $oid))) {
+        if (!$userset = $DB->get_record('local_elisprogram_uset', array('id'=> $oid))) {
             return false;
         }
 
@@ -2165,7 +2165,7 @@ class ELIS_files {
 
         /// This is a userset file.
         if (!empty($oid)) {
-            $cluster_context = context_elis_userset::instance($oid);
+            $cluster_context = \local_elisprogram\context\userset::instance($oid);
 
         }
 
@@ -2736,7 +2736,7 @@ class ELIS_files {
 
         // Ensure that the cluster table actually exists before we query it.
         $manager = $DB->get_manager();
-        if (!$manager->table_exists('crlm_cluster')) {
+        if (!$manager->table_exists('local_elisprogram_uset')) {
             return false;
         }
 
@@ -2760,7 +2760,7 @@ class ELIS_files {
         // Select clusters and sub-clusters for the current user
         // to which they have the vieworganization capability
         $sql = "SELECT DISTINCT clst.id AS instanceid
-            FROM {crlm_cluster} clst
+            FROM {local_elisprogram_uset} clst
             WHERE EXISTS ( SELECT 'x'
                 FROM {context} c
                 JOIN {context} c_parent
@@ -2777,7 +2777,7 @@ class ELIS_files {
                   AND rc.capability = :capability
                 )
              OR EXISTS ( SELECT 'x'
-                 FROM {crlm_cluster_assignments} ca
+                 FROM {local_elisprogram_uset_asign} ca
                 WHERE ca.clusterid = clst.id
                   AND ca.userid = :cmuserid)
               ";
@@ -2831,7 +2831,7 @@ class ELIS_files {
             }
 
             // Add to opts array
-            $cluster_context = context_elis_userset::instance($cluster->id);
+            $cluster_context = \local_elisprogram\context\userset::instance($cluster->id);
             $system_context = context_system::instance();
 
             $viewalfuserset = has_capability('repository/elisfiles:viewusersetcontent', $cluster_context) ||
@@ -3345,7 +3345,7 @@ class ELIS_files {
         if (!empty($location->uuid) && !empty($oid) &&  !empty($location->oid) && ($location->oid != $oid) &&
             ($location->uid === 0) && ($location->shared == $shared) && ($location->uid == $uid)) {
 
-            $cluster_context = context_elis_userset::instance($oid);
+            $cluster_context = \local_elisprogram\context\userset::instance($oid);
             $syscontext = context_system::instance();
 
             $has_permissions = has_capability('repository/elisfiles:viewusersetcontent', $cluster_context) ||
@@ -3627,8 +3627,8 @@ class ELIS_files {
                     if ($crlm_user === false) {
                         break;
                     }
-                    $contextclass = context_elis_helper::get_class_for_level(CONTEXT_ELIS_USERSET);
-                    $assignments = $DB->get_records('crlm_cluster_assignments',
+                    $contextclass = \local_eliscore\context\helper::get_class_for_level(CONTEXT_ELIS_USERSET);
+                    $assignments = $DB->get_records('local_elisprogram_uset_asign',
                                                     array('userid' => $crlm_user));
                     // TBD: just get the first valid userset store???
                     foreach ($assignments as $cluster_assignment) {
