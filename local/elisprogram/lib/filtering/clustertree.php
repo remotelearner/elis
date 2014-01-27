@@ -659,7 +659,7 @@ class generalized_filter_clustertree extends generalized_filter_type {
 
         //dropdown / cluster tree state storage
         $mform->addElement('hidden', $this->_uniqueid .'_usingdropdown');
-        $mform->setType($this->_uniqueid.'_usingdropdown', PARAM_RAW);
+        $mform->setType($this->_uniqueid.'_usingdropdown', PARAM_BOOL);
         // Must use addHelpButton() to NOT open help link on page, but in popup!
         $mform->addHelpButton($this->_uniqueid .'_dropdown', $this->_filterhelp[0], $this->_filterhelp[2] /* , $this->_filterhelp[1] */); // TBV
 
@@ -691,13 +691,13 @@ class generalized_filter_clustertree extends generalized_filter_type {
 
         //list of explicitly selected elements
         $mform->addElement('hidden', $this->_uniqueid .'_listing');
-        $mform->setType($this->_uniqueid.'_listing', PARAM_RAW);
+        $mform->setType($this->_uniqueid.'_listing', PARAM_TEXT);
         //list of selected and unexpanded elements
         $mform->addElement('hidden', $this->_uniqueid .'_unexpanded');
-        $mform->setType($this->_uniqueid.'_unexpanded', PARAM_RAW);
+        $mform->setType($this->_uniqueid.'_unexpanded', PARAM_TEXT);
         //list of explicitly unselected elements
         $mform->addElement('hidden', $this->_uniqueid .'_clrunexpanded');
-        $mform->setType($this->_uniqueid.'_clrunexpanded', PARAM_RAW);
+        $mform->setType($this->_uniqueid.'_clrunexpanded', PARAM_TEXT);
 
         $mform->addElement('button', $this->_uniqueid.'_toggle', '');
 

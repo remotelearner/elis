@@ -38,9 +38,9 @@ class addroleform extends selectionform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'role');
-        $mform->setType('role', PARAM_RAW);
+        $mform->setType('role', PARAM_INT);
         $mform->addElement('hidden', '_assign', 'assign');
-        $mform->setType('_assign', PARAM_RAW);
+        $mform->setType('_assign', PARAM_TEXT);
 
         // Moodle doesn't enforce starttime
         //$mform->addElement('select', 'starttime', get_string('startingfrom','role'), array(0=>'foo'));
@@ -60,7 +60,7 @@ class removeroleform extends selectionform {
         $mform->addElement('hidden', 'id');
         $mform->setType('id', PARAM_INT);
         $mform->addElement('hidden', 'role');
-        $mform->setType('role', PARAM_RAW);
+        $mform->setType('role', PARAM_INT);
 
         parent::definition();
     }
