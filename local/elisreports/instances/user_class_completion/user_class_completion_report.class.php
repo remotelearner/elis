@@ -106,11 +106,6 @@ class user_class_completion_report extends table_report {
             return false;
         }
 
-        //we also need the curr_admin block
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
-            return false;
-        }
-
         //everything needed is present
         return true;
     }
@@ -263,7 +258,7 @@ class user_class_completion_report extends table_report {
                 'isrequired'=> false,       // TBD: from above
                 'heading'   => $csheading_label, // TBD: from above
                 'help'      => array('user_class_completion_completionstatus',
-                                get_string('completion_status', 'elis_program'),
+                                get_string('completion_status', 'local_elisprogram'),
                                 $this->languagefile));
 
         $userfilter =
@@ -309,23 +304,23 @@ class user_class_completion_report extends table_report {
                     'help'        => array(
                         'curriculum' => array(
                             'name' => array('user_class_completion_curriculum',
-                                            get_string('curriculum', 'elis_program'),
+                                            get_string('curriculum', 'local_elisprogram'),
                                             $this->languagefile),
                         ),
                         'course' => array(
                             'name' => array('user_class_completion_course',
-                                            get_string('course', 'elis_program'),
+                                            get_string('course', 'local_elisprogram'),
                                             $this->languagefile)
                         ),
                         'class' => array(
                             'idnumber'          => array('user_class_completion_class',
-                                                         get_string('class', 'elis_program'),
+                                                         get_string('class', 'local_elisprogram'),
                                                          $this->languagefile),
                             'environmentid'     => array('user_class_completion_environment',
-                                                         get_string('environment', 'elis_program'),
+                                                         get_string('environment', 'local_elisprogram'),
                                                          $this->languagefile),
                             'startdate'         => array('user_class_completion_startdate',
-                                                         get_string('class_startdate', 'elis_program'),
+                                                         get_string('class_startdate', 'local_elisprogram'),
                                                          $this->languagefile),
                         ),
                     ),
@@ -437,7 +432,7 @@ class user_class_completion_report extends table_report {
                 'filter-autoc',
                 '',
                 "CONCAT(u.firstname,' ',u.lastname)",
-                get_string('fld_fullname','elis_core'),
+                get_string('fld_fullname','local_eliscore'),
                 false,
                 'autocomplete_eliswithcustomfields',
                 $autocomplete_opts

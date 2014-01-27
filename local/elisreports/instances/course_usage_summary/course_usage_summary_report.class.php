@@ -56,11 +56,6 @@ class course_usage_summary_report extends icon_config_report {
             return false;
         }
 
-        //we also need the curr_admin block
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
-            return false;
-        }
-
         //everything needed is present
         return true;
     }
@@ -268,7 +263,7 @@ class course_usage_summary_report extends icon_config_report {
         $sql = 'SELECT COUNT(enrol.id) FROM {'. student::TABLE .'} enrol
                ';
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'JOIN {'. user::TABLE .'} usr
                      ON usr.id = enrol.userid
                     ';
@@ -304,7 +299,7 @@ class course_usage_summary_report extends icon_config_report {
                      WHERE enrol.completestatusid = {$status}";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= '
                      AND usr.inactive = 0';
         }
@@ -434,7 +429,7 @@ class course_usage_summary_report extends icon_config_report {
                     ";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'AND usr.inactive = 0';
         }
 
@@ -466,7 +461,7 @@ class course_usage_summary_report extends icon_config_report {
                       ON disc.id = post.discussion
                 ';
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'JOIN {'. user::TABLE .'} usr
                        ON usr.id = enrol.userid
                     ';
@@ -496,7 +491,7 @@ class course_usage_summary_report extends icon_config_report {
                            {$permissions_filter}
                         ) ";
         }
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where[] = 'usr.inactive = 0';
         }
         if (!empty($where)) {
@@ -568,7 +563,7 @@ class course_usage_summary_report extends icon_config_report {
                           AND enrol.userid = clsgrd.userid
                     ';
 
-            if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
                 $sql .= 'JOIN {'. user::TABLE .'} usr
                            ON usr.id = enrol.userid
                         ';
@@ -603,7 +598,7 @@ class course_usage_summary_report extends icon_config_report {
                         ";
             }
 
-            if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+            if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
                 $sql .= 'AND usr.inactive = 0';
             }
 
@@ -676,7 +671,7 @@ class course_usage_summary_report extends icon_config_report {
                     ";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'AND usr.inactive = 0';
         }
 
@@ -747,7 +742,7 @@ class course_usage_summary_report extends icon_config_report {
                     ";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'AND usr.inactive = 0';
         }
 
@@ -810,7 +805,7 @@ class course_usage_summary_report extends icon_config_report {
                     ";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'AND usr.inactive = 0';
         }
 
@@ -869,7 +864,7 @@ class course_usage_summary_report extends icon_config_report {
                   FROM {'. student::TABLE .'} enrol
                ';
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'JOIN {'. user::TABLE .'} usr
                        ON usr.id = enrol.userid
                     ';
@@ -903,7 +898,7 @@ class course_usage_summary_report extends icon_config_report {
                     ";
         }
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'AND usr.inactive = 0';
         }
 
@@ -934,7 +929,7 @@ class course_usage_summary_report extends icon_config_report {
                     ON enrol.classid = clsm.classid
                ';
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= 'JOIN {'. user::TABLE .'} usr
                        ON usr.id = enrol.userid
                     ';
@@ -967,7 +962,7 @@ class course_usage_summary_report extends icon_config_report {
                              {$permissions_filter}
                         ) ";
         }
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where[] = 'usr.inactive = 0';
         }
         if (!empty($where)) {

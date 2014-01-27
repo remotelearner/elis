@@ -55,11 +55,6 @@ class class_roster_report extends table_report {
             return false;
         }
 
-        //we also need the curr_admin block
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
-            return false;
-        }
-
         //everything needed is present
         return true;
     }
@@ -162,7 +157,7 @@ class class_roster_report extends table_report {
                          'transfercredits' => $transfercredits_label,
                          'comments'        => $comments_label,
                          'notes'           => $notes_label);
-        if (elis::$config->elis_program->legacy_show_inactive_users) {
+        if (elis::$config->local_elisprogram->legacy_show_inactive_users) {
             $choices['inactive'] = $inactive_label;
         }
 
@@ -187,7 +182,7 @@ class class_roster_report extends table_report {
                          'transfercredits',
                          'comments',
                          'notes');
-        if (elis::$config->elis_program->legacy_show_inactive_users) {
+        if (elis::$config->local_elisprogram->legacy_show_inactive_users) {
             $advanced[] = 'inactive';
         }
 
@@ -253,7 +248,7 @@ class class_roster_report extends table_report {
                          'transfercredits',
                          'comments',
                          'notes');
-        if (elis::$config->elis_program->legacy_show_inactive_users) {
+        if (elis::$config->local_elisprogram->legacy_show_inactive_users) {
             $advanced[] = 'inactive';
         }
         foreach($advanced as $column) {
@@ -425,7 +420,7 @@ class class_roster_report extends table_report {
 
         if (isset($record->r_gender)) {
             //get readable gender
-            $record->r_gender = $record->r_gender == 'F' ? get_string('female','elis_program'):get_string('male','elis_program');
+            $record->r_gender = $record->r_gender == 'F' ? get_string('female','local_elisprogram'):get_string('male','local_elisprogram');
         }
 
         if (isset($record->r_inactive)) {
@@ -485,7 +480,7 @@ class class_roster_report extends table_report {
 
                ';
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $where[] = 'usr.inactive = 0';
         }
         if (!empty($where)) {

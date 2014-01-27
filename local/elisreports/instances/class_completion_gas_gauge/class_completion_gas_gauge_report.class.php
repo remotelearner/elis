@@ -55,11 +55,6 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
             return false;
         }
 
-        //we also need the curr_admin block
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
-            return false;
-        }
-
         //everything needed is present
         return true;
     }
@@ -380,7 +375,7 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         }
 
         $status = student::$completestatusid_values[$record->completestatus];
-        $record->completestatus = get_string($status, 'elis_program');
+        $record->completestatus = get_string($status, 'local_elisprogram');
 
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {
             //convert user name to their full name and link to the CM user page for that user

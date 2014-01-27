@@ -65,11 +65,6 @@ class individual_course_progress_report extends table_report {
             return false;
         }
 
-        //we also need the curr_admin block
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
-            return false;
-        }
-
         //everything needed is present
         return true;
     }
@@ -287,7 +282,7 @@ class individual_course_progress_report extends table_report {
 
         $filters[] = new generalized_filter_entry(
                 'filterautoc', 'crlmuser', 'id',
-                get_string('fld_fullname','elis_core'),
+                get_string('fld_fullname','local_eliscore'),
                 false,
                 'autocomplete_eliswithcustomfields',
                 $autocomplete_opts

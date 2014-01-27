@@ -94,7 +94,7 @@ class report_page extends elis_page {
         $perpage = $this->optional_param('perpage', 25, PARAM_INT);
 
         // needed for AJAX calls
-        $PAGE->requires->yui_module('moodle-elis_core-associateclass', 'M.elis_core.init_associateclass',
+        $PAGE->requires->yui_module('moodle-local_eliscore-associateclass', 'M.local_eliscore.init_associateclass',
                 array(
                         array(
                             'basepage' => "{$CFG->wwwroot}/local/elisreports/dynamicreport.php",

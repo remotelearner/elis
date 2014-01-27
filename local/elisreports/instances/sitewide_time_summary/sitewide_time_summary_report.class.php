@@ -164,11 +164,6 @@ class sitewide_time_summary_report extends table_report {
             return false;
         }
 
-        //we also need the curr_admin block
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
-            return false;
-        }
-
         //everything needed is present
         return true;
     }
@@ -811,7 +806,7 @@ class sitewide_time_summary_report extends table_report {
         $sql .= "
            WHERE {$permissions_filter} ";
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $sql .= ' AND crlmu.inactive = 0';
         }
 

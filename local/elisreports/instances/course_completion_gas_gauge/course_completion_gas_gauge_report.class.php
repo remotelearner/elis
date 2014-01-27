@@ -54,11 +54,6 @@ class course_completion_gas_gauge_report extends gas_gauge_table_report {
             return false;
         }
 
-        //we also need the curr_admin block
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
-            return false;
-        }
-
         //everything needed is present
         return true;
     }

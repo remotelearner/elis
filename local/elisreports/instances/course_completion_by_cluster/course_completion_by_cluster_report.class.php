@@ -80,11 +80,6 @@ class course_completion_by_cluster_report extends table_report {
             return false;
         }
 
-        //we also need the curr_admin block
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
-            return false;
-        }
-
         //everything needed is present
         return true;
     }
@@ -334,7 +329,7 @@ class course_completion_by_cluster_report extends table_report {
                                      enrol.completetime AS enrolcompletetime,
                                      curriculum_assignment.timecompleted AS curriculumcompletetime';
 
-        if (empty(elis::$config->elis_program->legacy_show_inactive_users)) {
+        if (empty(elis::$config->local_elisprogram->legacy_show_inactive_users)) {
             $inactive = ' AND user.inactive = 0';
         } else {
             $inactive = '';
