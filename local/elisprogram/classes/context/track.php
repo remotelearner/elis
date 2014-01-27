@@ -102,14 +102,18 @@ class track extends \local_eliscore\context\base {
     public function get_capabilities() {
         global $DB;
 
-        $sort = 'ORDER BY contextlevel,component,name';   // To group them sensibly for display
+        // To group them sensibly for display.
+        $sort = 'ORDER BY contextlevel,component,name';
 
-        $params = array();
-        $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_class($this));
+        $ctxlevels = array(
+                \local_eliscore\context\helper::get_level_from_class_name(get_class($this)),
+                \local_elisprogram\context\pmclass::get_context_level()
+        );
+        list($ctxinorequal, $params) = $DB->get_in_or_equal($ctxlevels);
 
         $sql = "SELECT *
                   FROM {capabilities}
-                 WHERE contextlevel IN (".$contextlevel.",".\local_elisprogram\context\pmclass::get_context_level().")";
+                 WHERE contextlevel ".$ctxinorequal;
 
         return $DB->get_records_sql($sql.' '.$sort, $params);
     }
@@ -185,12 +189,30 @@ class track extends \local_eliscore\context\base {
         $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_called_class());
 
         $sql = "INSERT INTO {context} (contextlevel, instanceid)
-                SELECT ".$contextlevel.", ep.id
-                  FROM {".\track::TABLE."} ep
+                SELECT ".$contextlevel.", etrk.id
+                  FROM {".\track::TABLE."} etrk
                  WHERE NOT EXISTS (SELECT 'x'
                                      FROM {context} cx
-                                    WHERE ep.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
+                                    WHERE etrk.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
         $DB->execute($sql);
+    }
+
+    /**
+     * Returns sql necessary for purging of stale context instances.
+     *
+     * @static
+     * @return string cleanup SQL
+     */
+    protected static function get_cleanup_sql() {
+        $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_called_class());
+        $sql = "
+                  SELECT c.*
+                    FROM {context} c
+         LEFT OUTER JOIN {".\track::TABLE."} etrk ON c.instanceid = etrk.id
+                   WHERE etrk.id IS NULL AND c.contextlevel = ".$contextlevel."
+               ";
+
+        return $sql;
     }
 
     /**

@@ -97,13 +97,19 @@ class user extends \local_eliscore\context\base {
     public function get_capabilities() {
         global $DB;
 
-        $sort = 'ORDER BY contextlevel,component,name';   // To group them sensibly for display
-        $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_class($this));
+        // To group them sensibly for display.
+        $sort = 'ORDER BY contextlevel,component,name';
+
+        $ctxlevels = array(
+                \local_eliscore\context\helper::get_level_from_class_name(get_class($this))
+        );
+        list($ctxinorequal, $params) = $DB->get_in_or_equal($ctxlevels);
+
         $sql = "SELECT *
                   FROM {capabilities}
-                 WHERE contextlevel = ".$contextlevel;
+                 WHERE contextlevel ".$ctxinorequal;
 
-        return $records = $DB->get_records_sql($sql.' '.$sort, $params);
+        return $DB->get_records_sql($sql.' '.$sort, $params);
     }
 
     /**
@@ -150,11 +156,11 @@ class user extends \local_eliscore\context\base {
         $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_called_class());
 
         $sql = "INSERT INTO {context} (contextlevel, instanceid)
-                SELECT ".$contextlevel.", u.id
-                  FROM {".\user::TABLE."} u
+                SELECT ".$contextlevel.", eusr.id
+                  FROM {".\user::TABLE."} eusr
                  WHERE NOT EXISTS (SELECT 'x'
                                      FROM {context} cx
-                                    WHERE u.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
+                                    WHERE eusr.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
         $DB->execute($sql);
     }
 
@@ -169,8 +175,8 @@ class user extends \local_eliscore\context\base {
         $sql = "
                   SELECT c.*
                     FROM {context} c
-         LEFT OUTER JOIN {".\user::TABLE."} u ON c.instanceid = u.id
-                   WHERE u.id IS NULL AND c.contextlevel = ".$contextlevel."
+         LEFT OUTER JOIN {".\user::TABLE."} eusr ON c.instanceid = eusr.id
+                   WHERE eusr.id IS NULL AND c.contextlevel = ".$contextlevel."
                ";
 
         return $sql;

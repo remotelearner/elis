@@ -36,7 +36,7 @@ class pmclass extends \local_eliscore\context\base {
      * Alternatively if you know only the context id use context::instance_by_id($contextid)
      *
      * @throws \coding_exception if an invalid context level is passed
-     * @param \stdClass $record
+     * @param \stdClass $record A DB record from the mdl_context table
      */
     protected function __construct(\stdClass $record) {
         parent::__construct($record);
@@ -98,13 +98,17 @@ class pmclass extends \local_eliscore\context\base {
     public function get_capabilities() {
         global $DB;
 
-        $sort = 'ORDER BY contextlevel,component,name';   // To group them sensibly for display
+        // To group them sensibly for display.
+        $sort = 'ORDER BY contextlevel,component,name';
 
-        $params = array();
-        $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_class($this));
+        $ctxlevels = array(
+                \local_eliscore\context\helper::get_level_from_class_name(get_class($this))
+        );
+        list($ctxinorequal, $params) = $DB->get_in_or_equal($ctxlevels);
+
         $sql = "SELECT *
                   FROM {capabilities}
-                 WHERE contextlevel IN (".$contextlevel.")";
+                 WHERE contextlevel ".$ctxinorequal;
 
         return $DB->get_records_sql($sql.' '.$sort, $params);
     }
@@ -181,11 +185,11 @@ class pmclass extends \local_eliscore\context\base {
         $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_called_class());
 
         $sql = "INSERT INTO {context} (contextlevel, instanceid)
-                SELECT ".$contextlevel.", ep.id
-                  FROM {".\pmclass::TABLE."} ep
+                SELECT ".$contextlevel.", ecls.id
+                  FROM {".\pmclass::TABLE."} ecls
                  WHERE NOT EXISTS (SELECT 'x'
                                      FROM {context} cx
-                                    WHERE ep.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
+                                    WHERE ecls.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
         $DB->execute($sql);
     }
 
@@ -200,8 +204,8 @@ class pmclass extends \local_eliscore\context\base {
         $sql = "
                   SELECT c.*
                     FROM {context} c
-         LEFT OUTER JOIN {".\pmclass::TABLE."} ep ON c.instanceid = cc.id
-                   WHERE ep.id IS NULL AND c.contextlevel = ".$contextlevel."
+         LEFT OUTER JOIN {".\pmclass::TABLE."} ecls ON c.instanceid = ecls.id
+                   WHERE ecls.id IS NULL AND c.contextlevel = ".$contextlevel."
                ";
 
         return $sql;

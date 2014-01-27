@@ -97,12 +97,17 @@ class userset extends \local_eliscore\context\base {
     public function get_capabilities() {
         global $DB;
 
-        $sort = 'ORDER BY contextlevel,component,name';   // To group them sensibly for display
-        $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_class($this));
-        $params = array();
+        // To group them sensibly for display.
+        $sort = 'ORDER BY contextlevel,component,name';
+
+        $ctxlevels = array(
+                \local_eliscore\context\helper::get_level_from_class_name(get_class($this))
+        );
+        list($ctxinorequal, $params) = $DB->get_in_or_equal($ctxlevels);
+
         $sql = "SELECT *
                   FROM {capabilities}
-                 WHERE contextlevel = ".$contextlevel;
+                 WHERE contextlevel ".$ctxinorequal;
 
         return $DB->get_records_sql($sql.' '.$sort, $params);
     }
@@ -111,7 +116,7 @@ class userset extends \local_eliscore\context\base {
      * Returns ELIS User Set context instance.
      *
      * @static
-     * @param int $instanceid The ELIS user id
+     * @param int $instanceid The ELIS userset id
      * @param int $strictness IGNORE_MISSING means compatible mode, false returned if record not found, debug message if more found;
      *                        IGNORE_MULTIPLE means return first, ignore multiple records found(not recommended);
      *                        MUST_EXIST means we will throw an exception if no record or multiple records found.
@@ -180,11 +185,11 @@ class userset extends \local_eliscore\context\base {
         $contextlevel = \local_eliscore\context\helper::get_level_from_class_name(get_called_class());
 
         $sql = "INSERT INTO {context} (contextlevel, instanceid)
-                SELECT ".$contextlevel.", cc.id
-                  FROM {".\userset::TABLE."} eu
+                SELECT ".$contextlevel.", euset.id
+                  FROM {".\userset::TABLE."} euset
                  WHERE NOT EXISTS (SELECT 'x'
                                      FROM {context} cx
-                                    WHERE eu.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
+                                    WHERE euset.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
         $DB->execute($sql);
     }
 
@@ -199,8 +204,8 @@ class userset extends \local_eliscore\context\base {
         $sql = "
                   SELECT c.*
                     FROM {context} c
-         LEFT OUTER JOIN {".\userset::TABLE."} eu ON c.instanceid = eu.id
-                   WHERE eu.id IS NULL AND c.contextlevel = ".$contextlevel."
+         LEFT OUTER JOIN {".\userset::TABLE."} euset ON c.instanceid = euset.id
+                   WHERE euset.id IS NULL AND c.contextlevel = ".$contextlevel."
                ";
 
         return $sql;
