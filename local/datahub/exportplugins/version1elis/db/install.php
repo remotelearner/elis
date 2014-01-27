@@ -119,5 +119,7 @@ function xmldb_dhexport_version1elis_install() {
         $dbman->rename_table($table, 'dhexport_version1elis_fld');
     }
 
+    unset_all_config_for_plugin('rlipexport_version1elis');
+
     return true;
 }

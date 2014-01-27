@@ -57,5 +57,7 @@ function xmldb_dhimport_version1elis_install() {
         $dbman->rename_table($table, 'dhimport_version1elis_map');
     }
 
+    unset_all_config_for_plugin('rlipimport_version1elis');
+
     return true;
 }

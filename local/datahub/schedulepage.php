@@ -120,7 +120,7 @@ class ip_schedule_page extends elis_page {
             $edit = get_string('edit');
             $delete = get_string('delete');
             foreach ($ipscheds as $ipjob) {
-                $ustr = "{$ipjob->username}<br/>(". fullname($ipjob) .')';
+                $ustr = "{$ipjob->username}<br/>(".datahub_fullname($ipjob).')';
                 $tz   = $ipjob->timezone;
                 $data = unserialize($ipjob->config);
                 $lastruntime = !empty($ipjob->lastruntime)

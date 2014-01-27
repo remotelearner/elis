@@ -51,5 +51,7 @@ function xmldb_dhimport_version1_install() {
         $dbman->rename_table($table, 'dhimport_version1_mapping');
     }
 
+    unset_all_config_for_plugin('rlipimport_version1');
+
     return true;
 }

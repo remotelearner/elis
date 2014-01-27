@@ -906,7 +906,7 @@ class version1userimport_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+        if (!file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
@@ -933,7 +933,7 @@ class version1userimport_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/local/eliscore/lib/setup.php');
 
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+        if (!file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
@@ -959,7 +959,7 @@ class version1userimport_testcase extends rlip_test {
     public function test_version1importsyncsusertoelisoncreatewithidnumbersupplied() {
         global $CFG, $DB;
 
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+        if (!file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
@@ -1036,7 +1036,7 @@ class version1userimport_testcase extends rlip_test {
     public function test_version1importsyncsusertoelisoncreatewithidnumberautoassigned() {
         global $CFG, $DB;
 
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+        if (!file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 
@@ -1111,7 +1111,7 @@ class version1userimport_testcase extends rlip_test {
     public function test_version1importsyncsusertoelisonupdate() {
         global $CFG, $DB;
 
-        if (!$DB->record_exists('block', array('name' => 'curr_admin'))) {
+        if (!file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             $this->markTestIncomplete('This test depends on the PM system');
         }
 

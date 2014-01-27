@@ -844,7 +844,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             '%%password%%' => (isset($user->cleartextpassword)) ? $user->cleartextpassword : '',
             '%%firstname%%' => (isset($user->firstname)) ? $user->firstname : '',
             '%%lastname%%' => (isset($user->lastname)) ? $user->lastname : '',
-            '%%fullname%%' => fullname($user),
+            '%%fullname%%' => datahub_fullname($user),
             '%%email%%' => (isset($user->email)) ? $user->email : '',
         );
         return str_replace(array_keys($placeholders), array_values($placeholders), $templatetext);
@@ -2146,7 +2146,7 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             '%%user_idnumber%%' => (isset($user->idnumber)) ?  $user->idnumber : '',
             '%%user_firstname%%' => (isset($user->firstname)) ?  $user->firstname : '',
             '%%user_lastname%%' => (isset($user->lastname)) ?  $user->lastname : '',
-            '%%user_fullname%%' => fullname($user),
+            '%%user_fullname%%' => datahub_fullname($user),
             '%%user_email%%' => (isset($user->email)) ? $user->email : '',
             '%%course_fullname%%' => (isset($course->fullname)) ? $course->fullname : '',
             '%%course_shortname%%' => (isset($course->shortname)) ? $course->shortname : '',

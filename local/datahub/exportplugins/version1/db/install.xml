@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="local/eliscore/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 export plugin"
+<XMLDB PATH="local/datahub/exportplugins/version1/db" VERSION="20110216" COMMENT="XMLDB file for common Data Hub version 1 export plugin"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd"
 >

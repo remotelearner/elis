@@ -388,7 +388,7 @@ class version1export_testcase extends rlip_test {
     public function test_version1exportexcludesdeletedusers() {
         global $CFG, $DB;
 
-        if ($DB->record_exists('block', array('name' => 'curr_admin'))) {
+        if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
             // Needed to prevent error in PM delete handler.
             require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         }

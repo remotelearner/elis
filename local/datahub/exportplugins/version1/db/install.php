@@ -39,7 +39,7 @@ function xmldb_dhexport_version1_install() {
         if ($result && $oldversion < 2012032800) {
             // Make block naming more consistent.
             // Will throw an exception if problem is encountered.
-            $dbman->rename_table(new xmldb_table('block_rlip_version1_export'), 'dhexport_version1_field');
+            $dbman->rename_table(new xmldb_table('block_rlip_version1_export'), 'rlipexport_version1_field');
         }
     }
 
@@ -50,6 +50,8 @@ function xmldb_dhexport_version1_install() {
         $dbman->drop_table($newtable);
         $dbman->rename_table($table, 'dhexport_version1_field');
     }
+
+    unset_all_config_for_plugin('rlipexport_version1');
 
     return true;
 }

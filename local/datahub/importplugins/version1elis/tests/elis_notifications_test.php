@@ -575,13 +575,13 @@ class elis_notifications_testcase extends rlip_elis_test {
             </p>';
         $actualtext = $importplugin->newenrolmentemail_generate($templatetext, $user, $course);
 
-        $expectedtext = '<p>Hi '.fullname($user).', you have been enroled in '.$course->shortname.'
+        $expectedtext = '<p>Hi '.datahub_fullname($user).', you have been enroled in '.$course->shortname.'
             Sitename: PHPUnit test site
             User Username: '.$user->username.'
             User Idnumber: '.$user->idnumber.'
             User First Name: '.$user->firstname.'
             User Last Name: '.$user->lastname.'
-            User Full Name: '.fullname($user).'
+            User Full Name: '.datahub_fullname($user).'
             User Email Address: '.$user->email.'
             Course Fullname: '.$course->fullname.'
             Course Shortname: '.$course->shortname.'

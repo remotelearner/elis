@@ -1,65 +1,75 @@
 <?php
+/**
+ * ELIS(TM): Enterprise Learning Intelligence Suite
+ * Copyright (C) 2008 onward Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package    local_datahub
+ * @author     Remote-Learner.net Inc
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008 onward Remote-Learner.net Inc (http://www.remote-learner.net)
+ *
+ */
 
-//start of "data handling" section, along with link for configuring mapping
+defined('MOODLE_INTERNAL') || die;
+
+// Start of "data handling" section, along with link for configuring mapping
 $url = $CFG->wwwroot.'/local/datahub/importplugins/version1/config_fields.php';
-$attributes = array('href' => $url,
-                    'target' => '_blank');
-$settings->add(new admin_setting_heading('dhimport_version1/datahandling',
-                                         get_string('datahandling', 'dhimport_version1'),
-                                         null));
+$attributes = array('href' => $url, 'target' => '_blank');
+$settings->add(new admin_setting_heading('dhimport_version1/datahandling', get_string('datahandling', 'dhimport_version1'), null));
 
-//groups / groupings
-$settings->add(new admin_setting_configcheckbox('dhimport_version1/creategroupsandgroupings',
-                                                get_string('creategroupsandgroupings', 'dhimport_version1'),
-                                                get_string('configcreategroupsandgroupings', 'dhimport_version1'), ''));
+// Groups / groupings
+$settings->add(new admin_setting_configcheckbox('dhimport_version1/creategroupsandgroupings', get_string('creategroupsandgroupings', 'dhimport_version1'),
+        get_string('configcreategroupsandgroupings', 'dhimport_version1'), ''));
 
-//setting for "create or update"
-$settings->add(new admin_setting_configcheckbox('dhimport_version1/createorupdate',
-                                                get_string('createorupdate', 'dhimport_version1'),
-                                                get_string('configcreateorupdate', 'dhimport_version1'), 0));
+// Setting for "create or update"
+$settings->add(new admin_setting_configcheckbox('dhimport_version1/createorupdate', get_string('createorupdate', 'dhimport_version1'),
+        get_string('configcreateorupdate', 'dhimport_version1'), 0));
 
-//start of "scheduling" section
-$settings->add(new admin_setting_heading('dhimport_version1/scheduling',
-                                         get_string('importfilesheading', 'dhimport_version1'), ''));
+// Start of "scheduling" section
+$settings->add(new admin_setting_heading('dhimport_version1/scheduling', get_string('importfilesheading', 'dhimport_version1'), ''));
 
-//setting for schedule_files_path
-$settings->add(new admin_setting_configtext('dhimport_version1/schedule_files_path',
-                                            get_string('import_files_path', 'dhimport_version1'),
-                                            get_string('config_schedule_files_path', 'dhimport_version1'), '/datahub/dhimport_version1'));
+// Setting for schedule_files_path
+$settings->add(new admin_setting_configtext('dhimport_version1/schedule_files_path', get_string('import_files_path', 'dhimport_version1'),
+        get_string('config_schedule_files_path', 'dhimport_version1'), '/datahub/dhimport_version1'));
 
-//setting for user_schedule_file
-$settings->add(new admin_setting_configtext('dhimport_version1/user_schedule_file',
-                                            get_string('user_schedule_file', 'dhimport_version1'),
-                                            get_string('config_user_schedule_file', 'dhimport_version1'), 'user.csv'));
+// Setting for user_schedule_file
+$settings->add(new admin_setting_configtext('dhimport_version1/user_schedule_file', get_string('user_schedule_file', 'dhimport_version1'),
+        get_string('config_user_schedule_file', 'dhimport_version1'), 'user.csv'));
 
-//setting for course_schedule_file
-$settings->add(new admin_setting_configtext('dhimport_version1/course_schedule_file',
-                                            get_string('course_schedule_file', 'dhimport_version1'),
-                                            get_string('config_course_schedule_file', 'dhimport_version1'), 'course.csv'));
+// Setting for course_schedule_file
+$settings->add(new admin_setting_configtext('dhimport_version1/course_schedule_file', get_string('course_schedule_file', 'dhimport_version1'),
+        get_string('config_course_schedule_file', 'dhimport_version1'), 'course.csv'));
 
-//setting for enrolment_schedule_file
-$settings->add(new admin_setting_configtext('dhimport_version1/enrolment_schedule_file',
-                                            get_string('enrolment_schedule_file', 'dhimport_version1'),
-                                            get_string('config_enrolment_schedule_file', 'dhimport_version1'), 'enroll.csv'));
+// Setting for enrolment_schedule_file
+$settings->add(new admin_setting_configtext('dhimport_version1/enrolment_schedule_file', get_string('enrolment_schedule_file', 'dhimport_version1'),
+        get_string('config_enrolment_schedule_file', 'dhimport_version1'), 'enroll.csv'));
 
-//start of "logging" section
-$settings->add(new admin_setting_heading('dhimport_version1/logging',
-                                         get_string('logging', 'dhimport_version1'),
-                                         ''));
+// Start of "logging" section
+$settings->add(new admin_setting_heading('dhimport_version1/logging', get_string('logging', 'dhimport_version1'), ''));
 
-//log file location
-$settings->add(new admin_setting_configtext('dhimport_version1/logfilelocation',
-                                            get_string('logfilelocation', 'dhimport_version1'),
-                                            get_string('configlogfilelocation', 'dhimport_version1'), RLIP_DEFAULT_LOG_PATH));
+// Log file location
+$settings->add(new admin_setting_configtext('dhimport_version1/logfilelocation', get_string('logfilelocation', 'dhimport_version1'),
+        get_string('configlogfilelocation', 'dhimport_version1'), RLIP_DEFAULT_LOG_PATH));
 
-//email notification
-$settings->add(new admin_setting_configtext('dhimport_version1/emailnotification',
-                                            get_string('emailnotification', 'dhimport_version1'),
-                                            get_string('configemailnotification', 'dhimport_version1'), ''));
+// Email notification
+$settings->add(new admin_setting_configtext('dhimport_version1/emailnotification', get_string('emailnotification', 'dhimport_version1'),
+        get_string('configemailnotification', 'dhimport_version1'), ''));
 
-$settings->add(new admin_setting_configcheckbox('dhimport_version1/allowduplicateemails',
-                                            get_string('allowduplicateemails','dhimport_version1elis'),
-                                            get_string('configallowduplicateemails','dhimport_version1elis'), ''));
+$settings->add(new admin_setting_configcheckbox('dhimport_version1/allowduplicateemails', get_string('allowduplicateemails','dhimport_version1elis'),
+        get_string('configallowduplicateemails','dhimport_version1elis'), ''));
 
 // Start of "emails" section.
 $settings->add(new admin_setting_heading('dhimport_version1/emails', get_string('emails', 'dhimport_version1'), ''));

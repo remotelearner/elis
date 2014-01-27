@@ -17,16 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package    local_datahub
- * @subpackage importplugins/version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
-
-if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-    define('CLI_SCRIPT', true);
-}
 
 require_once(dirname(dirname(dirname(dirname(dirname(dirname(__FILE__)))))).'/config.php');
 global $CFG;
@@ -35,8 +30,10 @@ require_once($file);
 
 /**
  * Class for testing utility methods in the version 1 import plugin
+ * @group local_datahub
+ * @group dhimport_version1elis
  */
-class version1elis_utility_test extends PHPUnit_Framework_TestCase {
+class version1elisutility_testcase extends PHPUnit_Framework_TestCase {
 
     /**
      * Data Provider for testing parse_date()
@@ -90,7 +87,7 @@ class version1elis_utility_test extends PHPUnit_Framework_TestCase {
      * @param mixed  $expected    the expected output from parse_date() method given the above parameters
      * @dataProvider pddataprovider
      */
-    public function testversion1elisparsedate($instr, $oldformats, $inctime, $minyear, $maxyear, $expected) {
+    public function test_version1elisparsedate($instr, $oldformats, $inctime, $minyear, $maxyear, $expected) {
         $plugin = new rlip_importplugin_version1elis();
         $timestamp = $plugin->parse_date($instr, $oldformats, $inctime, $minyear, $maxyear);
         $this->assertEquals($expected, $timestamp);

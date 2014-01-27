@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 class dhfile extends \core\plugininfo\base {
     /** @var string the plugintype name, eg. mod, auth or workshopform */
     public $type = 'local';
-    /** @var string full path to the location of all the plugins of this type */ 
+    /** @var string full path to the location of all the plugins of this type */
     public $typerootdir = '/local/datahub/dhfile/';
     /** @var string the plugin name, eg. assignment, ldap */
     public $name = 'dhfile';

@@ -33,10 +33,10 @@ defined('MOODLE_INTERNAL') || die();
 class dhexport extends \core\plugininfo\base {
     /** @var string the plugintype name, eg. mod, auth or workshopform */
     public $type = 'local';
-    /** @var string full path to the location of all the plugins of this type */ 
+    /** @var string full path to the location of all the plugins of this type */
     public $typerootdir = '/local/datahub/dhexport/';
     /** @var string the plugin name, eg. assignment, ldap */
-    public $name = 'eliscore';
+    public $name = 'dhexport';
     /** @var string the localized plugin name */
     public $displayname = 'Datahub export subplugins';
     /** @var string the plugin source, one of core_plugin_manager::PLUGIN_SOURCE_xxx constants */
@@ -50,7 +50,6 @@ class dhexport extends \core\plugininfo\base {
     /** @var int|float|string required version of Moodle core  */
     public $versionrequires;
     /** @var mixed human-readable release information */
-     /** @var mixed human-readable release information */
     public $release = '2.6.0.0';
     /** @var array other plugins that this one depends on, lazy-loaded by {@link get_other_required_plugins()} */
     public $dependencies;

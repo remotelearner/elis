@@ -25,7 +25,7 @@ require_once(dirname(__FILE__).'/../lib.php');
 require_once(dirname(__FILE__).'/../importplugins/version1/version1.class.php');
 
 function xmldb_local_datahub_install() {
-    global $DB;
+    global $CFG, $DB;
     $result = true;
     $dbman = $DB->get_manager();
 
@@ -195,6 +195,7 @@ function xmldb_local_datahub_install() {
         if ($result && $oldversion < 2012040900) {
             // Add a cron task for log rollover
             if ($dbman->table_exists('elis_scheduled_tasks')) {
+                require_once($CFG->dirroot.'/local/eliscore/lib/tasklib.php');
                 elis_tasks_update_definition('block_rlip');
             }
         }
@@ -575,12 +576,14 @@ function xmldb_local_datahub_install() {
         $plugins = get_string('plugins', 'local_datahub');
         $logs = get_string('logs', 'local_datahub');
         $obj = new stdClass();
-        $obj->text = '<p><a title="'.$plugins.'" href="'.$CFG->wwwroot.'/local/datahub/plugins.php">'.$plugins.'</a><br />'.
-                '<a title="'.$logs.'" href="'.$CFG->wwwroot.'/local/datahub/viewlogs.php">'.$logs.'</a></p>';
+
+        $pluginstag = html_writer::tag('a', $plugins, array('href' => $CFG->wwwroot.'/local/datahub/plugins.php', 'title' => $plugins));
+        $logstag = html_writer::tag('a', $logs, array('href' => $CFG->wwwroot.'/local/datahub/viewlogs.php', 'title' => $logs));
+        $obj->text = html_writer::tag('p', $pluginstag).html_writer::tag('p', $logstag);
         $obj->title = get_string('pluginname', 'local_datahub');
         $obj->format = 1;
         $configdata = base64_encode(serialize($obj));
-        $sql = "UPDATE {block_instances} SET blockname='html', configdata=? WHERE blockname='rlip'";
+        $sql = "UPDATE {block_instances} SET blockname = 'html', configdata = ? WHERE blockname = 'rlip'";
         $DB->execute($sql, array($configdata));
 
         // Delete old rlip record in block table.
@@ -619,6 +622,8 @@ function xmldb_local_datahub_install() {
             }
         }
     }
+
+    unset_all_config_for_plugin('rlip');
 
     // Ensure that scheduling is setup correctly.
     rlip_scheduling_init();

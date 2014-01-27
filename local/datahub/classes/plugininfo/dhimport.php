@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 class dhimport extends \core\plugininfo\base {
     /** @var string the plugintype name, eg. mod, auth or workshopform */
     public $type = 'local';
-    /** @var string full path to the location of all the plugins of this type */ 
+    /** @var string full path to the location of all the plugins of this type */
     public $typerootdir = '/local/data/dhimport/';
     /** @var string the plugin name, eg. assignment, ldap */
     public $name = 'dhimport';
@@ -50,7 +50,6 @@ class dhimport extends \core\plugininfo\base {
     /** @var int|float|string required version of Moodle core  */
     public $versionrequires;
     /** @var mixed human-readable release information */
-     /** @var mixed human-readable release information */
     public $release = '2.6.0.0';
     /** @var array other plugins that this one depends on, lazy-loaded by {@link get_other_required_plugins()} */
     public $dependencies;
@@ -60,4 +59,55 @@ class dhimport extends \core\plugininfo\base {
     public $sortorder;
     /** @var array|null array of {@link \core\update\info} for this plugin */
     public $availableupdates;
+
+    /**
+     * Gathers and returns the information about all plugins of the given type.
+     *
+     * @param string $type the name of the plugintype, eg. mod, auth or workshopform
+     * @param string $typerootdir full path to the location of the plugin dir
+     * @param string $typeclass the name of the actually called class
+     * @return array of plugintype classes, indexed by the plugin name
+     */
+    public static function get_plugins($plugintype, $plugintyperootdir, $plugintypeclass) {
+        global $CFG, $DB;
+
+        // Track our method result.
+        $result = array();
+        if (!$DB->get_manager()->table_exists('config_plugins')) {
+            return $result;
+        }
+
+        // Obtain the list of all file plugins.
+        $fileplugins = get_plugin_list('dhimport');
+
+        foreach ($fileplugins as $pluginname => $pluginpath) {
+            if (!file_exists("{$pluginpath}/version.php")) {
+                // Test/sample directories false-positive.
+                continue;
+            }
+
+            // Set up the main plugin information.
+            $instance = new $plugintypeclass();
+            $instance->type = $plugintype;
+            $instance->typerootdir = $plugintyperootdir;
+            $instance->name = 'dhimport_'.$pluginname;
+            $instance->rootdir = $pluginpath;
+            $instance->displayname = get_string('pluginname', $instance->name);
+
+            // Track the current database version.
+            $versiondb = get_config($instance->name, 'version');
+            $instance->versiondb = ($versiondb !== false) ? $versiondb : null;
+
+            // Track the proposed new version.
+            $plugin = new \stdClass();
+            include("{$instance->rootdir}/version.php");
+            $instance->versiondisk = $plugin->version;
+            $instance->init_is_standard(); // Is this really needed?
+
+            // Append to results.
+            $result[$instance->name] = $instance;
+        }
+
+        return $result;
+    }
 }

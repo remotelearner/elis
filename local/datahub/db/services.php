@@ -122,7 +122,7 @@ $functions = array(
         'type' => 'read',
     ),
     'local_datahub_elis_course_update' => array(
-        'classname' => 'local_datahub_elis_course_update', 
+        'classname' => 'local_datahub_elis_course_update',
         'methodname' => 'course_update',
         'classpath' => 'local/datahub/ws/elis/course_update.class.php',
         'description' => 'Update an ELIS course description',

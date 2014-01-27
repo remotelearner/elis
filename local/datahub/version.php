@@ -32,3 +32,7 @@ $plugin->release = '2.5.1.5 (Build: 20131203)';
 $plugin->dependencies = array(
     'local_eliscore' => 2013082104
 );
+
+if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
+    $plugin->dependencies['local_elisprogram'] = 2013082106;
+}

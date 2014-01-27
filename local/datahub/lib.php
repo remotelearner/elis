@@ -837,20 +837,20 @@ function rlip_get_log_table($logs) {
             $link = '';
         }
 
-        //construct data row
+        // Construct data row
         $table->data[] = array(
-            $plugintype,
-            get_string('pluginname', $log->plugin),
-            $executiontype,
-            fullname($user),
-            $targetstarttime,
-            userdate($log->starttime, $timeformat, 99, false),
-            userdate($log->endtime, $timeformat, 99, false),
-            $log->filesuccesses,
-            $filefailures,
-            $log->statusmessage,
-            $entitytype,
-            $link
+                $plugintype,
+                get_string('pluginname', $log->plugin),
+                $executiontype,
+                datahub_fullname($user),
+                $targetstarttime,
+                userdate($log->starttime, $timeformat, 99, false),
+                userdate($log->endtime, $timeformat, 99, false),
+                $log->filesuccesses,
+                $filefailures,
+                $log->statusmessage,
+                $entitytype,
+                $link
         );
     }
 
@@ -1420,3 +1420,22 @@ function rlip_timestamp($hour = null, $minute = null, $second = null, $month = n
     return make_timestamp($year, $month, $day, $hour, $minute, $second, $timezone);
 }
 
+/**
+ * Returns a persons full name.
+ *
+ * Wrapper for the Moodle fullname() function that ensures all user fields exist.
+ *
+ * @param stdClass $user A {@link $USER} object to get full name of.
+ * @param bool $override If true then the name will be firstname followed by lastname rather than adhering to fullnamedisplay.
+ * @return string
+ */
+function datahub_fullname($user, $override = false) {
+    $allnames = get_all_user_name_fields();
+    foreach ($allnames as $allname) {
+        if (!property_exists($user, $allname)) {
+            $user->$allname = null;
+        }
+    }
+
+    return fullname($user, $override);
+}
