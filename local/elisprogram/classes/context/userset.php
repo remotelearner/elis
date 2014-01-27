@@ -184,7 +184,7 @@ class userset extends \local_eliscore\context\base {
                   FROM {".\userset::TABLE."} eu
                  WHERE NOT EXISTS (SELECT 'x'
                                      FROM {context} cx
-                                    WHERE eu.id = cx.instanceid AND cx.contextlevel=".$contextlevel.")";
+                                    WHERE eu.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
         $DB->execute($sql);
     }
 
@@ -229,18 +229,18 @@ class userset extends \local_eliscore\context\base {
 
             // Normal top level user sets
             $sql = "UPDATE {context}
-                       SET depth=2,
-                           path=".$DB->sql_concat("'$base/'", 'id')."
-                     WHERE contextlevel=".$contextlevel."
+                       SET depth = 2,
+                           path = ".$DB->sql_concat("'$base/'", 'id')."
+                     WHERE contextlevel = ".$contextlevel."
                            AND EXISTS (SELECT 'x'
                                          FROM {".\userset::TABLE."} eu
-                                        WHERE eu.id = {context}.instanceid AND eu.depth=1)
+                                        WHERE eu.id = {context}.instanceid AND eu.depth = 1)
                            $emptyclause";
             $DB->execute($sql);
 
             // Deeper categories - one query per depthlevel
             $maxdepth = $DB->get_field_sql("SELECT MAX(depth) FROM {".\userset::TABLE."}");
-            for ($n=2; $n<=$maxdepth; $n++) {
+            for ($n = 2; $n <= $maxdepth; $n++) {
                 $sql = "INSERT INTO {context_temp} (id, path, depth)
                         SELECT ctx.id, ".$DB->sql_concat('pctx.path', "'/'", 'ctx.id').", pctx.depth+1
                           FROM {context} ctx

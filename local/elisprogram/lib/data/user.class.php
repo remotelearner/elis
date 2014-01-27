@@ -1095,7 +1095,7 @@ class user extends data_object_with_custom_fields {
              $this->get_dashboard_program_data(true, $show_archived);
 
         // Show different css for IE below version 8
-        if (check_browser_version('MSIE',7.0) && !check_browser_version('MSIE',8.0)) {
+        if (core_useragent::check_browser_version('MSIE', 7.0) && !core_useragent::check_browser_version('MSIE', 8.0)) {
             // IEs that are lower than version 8 do not get the float because it messes up the tabs at the top of the page for some reason
             $float_style = 'text-align:right;';
         } else {

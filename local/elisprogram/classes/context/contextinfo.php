@@ -37,42 +37,42 @@ class contextinfo {
      */
     public static function get_contextinfo() {
         return array(
-            array(
-                'level' => 11,
-                'constant' => 'CONTEXT_ELIS_PROGRAM',
-                'name' => 'curriculum',
-                'class' => '\local_elisprogram\context\program',
-            ),
-            array(
-                'level' => 12,
-                'constant' => 'CONTEXT_ELIS_TRACK',
-                'name' => 'track',
-                'class' => '\local_elisprogram\context\track',
-            ),
-            array(
-                'level' => 13,
-                'constant' => 'CONTEXT_ELIS_COURSE',
-                'name' => 'course',
-                'class' => '\local_elisprogram\context\course',
-            ),
-            array(
-                'level' => 14,
-                'constant' => 'CONTEXT_ELIS_CLASS',
-                'name' => 'class',
-                'class' => '\local_elisprogram\context\pmclass',
-            ),
-            array(
-                'level' => 15,
-                'constant' => 'CONTEXT_ELIS_USER',
-                'name' => 'user',
-                'class' => '\local_elisprogram\context\user',
-            ),
-            array(
-                'level' => 16,
-                'constant' => 'CONTEXT_ELIS_USERSET',
-                'name' => 'cluster',
-                'class' => '\local_elisprogram\context\userset',
-            ),
+                array(
+                    'level' => 11,
+                    'constant' => 'CONTEXT_ELIS_PROGRAM',
+                    'name' => 'curriculum',
+                    'class' => '\local_elisprogram\context\program',
+                ),
+                array(
+                    'level' => 12,
+                    'constant' => 'CONTEXT_ELIS_TRACK',
+                    'name' => 'track',
+                    'class' => '\local_elisprogram\context\track',
+                ),
+                array(
+                    'level' => 13,
+                    'constant' => 'CONTEXT_ELIS_COURSE',
+                    'name' => 'course',
+                    'class' => '\local_elisprogram\context\course',
+                ),
+                array(
+                    'level' => 14,
+                    'constant' => 'CONTEXT_ELIS_CLASS',
+                    'name' => 'class',
+                    'class' => '\local_elisprogram\context\pmclass',
+                ),
+                array(
+                    'level' => 15,
+                    'constant' => 'CONTEXT_ELIS_USER',
+                    'name' => 'user',
+                    'class' => '\local_elisprogram\context\user',
+                ),
+                array(
+                    'level' => 16,
+                    'constant' => 'CONTEXT_ELIS_USERSET',
+                    'name' => 'cluster',
+                    'class' => '\local_elisprogram\context\userset',
+                ),
         );
     }
 }

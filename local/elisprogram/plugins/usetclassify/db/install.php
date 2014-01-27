@@ -65,10 +65,10 @@ function xmldb_elisprogram_usetclassify_install() {
     $field = field::ensure_field_exists_for_context_level($field, CONTEXT_ELIS_USERSET, $category);
 
     // make sure we're set as owner
-    if (!isset($field->owners['usetclassify'])) {
+    if (!isset($field->owners['userset_classifications'])) {
         $owner = new field_owner();
         $owner->fieldid = $field->id;
-        $owner->plugin = 'usetclassify';
+        $owner->plugin = 'userset_classifications';
         $owner->save();
     }
 
@@ -80,7 +80,7 @@ function xmldb_elisprogram_usetclassify_install() {
         $owner->param_view_capability = '';
         $owner->param_edit_capability = 'moodle/user:update';
         $owner->param_control = 'menu';
-        $owner->param_options_source = 'usetclassify';
+        $owner->param_options_source = 'userset_classifications';
         $owner->param_help_file = 'elisprogram_usetclassify/cluster_classification';
         $owner->save();
     }

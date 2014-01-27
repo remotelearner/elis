@@ -69,7 +69,7 @@ function xmldb_elisprogram_usetdisppriority_install() {
         $owner->param_view_capability = '';
         $owner->param_edit_capability = '';
         $owner->param_control = 'text';
-        $owner->param_options_source = 'usetdisppriority';
+        $owner->param_options_source = 'userset_display_priority';
         $owner->param_help_file = 'elisprogram_usetdisppriority/display_priority';
         $owner->save();
     }

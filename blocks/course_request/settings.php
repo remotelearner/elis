@@ -29,10 +29,10 @@ defined('MOODLE_INTERNAL') || die();
 global $DB;
 
 $options = array('0' => get_string('none'));
-$roles = $DB->get_records('role', null, 'sortorder', 'id, name');
+$roles = $DB->get_records('role', null, 'sortorder', 'id, name, shortname');
 $roles = $roles ? $roles : array();
 foreach ($roles as $role) {
-    $options[$role->id] = $role->name;
+    $options[$role->id] = !empty($role->name) ? $role->name : $role->shortname;
 }
 
 $settings->add(new admin_setting_configselect('block_course_request_course_role', get_string('course_role', 'block_course_request'),

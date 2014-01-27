@@ -185,7 +185,7 @@ class pmclass extends \local_eliscore\context\base {
                   FROM {".\pmclass::TABLE."} ep
                  WHERE NOT EXISTS (SELECT 'x'
                                      FROM {context} cx
-                                    WHERE ep.id = cx.instanceid AND cx.contextlevel=".$contextlevel.")";
+                                    WHERE ep.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
         $DB->execute($sql);
     }
 

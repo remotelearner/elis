@@ -101,7 +101,7 @@ YUI.add('moodle-local_elisprogram-checkboxselection', function(Y) {
             this.basepage = args.basepage;
             this.divid = args.divid;
             var acparams = {basepage: this.basepage, divid: this.divid, context: this, loadlink: this.load_link, loadform: this.load_form};
-            this.associateclass = M.elis_core.init_associateclass(acparams);
+            this.associateclass = M.local_eliscore.init_associateclass(acparams);
             var selectedonly = this.associateclass.get_element_by_name('selectedonly');
             selectedonly.delegate('click', this.change_selected_display, 'input[type=checkbox]', this);
             window.issubmitting = false;
@@ -390,5 +390,5 @@ YUI.add('moodle-local_elisprogram-checkboxselection', function(Y) {
         return new MODULEBASE(args);
     }
 
-}, '@VERSION@', { requires : ['moodle-elis_core-associateclass', 'json'] }
+}, '@VERSION@', { requires : ['moodle-local_eliscore-associateclass', 'json'] }
 );

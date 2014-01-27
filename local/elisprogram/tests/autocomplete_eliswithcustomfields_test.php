@@ -184,7 +184,7 @@ class autocompleteeliswithcustomfields_testcase extends elis_database_test {
             'selection_enabled' => true,
             'defaults' => array('id' => 2, ' label' => 'Test User'),
             'configurable' => true,
-            'contextlevel' => 1005,
+            'contextlevel' => 15,
             'instance_fields' => array(
                 'idnumber' => get_string('filter_autocomplete_idnumber', $this->langfile),
                 'firstname' => get_string('filter_autocomplete_firstname', $this->langfile),

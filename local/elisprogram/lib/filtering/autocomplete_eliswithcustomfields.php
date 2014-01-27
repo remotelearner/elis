@@ -29,12 +29,12 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
     protected $contextid;
 
     protected $context_level_map = array(
-        1001 => 'curriculum',
-        1002 => 'track',
-        1003 => 'course',
-        1004 => 'class',
-        1005 => 'user',
-        1006 => 'cluster'
+        11 => 'curriculum',
+        12 => 'track',
+        13 => 'course',
+        14 => 'class',
+        15 => 'user',
+        16 => 'cluster'
     );
 
     protected $tablemap = array(

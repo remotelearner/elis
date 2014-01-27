@@ -48,7 +48,8 @@ abstract class rolepage extends associationpage2 {
     }
 
     function get_page_title_default() {
-        return print_context_name($this->get_context(), false);
+        $ctx = $this->get_context();
+        return $ctx->get_context_name(false);
     }
 
     function build_navbar_default($who = null, $addparent = true, $params = array()) {
@@ -588,13 +589,13 @@ class cluster_rolepage extends rolepage {
     var $pagename = 'clstrole';
 
     protected function get_context() {
-        if (!isset($this->context)) {
+        if (!isset($this->_context)) {
             $id = $this->required_param('id', PARAM_INT);
 
             $context_instance = \local_elisprogram\context\userset::instance($id);
             $this->set_context($context_instance);
         }
-        return $this->context;
+        return $this->_context;
     }
 
     protected function get_parent_page() {

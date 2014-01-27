@@ -56,7 +56,7 @@ class usersetclassification_testcase extends elis_database_test {
         $this->assertTrue($DB->record_exists(field_owner::TABLE, array('fieldid' => $field->id, 'plugin' => 'manual')));
         $this->assertTrue($DB->record_exists(field_owner::TABLE, array(
             'fieldid' => $field->id,
-            'plugin' => 'usetclassify'
+            'plugin' => 'userset_classifications'
         )));
     }
 }

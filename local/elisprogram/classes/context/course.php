@@ -189,7 +189,7 @@ class course extends \local_eliscore\context\base {
                   FROM {".\course::TABLE."} ep
                  WHERE NOT EXISTS (SELECT 'x'
                                      FROM {context} cx
-                                    WHERE ep.id = cx.instanceid AND cx.contextlevel=".$contextlevel.")";
+                                    WHERE ep.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
         $DB->execute($sql);
     }
 
@@ -229,9 +229,9 @@ class course extends \local_eliscore\context\base {
 
             // Normal top level categories
             $sql = "UPDATE {context}
-                       SET depth=2,
-                           path=".$DB->sql_concat("'$base/'", 'id')."
-                     WHERE contextlevel=".$contextlevel."
+                       SET depth = 2,
+                           path = ".$DB->sql_concat("'$base/'", 'id')."
+                     WHERE contextlevel = ".$contextlevel."
                            AND EXISTS (SELECT 'x'
                                          FROM {local_elisprogram_crs} ep
                                         WHERE ep.id = {context}.instanceid)

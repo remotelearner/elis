@@ -154,7 +154,7 @@ class user extends \local_eliscore\context\base {
                   FROM {".\user::TABLE."} u
                  WHERE NOT EXISTS (SELECT 'x'
                                      FROM {context} cx
-                                    WHERE u.id = cx.instanceid AND cx.contextlevel=".$contextlevel.")";
+                                    WHERE u.id = cx.instanceid AND cx.contextlevel = ".$contextlevel.")";
         $DB->execute($sql);
     }
 
@@ -191,7 +191,7 @@ class user extends \local_eliscore\context\base {
         $sql = "UPDATE {context}
                    SET depth = 2,
                        path = ".$DB->sql_concat("'/".SYSCONTEXTID."/'", 'id')."
-                 WHERE contextlevel=".$contextlevel;
+                 WHERE contextlevel = ".$contextlevel;
         $DB->execute($sql);
     }
 }

@@ -47,7 +47,7 @@ class customfieldform extends cmform {
         $form->setType('id', PARAM_INT);
 
         // Include required yui javascript
-        $PAGE->requires->yui_module('moodle-elis_core-customfieldsform', 'M.elis_core.init_customfieldsform', array(get_string('profiledefaultdata', 'admin')), null, true);
+        $PAGE->requires->yui_module('moodle-local_eliscore-customfieldsform', 'M.local_eliscore.init_customfieldsform', array(get_string('profiledefaultdata', 'admin')), null, true);
 
         $fid = $this->_customdata['id'];
         $from = $this->_customdata['from'];
@@ -207,7 +207,7 @@ class customfieldform extends cmform {
                        'timezone' => 99, 'optional' => false)); // TBD!?!
         $form->addElement('html', '</fieldset>');
 
-        $plugins = get_list_of_plugins('local/eliscore/fields');
+        $plugins = core_component::get_plugin_list('elisfields');
 
         foreach ($plugins as $plugin) {
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
@@ -253,7 +253,7 @@ class customfieldform extends cmform {
         }
 
         // Check for specific plugin definition_after_data functions
-        $plugins = get_list_of_plugins('local/eliscore/fields');
+        $plugins = core_component::get_plugin_list('elisfields');
         foreach ($plugins as $plugin) {
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
                 include_once(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));

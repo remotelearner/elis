@@ -415,7 +415,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
                         $id    = $this->_uniqueid . $group .'-name';
                         $child = $this->_uniqueid .'course-name';
                         $path  = $CFG->wwwroot .'/local/elisprogram/lib/filtering/helpers/courses.php';
-                        $PAGE->requires->yui_module('moodle-elis_core-dependentselect', 'M.elis_core.init_dependentselect', array($id, $child, $path));
+                        $PAGE->requires->yui_module('moodle-local_eliscore-dependentselect', 'M.local_eliscore.init_dependentselect', array($id, $child, $path));
                         $options['numeric'] = 1;
                         $options['talias'] = $this->tables[$group]['local_elisprogram_pgm'];
                         $options['dbfield'] = 'id';
@@ -454,7 +454,7 @@ class generalized_filter_curriculumclass extends generalized_filter_multifilter 
                         $id    = $this->_uniqueid . $group .'-name';
                         $child = $this->_uniqueid .'class-idnumber';
                         $path  = $CFG->wwwroot .'/local/elisprogram/lib/filtering/helpers/classes.php';
-                        $PAGE->requires->yui_module('moodle-elis_core-dependentselect', 'M.elis_core.init_dependentselect', array($id, $child, $path));
+                        $PAGE->requires->yui_module('moodle-local_eliscore-dependentselect', 'M.local_eliscore.init_dependentselect', array($id, $child, $path));
                         $options['numeric'] = 1;
                         $options['talias'] = $this->tables['class']['local_elisprogram_cls'];
                         $options['dbfield'] = 'courseid';
