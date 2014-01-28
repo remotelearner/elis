@@ -571,7 +571,7 @@ class completion_export_check extends crlm_health_check_base {
  * Checks if the completion export block is present.
  */
 class cron_lastruntimes_check extends crlm_health_check_base {
-    private $blocks = array(); // empty array for none; 'curr_admin' ?
+    private $blocks = array(); // empty array for none; 'elisadmin' ?
     private $plugins = array(); // TBD: 'local_elisprogram', 'local_eliscore' ?
 
     function exists() {

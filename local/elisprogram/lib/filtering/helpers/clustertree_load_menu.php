@@ -36,15 +36,15 @@ require_once($CFG->dirroot.'/local/elisprogram/lib/filtering/clustertree.php');
 
 //needed for execution mode constants
 require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
-require_once($CFG->dirroot .'/blocks/curr_admin/lib.php');
+require_once($CFG->dirroot .'/blocks/elisadmin/lib.php');
 
 /**
- * Dynamically loads child menu items for a cluster entity (similar to block_curr_admin_load_menu_children
+ * Dynamically loads child menu items for a cluster entity (similar to block_elisadmin_load_menu_children
  * but only includes clusters and always includes all children)
  *
  * @param   int             $id                    The entity id
- * @param   int             $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param   int             $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param   int             $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param   int             $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  * @param   string          $parent_path           Path of parent curriculum elements in the tree
  * @param   int             $execution_mode        The constant representing the execution mode
  * @return  menuitem array                         The appropriate child items
@@ -57,7 +57,7 @@ function clustertree_load_menu_children_cluster($id, $parent_cluster_id, $parent
     /*****************************************
      * Cluster - Child Cluster Associations
      *****************************************/
-    $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
+    $cluster_css_class = block_elisadmin_get_item_css_class('cluster_instance');
 
     //get all child clusters
     $listing = cluster_get_listing('priority, name', 'ASC', 0, 0, '', '', array('parent' => $id));
@@ -74,7 +74,7 @@ function clustertree_load_menu_children_cluster($id, $parent_cluster_id, $parent
 
             $isLeaf = empty($cluster_count);
 
-            $result_items[] = block_curr_admin_get_menu_item('cluster', $item, 'root', $cluster_css_class,
+            $result_items[] = block_elisadmin_get_menu_item('cluster', $item, 'root', $cluster_css_class,
                                                              $item->id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
         }
     }

@@ -34,8 +34,8 @@ require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
 //needed for execution mode constants
 require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
 
-//needed for block_curr_admin_*() functions
-require_once($CFG->dirroot .'/blocks/curr_admin/lib.php');
+//needed for block_elisadmin_*() functions
+require_once($CFG->dirroot .'/blocks/elisadmin/lib.php');
 
 /**
  * checkbox node
@@ -186,8 +186,8 @@ class checkbox_treerepresentation extends treerepresentation {
  * @param   object    $instance              CM entity instance
  * @param   string    $parent                Name of the parent element
  * @param   string    $css_class             CSS class used for styling this item
- * @param   int       $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param   int       $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param   int       $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param   int       $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  * @param   array     $params                Any page params that are needed
  * @param   boolean   $isLeaf                If true, this node is automatically a leaf
  * @return  menuitem                         The appropriate menu item
@@ -246,7 +246,7 @@ function test_cluster_tree_get_menu_item($type, $instance, $parent, $css_class, 
     $result->isLeaf = $isLeaf;
 
     //convert to a leaf is appropriate
-    block_curr_admin_truncate_leaf($type, $result, $parent_cluster_id, $parent_curriculum_id);
+    block_elisadmin_truncate_leaf($type, $result, $parent_cluster_id, $parent_curriculum_id);
 
 
     return $result;
@@ -560,8 +560,8 @@ class generalized_filter_clustertree extends generalized_filter_type {
         /**
          * Get set up necessary CSS classes
          */
-        $manageclusters_css_class = block_curr_admin_get_item_css_class('manageclusters');
-        $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
+        $manageclusters_css_class = block_elisadmin_get_item_css_class('manageclusters');
+        $cluster_css_class = block_elisadmin_get_item_css_class('cluster_instance');
 
         //figure out which capability to check
         if ($this->execution_mode == php_report::EXECUTION_MODE_SCHEDULED) {

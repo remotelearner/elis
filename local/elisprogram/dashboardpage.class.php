@@ -36,7 +36,7 @@ require_once elispm::file('healthpage.class.php');
  */
 class dashboardpage extends pm_page {
     // Arrays for which components last cron runtimes to include
-    private $blocks = array(); // empty array for none; 'curr_admin' ?
+    private $blocks = array(); // empty array for none; 'elisadmin' ?
     private $plugins = array(); // TBD: 'local_elisprogram', 'local_eliscore' ?
 
     /**

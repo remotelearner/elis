@@ -52,7 +52,7 @@ YUI.add('moodle-local_elisprogram-menuitem', function(Y) {
         initializer : function(args) {
             document.wwwroot = args.wwwroot;
             var treeobj = Y.JSON.parse(args.tree);
-            this.render_curr_admin_tree(treeobj);
+            this.render_elisadmin_tree(treeobj);
         },
 
         /**
@@ -105,7 +105,7 @@ YUI.add('moodle-local_elisprogram-menuitem', function(Y) {
 
             if (node.contentElId != "") {
                 // URL of our script (wwwroot is pre-set by the calling PHP script)
-                var url = document.wwwroot+'/blocks/curr_admin/load_menu.php';
+                var url = document.wwwroot+'/blocks/elisadmin/load_menu.php';
                 // make the actual call
                 Y.io(url, cfg);
             } else {
@@ -118,7 +118,7 @@ YUI.add('moodle-local_elisprogram-menuitem', function(Y) {
          * Render the tree that represents the curriculum admin menu
          * @param object treeobj The object representing tree contents
          */
-        render_curr_admin_tree : function(treeobj) {
+        render_elisadmin_tree : function(treeobj) {
             window.yui2obj = window.yui2obj || Y.YUI2; // clustertree
 
             /**
@@ -144,7 +144,7 @@ YUI.add('moodle-local_elisprogram-menuitem', function(Y) {
                 return sb.join("");
             };
 
-            var curradmintree = new window.yui2obj.widget.TreeView("block_curr_admin_tree", treeobj.children);
+            var curradmintree = new window.yui2obj.widget.TreeView("block_elisadmin_tree", treeobj.children);
 
             // set up dynamic loading
             curradmintree.setDynamicLoad(this.load_node_data);

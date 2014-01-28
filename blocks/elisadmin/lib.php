@@ -621,21 +621,21 @@ function block_elisadmin_get_item_css_class($class, $category = false) {
 function block_elisadmin_get_tree_category_mapping() {
     global $CFG;
 
-    if (!file_exists($CFG->dirroot .'/blocks/php_report/php_report_base.php')) {
+    if (!file_exists($CFG->dirroot .'/local/elisreports/php_report_base.php')) {
         return array();
     }
 
-    require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
+    require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
 
     //categories, in a pre-determined order
-    return array(php_report::CATEGORY_CURRICULUM    => get_string('curriculum_reports',    'block_php_report'),
-                 php_report::CATEGORY_COURSE        => get_string('course_reports',        'block_php_report'),
-                 php_report::CATEGORY_CLASS         => get_string('class_reports',         'block_php_report'),
-                 php_report::CATEGORY_CLUSTER       => get_string('cluster_reports',       'block_php_report'),
-                 php_report::CATEGORY_PARTICIPATION => get_string('participation_reports', 'block_php_report'),
-                 php_report::CATEGORY_USER          => get_string('user_reports',          'block_php_report'),
-                 php_report::CATEGORY_ADMIN         => get_string('admin_reports',         'block_php_report'),
-                 php_report::CATEGORY_OUTCOMES      => get_string('outcomes_reports',      'block_php_report'));
+    return array(php_report::CATEGORY_CURRICULUM    => get_string('curriculum_reports',    'local_elisreports'),
+                 php_report::CATEGORY_COURSE        => get_string('course_reports',        'local_elisreports'),
+                 php_report::CATEGORY_CLASS         => get_string('class_reports',         'local_elisreports'),
+                 php_report::CATEGORY_CLUSTER       => get_string('cluster_reports',       'local_elisreports'),
+                 php_report::CATEGORY_PARTICIPATION => get_string('participation_reports', 'local_elisreports'),
+                 php_report::CATEGORY_USER          => get_string('user_reports',          'local_elisreports'),
+                 php_report::CATEGORY_ADMIN         => get_string('admin_reports',         'local_elisreports'),
+                 php_report::CATEGORY_OUTCOMES      => get_string('outcomes_reports',      'local_elisreports'));
 }
 
 /**
@@ -704,8 +704,8 @@ function block_elisadmin_get_report_category_items() {
 function block_elisadmin_get_report_tree_items() {
     global $CFG, $DB;
 
-    //if the reports block is not installed, no entries will be displayed
-    if (!$DB->record_exists('block', array('name' => 'php_report'))) {
+    // If the reports block is not installed, no entries will be displayed.
+    if (file_exists($CFG->dirroot.'/local/elisreports/version.php') !== true) {
         return array();
     }
 
@@ -713,7 +713,7 @@ function block_elisadmin_get_report_tree_items() {
     $items = block_elisadmin_get_report_category_items();
 
     //path to library file for scheduling classes
-    $schedulelib_path = $CFG->dirroot . '/blocks/php_report/lib/schedulelib.php';
+    $schedulelib_path = $CFG->dirroot . '/local/elisreports/lib/schedulelib.php';
 
     //check to make sure the required functionality is there
     //todo: remove this check when it's safe to do so
@@ -728,10 +728,10 @@ function block_elisadmin_get_report_tree_items() {
         //make sure we can access the report listing
         if ($test_permissions_page->can_do('list')) {
             //create a direct url to the list page
-            $schedule_reports_page = new menuitempage('url_page', 'lib/menuitem.class.php', $CFG->wwwroot . '/blocks/php_report/schedule.php?action=list');
+            $schedule_reports_page = new menuitempage('url_page', 'lib/menuitem.class.php', $CFG->wwwroot . '/local/elisreports/schedule.php?action=list');
             //convert to a menu item
             $css_class = block_elisadmin_get_item_css_class('schedulereports');
-            $schedule_reports_item = new menuitem('schedule_reports', $schedule_reports_page, 'rept', get_string('schedule_reports', 'block_php_report'), $css_class, '', FALSE, 'rept');
+            $schedule_reports_item = new menuitem('schedule_reports', $schedule_reports_page, 'rept', get_string('schedule_reports', 'local_elisreports'), $css_class, '', FALSE, 'rept');
             //merge in with the current result
             $items = array_merge(array($schedule_reports_item), $items);
         }
@@ -741,8 +741,8 @@ function block_elisadmin_get_report_tree_items() {
     $buckets = array();
 
     //look for all report instances
-    if (file_exists($CFG->dirroot . '/blocks/php_report/instances') &&
-        $handle = opendir($CFG->dirroot . '/blocks/php_report/instances')) {
+    if (file_exists($CFG->dirroot . '/local/elisreports/instances') &&
+        $handle = opendir($CFG->dirroot . '/local/elisreports/instances')) {
         while (FALSE !== ($report_shortname = readdir($handle))) {
 
             //grab a test instance of the report in question
@@ -765,7 +765,7 @@ function block_elisadmin_get_report_tree_items() {
                     }
 
                     //obtain the page specific to this report
-                    $report_page_classpath = $CFG->dirroot . '/blocks/php_report/lib/reportpage.class.php';
+                    $report_page_classpath = $CFG->dirroot . '/local/elisreports/lib/reportpage.class.php';
                     $report_page_params = array('report' => $report_shortname);
                     $page = new generic_menuitempage('report_page', $report_page_classpath, $report_page_params);
 

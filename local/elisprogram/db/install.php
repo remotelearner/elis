@@ -26,7 +26,7 @@
 function xmldb_local_elisprogram_install() {
     global $CFG, $DB;
 
-    require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
+    require_once($CFG->dirroot.'/blocks/elisadmin/lib.php');
     require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php');
 
     // Install custom context levels.
@@ -46,7 +46,7 @@ function xmldb_local_elisprogram_install() {
 
     //make sure the site has exactly one curr admin block instance
     //that is viewable everywhere
-    block_curr_admin_create_instance();
+    block_elisadmin_create_instance();
 
     // make sure that the manager role can be assigned to all PM context levels
     update_capabilities('local_elisprogram'); // load context levels

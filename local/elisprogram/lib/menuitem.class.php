@@ -164,7 +164,7 @@ class menuitemlisting {
                 if ($position_in_path < count($parts) - 1) {
 
                     //automatically load all correct children
-                    if ($children = block_curr_admin_load_menu_children($current_parts[0], !isset($current_parts[1]) ? '' : $current_parts[1], $parent_cluster_id, $parent_curriculum_id, $cumulative_path)) {
+                    if ($children = block_elisadmin_load_menu_children($current_parts[0], !isset($current_parts[1]) ? '' : $current_parts[1], $parent_cluster_id, $parent_curriculum_id, $cumulative_path)) {
                         foreach ($children as $child) {
 
                             $node = clone($child);
@@ -493,7 +493,7 @@ class treerepresentation {
         $style = ''; // '<style>@import url("' . $CFG->wwwroot . '/lib/yui/treeview/assets/skins/sam/treeview.css");</style>';
 
         //YUI needs an appropriate div to place the tree in
-        $result = $style . "<div id=\"block_curr_admin_tree\" class=\"admintree\"></div>";
+        $result = $style . "<div id=\"block_elisadmin_tree\" class=\"admintree\"></div>";
 
         /*
         //obtain the actual tree object
@@ -505,7 +505,7 @@ class treerepresentation {
         var object = $js_object;
         var wwwroot = \"{$CFG->wwwroot}\";
         YAHOO.util.Event.onDOMReady(function() {
-                render_curr_admin_tree(object);
+                render_elisadmin_tree(object);
         });
         //]]>
         </script>";*/
@@ -548,7 +548,7 @@ class treerepresentation {
             return $report;
         }
 
-        //this code is based on code found in the curr_admin block
+        //this code is based on code found in the elisadmin block
         return (isset($CURMAN->page->section) ? $CURMAN->page->section : (isset($PAGE->section) ? $PAGE->section : ''));
     }
 
@@ -750,7 +750,7 @@ class treerepresentationnode {
 
         //recurse into children if necessary
         if (!empty($this->children)) {
-            $result .= "<ul class=\"block_curr_admin_nonjs\">";
+            $result .= "<ul class=\"block_elisadmin_nonjs\">";
             foreach ($this->children as $child) {
                 $result .= $child->convert_to_markup();
             }
