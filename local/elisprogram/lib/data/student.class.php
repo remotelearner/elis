@@ -426,6 +426,10 @@ class student extends elis_data_object {
 
             // Make sure this is a valid user.
             $enroluser = new user($this->userid);
+            if (!$enroluser) {
+                print_error('nouser', self::LANG_FILE);
+                return false;
+            }
             // Due to lazy loading, we need to pre-load this object
             $enroluser->load();
             if (empty($enroluser->id)) {
@@ -440,19 +444,17 @@ class student extends elis_data_object {
                     get_string('notifyclasscompletedmessagedef', self::LANG_FILE) : elis::$config->local_elisprogram->notify_classcompleted_message;
             $search = array('%%userenrolname%%', '%%classname%%');
 
-            $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
-            $user = new user($pmuser);
             if (($clsmdl = $this->_db->get_record(classmoodlecourse::TABLE, array('classid' => $this->classid))) &&
                     ($course = $this->_db->get_record('course', array('id' => $clsmdl->moodlecourseid)))) {
                 // If its a Moodle class...
-                $replace = array(fullname($pmuser), $course->fullname);
+                $replace = array($enroluser->moodle_fullname(), $course->fullname);
                 if (!($context = context_course::instance($course->id))) {
                     print_error('invalidcontext');
                     return false;
                 }
             } else {
                 $pmclass = new pmclass($this->classid);
-                $replace = array(fullname($pmuser), $pmclass->course->name);
+                $replace = array($enroluser->moodle_fullname(), $pmclass->course->name);
                 if (!($context = context_system::instance())) {
                     print_error('invalidcontext');
                     return false;
@@ -461,7 +463,7 @@ class student extends elis_data_object {
 
             $text = str_replace($search, $replace, $text);
             if ($sendtouser) {
-                $message->send_notification($text, $user);
+                $message->send_notification($text, $enroluser);
             }
 
             $users = array();
@@ -481,7 +483,7 @@ class student extends elis_data_object {
 
             // Send notifications to any users who need to receive them.
             foreach ($users as $touser) {
-                $message->send_notification($text, $touser, $user);
+                $message->send_notification($text, $touser, $enroluser);
             }
         }
         return true;
@@ -656,10 +658,15 @@ class student extends elis_data_object {
             pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE)); // TBD: moved from below
 
         } else {
-            $user       = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
-            $user->name = fullname($user);
-            $users[]    = $user;
-            $usercount  = 0;
+            $newuser = new stdClass;
+            $newuser->name = '?';
+            if ($user = new user($this->userid)) {
+                $user->load();
+                $newuser = $user->to_object();
+                $newuser->name = $user->moodle_fullname();
+            }
+            $users[] = $newuser;
+            $usercount = 0;
         }
 
         $has_users = ((is_array($users) && !empty($users)) || ($users instanceof Iterator && $users->valid() === true)) ? true : false;
@@ -1043,10 +1050,15 @@ class student extends elis_data_object {
             pmsearchbox(null, 'search', 'get', get_string('show_all_users', self::LANG_FILE)); // TBD: moved from below
 
         } else {
-            $user       = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
-            $user->name = fullname($user);
-            $users[]    = $user;
-            $usercount  = 0;
+            $newuser = new stdClass;
+            $newuser->name = '?';
+            if ($user = new user($this->userid)) {
+                $user->load();
+                $newuser = $user->to_object();
+                $newuser->name = $user->moodle_fullname();
+            }
+            $users[] = $newuser;
+            $usercount = 0;
         }
 
         $has_users = ((is_array($users) && !empty($users)) || ($users instanceof Iterator && $users->valid() === true)) ? true : false;
@@ -2159,14 +2171,22 @@ class student extends elis_data_object {
                     get_string('notifyclassnotstartedmessagedef', self::LANG_FILE) :
                     elis::$config->local_elisprogram->notify_classnotstarted_message;
         $search = array('%%userenrolname%%', '%%classname%%', '%%coursename%%');
-        $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
-        $user = new user($pmuser);
+        $user = new user($student->userid);
+        if (!$user) {
+            if (in_cron()) {
+                mtrace(get_string('nouser', 'local_elisprogram'));
+            } else {
+                debugging(get_string('nouser', 'local_elisprogram'));
+            }
+            return true;
+        }
+        $user->load();
         // Get course info
         $pmcourse = $DB->get_record(course::TABLE, array('id' => $student->courseid));
         $pmclass = $DB->get_record(pmclass::TABLE, array('id' => $student->classid));
 
-        //$replace = array(fullname($pmuser), $student->pmclass->course->name);
-        $replace = array(fullname($pmuser), $pmclass->idnumber, $pmcourse->name);
+        // $replace = array($user->moodle_fullname(), $student->pmclass->course->name);
+        $replace = array($user->moodle_fullname(), $pmclass->idnumber, $pmcourse->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
@@ -2245,13 +2265,21 @@ class student extends elis_data_object {
                     get_string('notifyclassnotcompletedmessagedef', self::LANG_FILE) :
                     elis::$config->local_elisprogram->notify_classnotcompleted_message;
         $search = array('%%userenrolname%%', '%%classname%%', '%%coursename%%');
-        $pmuser = $DB->get_record(user::TABLE, array('id' => $student->userid));
-        $user = new user($pmuser);
+        $user = new user($student->userid);
+        if (!$user) {
+            if (in_cron()) {
+                mtrace(get_string('nouser', 'local_elisprogram'));
+            } else {
+                debugging(get_string('nouser', 'local_elisprogram'));
+            }
+            return true;
+        }
+        $user->load();
         // Get course info
         $pmcourse = $DB->get_record(course::TABLE, array('id' => $student->courseid));
         $pmclass = $DB->get_record(pmclass::TABLE, array('id' => $student->classid));
 
-        $replace = array(fullname($pmuser), $pmclass->idnumber, $pmcourse->name);
+        $replace = array($user->moodle_fullname(), $pmclass->idnumber, $pmcourse->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();

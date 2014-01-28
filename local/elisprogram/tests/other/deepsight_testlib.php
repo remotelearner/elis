@@ -464,7 +464,7 @@ class deepsight_datatable_mock extends deepsight_datatable_standard {
         $results = $this->DB->get_recordset_sql($sql, $ids);
         $pageresults = array_flip($ids);
         foreach ($results as $result) {
-            $pageresults[$result->id] = fullname($result);
+            $pageresults[$result->id] = elis_fullname($result);
         }
 
         return $pageresults;

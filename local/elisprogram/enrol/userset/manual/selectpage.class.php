@@ -180,7 +180,7 @@ class clusteruserselecttable extends selection_table {
         if (isset($item->name)) {
             return $item->name;
         } else {
-            return fullname($item->to_object());
+            return elis_fullname($item->to_object());
         }
     }
 }

@@ -221,6 +221,22 @@ class user extends data_object_with_custom_fields {
         return implode(' ', $name);
     }
 
+    /**
+     * moodle_fullname method to call Moodle's fullname() function
+     * @param bool $override true to force firstname lastname
+     * @return user's fullname
+     */
+    public function moodle_fullname($override = false) {
+        $tmpuser = $this->to_object();
+        $allfields = get_all_user_name_fields();
+        foreach ($allfields as $field) {
+            if (!property_exists($tmpuser, $field)) {
+                $tmpuser->$field = null;
+            }
+        }
+        return fullname($tmpuser, $override);
+    }
+
     public function __toString() {
         return $this->fullname();
     }
@@ -1115,7 +1131,7 @@ class user extends data_object_with_custom_fields {
             print_tabs($tabrows, $tab);
         }
 
-        $content .= $OUTPUT->heading(get_string('learningplanwelcome', 'local_elisprogram', fullname($this)));
+        $content .= $OUTPUT->heading(get_string('learningplanwelcome', 'local_elisprogram', $this->moodle_fullname()));
 
         if ($totalcurricula === 0) { // ELIS-3615 was: if ($totalcourses === 0)
             $blank_lang = ($tab == 'archivedlp') ? 'noarchivedplan' : 'nolearningplan';

@@ -247,18 +247,15 @@ class instructor extends elis_data_object {
             flush();
         } else {
             //error_log("instructor.class.php::edit_form_html(); userid = {$this->userid}");
-            if (($tmpuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid)))) {
-                // TBD - above was: $tmpuser = new user($this->userid)
-                //print_object($tmpuser);
-                $user = new stdClass;
-                $user->id = $this->userid;
-                foreach ($tmpuser as $key => $val) {
-                    $user->{$key} = $val;
-                }
-                $user->name = fullname($user);
-                $users[]    = $user;
-                $usercount  = 0; // TBD: 1 ???
+            $user = new stdClass;
+            $user->name = '?';
+            if (($tmpuser = new user($this->userid))) {
+                $tmpuser->load();
+                $user = $tmpuser->to_object();
+                $user->name = $tmpuser->moodle_fullname();
             }
+            $users[] = $user;
+            $usercount = 0; // TBD: 1 ???
         }
         $has_users = ((is_array($users) && !empty($users)) || ($users instanceof Iterator && $users->valid() === true)) ? true : false;
         if (empty($this->id) && $has_users === false) {

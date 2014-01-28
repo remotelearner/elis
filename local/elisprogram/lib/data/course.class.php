@@ -582,6 +582,14 @@ class course extends data_object_with_custom_fields {
 
         /// Make sure this is a valid user.
         $enroluser = new user($user->userid);
+        if (!$enroluser) {
+            if (in_cron()) {
+                mtrace(get_string('nouser', 'local_elisprogram'));
+            } else {
+                print_error('nouser', 'local_elisprogram');
+            }
+            return true;
+        }
         // Due to lazy loading, we need to pre-load this object
         $enroluser->load();
         if (empty($enroluser->id)) {
@@ -599,19 +607,17 @@ class course extends data_object_with_custom_fields {
         $text = empty(elis::$config->local_elisprogram->notify_courserecurrence_message) ?
                     get_string('notifycourserecurrencemessagedef', 'local_elisprogram') :
                     elis::$config->local_elisprogram->notify_courserecurrence_message;
-        $pmuser = $DB->get_record(user::TABLE, array('id' => $user->userid));
-        $student = new user($pmuser);
 
         $search = array('%%userenrolname%%', '%%coursename%%');
-        $replace = array(fullname($user), $user->coursename);
+        $replace = array($enroluser->moodle_fullname(), $user->coursename);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
         $eventlog->event = 'course_recurrence';
         $eventlog->instance = $user->enrolmentid;
-        $eventlog->fromuserid = $student->id;
+        $eventlog->fromuserid = $enroluser->id;
         if ($sendtouser) {
-            $message->send_notification($text, $student, null, $eventlog);
+            $message->send_notification($text, $enroluser, null, $eventlog);
         }
 
         $users = array();
@@ -625,7 +631,7 @@ class course extends data_object_with_custom_fields {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $student->id, 'local/elisprogram:notify_courserecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $enroluser->id, 'local/elisprogram:notify_courserecurrence')) {
                 $users = $users + $supervisors;
             }
         }

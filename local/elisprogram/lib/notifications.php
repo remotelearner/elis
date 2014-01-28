@@ -366,7 +366,7 @@ function pm_notify_send_handler($eventdata){
     //about the component or message details
 
     //using string manager directly so that strings in the message will be in the message recipients language rather than the senders
-    $fullname = fullname($eventdata->userfrom);
+    $fullname = elis_fullname($eventdata->userfrom);
     $eventdata->subject = get_string_manager()->get_string('unreadnewmessage', 'message', $fullname, $eventdata->userto->lang);
 
     //make sure the event is in the correct format
@@ -638,7 +638,7 @@ function pm_notify_role_assign_handler($eventdata){
                   get_string('notifyclassenrolmessagedef', 'local_elisprogram') :
                   elis::$config->local_elisprogram->notify_classenrol_message;
     $search = array('%%userenrolname%%', '%%classname%%');
-    $replace = array(fullname($enroluser), $name);
+    $replace = array(elis_fullname($enroluser), $name);
     $text = str_replace($search, $replace, $text);
 
     if ($sendtouser) {
@@ -762,6 +762,14 @@ function pm_notify_track_assign_handler($eventdata){
 
     /// Make sure this is a valid user.
     $enroluser = new user($eventdata->userid);
+    if (!$enroluser) {
+        if (in_cron()) {
+            mtrace(getstring('nouser','local_elisprogram'));
+        } else {
+            print_error('nouser','local_elisprogram');
+        }
+        return true;
+    }
     // Due to lazy loading, we need to pre-load this object
     $enroluser->load();
     if (empty($enroluser->id)) {
@@ -790,7 +798,7 @@ function pm_notify_track_assign_handler($eventdata){
                   get_string('notifytrackenrolmessagedef', 'local_elisprogram') :
                   elis::$config->local_elisprogram->notify_trackenrol_message;
     $search = array('%%userenrolname%%', '%%trackname%%');
-    $replace = array(fullname($enroluser->to_object()), $track->name);
+    $replace = array($enroluser->moodle_fullname(), $track->name);
     $text = str_replace($search, $replace, $text);
 
     if ($sendtouser) {

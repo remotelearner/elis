@@ -343,4 +343,29 @@ class user_testcase extends elis_database_test {
         $this->assertEquals($expectedcompletecoursesmap, $completecoursesmap);
         $this->assertEquals($expectedtotalcoursesmap, $totalcoursesmap);
     }
+
+    /**
+     * Test PM user method moodle_fullname
+     */
+    public function test_pmuser_moodle_fullname() {
+        global $DB;
+        // Create a Moodle user
+        $src = new stdClass;
+        $src->username = '_____phpunit_test_';
+        $src->password = 'pass';
+        $src->idnumber = '_____phpunit_test_';
+        $src->firstname = 'John';
+        $src->lastname = 'Doe';
+        $src->email = 'jdoe@phpunit.example.com';
+        $src->country = 'CA';
+        $src->id = $DB->insert_record('user', $src);
+        events_trigger('user_created', $src);
+
+        // Get the PM user
+        $retr = user::find(new field_filter('idnumber', $src->idnumber), array(), 0, 0);
+        $this->assertTrue($retr->valid());
+        $retr = $retr->current();
+        $mdluser = $DB->get_record('user', array('id' => $src->id));
+        $this->assertEquals(fullname($mdluser), $retr->moodle_fullname());
+    }
 }

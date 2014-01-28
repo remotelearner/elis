@@ -130,7 +130,7 @@ class deepsight_datatable_user extends deepsight_datatable_standard {
         $results = $this->DB->get_recordset_sql($sql, $params);
         $pageresults = array_flip($ids);
         foreach ($results as $result) {
-            $pageresults[$result->id] = fullname($result);
+            $pageresults[$result->id] = elis_fullname($result);
         }
 
         return $pageresults;

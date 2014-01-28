@@ -378,10 +378,12 @@ class curriculum extends data_object_with_custom_fields {
                     get_string('notifycurriculumrecurrencemessagedef', 'local_elisprogram') :
                     elis::$config->local_elisprogram->notify_curriculumrecurrence_message;
         $search = array('%%userenrolname%%', '%%programname%%');
-        $pmuser = $DB->get_record(user::TABLE, array('id' => $user->userid));
-        $student = new user($pmuser);
-
-        $replace = array(fullname($user), $user->curriculumname);
+        $student = new user($user->userid);
+        if (!$student) {
+            return true;
+        }
+        $student->load();
+        $replace = array($student->moodle_fullname(), $user->curriculumname);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
@@ -403,7 +405,7 @@ class curriculum extends data_object_with_custom_fields {
 
         if ($sendtosupervisor) {
             /// Get parent-context users.
-            if ($supervisors = pm_get_users_by_capability('user', $pmuser->id, 'local/elisprogram:notify_programrecurrence')) {
+            if ($supervisors = pm_get_users_by_capability('user', $student->id, 'local/elisprogram:notify_programrecurrence')) {
                 $users = $users + $supervisors;
             }
         }

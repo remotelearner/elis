@@ -66,8 +66,13 @@ class waitlistaddform extends cmform {
                     $enrol_options[] = $mform->createElement('radio', 'enrol[' . $student->userid . ']', '', get_string('over_enrol', 'local_elisprogram'), 2);
                 }
 
-                $user = $DB->get_record(user::TABLE, array('id' => $student->userid));
-                $user->name = fullname($user);
+                $user = new stdClass;
+                $user->name = '?';
+                if ($tmpuser = new user($student->userid)) {
+                    $tmpuser->load();
+                    $user = $tmpuser->to_object();
+                    $user->name = $tmpuser->moodle_fullname();
+                }
                 $mform->addGroup($enrol_options, 'options[' . $student->userid . ']', get_string('add_to_waitinglist', 'local_elisprogram', $user), array('&nbsp;&nbsp;&nbsp;'), false);
             }
         } else if(!empty($this->_customdata['student_ids'])) {

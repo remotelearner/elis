@@ -311,7 +311,7 @@ class roleassignments_testcase extends elis_database_test {
         // Validate that the message was correctly sent.
         $messages = $sink->get_messages();
         $this->assertNotEmpty($messages);
-        $fullname = fullname($testuser);
+        $fullname = elis_fullname($testuser);
         $expected = array(
             'useridfrom' => $testuser->id,
             'useridto' => $admin->id,

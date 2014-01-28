@@ -126,10 +126,10 @@ class table_engine_status extends table_sql {
             if ($COURSE->id != SITEID) {
                 $url->param('course', $COURSE->id);
             }
-            return html_writer::link($url, fullname($row));
+            return html_writer::link($url, elis_fullname($row));
 
         } else {
-            return fullname($row);
+            return elis_fullname($row);
         }
     }
 }

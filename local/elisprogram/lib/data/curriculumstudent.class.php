@@ -157,6 +157,10 @@ class curriculumstudent extends elis_data_object {
 
         /// Make sure this is a valid user.
         $enroluser = new user($this->userid);
+        if (!$enroluser) {
+            print_error('nouser', 'local_elisprogram');
+            return true;
+        }
         // Due to lazy loading, we need to pre-load this object
         $enroluser->load();
         if (empty($enroluser->id)) {
@@ -171,12 +175,10 @@ class curriculumstudent extends elis_data_object {
                     get_string('notifycurriculumcompletedmessagedef', 'local_elisprogram') :
                     elis::$config->local_elisprogram->notify_curriculumcompleted_message;
         $search = array('%%userenrolname%%', '%%programname%%');
-        $pmuser = $this->_db->get_record(user::TABLE, array('id' => $this->userid));
-        $user = new user($pmuser);
         // Get course info
         $program = $this->_db->get_record(curriculum::TABLE, array('id' => $this->curriculumid));
 
-        $replace = array(fullname($pmuser), $program->name);
+        $replace = array($enroluser->moodle_fullname(), $program->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();
@@ -184,7 +186,7 @@ class curriculumstudent extends elis_data_object {
         $eventlog->instance = $this->id;    /// Store the assignment id.
         if ($sendtouser) {
             //todo: figure out why a log object is passed in here
-            $message->send_notification($text, $user, null, $eventlog);
+            $message->send_notification($text, $enroluser, null, $eventlog);
         }
 
         $users = array();
@@ -270,13 +272,16 @@ class curriculumstudent extends elis_data_object {
         $text = empty(elis::$config->local_elisprogram->notify_curriculumnotcompleted_message) ?
                 get_string('notifycurriculumnotcompletedmessagedef', 'local_elisprogram') :
                 elis::$config->local_elisprogram->notify_curriculumnotcompleted_message;
-        $pmuser = $DB->get_record(user::TABLE, array('id' => $curstudent->userid));
-        $user = new user($pmuser);
+        $user = new user($curstudent->userid);
+        if (!$user) {
+            return true;
+        }
+        $user->load();
         // Get course info
         $program = $DB->get_record(curriculum::TABLE, array('id' => $curstudent->curriculumid));
 
         $search = array('%%userenrolname%%', '%%programname%%');
-        $replace = array(fullname($pmuser), $program->name);
+        $replace = array($user->moodle_fullname(), $program->name);
         $text = str_replace($search, $replace, $text);
 
         $eventlog = new Object();

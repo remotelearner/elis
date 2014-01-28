@@ -922,7 +922,7 @@ class waitlisttable extends yui_table {
             $ins = array();
 
             foreach ($instructors as $instructor) {
-                $ins[] = fullname($instructor);
+                $ins[] = elis_fullname($instructor);
             }
 
             if (!empty($ins)) {
@@ -1039,7 +1039,7 @@ class currentclasstable extends yui_table {
                 $ins = array();
 
                 foreach ($instructors as $instructor) {
-                    $ins[] = fullname($instructor);
+                    $ins[] = elis_fullname($instructor);
                 }
 
                 if (!empty($ins)) {
@@ -1226,7 +1226,7 @@ class addclasstable extends yui_table {
             $ins = array();
 
             foreach ($instructors as $instructor) {
-                $ins[] = fullname($instructor);
+                $ins[] = elis_fullname($instructor);
             }
 
             return implode('<br />', $ins);
