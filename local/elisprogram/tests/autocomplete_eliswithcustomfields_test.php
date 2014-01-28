@@ -163,11 +163,11 @@ class autocompleteeliswithcustomfields_testcase extends elis_database_test {
     protected function get_filter_instance() {
         global $CFG;
 
-        if (!file_exists($CFG->dirroot.'/blocks/php_report/php_report_base.php')) {
-            $this->markTestSkipped('Test requires block_php_report code');
+        if (!file_exists($CFG->dirroot.'/local/elisreports/php_report_base.php')) {
+            $this->markTestSkipped('Test requires local_elisreports code');
         }
 
-        require_once($CFG->dirroot.'/blocks/php_report/php_report_base.php');
+        require_once($CFG->dirroot.'/local/elisreports/php_report_base.php');
 
         $this->create_custom_field();
         $this->set_filter_config();
@@ -392,7 +392,7 @@ class autocompleteeliswithcustomfields_testcase extends elis_database_test {
         if ($muser = $pmuser->get_moodleuser()) {
             $USER = $muser;
         }
-        $filter->parent_report_instance->access_capability = 'block/php_report:view';
+        $filter->parent_report_instance->access_capability = 'local/elisreports:view';
         $filter->parent_report_instance->userid = 2;
         $searchresults = $filter->get_search_results('test');
 

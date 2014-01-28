@@ -372,13 +372,13 @@ class usersetpage extends managementpage {
         $id = $this->required_param('id', PARAM_INT);
 
         //needed for execution mode constants
-        require_once($CFG->dirroot . '/blocks/php_report/php_report_base.php');
+        require_once($CFG->dirroot . '/local/elisreports/php_report_base.php');
 
         //check if we're scheduling or viewing
         $execution_mode = $this->optional_param('execution_mode', php_report::EXECUTION_MODE_SCHEDULED, PARAM_INT);
 
         //check the correct capability
-        $capability = ($execution_mode == php_report::EXECUTION_MODE_SCHEDULED) ? 'block/php_report:schedule' : 'block/php_report:view';
+        $capability = ($execution_mode == php_report::EXECUTION_MODE_SCHEDULED) ? 'local/elisreports:schedule' : 'local/elisreports:view';
         if ($this->_has_capability($capability)) {
             return true;
         }

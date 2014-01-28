@@ -56,7 +56,7 @@ if (array_key_exists('id', $_REQUEST)) {
 // Must have blank value as the default here (instead of zero) or it breaks the gas guage report
 $choices_array = array(array('', get_string('anyvalue', 'filters')));
 if (!empty($ids)) {
-    $contexts = get_contexts_by_capability_for_user('course', 'block/php_report:view', $USER->id);
+    $contexts = get_contexts_by_capability_for_user('course', 'local/elisreports:view', $USER->id);
     foreach ($ids as $id) {
         $records = false;
 

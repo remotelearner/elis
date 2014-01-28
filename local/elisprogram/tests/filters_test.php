@@ -145,8 +145,8 @@ class filters_testcase extends elis_database_test {
     public function test_clustertree() {
         global $CFG;
 
-        if (!file_exists($CFG->dirroot.'/blocks/php_report/php_report_base.php')) {
-            $this->markTestSkipped('Test requires block_php_report code');
+        if (!file_exists($CFG->dirroot.'/local/elisreports/php_report_base.php')) {
+            $this->markTestSkipped('Test requires local_elisreports code');
         }
 
         require_once(elispm::lib('filtering/clustertree.php'));
@@ -253,8 +253,8 @@ class filters_testcase extends elis_database_test {
     public function test_customfieldmultiselectvalues() {
         global $CFG;
 
-        if (!file_exists($CFG->dirroot.'/blocks/php_report/php_report_base.php')) {
-            $this->markTestSkipped('Test requires block_php_report code');
+        if (!file_exists($CFG->dirroot.'/local/elisreports/php_report_base.php')) {
+            $this->markTestSkipped('Test requires local_elisreports code');
         }
 
         $this->load_csv_data();

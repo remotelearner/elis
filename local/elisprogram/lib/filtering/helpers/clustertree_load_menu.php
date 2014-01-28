@@ -35,7 +35,7 @@ require_once($CFG->dirroot.'/local/eliscore/lib/filtering/lib.php');
 require_once($CFG->dirroot.'/local/elisprogram/lib/filtering/clustertree.php');
 
 //needed for execution mode constants
-require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
+require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
 require_once($CFG->dirroot .'/blocks/curr_admin/lib.php');
 
 /**

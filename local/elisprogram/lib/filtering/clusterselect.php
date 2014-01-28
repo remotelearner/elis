@@ -30,7 +30,7 @@ require_once($CFG->dirroot .'/user/filters/lib.php');
 require_once($CFG->dirroot.'/local/eliscore/lib/filtering/equalityselect.php');
 
 //needed for execution mode constants
-require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
+require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
 
 // required for cluster_get_listings()
 require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
@@ -60,9 +60,9 @@ class generalized_filter_clusterselect extends generalized_filter_equalityselect
 
         //figure out which capability to check
         if ($this->execution_mode == php_report::EXECUTION_MODE_SCHEDULED) {
-            $capability = 'block/php_report:schedule';
+            $capability = 'local/elisreports:schedule';
         } else {
-            $capability = 'block/php_report:view';
+            $capability = 'local/elisreports:view';
         }
 
         //obtain all cluster contexts where this user can view reports

@@ -101,12 +101,12 @@ class userpage extends managementpage {
 
         //tab for the Individual User report
         //permissions checking happens in the link page
-        if (file_exists($CFG->dirroot.'/blocks/php_report/render_report_page.php')) {
+        if (file_exists($CFG->dirroot.'/local/elisreports/render_report_page.php')) {
             $report_tab = array(
                 'tab_id' => 'report',
                 'page' => 'linkpage',
                 'params' => array(
-                    'linkurl' => 'blocks/php_report/render_report_page.php',
+                    'linkurl' => 'local/elisreports/render_report_page.php',
                     'linkparams' => 'report,userid',
                     'report' => 'individual_user',
                     'userid' => '=id'
@@ -131,12 +131,12 @@ class userpage extends managementpage {
 
         //tab for the Individual User report
         //permissions checking happens in the link page
-        if (file_exists($CFG->dirroot.'/blocks/php_report/render_report_page.php')) {
+        if (file_exists($CFG->dirroot.'/local/elisreports/render_report_page.php')) {
             //script for rendering report pages exists in report block, so reports
             //are at least installed
             $report_tab = array('tab_id' => 'report',
                                 'page' => 'induserlinkpage',
-                                'params' => array('linkurl' => 'blocks/php_report/render_report_page.php',
+                                'params' => array('linkurl' => 'local/elisreports/render_report_page.php',
                                                   'linkparams'=>'report,userid',
                                                   'report'=>'individual_user', 'userid'=>'=id'),
                                 'name' => get_string('report', 'local_elisprogram'),
@@ -296,7 +296,7 @@ class induserlinkpage extends linkpage {
 
         // TODO: Ugly, this needs to be overhauled
         $upage = new userpage();
-        return $upage->_has_capability('block/php_report:view', $id);
+        return $upage->_has_capability('local/elisreports:view', $id);
     }
 
 }

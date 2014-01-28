@@ -32,7 +32,7 @@ require_once($CFG->dirroot .'/local/elisprogram/lib/menuitem.class.php');
 require_once($CFG->dirroot .'/local/elisprogram/lib/data/userset.class.php');
 
 //needed for execution mode constants
-require_once($CFG->dirroot .'/blocks/php_report/php_report_base.php');
+require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
 
 //needed for block_curr_admin_*() functions
 require_once($CFG->dirroot .'/blocks/curr_admin/lib.php');
@@ -565,9 +565,9 @@ class generalized_filter_clustertree extends generalized_filter_type {
 
         //figure out which capability to check
         if ($this->execution_mode == php_report::EXECUTION_MODE_SCHEDULED) {
-            $capability = 'block/php_report:schedule';
+            $capability = 'local/elisreports:schedule';
         } else {
-            $capability = 'block/php_report:view';
+            $capability = 'local/elisreports:view';
         }
 
         $context_result = pm_context_set::for_user_with_capability('cluster', $capability, $USER->id);

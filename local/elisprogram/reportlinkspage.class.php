@@ -72,7 +72,7 @@ class class_reportlinkspage extends pm_page {
 
         // TODO: Ugly, this needs to be overhauled
         $cpage = new pmclasspage();
-        return $cpage->_has_capability('block/php_report:view', $id)
+        return $cpage->_has_capability('local/elisreports:view', $id)
             || instructor::user_is_instructor_of_class(cm_get_crlmuserid($USER->id), $id);
     }
 
@@ -86,12 +86,12 @@ class class_reportlinkspage extends pm_page {
         $course_id = isset($record->courseid) ? $record->courseid : 0; // the associated crlm course id (needed for course/class dependent filter on report)
 
         // Class roster report
-        $class_roster_report_link = $CFG->wwwroot . '/blocks/php_report/render_report_page.php?report=class_roster&classid=' . $id . '&classid_parent=' . $course_id;
+        $class_roster_report_link = $CFG->wwwroot . '/local/elisreports/render_report_page.php?report=class_roster&classid=' . $id . '&classid_parent=' . $course_id;
         $class_roster_report_name = get_string('classrosterreport', 'local_elisprogram');
         echo '<li><a href="' . $class_roster_report_link . '">' . $class_roster_report_name . '</a></li>';
 
         // Class completion report
-        $class_completion_report_link = $CFG->wwwroot . '/blocks/php_report/render_report_page.php?report=class_completion_gas_gauge&class=' . $id . '&class_parent=' . $course_id;
+        $class_completion_report_link = $CFG->wwwroot . '/local/elisreports/render_report_page.php?report=class_completion_gas_gauge&class=' . $id . '&class_parent=' . $course_id;
         $class_completion_report_name = get_string('classcompletionreport', 'local_elisprogram');
         echo '<li><a href="' . $class_completion_report_link . '">' . $class_completion_report_name . '</a></li>';
 
