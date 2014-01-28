@@ -552,7 +552,7 @@ abstract class managementpage extends pm_page {
         $params = array_merge(array('action' => 'view', 'id' => $id),
                               $extra_params);
         $url = $this->get_new_page($params, true)->url; // TBD: who->
-        $who->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null, new pix_icon('user', '', 'local_elisprogram'));
+        $who->navbar->add(htmlspecialchars($obj), $url, navbar::TYPE_CUSTOM, null, null);
     }
 
     public function build_navbar_default($who = null, $addparent = true, $params = array()) {
