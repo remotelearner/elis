@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage programmanagement
+ * @package    block_elisadmin
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(elispm::lib('lib.php'));
-require_once(elis::plugin_file('block_curr_admin', 'lib.php'));
+require_once(elis::plugin_file('block_elisadmin', 'lib.php'));
 require_once(elispm::lib('menuitem.class.php'));
 require_once(elispm::lib('data/userset.class.php'));
 require_once(elispm::lib('deprecatedlib.php'));
@@ -39,7 +38,7 @@ if (file_exists($CFG->dirroot.'/curriculum/styles.css')) {
 }
 */
 
-class block_curr_admin extends block_base {
+class block_elisadmin extends block_base {
 
     var $currentdepth;
     var $spancounter;
@@ -51,7 +50,7 @@ class block_curr_admin extends block_base {
     function init() {
         global $PAGE, $CFG, $DB;
         require_once elispm::file('version.php');
-        $this->title            = get_string('blockname', 'block_curr_admin');
+        $this->title            = get_string('blockname', 'block_elisadmin');
         $this->release          = elispm::$release;
         $this->cron             = 300;
         $this->currentdepth     = 0;
@@ -60,7 +59,7 @@ class block_curr_admin extends block_base {
         $this->section          = (isset($PAGE->section) ? $PAGE->section : '');
         $this->pathtosection    = array();
         $this->expandjavascript = '';
-        $this->lastcron         = $DB->get_field('block', 'lastcron', array('name' => 'curr_admin'));
+        $this->lastcron         = $DB->get_field('block', 'lastcron', array('name' => 'elisadmin'));
         $this->divcounter       = 1;
     }
 
@@ -133,8 +132,8 @@ class block_curr_admin extends block_base {
          * Clusters
          *****************************************/
         if (!isset(elis::$config->local_elisprogram->display_clusters_at_top_level) || !empty(elis::$config->local_elisprogram->display_clusters_at_top_level)) {
-            $manageclusters_css_class = block_curr_admin_get_item_css_class('manageclusters');
-            $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
+            $manageclusters_css_class = block_elisadmin_get_item_css_class('manageclusters');
+            $cluster_css_class = block_elisadmin_get_item_css_class('cluster_instance');
 
             require_once elispm::lib('contexts.php');
             $context_result = pm_context_set::for_user_with_capability('cluster', 'local/elisprogram:userset_view', $USER->id);
@@ -157,12 +156,12 @@ class block_curr_admin extends block_base {
                     $isLeaf = empty($cluster_count) &&
                               empty($curriculum_count);
 
-                    $cm_entity_pages[] = block_curr_admin_get_menu_item('userset', $cluster, 'root', $manageclusters_css_class, $cluster->id, 0, $params, $isLeaf);
+                    $cm_entity_pages[] = block_elisadmin_get_menu_item('userset', $cluster, 'root', $manageclusters_css_class, $cluster->id, 0, $params, $isLeaf);
                 }
             }
 
             if ($num_block_icons < $num_records) {
-                $cm_entity_pages[] = block_curr_admin_get_menu_summary_item('userset', $cluster_css_class, $num_records - $num_block_icons);
+                $cm_entity_pages[] = block_elisadmin_get_menu_summary_item('userset', $cluster_css_class, $num_records - $num_block_icons);
             }
         }
 
@@ -170,8 +169,8 @@ class block_curr_admin extends block_base {
          * Curricula
          *****************************************/
         if(!empty(elis::$config->local_elisprogram->display_curricula_at_top_level)) {
-            $managecurricula_css_class = block_curr_admin_get_item_css_class('managecurricula');
-            $curriculum_css_class = block_curr_admin_get_item_css_class('curriculum_instance');
+            $managecurricula_css_class = block_elisadmin_get_item_css_class('managecurricula');
+            $curriculum_css_class = block_elisadmin_get_item_css_class('curriculum_instance');
 
             require_once elispm::file('curriculumpage.class.php');
             $num_records = curriculum_count_records('', '', curriculumpage::get_contexts('local/elisprogram:program_view'));
@@ -197,12 +196,12 @@ class block_curr_admin extends block_base {
                           empty($track_count) &&
                           empty($cluster_count);
 
-                $cm_entity_pages[] = block_curr_admin_get_menu_item('curriculum', $curriculum, 'root', $managecurricula_css_class, 0, $curriculum->id, $params, $isLeaf);
+                $cm_entity_pages[] = block_elisadmin_get_menu_item('curriculum', $curriculum, 'root', $managecurricula_css_class, 0, $curriculum->id, $params, $isLeaf);
             }
             unset($curricula);
 
             if($num_block_icons < $num_records) {
-                $cm_entity_pages[] = block_curr_admin_get_menu_summary_item('curriculum', $curriculum_css_class, $num_records - $num_block_icons);
+                $cm_entity_pages[] = block_elisadmin_get_menu_summary_item('curriculum', $curriculum_css_class, $num_records - $num_block_icons);
             }
         }
 
@@ -210,13 +209,13 @@ class block_curr_admin extends block_base {
         $pages = array(
 
                 //Dashboard
-                new menuitem('dashboard', new menuitempage('dashboardpage'), 'root', '', block_curr_admin_get_item_css_class('dashboard')),
+                new menuitem('dashboard', new menuitempage('dashboardpage'), 'root', '', block_elisadmin_get_item_css_class('dashboard')),
 
                 //Admin
-                new menuitem('admn', null, 'root', get_string('admin'), block_curr_admin_get_item_css_class('admn', true))
+                new menuitem('admn', null, 'root', get_string('admin'), block_elisadmin_get_item_css_class('admn', true))
                 ,
-                new menuitem('bulkuser', new menuitempage('bulkuserpage'), null, get_string('userbulk', 'admin'), block_curr_admin_get_item_css_class('bulkuser')),
-                new menuitem('resultsconfig', new menuitempage('resultsconfigpage'), null, 'Default Results Engine Score Settings', block_curr_admin_get_item_css_class('resultsconfig'))
+                new menuitem('bulkuser', new menuitempage('bulkuserpage'), null, get_string('userbulk', 'admin'), block_elisadmin_get_item_css_class('bulkuser')),
+                new menuitem('resultsconfig', new menuitempage('resultsconfigpage'), null, 'Default Results Engine Score Settings', block_elisadmin_get_item_css_class('resultsconfig'))
                 );
 
         // ELIS-3208 - commented out this code as the Jasper reports no longer work in ELIS 2
@@ -228,58 +227,58 @@ class block_curr_admin extends block_base {
             //page instance
             $jasper_link_page = new menuitempage('jasperreportpage', '', $jasper_link_params);
             //styling for the link
-            $jasper_link_css = block_curr_admin_get_item_css_class('reportslist');
+            $jasper_link_css = block_elisadmin_get_item_css_class('reportslist');
 
             $pages[] = new menuitem('reportslist', $jasper_link_page, null, '', $jasper_link_css);
         }
 */
         $pages = array_merge($pages, array(
                 new menuitem('customfields', new menuitempage('customfieldpage', '', array('level' => 'user')), null, '',
-                             block_curr_admin_get_item_css_class('customfields')),
+                             block_elisadmin_get_item_css_class('customfields')),
                 new menuitem('clusterclassification',
                              new menuitempage('usersetclassificationpage', 'plugins/usetclassify/usersetclassificationpage.class.php'),
-                             null, get_string('userset_classification', 'elisprogram_usetclassify'), block_curr_admin_get_item_css_class('clusterclassification')),
+                             null, get_string('userset_classification', 'elisprogram_usetclassify'), block_elisadmin_get_item_css_class('clusterclassification')),
 
                 //Users
-                new menuitem('users', null, 'root', '', block_curr_admin_get_item_css_class('users', true)),
+                new menuitem('users', null, 'root', '', block_elisadmin_get_item_css_class('users', true)),
                 new menuitem('manageusers', new menuitempage('userpage'), null, '',
-                             block_curr_admin_get_item_css_class('manageusers')),
+                             block_elisadmin_get_item_css_class('manageusers')),
                 new menuitem('manageclusters', new menuitempage('usersetpage'), null, '',
-                             block_curr_admin_get_item_css_class('manageclusters')),
+                             block_elisadmin_get_item_css_class('manageclusters')),
 
                 //Curriculum
                 new menuitem('curr', null, 'root', get_string('curriculum', 'local_elisprogram'),
-                             block_curr_admin_get_item_css_class('curr', true)),
+                             block_elisadmin_get_item_css_class('curr', true)),
                 new menuitem('certificatelist', new menuitempage('certificatelistpage'), null, '',
-                             block_curr_admin_get_item_css_class('certificatelist')),
+                             block_elisadmin_get_item_css_class('certificatelist')),
                 new menuitem('managecurricula', new menuitempage('curriculumpage'), null, '',
-                             block_curr_admin_get_item_css_class('managecurricula')),
+                             block_elisadmin_get_item_css_class('managecurricula')),
                 new menuitem('managecourses', new menuitempage('coursepage'), null, '',
-                             block_curr_admin_get_item_css_class('managecourses')),
+                             block_elisadmin_get_item_css_class('managecourses')),
                 new menuitem('manageclasses', new menuitempage('pmclasspage'), null, '',
-                             block_curr_admin_get_item_css_class('manageclasses')),
+                             block_elisadmin_get_item_css_class('manageclasses')),
 
                 //Learning Plan
                 new menuitem('crscat', null, 'root', get_string('learningplan', 'local_elisprogram'),
-                             block_curr_admin_get_item_css_class('crscat', true)),
+                             block_elisadmin_get_item_css_class('crscat', true)),
                 new menuitem('currentcourses', new menuitempage('coursecatalogpage', '', array('action' => 'current')), null, '',
-                             block_curr_admin_get_item_css_class('currentcourses')),
+                             block_elisadmin_get_item_css_class('currentcourses')),
                 new menuitem('availablecourses', new menuitempage('coursecatalogpage', '', array('action' => 'available')), null, '',
-                             block_curr_admin_get_item_css_class('availablecourses')),
+                             block_elisadmin_get_item_css_class('availablecourses')),
                 new menuitem('waitlist', new menuitempage('coursecatalogpage', '', array('action' => 'waitlist')), null,
-                             get_string('waitlistcourses', 'local_elisprogram'), block_curr_admin_get_item_css_class('waitlist')),
+                             get_string('waitlistcourses', 'local_elisprogram'), block_elisadmin_get_item_css_class('waitlist')),
 
                 //Reports
-                new menuitem('rept', null, 'root', get_string('reports', 'local_elisprogram'), block_curr_admin_get_item_css_class('rept', true))
+                new menuitem('rept', null, 'root', get_string('reports', 'local_elisprogram'), block_elisadmin_get_item_css_class('rept', true))
 
         ));
 
         if (has_capability('moodle/course:managegroups', context_course::instance($SITE->id))) {
             if (elis::$config->elisprogram_usetgroups->site_course_userset_groups) {
-                $pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'pmplugins_userset_groups'), block_curr_admin_get_item_css_class('manageclusters'));
+                $pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'pmplugins_userset_groups'), block_elisadmin_get_item_css_class('manageclusters'));
             }
             if (elis::$config->elisprogram_usetgroups->userset_groupings) {
-                $pages[] = new menuitem('frontpagegroupings', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/groupings.php?id={$SITE->id}"), 'admn', get_string('frontpagegroupings', 'pmplugins_userset_groups'), block_curr_admin_get_item_css_class('manageclusters'));
+                $pages[] = new menuitem('frontpagegroupings', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/groupings.php?id={$SITE->id}"), 'admn', get_string('frontpagegroupings', 'pmplugins_userset_groups'), block_elisadmin_get_item_css_class('manageclusters'));
             }
         }
 
@@ -289,13 +288,13 @@ class block_curr_admin extends block_base {
 
         //get all report pages, including categories but not including the
         //topmost report element
-        $report_pages = block_curr_admin_get_report_tree_items();
+        $report_pages = block_elisadmin_get_report_tree_items();
 
         //merge in the reporting page links
         $pages = array_merge($pages, $report_pages);
 
         if (empty(elis::$config->local_elisprogram->userdefinedtrack)) {
-            $pages[] = new menuitem('managetracks', new menuitempage('trackpage'), null, '', block_curr_admin_get_item_css_class('managetracks'));
+            $pages[] = new menuitem('managetracks', new menuitempage('trackpage'), null, '', block_elisadmin_get_item_css_class('managetracks'));
         }
 
         $syscontext = context_system::instance();
@@ -305,14 +304,14 @@ class block_curr_admin extends block_base {
                                                      'lib/menuitem.class.php',
                                                      "{$CFG->wwwroot}/admin/settings.php?section=local_elisprogram_settings"),
                                     'admn', get_string('configuration'),
-                                    block_curr_admin_get_item_css_class('configuration')
+                                    block_elisadmin_get_item_css_class('configuration')
                 );
         }
 
-        $pages[] = new menuitem('notifications', new menuitempage('notifications', 'notificationspage.class.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('notifications'));
-        //$pages[] = new menuitem('dataimport', new menuitempage('dataimportpage', 'elis_ip/elis_ip_page.php', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('integrationpoint'));
-        $pages[] = new menuitem('defaultcls', new menuitempage('configclsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcls'));
-        $pages[] = new menuitem('defaultcrs', new menuitempage('configcrsdefaultpage', '', array('section' => 'admn')), null, '', block_curr_admin_get_item_css_class('defaultcrs'));
+        $pages[] = new menuitem('notifications', new menuitempage('notifications', 'notificationspage.class.php', array('section' => 'admn')), null, '', block_elisadmin_get_item_css_class('notifications'));
+        //$pages[] = new menuitem('dataimport', new menuitempage('dataimportpage', 'elis_ip/elis_ip_page.php', array('section' => 'admn')), null, '', block_elisadmin_get_item_css_class('integrationpoint'));
+        $pages[] = new menuitem('defaultcls', new menuitempage('configclsdefaultpage', '', array('section' => 'admn')), null, '', block_elisadmin_get_item_css_class('defaultcls'));
+        $pages[] = new menuitem('defaultcrs', new menuitempage('configcrsdefaultpage', '', array('section' => 'admn')), null, '', block_elisadmin_get_item_css_class('defaultcrs'));
 
         //turn all pages that have no children into leaf nodes
         menuitemlisting::flag_leaf_nodes($pages);

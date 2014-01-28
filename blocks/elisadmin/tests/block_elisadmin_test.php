@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    block_curr_admin
+ * @package    block_elisadmin
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
@@ -30,21 +30,21 @@ require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 // Libs.
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once(dirname(__FILE__).'/../../moodleblock.class.php');
-require_once(dirname(__FILE__).'/../block_curr_admin.php');
+require_once(dirname(__FILE__).'/../block_elisadmin.php');
 require_once(elispm::lib('menuitem.class.php'));
 require_once(elispm::file('pmclasspage.class.php'));
 require_once(elispm::file('tests/other/datagenerator.php'));
 
 /**
  * Test block functions.
- * @group block_curr_admin
+ * @group block_elisadmin
  */
-class block_curr_admin_testcase extends elis_database_test {
+class block_elisadmin_testcase extends elis_database_test {
 
     /**
-     * Test block_curr_admin_load_menu_children_course function.
+     * Test block_elisadmin_load_menu_children_course function.
      */
-    public function test_block_curr_admin_load_menu_children_course() {
+    public function test_block_elisadmin_load_menu_children_course() {
         global $DB, $USER;
         accesslib_clear_all_caches(true);
 
@@ -113,7 +113,7 @@ class block_curr_admin_testcase extends elis_database_test {
         // Switch to testuser.
         $USER = $testmuser;
         $this->setUser($testmuser);
-        $items = block_curr_admin_load_menu_children_course($testcrs->id, 0, 0, 5, '');
+        $items = block_elisadmin_load_menu_children_course($testcrs->id, 0, 0, 5, '');
 
         $this->assertEquals(1, count($items));
         $this->assertTrue($items[0]->name == 'pmclass_2');
@@ -123,7 +123,7 @@ class block_curr_admin_testcase extends elis_database_test {
      * Test block initialization.
      */
     public function test_blockinitialization() {
-        $block = new block_curr_admin();
+        $block = new block_elisadmin();
         $this->assertNotEmpty($block->title);
         $this->setAdminUser();
         $this->assertNotEmpty($block->get_content());

@@ -1,9 +1,7 @@
 <?php
 /**
- * Common functions.
- *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,12 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    block_elisadmin
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote Learner.net Inc http://www.remote-learner.net
  *
+ */
+
+/**
+ * Common Functions
  */
 
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
@@ -35,14 +36,14 @@ require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
  * @param   object    $instance              CM entity instance
  * @param   string    $parent                Name of the parent element
  * @param   string    $css_class             CSS class used for styling this item
- * @param   int       $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param   int       $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param   int       $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param   int       $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  * @param   array     $params                Any page params that are needed
  * @param   boolean   $isLeaf                If true, this node is automatically a leaf
  * @param   string    $parent_path           Path of parent curriculum elements in the tree
  * @return  menuitem                         The appropriate menu item
  */
-function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $parent_cluster_id, $parent_curriculum_id, $params = array(), $isLeaf = false, $parent_path = '') {
+function block_elisadmin_get_menu_item($type, $instance, $parent, $css_class, $parent_cluster_id, $parent_curriculum_id, $params = array(), $isLeaf = false, $parent_path = '') {
     $display = '';
 
     //determine the display attribute from the entity type
@@ -67,7 +68,7 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
             $display = 'clsname';
             break;
         default:
-            error_log("blocks/curr_admin/lib.php::block_curr_admin_get_menu_item() invalid type: {$type}");
+            error_log("blocks/elisadmin/lib.php::block_elisadmin_get_menu_item() invalid type: {$type}");
             break;
     }
 
@@ -96,7 +97,7 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
     $result->isLeaf = $isLeaf;
 
     //convert to a leaf is appropriate
-    block_curr_admin_truncate_leaf($type, $result, $parent_cluster_id, $parent_curriculum_id);
+    block_elisadmin_truncate_leaf($type, $result, $parent_cluster_id, $parent_curriculum_id);
 
     return $result;
 }
@@ -111,7 +112,7 @@ function block_curr_admin_get_menu_item($type, $instance, $parent, $css_class, $
  * @param   string    $parent_path  Path of parent curriculum elements in the tree
  * @return  menuitem                The appropriate menu item
  */
-function block_curr_admin_get_menu_summary_item($type, $css_class, $num_more, $params = array(), $classfile='', $parent_path = '') {
+function block_elisadmin_get_menu_summary_item($type, $css_class, $num_more, $params = array(), $classfile='', $parent_path = '') {
 
     //the id of this element doesn't really matter, just make sure it's unique
     static $index = 1;
@@ -122,9 +123,9 @@ function block_curr_admin_get_menu_summary_item($type, $css_class, $num_more, $p
 
     //display text
     if ($num_more == 1) {
-        $display = get_string('menu_summary_item_' . $type . '_singular', 'block_curr_admin', $num_more);
+        $display = get_string('menu_summary_item_' . $type . '_singular', 'block_elisadmin', $num_more);
     } else {
-        $display = get_string('menu_summary_item_' . $type, 'block_curr_admin', $num_more);
+        $display = get_string('menu_summary_item_' . $type, 'block_elisadmin', $num_more);
     }
 
     //create a new menuitem that is flagged as sensitive to JS inclusion
@@ -144,10 +145,10 @@ function block_curr_admin_get_menu_summary_item($type, $css_class, $num_more, $p
  *
  * @param  string    $type                  The type of entity the supplied node represents
  * @param  menuitem  $menuitem              The current menu item
- * @param  int       $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param  int       $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param  int       $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param  int       $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  */
-function block_curr_admin_truncate_leaf($type, &$menuitem, $parent_cluster_id, $parent_curriculum_id) {
+function block_elisadmin_truncate_leaf($type, &$menuitem, $parent_cluster_id, $parent_curriculum_id) {
     //any cluster under a curriculum should be a leaf node
     if (($type == 'cluster' || $type == 'userset') && !empty($parent_curriculum_id)) {
         $menuitem->isLeaf = true;
@@ -164,15 +165,15 @@ function block_curr_admin_truncate_leaf($type, &$menuitem, $parent_cluster_id, $
  *
  * @param   string          $type                  The type of entity
  * @param   int             $id                    The entity id
- * @param   int             $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param   int             $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param   int             $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param   int             $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  * @param   string          $parent_path           Path of parent curriculum elements in the tree
  * @return  menuitem array                         The appropriate child items
  */
-function block_curr_admin_load_menu_children($type, $id, $parent_cluster_id, $parent_curriculum_id, $parent_path = '') {
+function block_elisadmin_load_menu_children($type, $id, $parent_cluster_id, $parent_curriculum_id, $parent_path = '') {
     global $CURMAN;
 
-    $function_name = "block_curr_admin_load_menu_children_{$type}";
+    $function_name = "block_elisadmin_load_menu_children_{$type}";
 
     $result_items = array(new menuitem('root'));
     $extra_results = array();
@@ -190,13 +191,13 @@ function block_curr_admin_load_menu_children($type, $id, $parent_cluster_id, $pa
  * Dynamically loads child menu items for a cluster entity
  *
  * @param   int             $id                    The entity id
- * @param   int             $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param   int             $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param   int             $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param   int             $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  * @param   int             $num_block_icons       Max number of entries to display
  * @param   string          $parent_path           Path of parent curriculum elements in the tree
  * @return  menuitem array                         The appropriate child items
  */
-function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+function block_elisadmin_load_menu_children_userset($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
 	global $CFG;
 
 	//page dependencies
@@ -208,7 +209,7 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
      * Cluster - Child Cluster Associations
      *****************************************/
     //note - no need to worry about permissions since there is no prevents/prohibits in ELIS
-    $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
+    $cluster_css_class = block_elisadmin_get_item_css_class('cluster_instance');
 
     $listing = cluster_get_listing('name', 'ASC', 0, $num_block_icons, '', '', array('parent' => $id));
     //$listing = cluster_get_listing('priority, name', 'ASC', 0, $num_block_icons, '', '', array('parent' => $id));
@@ -224,7 +225,7 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
             $isLeaf = empty($cluster_count) &&
                       empty($curriculum_count);
 
-            $result_items[] = block_curr_admin_get_menu_item('userset', $item, 'root', $cluster_css_class, $item->id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
+            $result_items[] = block_elisadmin_get_menu_item('userset', $item, 'root', $cluster_css_class, $item->id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
         }
     }
 
@@ -232,13 +233,13 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
     $num_records = cluster_count_records('', '', array('parent' => $id));
     if ($num_block_icons < $num_records) {
         $params = array('id' => $parent_cluster_id);
-        $result_items[] = block_curr_admin_get_menu_summary_item('userset', $cluster_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
+        $result_items[] = block_elisadmin_get_menu_summary_item('userset', $cluster_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
 
     /*****************************************
      * Cluster - Curriculum
      *****************************************/
-    $curriculum_css_class = block_curr_admin_get_item_css_class('curriculum_instance');
+    $curriculum_css_class = block_elisadmin_get_item_css_class('curriculum_instance');
 
     //permissions filter
     $curriculum_filter = array('contexts' => curriculumpage::get_contexts('local/elisprogram:program_view'));
@@ -267,7 +268,7 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
                       empty($track_count) &&
                       empty($cluster_count);
 
-            $result_items[] = block_curr_admin_get_menu_item('curriculum', $curriculum, 'root', $curriculum_css_class, $parent_cluster_id, $curriculum->id, $params, $isLeaf, $parent_path);
+            $result_items[] = block_elisadmin_get_menu_item('curriculum', $curriculum, 'root', $curriculum_css_class, $parent_cluster_id, $curriculum->id, $params, $isLeaf, $parent_path);
         }
     }
 
@@ -275,7 +276,7 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
     $num_records = clustercurriculum::count_curricula($id, $curriculum_filter);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
-        $result_items[] = block_curr_admin_get_menu_summary_item('clustercurriculum', $curriculum_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
+        $result_items[] = block_elisadmin_get_menu_summary_item('clustercurriculum', $curriculum_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
 
     return $result_items;
@@ -285,13 +286,13 @@ function block_curr_admin_load_menu_children_userset($id, $parent_cluster_id, $p
  * Dynamically loads child menu items for a curriculum entity
  *
  * @param   int             $id                    The entity id
- * @param   int             $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param   int             $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param   int             $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param   int             $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  * @param   int             $num_block_icons       Max number of entries to display
  * @param   string          $parent_path           Path of parent curriculum elements in the tree
  * @return  menuitem array                         The appropriate child items
  */
-function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+function block_elisadmin_load_menu_children_curriculum($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
 	global $CFG;
 
 	//page dependencies
@@ -302,7 +303,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
     /*****************************************
      * Curriculum - Course Associations
      *****************************************/
-    $course_css_class = block_curr_admin_get_item_css_class('course_instance');
+    $course_css_class = block_elisadmin_get_item_css_class('course_instance');
 
     //permissions filter
     $course_filter = array('contexts' => coursepage::get_contexts('local/elisprogram:course_view'));
@@ -319,7 +320,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
 
         $isLeaf = empty($class_count);
 
-        $result_items[] = block_curr_admin_get_menu_item('course', $item, 'root', $course_css_class, $parent_cluster_id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
+        $result_items[] = block_elisadmin_get_menu_item('course', $item, 'root', $course_css_class, $parent_cluster_id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
     }
     unset($listing);
 
@@ -327,13 +328,13 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
     $num_records = curriculumcourse_count_records($id, '', '', $course_filter);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
-        $result_items[] = block_curr_admin_get_menu_summary_item('curriculumcourse', $course_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
+        $result_items[] = block_elisadmin_get_menu_summary_item('curriculumcourse', $course_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
 
     /*****************************************
      * Curriculum - Track Associations
      *****************************************/
-    $track_css_class = block_curr_admin_get_item_css_class('track_instance');
+    $track_css_class = block_elisadmin_get_item_css_class('track_instance');
 
     //permissions filter
     $track_contexts = trackpage::get_contexts('local/elisprogram:track_view');
@@ -354,7 +355,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
             $isLeaf = empty($class_count) &&
                       empty($cluster_count);
 
-            $result_items[] = block_curr_admin_get_menu_item('track', $track_record, 'root', $track_css_class, $parent_cluster_id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
+            $result_items[] = block_elisadmin_get_menu_item('track', $track_record, 'root', $track_css_class, $parent_cluster_id, $parent_curriculum_id, $params, $isLeaf, $parent_path);
         }
     }
 
@@ -367,13 +368,13 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
         if (!empty($parent_cluster_id)) {
             $params['parent_clusterid'] = $parent_cluster_id;
         }
-        $result_items[] = block_curr_admin_get_menu_summary_item('track', $track_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
+        $result_items[] = block_elisadmin_get_menu_summary_item('track', $track_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
 
     /*****************************************
      * Curriculum - Cluster Associations
      *****************************************/
-    $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
+    $cluster_css_class = block_elisadmin_get_item_css_class('cluster_instance');
 
     //permissions filter
     $cluster_filter = array('contexts' => usersetpage::get_contexts('local/elisprogram:userset_view'));
@@ -386,7 +387,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
             $cluster->id = $cluster->clusterid;
             $params = array('id'     => $cluster->id,
                             'action' => 'view');
-            $result_items[] = block_curr_admin_get_menu_item('userset', $cluster, 'root', $cluster_css_class, $cluster->id, $parent_curriculum_id, $params, false, $parent_path);
+            $result_items[] = block_elisadmin_get_menu_item('userset', $cluster, 'root', $cluster_css_class, $cluster->id, $parent_curriculum_id, $params, false, $parent_path);
         }
     }
 
@@ -400,7 +401,7 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
             $params['parent_clusterid'] = $parent_cluster_id;
         }
 
-        $result_items[] = block_curr_admin_get_menu_summary_item('curriculumcluster', $cluster_css_class, $num_records - $num_block_icons, $params, 'clustercurriculumpage.class.php', $parent_path);
+        $result_items[] = block_elisadmin_get_menu_summary_item('curriculumcluster', $cluster_css_class, $num_records - $num_block_icons, $params, 'clustercurriculumpage.class.php', $parent_path);
     }
 
     return $result_items;
@@ -410,13 +411,13 @@ function block_curr_admin_load_menu_children_curriculum($id, $parent_cluster_id,
  * Dynamically loads child menu items for a track entity
  *
  * @param   int             $id                    The entity id
- * @param   int             $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param   int             $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param   int             $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param   int             $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  * @param   int             $num_block_icons       Max number of entries to display
  * @param   string          $parent_path           Path of parent curriculum elements in the tree
  * @return  menuitem array                         The appropriate child items
  */
-function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+function block_elisadmin_load_menu_children_track($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
 	global $CFG;
 
     //page dependencies
@@ -427,7 +428,7 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
     /*****************************************
      * Track - Class Associations
      *****************************************/
-    $class_css_class = block_curr_admin_get_item_css_class('class_instance');
+    $class_css_class = block_elisadmin_get_item_css_class('class_instance');
 
     //permissions filter
     $class_filter = array('contexts' => pmclasspage::get_contexts('local/elisprogram:class_view'));
@@ -437,7 +438,7 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
         $item->id = $item->classid;
         $params = array('id'     => $item->id,
                         'action' => 'view');
-        $result_items[] = block_curr_admin_get_menu_item('pmclass', $item, 'root', $class_css_class, $parent_cluster_id, $parent_curriculum_id, $params, false, $parent_path);
+        $result_items[] = block_elisadmin_get_menu_item('pmclass', $item, 'root', $class_css_class, $parent_cluster_id, $parent_curriculum_id, $params, false, $parent_path);
     }
     unset($listing);
 
@@ -445,13 +446,13 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
     $num_records = track_assignment_count_records($id, '', '', $class_filter);
     if ($num_block_icons < $num_records) {
         $params = array('id' => $id);
-        $result_items[] = block_curr_admin_get_menu_summary_item('trackassignment', $class_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
+        $result_items[] = block_elisadmin_get_menu_summary_item('trackassignment', $class_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
 
     /*****************************************
      * Track - Cluster Associations
      *****************************************/
-    $cluster_css_class = block_curr_admin_get_item_css_class('cluster_instance');
+    $cluster_css_class = block_elisadmin_get_item_css_class('cluster_instance');
 
     //permissions filter
     $cluster_filter = array('contexts' => usersetpage::get_contexts('local/elisprogram:userset_view'));
@@ -465,7 +466,7 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
             $params = array('id'     => $cluster->id,
                             'action' => 'view');
 
-            $result_items[] = block_curr_admin_get_menu_item('cluster', $cluster, 'root', $cluster_css_class, $cluster->id, $parent_curriculum_id, $params, false, $parent_path);
+            $result_items[] = block_elisadmin_get_menu_item('cluster', $cluster, 'root', $cluster_css_class, $cluster->id, $parent_curriculum_id, $params, false, $parent_path);
         }
     }
 
@@ -479,7 +480,7 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
            $params['parent_clusterid'] = $parent_cluster_id;
         }
 
-        $result_items[] = block_curr_admin_get_menu_summary_item('trackcluster', $cluster_css_class, $num_records - $num_block_icons, $params, 'clustertrackpage.class.php', $parent_path);
+        $result_items[] = block_elisadmin_get_menu_summary_item('trackcluster', $cluster_css_class, $num_records - $num_block_icons, $params, 'clustertrackpage.class.php', $parent_path);
     }
 
     return $result_items;
@@ -489,13 +490,13 @@ function block_curr_admin_load_menu_children_track($id, $parent_cluster_id, $par
  * Dynamically loads child menu items for a course entity
  *
  * @param   int             $id                    The entity id
- * @param   int             $parent_cluster_id     The last cluster passed going down the curr_admin tree, or 0 if none
- * @param   int             $parent_curriculum_id  The last curriculum passed going down the curr_admin tree, or 0 if none
+ * @param   int             $parent_cluster_id     The last cluster passed going down the elisadmin tree, or 0 if none
+ * @param   int             $parent_curriculum_id  The last curriculum passed going down the elisadmin tree, or 0 if none
  * @param   int             $num_block_icons       Max number of entries to display
  * @param   string          $parent_path           Path of parent curriculum elements in the tree
  * @return  menuitem array                         The appropriate child items
  */
-function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
+function block_elisadmin_load_menu_children_course($id, $parent_cluster_id, $parent_curriculum_id, $num_block_icons, $parent_path = '') {
 	global $CFG;
 
 	//page dependencies
@@ -506,7 +507,7 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
     /*****************************************
      * Course - Class Associations
      *****************************************/
-    $class_css_class = block_curr_admin_get_item_css_class('class_instance');
+    $class_css_class = block_elisadmin_get_item_css_class('class_instance');
 
     //permissions filter
     $class_contexts = pmclasspage::get_contexts('local/elisprogram:class_view');
@@ -518,7 +519,7 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
         $item->clsname = $item->idnumber;
         $params = array('id' => $item->id,
                         'action' => 'view');
-        $result_items[] = block_curr_admin_get_menu_item('pmclass', $item, 'root', $class_css_class, $parent_cluster_id, $parent_curriculum_id, $params, false, $parent_path);
+        $result_items[] = block_elisadmin_get_menu_item('pmclass', $item, 'root', $class_css_class, $parent_cluster_id, $parent_curriculum_id, $params, false, $parent_path);
     }
     unset($listing);
 
@@ -533,7 +534,7 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
             $params['parent_clusterid'] = $parent_cluster_id;
         }
 
-        $result_items[] = block_curr_admin_get_menu_summary_item('pmclass', $class_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
+        $result_items[] = block_elisadmin_get_menu_summary_item('pmclass', $class_css_class, $num_records - $num_block_icons, $params, '', $parent_path);
     }
 
     return $result_items;
@@ -547,7 +548,7 @@ function block_curr_admin_load_menu_children_course($id, $parent_cluster_id, $pa
  *
  * @return  string              The full CSS class attribute string
  */
-function block_curr_admin_get_item_css_class($class, $category = false) {
+function block_elisadmin_get_item_css_class($class, $category = false) {
     $categorycss = empty($category) ? '' : ' category';
 
     // Handle empty class.
@@ -617,7 +618,7 @@ function block_curr_admin_get_item_css_class($class, $category = false) {
  * @return  array  Mapping of tree category shortnames to display names,
  *                 in the order they should appear
  */
-function block_curr_admin_get_tree_category_mapping() {
+function block_elisadmin_get_tree_category_mapping() {
     global $CFG;
 
     if (!file_exists($CFG->dirroot .'/blocks/php_report/php_report_base.php')) {
@@ -648,7 +649,7 @@ function block_curr_admin_get_tree_category_mapping() {
  *                                    reports in the same category are ordered relative to one another
  *                                    by display name
  */
-function block_curr_admin_get_report_bucket_items($buckets) {
+function block_elisadmin_get_report_bucket_items($buckets) {
     $pages = array();
 
     if (count($buckets) > 0) {
@@ -677,16 +678,16 @@ function block_curr_admin_get_report_bucket_items($buckets) {
  * @return  menuitem array  Array of menuitems representing report categories,
  *                          not including the report items themselves
  */
-function block_curr_admin_get_report_category_items() {
+function block_elisadmin_get_report_category_items() {
     $pages = array();
 
     //mapping of categories to displaynames
-    $report_category_mapping = block_curr_admin_get_tree_category_mapping();
+    $report_category_mapping = block_elisadmin_get_tree_category_mapping();
 
     //add all category entries to the tree under the reports entry
     foreach ($report_category_mapping as $key => $value) {
         //css clas for this menu item
-        $css_class = block_curr_admin_get_item_css_class('reportcategory', TRUE);
+        $css_class = block_elisadmin_get_item_css_class('reportcategory', TRUE);
         //construct the item itself
         $pages[] = new menuitem($key, NULL, 'rept', $value, $css_class, '', FALSE, 'rept');
     }
@@ -700,7 +701,7 @@ function block_curr_admin_get_report_category_items() {
  * @return  menuitem array  List of menu items to add (including report categories
  *                          but excluding the top-level report entry)
  */
-function block_curr_admin_get_report_tree_items() {
+function block_elisadmin_get_report_tree_items() {
     global $CFG, $DB;
 
     //if the reports block is not installed, no entries will be displayed
@@ -709,7 +710,7 @@ function block_curr_admin_get_report_tree_items() {
     }
 
     //get the category-level links
-    $items = block_curr_admin_get_report_category_items();
+    $items = block_elisadmin_get_report_category_items();
 
     //path to library file for scheduling classes
     $schedulelib_path = $CFG->dirroot . '/blocks/php_report/lib/schedulelib.php';
@@ -729,7 +730,7 @@ function block_curr_admin_get_report_tree_items() {
             //create a direct url to the list page
             $schedule_reports_page = new menuitempage('url_page', 'lib/menuitem.class.php', $CFG->wwwroot . '/blocks/php_report/schedule.php?action=list');
             //convert to a menu item
-            $css_class = block_curr_admin_get_item_css_class('schedulereports');
+            $css_class = block_elisadmin_get_item_css_class('schedulereports');
             $schedule_reports_item = new menuitem('schedule_reports', $schedule_reports_page, 'rept', get_string('schedule_reports', 'block_php_report'), $css_class, '', FALSE, 'rept');
             //merge in with the current result
             $items = array_merge(array($schedule_reports_item), $items);
@@ -769,7 +770,7 @@ function block_curr_admin_get_report_tree_items() {
                     $page = new generic_menuitempage('report_page', $report_page_classpath, $report_page_params);
 
                     //retrieve the actual menuitem
-                    $page_css_class = block_curr_admin_get_item_css_class('reportinstance');
+                    $page_css_class = block_elisadmin_get_item_css_class('reportinstance');
                     $category_path = 'rept/' . $item_category;
                     $buckets[$item_category][$displayname] = new menuitem($report_shortname, $page, $item_category,
                                                                           $displayname, $page_css_class, '', FALSE, $category_path);
@@ -779,7 +780,7 @@ function block_curr_admin_get_report_tree_items() {
     }
 
     //retrieve the items representing the reports themselves from the bucketed listings
-    $report_instance_items = block_curr_admin_get_report_bucket_items($buckets);
+    $report_instance_items = block_elisadmin_get_report_bucket_items($buckets);
 
     //merge the flat listings of category items and report instance items
     $items = array_merge($items, $report_instance_items);
@@ -792,11 +793,11 @@ function block_curr_admin_get_report_tree_items() {
  * Sets up a default instance of the curr admin blocks that
  * is viewable anywhere on the site, and cleans all other instances
  */
-function block_curr_admin_create_instance() {
+function block_elisadmin_create_instance() {
     global $DB;
 
     // First delete instances
-    $params = array('blockname' => 'curr_admin');
+    $params = array('blockname' => 'elisadmin');
     $instances = $DB->get_recordset('block_instances', $params);
     foreach($instances as $instance) {
         blocks_delete_instance($instance);
@@ -805,7 +806,7 @@ function block_curr_admin_create_instance() {
 
     // Set up the new instance
     $block_instance_record = new stdclass;
-    $block_instance_record->blockname = 'curr_admin';
+    $block_instance_record->blockname = 'elisadmin';
     $block_instance_record->pagetypepattern = '*';
     $block_instance_record->parentcontextid = 1;
     $block_instance_record->showinsubcontexts = 1;

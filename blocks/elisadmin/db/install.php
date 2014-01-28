@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage curriculummanagement
+ * @package    block_elisadmin
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote Learner.net Inc http://www.remote-learner.net
  *
  */
 
-function xmldb_block_curr_admin_install() {
+function xmldb_block_elisadmin_install() {
     global $DB;
+
+    // Migrate component.
+    $oldcmp = 'block_curr_admin';
+    $newcmp = 'block_elisadmin';
+    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp);
+    if ($migrator->old_component_installed() === true) {
+        $migrator->migrate();
+    }
+
+    // Update instances.
+    $sql = 'UPDATE {block_instances} SET blockname = ? WHERE blockname = ?';
+    $params = array('elisadmin', 'curr_admin');
+    $DB->execute($sql, $params);
 
     $java_app = new stdClass;
     $java_app->name = 'java';
