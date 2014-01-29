@@ -128,6 +128,8 @@ class migrator {
             $updatedrec->plugin = $this->newcomponent;
             $DB->update_record('config_plugins', $updatedrec);
         }
+
+        unset_all_config_for_plugin($this->oldcomponent);
     }
 
     /**
