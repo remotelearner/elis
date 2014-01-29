@@ -1226,7 +1226,7 @@ class utilitymethod_testcase extends rlip_test {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/blocks/moodleblock.class.php');
         require_once($CFG->dirroot.'/local/datahub/db/uninstall.php');
-        require_once($CFG->dirroot.'/local/datahub/db/tasks.php');
+        require_once($CFG->dirroot.'/local/datahub/fileplugins/log/db/tasks.php');
 
         // Setup some bogus config_plugins settings and local_eliscore_sched_tasks.
         set_config('bogus1', 1, 'dhexport_version1');

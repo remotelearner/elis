@@ -1430,6 +1430,14 @@ function rlip_timestamp($hour = null, $minute = null, $second = null, $month = n
  * @return string
  */
 function datahub_fullname($user, $override = false) {
+    if ($user instanceof elis_data_object) {
+        $user = $user->to_object();
+    }
+
+    if (!isset($user->firstname) and !isset($user->lastname)) {
+        return '';
+    }
+
     $allnames = get_all_user_name_fields();
     foreach ($allnames as $allname) {
         if (!property_exists($user, $allname)) {

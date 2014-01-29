@@ -39,8 +39,8 @@ if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
 
 /**
  * Test class for validating basic export data during a scheduled, nonincremental export.
- * @local_datahub
- * @dhexport_version1elis
+ * @group local_datahub
+ * @group dhexport_version1elis
  */
 class version1elisschedulednonincrementalexport_testcase extends rlip_elis_test {
 
