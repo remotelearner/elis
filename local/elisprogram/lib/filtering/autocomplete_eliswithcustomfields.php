@@ -28,14 +28,7 @@ require_once($CFG->dirroot.'/local/eliscore/lib/filtering/autocomplete_base.php'
 class generalized_filter_autocomplete_eliswithcustomfields extends generalized_filter_autocomplete_base {
     protected $contextid;
 
-    protected $context_level_map = array(
-        11 => 'curriculum',
-        12 => 'track',
-        13 => 'course',
-        14 => 'class',
-        15 => 'user',
-        16 => 'cluster'
-    );
+    protected $context_level_map = array();
 
     protected $tablemap = array(
         'curriculum' => 'local_elisprogram_pgm',
@@ -53,6 +46,20 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
     protected $custom_fields = array();
     protected $instance_fields = array();
     protected $forced_custom_vals = array();
+
+    /**
+     * Constructor
+     * @param  string   $name      the name of the filter instance
+     * @param  string   $label     the label of the filter instance
+     * @param  boolean  $advanced  advanced form element flag
+     * @param  string   $field     user table filed name
+     * @param  array    $options   select options
+     */
+    public function __construct($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
+        parent::__construct($uniqueid, $alias, $name, $label, $advanced, $field, $options);
+
+        $this->context_level_map = array_flip(\local_eliscore\context\helper::$namelevelmap);
+    }
 
     /**
      * Loads the $options array into class properties

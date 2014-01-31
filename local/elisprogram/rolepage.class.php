@@ -39,6 +39,10 @@ abstract class rolepage extends associationpage2 {
         $this->section = $this->get_parent_page()->section;
     }
 
+    protected function _get_page_context() {
+        return $this->get_context();
+    }
+
     abstract protected function get_context();
 
     abstract protected function get_parent_page();
@@ -462,12 +466,12 @@ class curriculum_rolepage extends rolepage {
     var $pagename = 'currole';
 
     protected function get_context() {
-        if (!isset($this->context)) {
+        if (!isset($this->_context)) {
             $id = $this->required_param('id', PARAM_INT);
             $context_instance = \local_elisprogram\context\program::instance($id);
             $this->set_context($context_instance);
         }
-        return $this->context;
+        return $this->_context;
     }
 
     protected function get_parent_page() {
@@ -486,13 +490,13 @@ class track_rolepage extends rolepage {
     var $pagename = 'trkrole';
 
     protected function get_context() {
-        if (!isset($this->context)) {
+        if (!isset($this->_context)) {
             $id = $this->required_param('id', PARAM_INT);
 
             $context_instance = \local_elisprogram\context\track::instance($id);
             $this->set_context($context_instance);
         }
-        return $this->context;
+        return $this->_context;
     }
 
     protected function get_parent_page() {
@@ -514,13 +518,13 @@ class course_rolepage extends rolepage {
     var $pagename = 'crsrole';
 
     protected function get_context() {
-        if (!isset($this->context)) {
+        if (!isset($this->_context)) {
             $id = $this->required_param('id', PARAM_INT);
 
             $context_instance = \local_elisprogram\context\course::instance($id);
             $this->set_context($context_instance);
         }
-        return $this->context;
+        return $this->_context;
     }
 
     protected function get_parent_page() {
@@ -539,13 +543,13 @@ class class_rolepage extends rolepage {
     var $pagename = 'clsrole';
 
     protected function get_context() {
-        if (!isset($this->context)) {
+        if (!isset($this->_context)) {
             $id = $this->required_param('id', PARAM_INT);
 
             $context_instance = \local_elisprogram\context\pmclass::instance($id);
             $this->set_context($context_instance);
         }
-        return $this->context;
+        return $this->_context;
     }
 
     protected function get_parent_page() {
@@ -564,13 +568,13 @@ class user_rolepage extends rolepage {
     var $pagename = 'usrrole';
 
     protected function get_context() {
-        if (!isset($this->context)) {
+        if (!isset($this->_context)) {
             $id = $this->required_param('id', PARAM_INT);
 
             $context_instance = \local_elisprogram\context\user::instance($id);
             $this->set_context($context_instance);
         }
-        return $this->context;
+        return $this->_context;
     }
 
     protected function get_parent_page() {
