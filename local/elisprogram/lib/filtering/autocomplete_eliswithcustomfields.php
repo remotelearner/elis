@@ -56,9 +56,8 @@ class generalized_filter_autocomplete_eliswithcustomfields extends generalized_f
      * @param  array    $options   select options
      */
     public function __construct($uniqueid, $alias, $name, $label, $advanced, $field, $options = array()) {
-        parent::__construct($uniqueid, $alias, $name, $label, $advanced, $field, $options);
-
         $this->context_level_map = array_flip(\local_eliscore\context\helper::$namelevelmap);
+        parent::__construct($uniqueid, $alias, $name, $label, $advanced, $field, $options);
     }
 
     /**
