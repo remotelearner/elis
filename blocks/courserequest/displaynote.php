@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @subpackage block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -32,10 +31,10 @@ $id = required_param('id', PARAM_INT);
 
 $context = context_system::instance();
 
-require_capability('block/course_request:request', $context);
+require_capability('block/courserequest:request', $context);
 
-$blockname = get_string('blockname', 'block_course_request');
-$header = get_string('notice', 'block_course_request');
+$blockname = get_string('blockname', 'block_courserequest');
+$header = get_string('notice', 'block_courserequest');
 
 $PAGE->set_pagelayout('standard'); // TBV
 $PAGE->set_pagetype('elis'); // TBV
@@ -54,8 +53,7 @@ $PAGE->set_button('&nbsp;');
 
 echo $OUTPUT->heading($header);
 
-$request = $DB->get_record('block_course_request', array('id' => $id));
+$request = $DB->get_record('block_courserequest', array('id' => $id));
 if (!empty($request)) {
     echo $OUTPUT->box($request->statusnote);
 }
-

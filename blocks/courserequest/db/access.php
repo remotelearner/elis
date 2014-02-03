@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,20 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @package    block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
-    'block/course_request:request' => array(
+    'block/courserequest:request' => array(
         'captype'      => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/course_request:request',
         'legacy'       => array(
             'manager'       => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
@@ -37,30 +37,32 @@ $capabilities = array(
         )
     ),
 
-    'block/course_request:config' => array(
+    'block/courserequest:config' => array(
         'captype'      => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/course_request:config',
         'legacy'       => array(
             'manager'       => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
         )
     ),
 
-    'block/course_request:approve' => array(
+    'block/courserequest:approve' => array(
         'captype'      => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
+        'clonepermissionsfrom' => 'block/course_request:approve',
         'legacy'       => array(
             'manager'       => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
         )
     ),
 
-    'block/course_request:addinstance' => array(
+    'block/courserequest:addinstance' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_BLOCK,
+        'clonepermissionsfrom' => 'block/course_request:addinstance',
         'archetypes' => array(
             'manager' => CAP_ALLOW
         ),
     ),
 );
-

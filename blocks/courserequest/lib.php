@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @package    block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -44,7 +43,7 @@ define('ECR_MC_ROLE_COMPONENT', 'enrol_elis'); // TBD
  * @uses    $USER
  * @return  boolean  True if allowed, otherwise false
  */
-function block_course_request_can_do_request() {
+function block_courserequest_can_do_request() {
     global $CFG, $DB, $USER;
 
     require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
@@ -52,11 +51,11 @@ function block_course_request_can_do_request() {
     $context = context_system::instance();
 
     //handle system context in case no courses are set up
-    if (has_capability('block/course_request:request', $context)) {
+    if (has_capability('block/courserequest:request', $context)) {
         return true;
     }
 
-    if ($course_contexts = get_contexts_by_capability_for_user('course', 'block/course_request:request', $USER->id)) {
+    if ($course_contexts = get_contexts_by_capability_for_user('course', 'block/courserequest:request', $USER->id)) {
         $course_filter = $course_contexts->get_filter('id', 'course');
         $filter_sql = $course_filter->get_sql(false, 'course'); // *TBV*
         $params = array();
@@ -85,37 +84,37 @@ function block_course_request_can_do_request() {
  * @param  string  $statusnote  A descriptive note added by the administrator
  * @uses   $CFG
  */
-function block_course_request_get_approval_message($request, $statusnote = null) {
+function block_courserequest_get_approval_message($request, $statusnote = null) {
     global $CFG;
 
     $notice = '';
 
-    if (empty($request->courseid) && empty($CFG->block_course_request_create_class_with_course)) {
+    if (empty($request->courseid) && empty($CFG->block_courserequest_create_class_with_course)) {
         //just course
         $a = new stdClass;
         $a->link = $CFG->wwwroot.'/local/elisprogram/index.php?action=view&id='.$request->newcourseid.'&s=crs';;
         $a->coursename = $request->title;
-        $notice = get_string('notification_courserequestapproved', 'block_course_request', $a);
+        $notice = get_string('notification_courserequestapproved', 'block_courserequest', $a);
     } else if (!empty($request->courseid)) {
         //just class
         $a = new stdClass;
         $a->link  = $CFG->wwwroot.'/local/elisprogram/index.php?action=view&id='.$request->classid.'&s=cls';
         $a->coursename = $request->title;
         $a->classidnumber = $request->classidnumber;
-        $notice = get_string('notification_classrequestapproved', 'block_course_request', $a);
+        $notice = get_string('notification_classrequestapproved', 'block_courserequest', $a);
     } else {
         //course and class
         $a = new stdClass;
         $a->link  = $CFG->wwwroot.'/local/elisprogram/index.php?action=view&id='.$request->classid.'&s=cls';
         $a->coursename = $request->title;
         $a->classidnumber = $request->classidnumber;
-        $notice = get_string('notification_courseandclassrequestapproved', 'block_course_request', $a);
+        $notice = get_string('notification_courseandclassrequestapproved', 'block_courserequest', $a);
     }
 
     if (!empty($statusnote)) {
         $a = new stdClass;
         $a->statusnote = $statusnote;
-        $notice .= get_string('notification_statusnote', 'block_course_request', $a);
+        $notice .= get_string('notification_statusnote', 'block_courserequest', $a);
     }
 
     return $notice;
@@ -129,7 +128,7 @@ function block_course_request_get_approval_message($request, $statusnote = null)
  * @param  string  $statusnote  A descriptive note added by the administrator
  * @uses   $CFG
  */
-function block_course_request_get_denial_message($request, $statusnote = null) {
+function block_courserequest_get_denial_message($request, $statusnote = null) {
     global $CFG;
 
     $notice = '';
@@ -137,23 +136,22 @@ function block_course_request_get_denial_message($request, $statusnote = null) {
     $a->link = $CFG->wwwroot.'/local/elisprogram/index.php?action=requests&s=crp';
     $a->coursename = $request->title;
 
-    if (empty($request->courseid) && empty($CFG->block_course_request_create_class_with_course)) {
+    if (empty($request->courseid) && empty($CFG->block_courserequest_create_class_with_course)) {
         //just course
-        $notice = get_string('notification_courserequestdenied', 'block_course_request', $a);
+        $notice = get_string('notification_courserequestdenied', 'block_courserequest', $a);
     } else if (!empty($request->courseid)) {
         //just class
-        $notice = get_string('notification_classrequestdenied', 'block_course_request', $a);
+        $notice = get_string('notification_classrequestdenied', 'block_courserequest', $a);
     } else {
         //course and class
-        $notice = get_string('notification_courseandclassrequestdenied', 'block_course_request', $a);
+        $notice = get_string('notification_courseandclassrequestdenied', 'block_courserequest', $a);
     }
 
     if (!empty($statusnote)) {
         $a = new stdClass;
         $a->statusnote = $statusnote;
-        $notice .= get_string('notification_statusnote', 'block_course_request', $a);
+        $notice .= get_string('notification_statusnote', 'block_courserequest', $a);
     }
 
     return $notice;
 }
-

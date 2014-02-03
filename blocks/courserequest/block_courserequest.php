@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @package    block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 //main lib file for the course request block
-require_once($CFG->dirroot .'/blocks/course_request/lib.php');
+require_once($CFG->dirroot.'/blocks/courserequest/lib.php');
 
-class block_course_request extends block_base {
+class block_courserequest extends block_base {
     function init() {
-        $this->title   = get_string('blockname', 'block_course_request');
+        $this->title   = get_string('blockname', 'block_courserequest');
         $this->version = 2011062000;
     }
 
@@ -61,26 +60,26 @@ class block_course_request extends block_base {
         $items = array();
 
         //check request permissions
-        if (block_course_request_can_do_request()) {
-            $items[] = '<a href="'. $CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=crp">' .
-                       get_string('courserequestpages', 'block_course_request') . '</a>';
+        if (block_courserequest_can_do_request()) {
+            $items[] = '<a href="'.$CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=crp">'.
+                    get_string('courserequestpages', 'block_courserequest').'</a>';
         }
 
-        if (has_capability('block/course_request:config', $context)) {
+        if (has_capability('block/courserequest:config', $context)) {
             //make sure custom fields are enabled for some context
-            $allow_class_fields = !isset($CFG->block_course_request_use_class_fields) ||
-                                  !empty($CFG->block_course_request_use_class_fields);
-            $allow_course_fields = !empty($CFG->block_course_request_use_course_fields);
+            $allow_class_fields = !isset($CFG->block_courserequest_use_class_fields) ||
+                                  !empty($CFG->block_courserequest_use_class_fields);
+            $allow_course_fields = !empty($CFG->block_courserequest_use_course_fields);
 
             if ($allow_class_fields || $allow_course_fields) {
-                $items[] = '<a href="'. $CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=erp">' .
-                           get_string('editrequestpages', 'block_course_request') . '</a>';
+                $items[] = '<a href="'.$CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=erp">'.
+                        get_string('editrequestpages', 'block_courserequest').'</a>';
             }
         }
 
-        if (has_capability('block/course_request:approve', $context)) {
-            $items[] = '<a href="'. $CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=arp">' .
-                       get_string('approvependingrequests', 'block_course_request') . '</a>';
+        if (has_capability('block/courserequest:approve', $context)) {
+            $items[] = '<a href="'.$CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=arp">'.
+                    get_string('approvependingrequests', 'block_courserequest').'</a>';
         }
 
         if (!empty($items)) {
@@ -90,4 +89,3 @@ class block_course_request extends block_base {
         return $this->content;
     }
 }
-

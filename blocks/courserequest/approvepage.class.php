@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @subpackage block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -35,9 +34,9 @@ require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
 require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
 
 // main lib file for the course request block
-require_once($CFG->dirroot .'/blocks/course_request/lib.php');
+require_once($CFG->dirroot.'/blocks/courserequest/lib.php');
 // needed to create the approval form based on the create form
-require_once($CFG->dirroot .'/blocks/course_request/request_form.php');
+require_once($CFG->dirroot.'/blocks/courserequest/request_form.php');
 
 class courserequestapprovepage extends pm_page {
     var $pagename = 'arp';  // course request page
@@ -49,22 +48,22 @@ class courserequestapprovepage extends pm_page {
     }
 
     function can_do_default() {
-        return has_capability('block/course_request:approve', context_system::instance());
+        return has_capability('block/courserequest:approve', context_system::instance());
     }
 
     function get_page_title_default() { // get_title_default()
-        return get_string('approvependingrequests', 'block_course_request');
+        return get_string('approvependingrequests', 'block_courserequest');
     }
 
     function build_navbar_default($who = null) {
         $url = $this->url;
         $url->remove_params(array('action', 'request'));
-        $this->navbar->add(get_string('approvependingrequests', 'block_course_request'), $url);
+        $this->navbar->add(get_string('approvependingrequests', 'block_courserequest'), $url);
     }
 
     function build_navbar_viewrequest() {
         $this->build_navbar_default();
-        $this->navbar->add(get_string('approve', 'block_course_request'), $this->url);
+        $this->navbar->add(get_string('approve', 'block_courserequest'), $this->url);
     }
 
     function build_navbar_approverequest() {
@@ -104,19 +103,19 @@ class courserequestapprovepage extends pm_page {
         $dir  = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
 
         $columns = array(
-            'courseid'          => array('header' => get_string('course', 'block_course_request')),
-            'title'             => array('header' => get_string('title', 'block_course_request')),
-            'firstname'         => array('header' => get_string('firstname', 'block_course_request')),
-            'lastname'          => array('header' => get_string('lastname', 'block_course_request')),
-            'email'             => array('header' => get_string('email', 'block_course_request')),
-            'timecreated'       => array('header' => get_string('created', 'block_course_request')),
-            'usecoursetemplate' => array('header' => get_string('use_course_template', 'block_course_request')),
+            'courseid'          => array('header' => get_string('course', 'block_courserequest')),
+            'title'             => array('header' => get_string('title', 'block_courserequest')),
+            'firstname'         => array('header' => get_string('firstname', 'block_courserequest')),
+            'lastname'          => array('header' => get_string('lastname', 'block_courserequest')),
+            'email'             => array('header' => get_string('email', 'block_courserequest')),
+            'timecreated'       => array('header' => get_string('created', 'block_courserequest')),
+            'usecoursetemplate' => array('header' => get_string('use_course_template', 'block_courserequest')),
             'manage'            => array('header' => '')
         );
 
         $items = $this->get_pending_requests($sort, $dir);
 
-        echo '<h2>' . get_string('pendingrequests', 'block_course_request') . "</h2>\n";
+        echo '<h2>'.get_string('pendingrequests', 'block_courserequest')."</h2>\n";
 
         // This needs to be able to display the course name instead of an integer record ID value
         $formatters = $this->create_link_formatters(array('courseid'), 'coursepage', 'courseid');
@@ -139,7 +138,7 @@ class courserequestapprovepage extends pm_page {
                        data.data,
                        data.multiple
                 FROM {local_eliscore_field} field
-                JOIN {block_course_request_data} data
+                JOIN {block_courserequest_data} data
                   ON field.id = data.fieldid
                 WHERE data.requestid = ?";
 
@@ -191,10 +190,10 @@ class courserequestapprovepage extends pm_page {
         global $CFG, $DB;
 
         $requestid = required_param('request', PARAM_INT);
-        if (!$request = $DB->get_record('block_course_request', array('id' => $requestid))) {
+        if (!$request = $DB->get_record('block_courserequest', array('id' => $requestid))) {
             $target = str_replace($CFG->wwwroot, '', $this->url);
 
-            print_error('errorinvalidrequestid', 'block_course_request', $target, $requestid);
+            print_error('errorinvalidrequestid', 'block_courserequest', $target, $requestid);
         }
 
         $request->request = $request->id;
@@ -224,10 +223,10 @@ class courserequestapprovepage extends pm_page {
 
         // make sure we have the necessary request
         $requestid = $this->required_param('request', PARAM_INT);
-        if (!$request = $DB->get_record('block_course_request', array('id' => $requestid))) {
+        if (!$request = $DB->get_record('block_courserequest', array('id' => $requestid))) {
             $target = str_replace($CFG->wwwroot, '', $this->url);
 
-            print_error('errorinvalidrequestid', 'block_course_request', $target, $requestid);
+            print_error('errorinvalidrequestid', 'block_courserequest', $target, $requestid);
         }
 
         // add additional information to the request that is needed by the form by default
@@ -276,23 +275,23 @@ class courserequestapprovepage extends pm_page {
         // update the request with additional information
         $request->requeststatus = 'denied';
         $request->statusnote = $formdata->comments;
-        $DB->update_record('block_course_request', $request); // TBV: addslashes_recursive() not required in Moodle-2
+        $DB->update_record('block_courserequest', $request); // TBV: addslashes_recursive() not required in Moodle-2
 
         // notify the user of the request status
         $statusnote = null;
         if (!empty($request->statusnote)) {
             $statusnote = $request->statusnote;
         }
-        $notice = block_course_request_get_denial_message($request, $statusnote);
+        $notice = block_courserequest_get_denial_message($request, $statusnote);
         $requser = $DB->get_record('user', array('id' => $request->userid));
         $requser->firstname = $formdata->first;
         $requser->lastname = $formdata->last;
         $requser->email = $formdata->email;
         notification::notify($notice, $requser, $USER);
-        // error_log("course_request:deny_request(); notice = {$notice} ... sent to: {$requser->email} ". fullname($requser));
+        // error_log("courserequest:deny_request(); notice = {$notice} ... sent to: {$requser->email} ".fullname($requser));
 
         // redirect back to the listing page
-        redirect($this->url, get_string('deniedmessage', 'block_course_request'), 3);
+        redirect($this->url, get_string('deniedmessage', 'block_courserequest'), 3);
     }
 
     /**
@@ -318,7 +317,7 @@ class courserequestapprovepage extends pm_page {
             $newcourse = new course($crsdata);
 
             // make sure custom field data is included
-            if (!empty($CFG->block_course_request_use_course_fields)) {
+            if (!empty($CFG->block_courserequest_use_course_fields)) {
                 // course fields are enabled, so add the relevant data
                 $this->add_custom_fields($formdata, 'course', $newcourse);
             }
@@ -326,9 +325,9 @@ class courserequestapprovepage extends pm_page {
             $newcourse->save(); // ->add()
 
             // do the course role assignment, if applicable
-            if (!empty($CFG->block_course_request_course_role)) {
+            if (!empty($CFG->block_courserequest_course_role)) {
                 if ($context = \local_elisprogram\context\course::instance($newcourse->id)) {
-                    role_assign($CFG->block_course_request_course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
+                    role_assign($CFG->block_courserequest_course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
                 }
             }
 
@@ -353,7 +352,7 @@ class courserequestapprovepage extends pm_page {
 
         // Create the new class if we are using an existing course, or if
         // create_class_with_course is on.
-        if (!empty($request->courseid) || !empty($CFG->block_course_request_create_class_with_course)) {
+        if (!empty($request->courseid) || !empty($CFG->block_courserequest_create_class_with_course)) {
             require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
             $clsdata = array(
                 'courseid'        => $courseid,
@@ -367,8 +366,7 @@ class courserequestapprovepage extends pm_page {
             $newclass = new pmclass($clsdata);
             $newclass->autocreate = false;
 
-            $set_class_fields = !isset($CFG->block_course_request_use_class_fields) ||
-                                !empty($CFG->block_course_request_use_class_fields);
+            $set_class_fields = !isset($CFG->block_courserequest_use_class_fields) || !empty($CFG->block_courserequest_use_class_fields);
 
             if ($set_class_fields) {
                 // class fields are enabled, so add the relevant data
@@ -382,9 +380,9 @@ class courserequestapprovepage extends pm_page {
             $request->classid = $newclass->id;
 
             // assign role to requester in the newly created class
-            if (!empty($CFG->block_course_request_class_role)) {
+            if (!empty($CFG->block_courserequest_class_role)) {
                 $context = \local_elisprogram\context\pmclass::instance($newclass->id);
-                role_assign($CFG->block_course_request_class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
+                role_assign($CFG->block_courserequest_class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
             }
 
             // create a new Moodle course from the CM course template if set on the approve form
@@ -392,11 +390,11 @@ class courserequestapprovepage extends pm_page {
                 moodle_attach_class($newclass->id, 0, '', true, true, true);
 
                 // copy role over into Moodle course
-                if (isset($CFG->block_course_request_class_role) && $CFG->block_course_request_class_role) {
+                if (isset($CFG->block_courserequest_class_role) && $CFG->block_courserequest_class_role) {
                     require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
                     if ($class_moodle_record = $DB->get_record(classmoodlecourse::TABLE, array('classid' => $newclass->id))) {
                         $context = context_course::instance($class_moodle_record->moodlecourseid);
-                        role_assign($CFG->block_course_request_class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
+                        role_assign($CFG->block_courserequest_class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
                     }
                 }
             }
@@ -421,7 +419,7 @@ class courserequestapprovepage extends pm_page {
         // update the request with additional information
         $request->requeststatus = 'approved';
         $request->statusnote = $formdata->comments;
-        $DB->update_record('block_course_request', $request); // TBV: addslashes_recursive() not required in Moodle 2 ?
+        $DB->update_record('block_courserequest', $request); // TBV: addslashes_recursive() not required in Moodle 2 ?
 
         // notify the user of the request status
         $statusnote = null;
@@ -429,7 +427,7 @@ class courserequestapprovepage extends pm_page {
             $statusnote = $request->statusnote;
         }
         $request->newcourseid = $courseid;
-        $notice = block_course_request_get_approval_message($request, $statusnote);
+        $notice = block_courserequest_get_approval_message($request, $statusnote);
         $requser = $DB->get_record('user', array('id' => $request->userid));
         $requser->firstname = $formdata->first;
         $requser->lastname = $formdata->last;
@@ -437,7 +435,7 @@ class courserequestapprovepage extends pm_page {
         notification::notify($notice, $requser, $USER);
 
         // redirect back to the listing page
-        redirect($this->url, get_string('requestapproved', 'block_course_request'), 3);
+        redirect($this->url, get_string('requestapproved', 'block_courserequest'), 3);
     }
 
     /**
@@ -449,7 +447,7 @@ class courserequestapprovepage extends pm_page {
      */
     function print_list_view($items, $columns, $formatters = array()) {
         if (empty($items)) {
-            echo '<div>' . get_string('nopendingrequests', 'block_course_request') . '</div>';
+            echo '<div>'.get_string('nopendingrequests', 'block_courserequest').'</div>';
             return;
         }
 
@@ -470,8 +468,8 @@ class courserequestapprovepage extends pm_page {
             $sort = $sort .' '. $dir;
         }
 
-        if ($requests = $DB->get_records('block_course_request', array('requeststatus' => 'pending'), $sort,
-                                         'id, courseid, title, firstname, lastname, email, timecreated, usecoursetemplate')) {
+        if ($requests = $DB->get_records('block_courserequest', array('requeststatus' => 'pending'), $sort,
+                'id, courseid, title, firstname, lastname, email, timecreated, usecoursetemplate')) {
 
             return $requests;
         }
@@ -542,7 +540,7 @@ class pending_requests_page_table extends display_table {
         global $DB;
         $courseid = $item->$column;
         if (!$courseid) {
-            return get_string('newcourse', 'block_course_request');
+            return get_string('newcourse', 'block_courserequest');
         }
         if (!isset($this->coursename_cache[$courseid])) {
             $this->coursename_cache[$courseid] = $DB->get_field('local_elisprogram_crs', 'name', array('id' => $courseid));
@@ -572,7 +570,7 @@ class pending_requests_page_table extends display_table {
         $target = $this->page->get_new_page(array('action' => 'viewrequest',
                                                   'request' => $item->id), true);
         // construct the link
-        $link = '<a href="'. $target->url .'">'. get_string('view_request', 'block_course_request').'</a>';
+        $link = '<a href="'.$target->url.'">'.get_string('view_request', 'block_courserequest').'</a>';
         return $link;
     }
 
@@ -602,19 +600,19 @@ class pending_request_deny_form extends moodleform {
         $mform->addElement('hidden', 'request');
         $mform->setType('request', PARAM_INT);
 
-        $title =& $mform->createElement('text', 'title', get_string('title', 'block_course_request'));
+        $title =& $mform->createElement('text', 'title', get_string('title', 'block_courserequest'));
         $title->freeze();
         $mform->addElement($title);
         $mform->setType('title', PARAM_RAW);
 
         $mform->addElement('static', 'spacer', '');
 
-        $mform->addElement('static', 'confirmmessage', '', get_string('denialconfirm', 'block_course_request', $request->title));
+        $mform->addElement('static', 'confirmmessage', '', get_string('denialconfirm', 'block_courserequest', $request->title));
 
-        $mform->addElement('textarea', 'statusnote', get_string('note', 'block_course_request'), array('cols' => '40', 'rows' => '5'));
+        $mform->addElement('textarea', 'statusnote', get_string('note', 'block_courserequest'), array('cols' => '40', 'rows' => '5'));
         $mform->setType('statusnote', PARAM_NOTAGS);
 
-        $this->add_action_buttons(true, get_string('denythisrequest', 'block_course_request'));
+        $this->add_action_buttons(true, get_string('denythisrequest', 'block_courserequest'));
     }
 
 }
@@ -642,7 +640,7 @@ class pending_request_approve_form extends create_form {
         $mform->hardFreeze('title');
         // don't display as required, since not editable
         $course_name_element =& $mform->getElement('title');
-        $course_name_element->setLabel(get_string('title', 'block_course_request'));
+        $course_name_element->setLabel(get_string('title', 'block_courserequest'));
     }
 
     /**
@@ -667,17 +665,19 @@ class pending_request_approve_form extends create_form {
         $mform =& $this->_form;
 
         // section header
-        $mform->addElement('header', 'feedbackheader', get_string('feedbackheader', 'block_course_request'));
+        $mform->addElement('header', 'feedbackheader', get_string('feedbackheader', 'block_courserequest'));
 
         // approve/deny action
-        $choices = array('deny'    => get_string('deny', 'block_course_request'),
-                         'approve' => get_string('approve', 'block_course_request'));
-        $mform->addElement('select', 'approvalaction', get_string('action', 'block_course_request'), $choices);
+        $choices = array(
+            'deny' => get_string('deny', 'block_courserequest'),
+            'approve' => get_string('approve', 'block_courserequest')
+        );
+        $mform->addElement('select', 'approvalaction', get_string('action', 'block_courserequest'), $choices);
 
         // comments
         $mform->addElement('static', 'spacer', '', '');
-        $mform->addElement('static', 'comments_description', '', get_string('comments_description', 'block_course_request'));
-        $mform->addElement('textarea', 'comments', get_string('comments', 'block_course_request'), array('cols' => '40', 'rows' => '5'));
+        $mform->addElement('static', 'comments_description', '', get_string('comments_description', 'block_courserequest'));
+        $mform->addElement('textarea', 'comments', get_string('comments', 'block_courserequest'), array('cols' => '40', 'rows' => '5'));
         $mform->setType('comments', PARAM_NOTAGS);
     }
 
@@ -716,7 +716,7 @@ class pending_request_approve_form extends create_form {
 
         $contextlevel = \local_eliscore\context\helper::get_level_from_name($contextlevel_name);
 
-        $fields = $DB->get_records('block_course_request_fields', array('contextlevel' => $contextlevel));
+        $fields = $DB->get_records('block_courserequest_fields', array('contextlevel' => $contextlevel));
         $fields = $fields ? $fields : array();
         foreach ($fields as $reqfield) {
             $field = new field($reqfield->fieldid);
@@ -746,8 +746,7 @@ class pending_request_approve_form extends create_form {
         $mform =& $this->_form;
 
         // go through all configured class fields and remove them if applicable
-        $create_class_with_course = !isset($CFG->block_course_request_create_class_with_course) ||
-                                    !empty($CFG->block_course_request_create_class_with_course);
+        $create_class_with_course = !isset($CFG->block_courserequest_create_class_with_course) || !empty($CFG->block_courserequest_create_class_with_course);
 
         if (!$create_class_with_course) {
             // not forcing the creation of a class with every course created
@@ -758,8 +757,7 @@ class pending_request_approve_form extends create_form {
             $mform->removeElement('usecoursetemplate');
 
             // determine if class fields are enabled
-            $show_class_fields = !isset($CFG->block_course_request_use_class_fields) ||
-                                 !empty($CFG->block_course_request_use_class_fields);
+            $show_class_fields = !isset($CFG->block_courserequest_use_class_fields) || !empty($CFG->block_courserequest_use_class_fields);
 
             if ($show_class_fields) {
                 // class-level custom fields would have been displayed, so remove them
@@ -787,7 +785,7 @@ class pending_request_approve_form extends create_form {
 
         // get the submitted id
         if ($requestid = $mform->getElementValue('request')) {
-            if ($request = $DB->get_record('block_course_request', array('id' => $requestid))) {
+            if ($request = $DB->get_record('block_courserequest', array('id' => $requestid))) {
                 if (empty($request->courseid)) {
                     // new course, so disable
                     $mform->hardFreeze('usecoursetemplate');
@@ -799,7 +797,7 @@ class pending_request_approve_form extends create_form {
                     $mform->hardFreeze('crsidnumber');
                     // don't display as required, since not editable
                     $course_idnumber_element =& $mform->getElement('crsidnumber');
-                    $course_idnumber_element->setLabel(get_string('courseidnumber', 'block_course_request'));
+                    $course_idnumber_element->setLabel(get_string('courseidnumber', 'block_courserequest'));
 
                     $temp = coursetemplate::find(new field_filter('courseid', $request->courseid));
                     if ($temp->valid()) {
@@ -836,7 +834,7 @@ class pending_request_approve_form extends create_form {
             $recordid = $data['request']; // TBV: addslashes()
 
             // note: no need to call addslashes because data is already escaped
-            if ($DB->record_exists_select('block_course_request', "id = ? AND courseid != 0", array($recordid))) {
+            if ($DB->record_exists_select('block_courserequest', "id = ? AND courseid != 0", array($recordid))) {
                 // new class for existing course
                 if (empty($data['clsidnumber'])) {
                     $errors['clsidnumber'] = get_string('required');
@@ -845,7 +843,7 @@ class pending_request_approve_form extends create_form {
                 }
             } else {
                 require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
-                if (empty($CFG->block_course_request_create_class_with_course)) {
+                if (empty($CFG->block_courserequest_create_class_with_course)) {
                     // new course with no associated class
                     if (empty($data['crsidnumber'])) {
                         $errors['crsidnumber'] = get_string('required');
@@ -893,4 +891,3 @@ class pending_request_approve_form extends create_form {
         return $errors;
     }
 }
-

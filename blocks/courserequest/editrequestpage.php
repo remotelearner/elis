@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @package    block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -38,20 +37,20 @@ class EditRequestPage extends pm_page {
 
     function can_do_default() {
         $context = context_system::instance();
-        return has_capability('block/course_request:config', $context);
+        return has_capability('block/courserequest:config', $context);
     }
 
     function can_do_requests() {
         $context = context_system::instance();
-        return has_capability('block/course_request:config', $context);
+        return has_capability('block/courserequest:config', $context);
     }
 
     function get_page_title_default() { // get_title_default()
-        return get_string('request_title', 'block_course_request');
+        return get_string('request_title', 'block_courserequest');
     }
 
     function build_navbar_default($who = null) {
-        $this->navbar->add(get_string('editrequestpages', 'block_course_request'), $this->url);
+        $this->navbar->add(get_string('editrequestpages', 'block_courserequest'), $this->url);
     }
 
     function display_request() { // New for redirect from display_default()
@@ -70,7 +69,7 @@ class EditRequestPage extends pm_page {
         if ($delete) {
             $keys = array_keys($delete);
             foreach ($keys as $todel) {
-                $DB->delete_records('block_course_request_fields', array('id' => $todel));
+                $DB->delete_records('block_courserequest_fields', array('id' => $todel));
             }
             $redir = true;
         } else if ($this->optional_param('update', null, PARAM_TEXT)) {
@@ -79,7 +78,7 @@ class EditRequestPage extends pm_page {
                 $rec = new stdClass;
                 $rec->id = $id;
                 $rec->fieldid = $field;
-                $DB->update_record('block_course_request_fields', $rec);
+                $DB->update_record('block_courserequest_fields', $rec);
             }
             $redir = true;
         } else if ($submitted_data = data_submitted()) {
@@ -99,7 +98,7 @@ class EditRequestPage extends pm_page {
                     $rec = new stdClass;
                     $rec->fieldid = 0;
                     $rec->contextlevel = $contextlevel;
-                    $DB->insert_record('block_course_request_fields', $rec);
+                    $DB->insert_record('block_courserequest_fields', $rec);
                 }
             }
             $redir = true;
@@ -113,4 +112,3 @@ class EditRequestPage extends pm_page {
         }
     }
 }
-

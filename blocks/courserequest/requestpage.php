@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @package    block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -33,7 +32,7 @@ require_once('request_form.php');
 require_once('approvepage.class.php');
 
 // main lib file for the course request block
-require_once($CFG->dirroot.'/blocks/course_request/lib.php');
+require_once($CFG->dirroot.'/blocks/courserequest/lib.php');
 
 class RequestPage extends pm_page {
     var $pagename = 'crp';      // course request page
@@ -43,8 +42,8 @@ class RequestPage extends pm_page {
 
     function __construct(array $params = null) {
         $this->tabs = array(
-            array('tab_id' => 'default', 'page' => get_class($this), 'params' => array('action' => 'default'), 'name' => get_string('current', 'block_course_request')),
-            array('tab_id' => 'requests', 'page' => get_class($this), 'params' => array('action' => 'requests'), 'name' => get_string('requests', 'block_course_request')),
+            array('tab_id' => 'default', 'page' => get_class($this), 'params' => array('action' => 'default'), 'name' => get_string('current', 'block_courserequest')),
+            array('tab_id' => 'requests', 'page' => get_class($this), 'params' => array('action' => 'requests'), 'name' => get_string('requests', 'block_courserequest')),
         );
         parent::__construct($params);
     }
@@ -56,7 +55,7 @@ class RequestPage extends pm_page {
      */
     function can_do_default() {
         // check request permissions
-        return block_course_request_can_do_request();
+        return block_courserequest_can_do_request();
     }
 
     /**
@@ -66,27 +65,26 @@ class RequestPage extends pm_page {
      */
     function can_do_requests() {
         // check request permissions
-        return block_course_request_can_do_request();
+        return block_courserequest_can_do_request();
     }
 
     function get_page_title_default() { // get_title_default()
-        return get_string('request_title', 'block_course_request');
+        return get_string('request_title', 'block_courserequest');
     }
 
     function build_navbar_default($who = null) {
         // parent::build_navbar_default();
-        $this->navbar->add(get_string('current_classes', 'block_course_request'), $this->url);
+        $this->navbar->add(get_string('current_classes', 'block_courserequest'), $this->url);
     }
 
     function build_navbar_requests() {
-        $this->navbar->add(get_string('requests', 'block_course_request'), $this->url);
+        $this->navbar->add(get_string('requests', 'block_courserequest'), $this->url);
     }
 
     function build_navbar_create() {
         $this->build_navbar_default();
         $tmppage = $this->get_new_page(array('action' => 'create'), true);
-        $this->navbar->add(get_string('request', 'block_course_request'),
-                           $tmppage->url);
+        $this->navbar->add(get_string('request', 'block_courserequest'), $tmppage->url);
     }
 
     function display_default() { // action_default()
@@ -104,15 +102,15 @@ class RequestPage extends pm_page {
         $dir  = $this->optional_param('dir', 'ASC', PARAM_ALPHA);
 
         $columns = array(
-            'title'         => array('header' => get_string('classes_requested', 'block_course_request')),
-            'requeststatus' => array('header' => get_string('request_status', 'block_course_request')),
-            'requestnotice' => array('header' => get_string('request_notice', 'block_course_request')),
+            'title'         => array('header' => get_string('classes_requested', 'block_courserequest')),
+            'requeststatus' => array('header' => get_string('request_status', 'block_courserequest')),
+            'requestnotice' => array('header' => get_string('request_notice', 'block_courserequest')),
         );
 
         // for self-approval, allow selection of the course template
         $system_context = context_system::instance();
-        if (has_capability('block/course_request:approve', $system_context)) {
-            $columns['usecoursetemplate'] = array('header' => get_string('use_course_template', 'block_course_request'));
+        if (has_capability('block/courserequest:approve', $system_context)) {
+            $columns['usecoursetemplate'] = array('header' => get_string('use_course_template', 'block_courserequest'));
         }
 
         $items = $this->get_pending_requests($sort, $dir);
@@ -144,7 +142,7 @@ class RequestPage extends pm_page {
 
         $select = "requestid = ? AND contextlevel = ?";
         // Add any custom field data from the request to this class now.
-        if ($rs = $DB->get_recordset_select('block_course_request_data', $select, array($requestid, $contextlevel))) {
+        if ($rs = $DB->get_recordset_select('block_courserequest_data', $select, array($requestid, $contextlevel))) {
             foreach ($rs as $fielddata) {
                 // ^WAS: while ($fielddata = rs_fetch_next_record($rs)) {
                 $field = new field($fielddata->fieldid);
@@ -188,9 +186,9 @@ class RequestPage extends pm_page {
             $request->usecoursetemplate = empty($data->usecoursetemplate) ? 0 : 1;
             $request->requeststatus = 'pending';
             $request->timemodified = $request->timecreated = time();
-            $id = $DB->insert_record('block_course_request', $request);
+            $id = $DB->insert_record('block_courserequest', $request);
 
-            $fields = $DB->get_records('block_course_request_fields');
+            $fields = $DB->get_records('block_courserequest_fields');
             $fields = $fields ? $fields : array();
             foreach ($fields as $reqfield) {
                 $field = new field($reqfield->fieldid);
@@ -218,22 +216,22 @@ class RequestPage extends pm_page {
 
                     // remember the context level that the field corresponds to
                     $fielddata->contextlevel = $reqfield->contextlevel;
-                    $DB->insert_record('block_course_request_data', $fielddata);
+                    $DB->insert_record('block_courserequest_data', $fielddata);
                 }
             }
 
             require_once($CFG->dirroot.'/local/elisprogram/lib/notifications.php');
             $syscontext = context_system::instance();
 
-            if (has_capability('block/course_request:approve', $syscontext)) {
+            if (has_capability('block/courserequest:approve', $syscontext)) {
             // Since we want to automatically approve requests for people approval permission, let's go ahead and create the course/class
 
                 $requestid = $id;
 
-                if (!$request = $DB->get_record('block_course_request', array('id' => $requestid))) {
+                if (!$request = $DB->get_record('block_courserequest', array('id' => $requestid))) {
                     $target = str_replace($CFG->wwwroot, '', $this->url);
 
-                    print_error('errorinvalidrequestid', 'block_course_request', $target, $requestid);
+                    print_error('errorinvalidrequestid', 'block_courserequest', $target, $requestid);
                 }
 
                 $target = $this->get_new_page(array('action' => 'approveconfirm'));
@@ -257,7 +255,7 @@ class RequestPage extends pm_page {
 
                     $newcourse = new course($crsdata);
 
-                    if (!empty($CFG->block_course_request_use_course_fields)) {
+                    if (!empty($CFG->block_courserequest_use_course_fields)) {
                         // course fields are enabled, so add the relevant data
                         $this->add_custom_fields($request->id, 'course', $newcourse);
                     }
@@ -265,10 +263,10 @@ class RequestPage extends pm_page {
                     $newcourse->save(); // ->add()
 
                     // do the course role assignment, if applicable
-                    if (!empty($CFG->block_course_request_course_role)) {
+                    if (!empty($CFG->block_courserequest_course_role)) {
                         if ($context = \local_elisprogram\context\course::instance($newcourse->id)) {
                             // TBD: role_assign() now throws exceptions!
-                            $result = role_assign($CFG->block_course_request_course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
+                            $result = role_assign($CFG->block_courserequest_course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
                         }
                     }
 
@@ -279,7 +277,7 @@ class RequestPage extends pm_page {
 
                 // Create the new class if we are using an existing course, or if
                 // create_class_with_course is on.
-                if (!empty($request->courseid) || !empty($CFG->block_course_request_create_class_with_course)) {
+                if (!empty($request->courseid) || !empty($CFG->block_courserequest_create_class_with_course)) {
                     require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
                     $clsdata = array(
                         'name'            => $request->title,
@@ -294,8 +292,7 @@ class RequestPage extends pm_page {
                     $newclass = new pmclass($clsdata);
                     $newclass->autocreate = false;
 
-                    $set_class_fields = !isset($CFG->block_course_request_use_class_fields) ||
-                                        !empty($CFG->block_course_request_use_class_fields);
+                    $set_class_fields = !isset($CFG->block_courserequest_use_class_fields) || !empty($CFG->block_courserequest_use_class_fields);
 
                     if ($set_class_fields) {
                         // class fields are enabled, so add the relevant data
@@ -308,14 +305,14 @@ class RequestPage extends pm_page {
                 // Update the request record to mark it as being approved.
                 $request->requeststatus = 'approved';
                 $request->statusnote = '';
-                $DB->update_record('block_course_request', $request); // TBV: addslashes_object()
+                $DB->update_record('block_courserequest', $request); // TBV: addslashes_object()
 
                 // assign role to requester in the newly created class
                 if (!empty($newclass->id)) {
-                    if (isset($CFG->block_course_request_class_role) && $CFG->block_course_request_class_role) {
+                    if (isset($CFG->block_courserequest_class_role) && $CFG->block_courserequest_class_role) {
                         $context = \local_elisprogram\context\pmclass::instance($newclass->id);
                         // TBD: role_assign() now throws exceptions!
-                        role_assign($CFG->block_course_request_class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
+                        role_assign($CFG->block_courserequest_class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
                     }
                 }
 
@@ -324,12 +321,12 @@ class RequestPage extends pm_page {
                     moodle_attach_class($newclass->id, 0, '', true, true, true);
 
                     // copy role over into Moodle course
-                    if (isset($CFG->block_course_request_class_role) && $CFG->block_course_request_class_role) {
+                    if (isset($CFG->block_courserequest_class_role) && $CFG->block_courserequest_class_role) {
                         require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
                         if ($class_moodle_record = $DB->get_record(classmoodlecourse::TABLE, array('classid' => $newclass->id))) {
                             $context = context_course::instance($class_moodle_record->moodlecourseid);
                             // TBD: role_assign() now throws exceptions!
-                            role_assign($CFG->block_course_request_class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
+                            role_assign($CFG->block_courserequest_class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
                         }
                     }
                 }
@@ -344,21 +341,21 @@ class RequestPage extends pm_page {
                 $request->newcourseid = $courseid;
 
                 // calculate the actual message
-                $notice = block_course_request_get_approval_message($request);
+                $notice = block_courserequest_get_approval_message($request);
 
                 // send it to the requester
                 notification::notify($notice, $DB->get_record('user', array('id' => $request->userid)));
 
-                print_string('request_submitted_and_auto_approved', 'block_course_request');
+                print_string('request_submitted_and_auto_approved', 'block_courserequest');
             } else {
                 // find users with approve capabilities in the system context
-                $admin = get_users_by_capability($syscontext, 'block/course_request:approve');
+                $admin = get_users_by_capability($syscontext, 'block/courserequest:approve');
 
                 foreach ($admin as $userto) {
-                    notification::notify(get_string('new_request_notification', 'block_course_request', $data), $userto);
+                    notification::notify(get_string('new_request_notification', 'block_courserequest', $data), $userto);
                 }
 
-                print_string('request_submitted', 'block_course_request');
+                print_string('request_submitted', 'block_courserequest');
 
             }
             redirect($this->url);
@@ -391,7 +388,7 @@ class RequestPage extends pm_page {
      */
     function print_list_view($items, $columns, $formatters = array()) {
         if (empty($items)) {
-            echo '<div>'. get_string('no_requests', 'block_course_request') .'</div>';
+            echo '<div>'.get_string('no_requests', 'block_courserequest').'</div>';
             return;
         }
 
@@ -429,7 +426,7 @@ class RequestPage extends pm_page {
             $sort = $sort .' '. $dir;
         }
 
-        $requests = $DB->get_records('block_course_request', array('userid' => $USER->id), $sort);
+        $requests = $DB->get_records('block_courserequest', array('userid' => $USER->id), $sort);
 
         if (!empty($requests)) {
             return $requests;
@@ -476,23 +473,25 @@ class users_requests_page_table extends display_table {
     function get_item_display_requestnotice($column, $item) {
         global $OUTPUT;
         if (!empty($item->statusnote)) {
-            $link = new moodle_url('/blocks/course_request/displaynote.php',
-                                   array('id' => $item->id));
+            $link = new moodle_url('/blocks/courserequest/displaynote.php', array('id' => $item->id));
             $action = new popup_action('click', $link, 'view_'. $item->id,
-                              array('title' => get_string('blockname', 'block_course_request'),
-                                    'menubar' => false, 'location' => false,
-                                    'toolbar' => false, 'directories' => false,
-                                    'scrollbars' => true, 'status' => true,
-                                    'height' => 300, 'width' => 500));
-            $retval = $OUTPUT->action_link($link, get_string('view', 'block_course_request'), $action);
+                    array(
+                        'title' => get_string('blockname', 'block_courserequest'),
+                        'menubar' => false, 'location' => false,
+                        'toolbar' => false, 'directories' => false,
+                        'scrollbars' => true, 'status' => true,
+                        'height' => 300, 'width' => 500
+                    )
+            );
+            $retval = $OUTPUT->action_link($link, get_string('view', 'block_courserequest'), $action);
            /* above WAS:
              $retval = link_to_popup_window(
-                          "{$CFG->wwwroot}/blocks/course_request/displaynote.php?id={$item->id}",
-                           'view_'. $item->id, get_string('view', 'block_course_request'),
+                          "{$CFG->wwwroot}/blocks/courserequest/displaynote.php?id={$item->id}",
+                           'view_'. $item->id, get_string('view', 'block_courserequest'),
                            400, 500, null, null, true);
            */
         } else {
-            $retval = get_string('none', 'block_course_request');
+            $retval = get_string('none', 'block_courserequest');
         }
 
         return $retval;
@@ -514,4 +513,3 @@ class users_requests_page_table extends display_table {
         return false;
     }
 }
-

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @package    block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -33,7 +32,7 @@ $string['add_course_field'] = 'Add Course Field';
 $string['add_field_class'] = 'Add another class instance field';
 $string['add_field_course'] = 'Add another course description field';
 $string['blockname'] = 'Class Request';
-$string['block/course_request:approve'] = 'Approve or deny pending course requests';
+$string['block/courserequest:approve'] = 'Approve or deny pending course requests';
 
 $string['class_role'] = 'Class Instance Role';
 $string['classes_requested'] = 'Requested Class Instances';
@@ -48,10 +47,10 @@ $string['configuse_course_fields'] = 'Allow course field information to be added
 $string['configuse_template_by_default'] = 'If enabled, requests will default to enabling the option of associating CM classes with Moodle courses (effective only for requesting users with the appropriate approval capability set).';
 $string['configcreate_class_with_course'] = 'If enabled, requests for a new course will also create a new class.  Otherwise, a course will be created without a class.';
 $string['course'] = 'Course Description';
-$string['course_request:addinstance'] = 'Add a new Class Request block';
-$string['course_request:approve'] = 'Approve class requests';
-$string['course_request:config'] = 'Configure class request form';
-$string['course_request:request'] = 'Request creation of new classes';
+$string['courserequest:addinstance'] = 'Add a new Class Request block';
+$string['courserequest:approve'] = 'Approve class requests';
+$string['courserequest:config'] = 'Configure class request form';
+$string['courserequest:request'] = 'Request creation of new classes';
 $string['course_role'] = 'Course Description Role';
 $string['courserequestpages'] = 'Class Request Page';
 $string['create_class_with_course'] = 'Create a class when creating a new course description';
@@ -138,4 +137,3 @@ $string['use_course_template'] = 'Use Course Template';
 
 $string['view'] = 'View';
 $string['view_request'] = 'View Request';
-

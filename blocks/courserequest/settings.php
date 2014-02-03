@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage blocks-course_request
+ * @package    block_courserequest
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2011 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -35,22 +34,21 @@ foreach ($roles as $role) {
     $options[$role->id] = !empty($role->name) ? $role->name : $role->shortname;
 }
 
-$settings->add(new admin_setting_configselect('block_course_request_course_role', get_string('course_role', 'block_course_request'),
-                   get_string('configcourse_role', 'block_course_request'), '0', $options));
+$settings->add(new admin_setting_configselect('block_courserequest_course_role', get_string('course_role', 'block_courserequest'),
+        get_string('configcourse_role', 'block_courserequest'), '0', $options));
 
-$settings->add(new admin_setting_configselect('block_course_request_class_role', get_string('class_role', 'block_course_request'),
-                   get_string('configclass_role', 'block_course_request'), '0', $options));
+$settings->add(new admin_setting_configselect('block_courserequest_class_role', get_string('class_role', 'block_courserequest'),
+        get_string('configclass_role', 'block_courserequest'), '0', $options));
 
 //checkbox for enabling the creation of Moodle courses from templates
-$settings->add(new admin_setting_configcheckbox('block_course_request_use_template_by_default', get_string('use_template_by_default', 'block_course_request'),
-                   get_string('configuse_template_by_default', 'block_course_request'), 0));
+$settings->add(new admin_setting_configcheckbox('block_courserequest_use_template_by_default', get_string('use_template_by_default', 'block_courserequest'),
+        get_string('configuse_template_by_default', 'block_courserequest'), 0));
 
-$settings->add(new admin_setting_configcheckbox('block_course_request_use_course_fields', get_string('use_course_fields', 'block_course_request'),
-               get_string('configuse_course_fields', 'block_course_request'), 0));
+$settings->add(new admin_setting_configcheckbox('block_courserequest_use_course_fields', get_string('use_course_fields', 'block_courserequest'),
+        get_string('configuse_course_fields', 'block_courserequest'), 0));
 
-$settings->add(new admin_setting_configcheckbox('block_course_request_use_class_fields', get_string('use_class_fields', 'block_course_request'),
-               get_string('configuse_class_fields', 'block_course_request'), 1));
+$settings->add(new admin_setting_configcheckbox('block_courserequest_use_class_fields', get_string('use_class_fields', 'block_courserequest'),
+        get_string('configuse_class_fields', 'block_courserequest'), 1));
 
-$settings->add(new admin_setting_configcheckbox('block_course_request_create_class_with_course', get_string('create_class_with_course', 'block_course_request'),
-               get_string('configcreate_class_with_course', 'block_course_request'), 1));
-
+$settings->add(new admin_setting_configcheckbox('block_courserequest_create_class_with_course', get_string('create_class_with_course', 'block_courserequest'),
+        get_string('configcreate_class_with_course', 'block_courserequest'), 1));

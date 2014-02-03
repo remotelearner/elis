@@ -1019,7 +1019,7 @@ function pmclass_get_listing($sort = 'crsname', $dir = 'ASC', $startrec = 0,
     //assert that classes returned were requested by the current user using the course / class
     //request block and approved
     if (!empty($extrafilters['show_my_approved_classes'])) {
-        $join .= 'JOIN {block_course_request} request
+        $join .= 'JOIN {block_courserequest} request
                   ON cls.id = request.classid
                   AND request.userid = '.$USER->id.'
                  ';

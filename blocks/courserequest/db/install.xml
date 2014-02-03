@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/course_request/db" VERSION="20100624" COMMENT="XMLDB file for Moodle blocks/course_request"
+<XMLDB PATH="blocks/courserequest/db" VERSION="20100624" COMMENT="XMLDB file for Moodle blocks/courserequest"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-    <TABLE NAME="block_course_request" COMMENT="Stores an indivudual request" NEXT="block_course_request_fields">
+    <TABLE NAME="block_courserequest" COMMENT="Stores an indivudual request" NEXT="block_courserequest_fields">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="title"/>
@@ -27,7 +27,7 @@
         <KEY NAME="modifiedby" TYPE="foreign" FIELDS="modifiedby" REFTABLE="user" REFFIELDS="id" PREVIOUS="userid"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_course_request_fields" COMMENT="Associates custom fields with the course request form" PREVIOUS="block_course_request" NEXT="block_course_request_data">
+    <TABLE NAME="block_courserequest_fields" COMMENT="Associates custom fields with the course request form" PREVIOUS="block_courserequest" NEXT="block_courserequest_data">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="fieldid"/>
         <FIELD NAME="fieldid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="sortorder"/>
@@ -39,7 +39,7 @@
         <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="local_eliscore_field" REFFIELDS="id" PREVIOUS="primary"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="block_course_request_data" COMMENT="Keeps track of custom field values in individual course requests" PREVIOUS="block_course_request_fields">
+    <TABLE NAME="block_courserequest_data" COMMENT="Keeps track of custom field values in individual course requests" PREVIOUS="block_courserequest_fields">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="requestid"/>
         <FIELD NAME="requestid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="fieldid"/>
@@ -50,7 +50,7 @@
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="requestid"/>
-        <KEY NAME="requestid" TYPE="foreign" FIELDS="requestid" REFTABLE="block_course_request" REFFIELDS="id" PREVIOUS="primary" NEXT="fieldid"/>
+        <KEY NAME="requestid" TYPE="foreign" FIELDS="requestid" REFTABLE="block_courserequest" REFFIELDS="id" PREVIOUS="primary" NEXT="fieldid"/>
         <KEY NAME="fieldid" TYPE="foreign" FIELDS="fieldid" REFTABLE="local_eliscore_field" REFFIELDS="id" PREVIOUS="requestid"/>
       </KEYS>
     </TABLE>
