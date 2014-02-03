@@ -29,6 +29,15 @@ function xmldb_local_elisprogram_install() {
     require_once($CFG->dirroot.'/blocks/curr_admin/lib.php');
     require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php');
 
+    // Install custom context levels.
+     \local_eliscore\context\helper::set_custom_levels(\local_elisprogram\context\contextinfo::get_contextinfo());
+     \local_eliscore\context\helper::install_custom_levels();
+
+    // Initialize custom context levels.
+    context_helper::reset_levels();
+    \local_eliscore\context\helper::reset_levels();
+    \local_eliscore\context\helper::init_levels();
+
     // Migrate component.
     $migrator = new \local_elisprogram\install\migration\elis26();
     if ($migrator->old_component_installed() === true) {
@@ -36,12 +45,12 @@ function xmldb_local_elisprogram_install() {
 
         // Migrate old custom context levels.
         $ctxoldnewmap = array(
-            1001 => 11,
-            1002 => 12,
-            1003 => 13,
-            1004 => 14,
-            1005 => 15,
-            1006 => 16
+            1001 => \local_eliscore\context\helper::get_level_from_name('curriculum'),
+            1002 => \local_eliscore\context\helper::get_level_from_name('track'),
+            1003 => \local_eliscore\context\helper::get_level_from_name('course'),
+            1004 => \local_eliscore\context\helper::get_level_from_name('class'),
+            1005 => \local_eliscore\context\helper::get_level_from_name('user'),
+            1006 => \local_eliscore\context\helper::get_level_from_name('cluster')
         );
         foreach ($ctxoldnewmap as $oldctxlevel => $newctxlevel) {
             // Update context table.
@@ -51,6 +60,16 @@ function xmldb_local_elisprogram_install() {
 
             // Update role context levels.
             $sql = 'UPDATE {role_context_levels} SET contextlevel = ? WHERE contextlevel = ?';
+            $params = array($newctxlevel, $oldctxlevel);
+            $DB->execute($sql, $params);
+
+            // Update custom field context levels.
+            $sql = 'UPDATE {local_eliscore_field_clevels} SET contextlevel = ? WHERE contextlevel = ?';
+            $params = array($newctxlevel, $oldctxlevel);
+            $DB->execute($sql, $params);
+
+            // Update custom field category context levels.
+            $sql = 'UPDATE {local_eliscore_fld_cat_ctx} SET contextlevel = ? WHERE contextlevel = ?';
             $params = array($newctxlevel, $oldctxlevel);
             $DB->execute($sql, $params);
         }
@@ -68,15 +87,6 @@ function xmldb_local_elisprogram_install() {
             $DB->update_record('role_capabilities', $updaterec);
         }
     }
-
-    // Install custom context levels.
-     \local_eliscore\context\helper::set_custom_levels(\local_elisprogram\context\contextinfo::get_contextinfo());
-     \local_eliscore\context\helper::install_custom_levels();
-
-    // Initialize custom context levels.
-    context_helper::reset_levels();
-    \local_eliscore\context\helper::reset_levels();
-    \local_eliscore\context\helper::init_levels();
 
     //make sure the site has exactly one curr admin block instance
     //that is viewable everywhere
