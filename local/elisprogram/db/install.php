@@ -30,8 +30,8 @@ function xmldb_local_elisprogram_install() {
     require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php');
 
     // Install custom context levels.
-     \local_eliscore\context\helper::set_custom_levels(\local_elisprogram\context\contextinfo::get_contextinfo());
-     \local_eliscore\context\helper::install_custom_levels();
+    \local_eliscore\context\helper::set_custom_levels(\local_elisprogram\context\contextinfo::get_contextinfo());
+    \local_eliscore\context\helper::install_custom_levels();
 
     // Initialize custom context levels.
     context_helper::reset_levels();
