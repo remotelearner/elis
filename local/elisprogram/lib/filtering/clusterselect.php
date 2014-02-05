@@ -69,6 +69,7 @@ class generalized_filter_clusterselect extends generalized_filter_equalityselect
         $contexts = get_contexts_by_capability_for_user('cluster', $capability, $USER->id);
 
         //set up cluster listing
+        $choices_array = array();
         if ($records = $this->cluster_dropdown_get_listing($contexts)) {
             foreach ($records as $record) {
                 if (empty($choices_array[$record->id])) {
