@@ -489,7 +489,7 @@ class scheduling_page extends workflowpage {
      * @return  boolean  true if allowed, otherwise false
      */
     function can_do_listinstancejobs() {
-        if (has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('local/elisreports:manageschedules', context_systen::instance())) {
             //user can manage schedules globally, so allow access
             return true;
         }
@@ -514,7 +514,7 @@ class scheduling_page extends workflowpage {
     function can_do_edit() {
         global $USER, $DB;
 
-        if (has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('local/elisreports:manageschedules', context_system::instance())) {
             //user can manage schedules globally, so allow access
             return true;
         }
@@ -623,7 +623,7 @@ class scheduling_page extends workflowpage {
     public function can_do_list() {
         global $CFG, $USER;
 
-        if (has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('local/elisreports:manageschedules', context_system::instance())) {
             //user can manage schedules globally, so allow access
             return true;
         }
@@ -675,7 +675,7 @@ class scheduling_page extends workflowpage {
     function can_do_schedule_action($scheduleid, $report_shortname = '') {
         global $USER, $DB;
 
-        if (has_capability('local/elisreports:manageschedules', get_context_instance(CONTEXT_SYSTEM))) {
+        if (has_capability('local/elisreports:manageschedules', context_system::instance())) {
             //permitted, since allowed globally
             return true;
         }

@@ -357,7 +357,7 @@ class individual_course_progress_report extends table_report {
 
             if (function_exists($gettypesfunc)) {
    	            //look through supported "types" for resource
-                if ($types = $gettypesfunc()) {
+                if (($types = $gettypesfunc()) && $types !== MOD_SUBTYPE_NO_CHILDREN) {
                     foreach($types as $type) {
                         if ($type->modclass == MOD_CLASS_RESOURCE) {
                             $result[] = $modname;

@@ -27,7 +27,7 @@ require_once(dirname(__FILE__) .'/../../config.php');
 require_once('php_report_base.php');
 
 //needed to satisfy the base page type
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_context(context_system::instance());
 $PAGE->set_pagelayout('embedded'); // TBV
 $PAGE->set_pagetype('elis'); // TBV
 

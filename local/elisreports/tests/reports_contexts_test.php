@@ -46,7 +46,7 @@ class reports_contexts_testcase extends elis_database_test {
      */
     protected function load_userset_csv_data() {
         $dataset = $this->createCsvDataSet(array(
-            userset::TABLE => elis::component_file('program', 'tests/fixtures/userset.csv')
+            userset::TABLE => elis::component_file('elisprogram', 'tests/fixtures/userset.csv')
         ));
         $this->loadDataSet($dataset);
     }

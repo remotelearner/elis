@@ -417,9 +417,9 @@ class nonstarter_report extends table_report {
       */
 
         $sql .= ' LEFT JOIN {'.classmoodlecourse::TABLE.'} clsm ON cls.id = clsm.classid
-           JOIN {'.student::TABLE.'} clsenr ON clsenr.classid = cls.id
+           JOIN {'.student::TABLE."} clsenr ON clsenr.classid = cls.id
             AND clsenr.completestatusid = {$stustatus}
-           JOIN {'.user::TABLE'.} crlmusr ON clsenr.userid = crlmusr.id
+           JOIN {".user::TABLE.'} crlmusr ON clsenr.userid = crlmusr.id
            JOIN {user} u ON u.idnumber = crlmusr.idnumber
             AND NOT EXISTS
                (SELECT * FROM {'.student_grade::TABLE.'} ccg

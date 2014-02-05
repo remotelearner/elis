@@ -27,7 +27,7 @@ require_once('../../../config.php');
 require_once($CFG->dirroot . '/local/elisreports/runschedule.php');
 require_once($CFG->dirroot . '/local/elisreports/sharedlib.php');
 
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_context(context_system::instance());
 
 //database record id of the schedule to run
 $scheduleid = required_param('scheduleid', PARAM_INT);

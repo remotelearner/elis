@@ -84,6 +84,7 @@ class course_usage_summary_report extends icon_config_report {
         require_once($CFG->dirroot .'/local/eliscore/lib/filtering/date.php');
         require_once($CFG->dirroot .'/local/eliscore/lib/filtering/selectany.php');
 
+        require_once($CFG->dirroot.'/local/eliscore/plugins/etl/etl.php');
     }
 
     /**
@@ -342,7 +343,7 @@ class course_usage_summary_report extends icon_config_report {
 
             if (function_exists($gettypesfunc)) {
    	            //look through supported "types" for resource
-                if ($types = $gettypesfunc()) {
+                if (($types = $gettypesfunc()) && $types !== MOD_SUBTYPE_NO_CHILDREN) {
                     foreach($types as $type) {
                         if ($type->modclass == MOD_CLASS_RESOURCE) {
                             $result[] = $modname;
@@ -765,7 +766,7 @@ class course_usage_summary_report extends icon_config_report {
 
         //main query
         $sql = 'SELECT SUM(activity.duration) AS numsecs
-                  FROM {etl_user_activity} activity
+                  FROM {'.ETL_TABLE.'} activity
                   JOIN {user} mdl_usr
                     ON activity.userid = mdl_usr.id
                   JOIN {'. user::TABLE .'} usr
@@ -1104,7 +1105,7 @@ class course_usage_summary_report extends icon_config_report {
         // Only generate if any/all were selected from the filter, in this case check for 0
         $search_string = get_string('curriculumidin','rlreport_course_usage_summary');
         if (!stristr($this->filter_statement, $search_string) &&
-            !has_capability($this->access_capability,get_context_instance(CONTEXT_SYSTEM), $this->userid)) {
+            !has_capability($this->access_capability, context_system::instance(), $this->userid)) {
             $this->needs_permission = true;
             return true;
         } else {

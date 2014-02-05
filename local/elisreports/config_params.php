@@ -40,7 +40,7 @@ $report_shortname = required_param('id', PARAM_CLEAN);
 $action = optional_param('url', null, PARAM_CLEAN);
 $perpage = optional_param('perpage', 25, PARAM_INT);
 
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_context(context_system::instance());
 if (empty($this)) {
     // Called from AJAX, set emebeddded to force formslib formcounter to 999
     $PAGE->set_pagelayout('embedded');

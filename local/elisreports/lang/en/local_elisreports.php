@@ -32,10 +32,10 @@ $string['na'] = 'N/A';
 $string['notconfigured'] = 'Please complete this block\'s configuration';
 $string['percent_symbol'] = '%';
 $string['pagetitle'] = 'Create/Modify Schedule for ELIS Report: {$a}';
-$string['pluginname'] = 'ELIS Report';
+$string['pluginname'] = 'ELIS Reports';
 
 // Capability strings.
-$string['blockname'] = 'ELIS Report';
+$string['blockname'] = 'ELIS Reports';
 $string['php_report:view'] = 'View ELIS reports';
 $string['php_report:schedule'] = 'Schedule ELIS reports';
 $string['php_report:manageschedules'] = 'Manage ELIS report schedules';

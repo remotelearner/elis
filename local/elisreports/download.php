@@ -33,7 +33,7 @@ $id = required_param('id', PARAM_CLEAN);
 $format = required_param('format', PARAM_CLEAN);
 
 //needed to satisfy base page requirements
-$PAGE->set_context(get_context_instance(CONTEXT_SYSTEM));
+$PAGE->set_context(context_system::instance());
 
 //load filter classes
 php_report_filtering_require_dependencies();
