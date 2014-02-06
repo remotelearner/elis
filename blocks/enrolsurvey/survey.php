@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage enrol_survey
+ * @package    block_enrolsurvey
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 //define('DEBUG_SURVEY', 1);
 
-require_once(dirname(__FILE__) .'/../../config.php');
-require_once($CFG->dirroot .'/blocks/enrol_survey/forms.php');
-require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
+require_once(dirname(__FILE__).'/../../config.php');
+require_once($CFG->dirroot.'/blocks/enrolsurvey/forms.php');
+require_once($CFG->dirroot.'/blocks/enrolsurvey/lib.php');
 require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
 require_once($CFG->dirroot.'/local/elisprogram/lib/lib.php');
 require_once($CFG->dirroot.'/local/elisprogram/lib/deprecatedlib.php'); // cm_get_crlmuserid()
@@ -38,7 +37,7 @@ global $COURSE, $DB, $ME, $OUTPUT, $PAGE, $USER, $block;
 
 $instanceid = required_param('id', PARAM_INT);
 $instance = $DB->get_record('block_instances', array('id' => $instanceid));
-$block = block_instance('enrol_survey', $instance);
+$block = block_instance('enrolsurvey', $instance);
 
 $mymoodle = optional_param('mymoodle', 0, PARAM_INT);
 $courseid = optional_param('courseid', 1, PARAM_INT);
@@ -59,10 +58,10 @@ if ($COURSE->id == SITEID) {
     $context = context_course::instance($COURSE->id);
 }
 
-require_capability('block/enrol_survey:take', $context);
+require_capability('block/enrolsurvey:take', $context);
 
 if (cm_get_crlmuserid($USER->id) === false) { // ***TBD***
-    print_error(get_string('noelisuser', 'block_enrol_survey'));
+    print_error(get_string('noelisuser', 'block_enrolsurvey'));
 }
 
 //set the page context to either the system or course context
@@ -75,15 +74,15 @@ $elis_user->load();
 $courseobj = new stdClass();
 $courseobj->courseid = $course->id;
 $courseobj->mymoodle = $mymoodle;
-$survey_form = new survey_form($CFG->wwwroot .'/blocks/enrol_survey/survey.php?id='. $instanceid, $courseobj);
+$surveyform = new survey_form($CFG->wwwroot.'/blocks/enrolsurvey/survey.php?id='.$instanceid, $courseobj);
 
-if ($survey_form->is_cancelled()) {
+if ($surveyform->is_cancelled()) {
   if ($mymoodle == 1) {
     redirect($CFG->wwwroot .'/my');
   } else {
     redirect($CFG->wwwroot .'/course/view.php?id=' . $course->id);
   }
-} else if ($formdata = $survey_form->get_data()) {
+} else if ($formdata = $surveyform->get_data()) {
     $customfields = get_customfields();
     $profilefields = get_profilefields();
 
@@ -98,7 +97,7 @@ if ($survey_form->is_cancelled()) {
         //var_dump($moodle_user);
         $tmp = ob_get_contents();
         ob_end_clean();
-        error_log("/blocks/enrol_survey/survey.php: data = {$tmp}");
+        error_log("/blocks/enrolsurvey/survey.php: data = {$tmp}");
     }
 
     // $eu_obj = $elis_user->to_object();
@@ -110,7 +109,7 @@ if ($survey_form->is_cancelled()) {
                     $elis_user->__set($key, $fd);
                 } catch (Exception $e) {
                     // ignore invalid property exception!
-                    error_log("/blocks/enrol_survey/survey.php: Warning - invalid property of local_elisprogram_usr: '{$key}'");
+                    error_log("/blocks/enrolsurvey/survey.php: Warning - invalid property of local_elisprogram_usr: '{$key}'");
                 }
                 if ($key == 'language') { // special case $USER->lang
                     $key = 'lang';
@@ -150,7 +149,7 @@ if ($survey_form->is_cancelled()) {
         $dataobject = new object();
         $dataobject->blockinstanceid = $instanceid;
         $dataobject->userid = $USER->id;
-        $DB->insert_record('block_enrol_survey_taken', $dataobject);
+        $DB->insert_record('block_enrolsurvey_taken', $dataobject);
     }
 
     if (!empty($formdata->save_exit)) {
@@ -172,7 +171,7 @@ if (!empty($customdata)) {
     }
 }
 
-$blockname = get_string('blockname', 'block_enrol_survey');
+$blockname = get_string('blockname', 'block_enrolsurvey');
 $PAGE->set_pagelayout('standard'); // TBV
 $PAGE->set_pagetype('elis'); // TBV
 $PAGE->set_context($context);
@@ -192,7 +191,7 @@ if ($mymoodle) {
 if (isset($block->config->title)) {
     $pagetitle = $block->config->title;
 } else {
-    $pagetitle = get_string('takepage', 'block_enrol_survey');
+    $pagetitle = get_string('takepage', 'block_enrolsurvey');
 }
 
 $PAGE->navbar->add($pagetitle);
@@ -200,7 +199,7 @@ $PAGE->blocks->add_regions(array('side-pre', 'side-post')); // TBV ?
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading($pagetitle);
-$survey_form->set_data($toform);
-$survey_form->display();
+$surveyform->set_data($toform);
+$surveyform->display();
 echo $OUTPUT->footer();
 

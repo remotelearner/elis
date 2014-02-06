@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage enrol_survey
+ * @package    block_enrolsurvey
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
-    'block/enrol_survey:edit' => array(
+    'block/enrolsurvey:edit' => array(
         'riskbitmask'  => RISK_PERSONAL | RISK_DATALOSS,
         'captype'      => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -36,7 +35,7 @@ $capabilities = array(
         )
     ),
 
-    'block/enrol_survey:take' => array(
+    'block/enrolsurvey:take' => array(
         'riskbitmask'  => RISK_DATALOSS,
         'captype'      => 'write',
         'contextlevel' => CONTEXT_SYSTEM,
@@ -49,7 +48,7 @@ $capabilities = array(
         )
     ),
 
-    'block/enrol_survey:addinstance' => array(
+    'block/enrolsurvey:addinstance' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_BLOCK,
         'archetypes' => array(

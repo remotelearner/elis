@@ -1,7 +1,7 @@
-<?php //$Id$
+<?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,25 +16,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage enrol_survey
+ * @package    block_enrolsurvey
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
+require_once($CFG->dirroot.'/blocks/enrolsurvey/lib.php');
 require_once($CFG->dirroot.'/local/elisprogram/lib/deprecatedlib.php'); // cm_get_crlmuserid()
 
-class block_enrol_survey extends block_base {
+class block_enrolsurvey extends block_base {
     /**
      * block initializations
      */
     public function init() {
-        $this->title   = get_string('title', 'block_enrol_survey');
+        $this->title   = get_string('title', 'block_enrolsurvey');
         $this->version = '2010060700';
         $this->cron = HOURSECS;
     }
@@ -66,24 +65,24 @@ class block_enrol_survey extends block_base {
           $mymoodle = 1;
         }
 
-        if (has_capability('block/enrol_survey:edit', $context)) {
-            $editpage = get_string('editpage', 'block_enrol_survey');
+        if (has_capability('block/enrolsurvey:edit', $context)) {
+            $editpage = get_string('editpage', 'block_enrolsurvey');
 
             $this->content->text .= "<a
-href=\"{$CFG->wwwroot}/blocks/enrol_survey/edit_survey.php?id={$this->instance->id}&courseid={$COURSE->id}&mymoodle={$mymoodle}\">$editpage</a><br
+href=\"{$CFG->wwwroot}/blocks/enrolsurvey/edit_survey.php?id={$this->instance->id}&courseid={$COURSE->id}&mymoodle={$mymoodle}\">$editpage</a><br
 />";
         }
 
-        if (has_capability('block/enrol_survey:take', $context) &&
+        if (has_capability('block/enrolsurvey:take', $context) &&
             cm_get_crlmuserid($USER->id) !== false) {
             // MUST have ELIS user record to take survey!
             if(!empty($this->config->force_user) && !is_survey_taken($USER->id, $this->instance->id)) {
-                redirect("{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}");
+                redirect("{$CFG->wwwroot}/blocks/enrolsurvey/survey.php?id={$this->instance->id}");
             }
 
-            $takepage = get_string('takepage', 'block_enrol_survey');
+            $takepage = get_string('takepage', 'block_enrolsurvey');
             $this->content->text .= "<a
-href=\"{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}&courseid={$COURSE->id}&mymoodle={$mymoodle}\">$takepage</a><br
+href=\"{$CFG->wwwroot}/blocks/enrolsurvey/survey.php?id={$this->instance->id}&courseid={$COURSE->id}&mymoodle={$mymoodle}\">$takepage</a><br
 />";
         }
 
@@ -98,7 +97,7 @@ href=\"{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}&c
         if (!empty($this->config->title)) {
             $this->title = $this->config->title;
         } else {
-            $this->config->title = get_string('title', 'block_enrol_survey');
+            $this->config->title = get_string('title', 'block_enrolsurvey');
         }
     }
 
@@ -152,11 +151,11 @@ href=\"{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}&c
         $now = time();
 
         $sql = "SELECT * FROM {block_instances}
-                WHERE blockname = 'enrol_survey' "; // ***TBD***
+                WHERE blockname = 'enrolsurvey' "; // ***TBD***
         $block_instances = $DB->get_records_sql($sql);
         if (!empty($block_instances)) {
             foreach ($block_instances as $survey) {
-                $block = block_instance('enrol_survey', $survey);
+                $block = block_instance('enrolsurvey', $survey);
 
                 if (!empty($block->config) && !empty($block->config->cron_time)) {
                     if (!isset($block->config->last_cron)) {
@@ -166,7 +165,7 @@ href=\"{$CFG->wwwroot}/blocks/enrol_survey/survey.php?id={$this->instance->id}&c
                     if (($block->config->last_cron + $block->config->cron_time) <= $now) {
                         $block->config->last_cron = $now;
 
-                        $DB->delete_records('block_enrol_survey_taken', array('blockinstanceid' => $survey->id));
+                        $DB->delete_records('block_enrolsurvey_taken', array('blockinstanceid' => $survey->id));
 
                         $block->instance_config_save($block->config);
                     }

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage enrol_survey
+ * @package    block_enrolsurvey
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot .'/lib/formslib.php');
-require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
+require_once($CFG->dirroot.'/lib/formslib.php');
+require_once($CFG->dirroot.'/blocks/enrolsurvey/lib.php');
 
 class edit_survey_form {
     private $action_url;
@@ -35,7 +34,7 @@ class edit_survey_form {
 
     /**
      * set the form's action url on creation
-     * 
+     *
      * @param string $url the form's action url
      */
     public function __construct($url, $courseobj) {
@@ -48,7 +47,7 @@ class edit_survey_form {
      */
     public function display() {
         global $CFG;
-        
+
         $fields = get_fields();
         $questions = get_questions();
         $checked = get_forceuser() ? 'checked' : '';
@@ -59,9 +58,9 @@ class edit_survey_form {
         if (!empty($questions)) {
             print '<table cellpadding="2">';
             print '<tr align="right">';
-            print '<th><span style="margin-right:10px;">' . get_string('name_on_form', 'block_enrol_survey') . '</span></th>';
-            print '<th><span style="margin-right:10px;">' . get_string('existing_profile_fileds', 'block_enrol_survey') . '</span></th>';
-            print '<th><span style="margin-right:10px;">' . get_string('delete', 'block_enrol_survey') . '</span></th>';
+            print '<th><span style="margin-right:10px;">'.get_string('name_on_form', 'block_enrolsurvey').'</span></th>';
+            print '<th><span style="margin-right:10px;">'.get_string('existing_profile_fileds', 'block_enrolsurvey').'</span></th>';
+            print '<th><span style="margin-right:10px;">'.get_string('delete', 'block_enrolsurvey').'</span></th>';
             print '</tr>';
 
             foreach ($questions as $key => $value) {
@@ -81,7 +80,7 @@ class edit_survey_form {
                         print '<option value="' . $f . '">' . $f . '</option>';
                     }
                 }
-                
+
                 print "</select></td>";
 
                 print '<td><input type="checkbox" name="delete['. $key . ']" value="delete['. $key . ']" /></td>';
@@ -92,15 +91,15 @@ class edit_survey_form {
         }
 
         print '<p>';
-        print '<div><label>' . get_string('force_user', 'block_enrol_survey') . ': </label><input type="checkbox" name="force_user" ' . $checked . ' /></div>';
+        print '<div><label>'.get_string('force_user', 'block_enrolsurvey').': </label><input type="checkbox" name="force_user" '.$checked.' /></div>';
         print '</p>';
 
-        print '<div style="margin-top:5px"><input type="submit" name="add_profilefield" value="' . get_string('profile_field', 'block_enrol_survey') . '" /></div>';
-        print '<div style="margin-top:5px"><input type="submit" name="retake" value="' . get_string('retake', 'block_enrol_survey') . '" /></div>';
+        print '<div style="margin-top:5px"><input type="submit" name="add_profilefield" value="'.get_string('profile_field', 'block_enrolsurvey').'" /></div>';
+        print '<div style="margin-top:5px"><input type="submit" name="retake" value="'.get_string('retake', 'block_enrolsurvey').'" /></div>';
 
         print '<div style="margin-top:10px">';
-        print '<input type="submit" name="update" value="' . get_string('update', 'block_enrol_survey') . '" />';
-        print '<input type="submit" name="exit" value="' . get_string('exit', 'block_enrol_survey') . '" />';
+        print '<input type="submit" name="update" value="'.get_string('update', 'block_enrolsurvey').'" />';
+        print '<input type="submit" name="exit" value="'.get_string('exit', 'block_enrolsurvey').'" />';
         print '<input type="hidden" name="courseid" value="' . $this->courseobj->courseid . '" />';
         print '<input type="hidden" name="mymoodle" value="' . $this->courseobj->mymoodle . '" />';
         print '</div>';
@@ -164,8 +163,8 @@ class survey_form extends moodleform {
         }
 
         $group = array();
-        $group[] =& $mform->createElement('submit', 'save_exit', get_string('save_exit', 'block_enrol_survey'));
-        $group[] =& $mform->createElement('submit', 'update', get_string('update', 'block_enrol_survey'));
+        $group[] =& $mform->createElement('submit', 'save_exit', get_string('save_exit', 'block_enrolsurvey'));
+        $group[] =& $mform->createElement('submit', 'update', get_string('update', 'block_enrolsurvey'));
         $group[] =& $mform->createElement('cancel');
         $mform->addElement('hidden', 'courseid', $this->_customdata->courseid);
         $mform->setType('courseid', PARAM_INT);

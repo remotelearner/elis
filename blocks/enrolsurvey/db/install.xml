@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="blocks/enrol_survey/db" VERSION="2010012900" COMMENT="XMLDB file for Moodle blocks/enrol_survey"
+<XMLDB PATH="blocks/enrolsurvey/db" VERSION="2010012900" COMMENT="XMLDB file for Moodle blocks/enrolsurvey"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-      <TABLE NAME="block_enrol_survey_taken" COMMENT="whether or not a user has taken the survey" >
+      <TABLE NAME="block_enrolsurvey_taken" COMMENT="whether or not a user has taken the survey" >
           <FIELDS>
             <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="blockinstanceid"/>
             <FIELD NAME="blockinstanceid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>

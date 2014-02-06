@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage enrol_survey
+ * @package    block_enrolsurvey
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 require_once(dirname(__FILE__) .'/../../config.php');
-require_once($CFG->dirroot .'/blocks/enrol_survey/forms.php');
-require_once($CFG->dirroot .'/blocks/enrol_survey/lib.php');
+require_once($CFG->dirroot.'/blocks/enrolsurvey/forms.php');
+require_once($CFG->dirroot.'/blocks/enrolsurvey/lib.php');
 
 global $COURSE, $DB, $ME, $OUTPUT, $PAGE, $block;
 
@@ -47,7 +46,7 @@ $profile_fields    = optional_param('profile_field', 0, PARAM_CLEAN);
 $delete            = optional_param('delete', 0, PARAM_CLEAN);
 
 $instance = $DB->get_record('block_instances', array('id' => $instanceid));
-$block = block_instance('enrol_survey', $instance);
+$block = block_instance('enrolsurvey', $instance);
 
 if (fnmatch($block->instance->pagetypepattern, 'course-view-') && !empty($COURSE->id)) {
     require_course_login($COURSE->id); // TBD
@@ -90,7 +89,7 @@ if (!empty($delete)) {
 } else if (!empty($exit)) {
     $dbupdate = true;
 } else if (!empty($retake)) {
-    $DB->delete_records('block_enrol_survey_taken', array('blockinstanceid' => $instanceid));
+    $DB->delete_records('block_enrolsurvey_taken', array('blockinstanceid' => $instanceid));
 }
 
 if ($dbupdate) {
@@ -99,7 +98,7 @@ if ($dbupdate) {
     // NOTE: instance_config_save() does NOT update $block->config only DBtable!
     // therefore we MUST reload the block data!
     $instance = $DB->get_record('block_instances', array('id' => $instanceid));
-    $block = block_instance('enrol_survey', $instance);
+    $block = block_instance('enrolsurvey', $instance);
 }
 
 if (!empty($exit)) {
@@ -110,14 +109,14 @@ if (!empty($exit)) {
     }
 }
 
-require_capability('block/enrol_survey:edit', $context);
+require_capability('block/enrolsurvey:edit', $context);
 
 $courseobj = new stdClass();
 $courseobj->courseid = $course->id;
 $courseobj->mymoodle = $mymoodle;
-$edit_form = new edit_survey_form($CFG->wwwroot .'/blocks/enrol_survey/edit_survey.php?id='. $instanceid, $courseobj);
+$edit_form = new edit_survey_form($CFG->wwwroot.'/blocks/enrolsurvey/edit_survey.php?id='.$instanceid, $courseobj);
 
-$blockname = get_string('blockname', 'block_enrol_survey');
+$blockname = get_string('blockname', 'block_enrolsurvey');
 $PAGE->set_pagelayout('standard'); // TBV
 $PAGE->set_pagetype('elis'); // TBV
 $PAGE->set_context($context);
@@ -134,10 +133,10 @@ if ($mymoodle) {
     $PAGE->navbar->add($course->shortname, new moodle_url('/course/view.php?id='.$course->id));
 }
 
-$PAGE->navbar->add(get_string('editpage', 'block_enrol_survey'));
+$PAGE->navbar->add(get_string('editpage', 'block_enrolsurvey'));
 
 echo $OUTPUT->header();
-echo $OUTPUT->heading(get_string('surveysettings', 'block_enrol_survey'));
+echo $OUTPUT->heading(get_string('surveysettings', 'block_enrolsurvey'));
 $edit_form->display();
 echo $OUTPUT->footer();
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2011 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,20 +16,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @package    elis
- * @subpackage enrol_survey
+ * @package    block_enrolsurvey
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-class block_enrol_survey_edit_form extends block_edit_form {
+class block_enrolsurvey_edit_form extends block_edit_form {
     protected function specific_definition($mform) {
 
-        $mform->addElement('text', 'config_title', get_string('config_title', 'block_enrol_survey'));
+        $mform->addElement('text', 'config_title', get_string('config_title', 'block_enrolsurvey'));
         $mform->setType('config_title', PARAM_TEXT);
         $availableintervals = array(
             0        => get_string('never'),
@@ -38,7 +37,7 @@ class block_enrol_survey_edit_form extends block_edit_form {
             YEARSECS => get_string('year')
         );
 
-        $mform->addElement('select', 'config_cron_time', get_string('config_cron_time', 'block_enrol_survey'), $availableintervals);
+        $mform->addElement('select', 'config_cron_time', get_string('config_cron_time', 'block_enrolsurvey'), $availableintervals);
 
     }
 }
