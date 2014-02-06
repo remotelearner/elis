@@ -403,7 +403,7 @@ class curricula_report extends table_report {
         // Currently CSV does not do grouping headings, so convert fullname here
 
         //if ($export_format == php_report::$EXPORT_FORMAT_CSV) {
-        //    $fullname = fullname($new_record);
+        //    $fullname = php_report::fullname($new_record);
         //    $new_record->lastname = $fullname;
         //}
 
@@ -434,7 +434,7 @@ class curricula_report extends table_report {
         $single_student_report_url = "{$CFG->wwwroot}/local/elisreports/render_report_page.php?report=individual_user&userid={$datum->userid}";
 
         // Use the datum object to get first and last name for fullname
-        $fullname = fullname($datum);
+        $fullname = php_report::fullname($datum);
 
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {
             $element->lastname = "<span class=\"external_report_link\">

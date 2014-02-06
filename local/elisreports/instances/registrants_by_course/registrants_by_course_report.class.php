@@ -263,7 +263,7 @@ class registrants_by_course_report extends table_report {
             $user = new stdClass;
             $user->firstname = $record->firstname;
             $user->lastname = $record->r_student;
-            $record->r_student = fullname($user);
+            $record->r_student = php_report::fullname($user);
         }
 
         $record->curriculum_name = ($record->curriculum_name == '')

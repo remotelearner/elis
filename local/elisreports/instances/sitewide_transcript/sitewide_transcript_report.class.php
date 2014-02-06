@@ -232,7 +232,7 @@ class sitewide_transcript_report extends table_report {
      * @return  stdClass                  The reformatted record
      */
     function transform_record($record, $export_format) {
-        $record->user_id = fullname($record);
+        $record->user_id = php_report::fullname($record);
         // start-end dates
         $sdate = cm_timestamp_to_date($record->startdate, STR_DATE_FORMAT);
         $edate = !empty($record->enddate)

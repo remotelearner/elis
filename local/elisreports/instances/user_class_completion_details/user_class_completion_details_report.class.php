@@ -824,7 +824,7 @@ class user_class_completion_details_report extends user_class_completion_report 
             //label for all groupings
             $text_label = get_string('grouping_name_csv', $this->languagefile);
         }
-        $fullname_text = fullname($datum);
+        $fullname_text = php_report::fullname($datum);
         $labels[] = $this->add_grouping_header($text_label, $fullname_text, $export_format);
 
         $filters = php_report_filtering_get_active_filter_values($this->get_report_shortname(),

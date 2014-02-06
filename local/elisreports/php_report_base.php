@@ -223,6 +223,21 @@ abstract class php_report {
     }
 
     /**
+     * Returns a persons full name.
+     *
+     * Wrapper for elis_fullname() function that ensures all user fields exist.
+     *
+     * @param object $user A {@link $USER} object to get full name of.
+     * @param bool $override If true then the name will be firstname followed by lastname rather than adhering to fullnamedisplay.
+     * @return string
+     */
+    public static function fullname($user, $override = false) {
+        global $CFG;
+        require_once($CFG->dirroot.'/local/eliscore/lib.php');
+        return elis_fullname($user, $override);
+    }
+
+    /**
      * Specifies available report filters
      * (empty by default but can be implemented by child class)
      *

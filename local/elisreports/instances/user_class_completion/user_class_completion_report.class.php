@@ -1383,7 +1383,7 @@ class user_class_completion_report extends table_report {
         }
 
         //show link to user's profile based on capability to view the student management capability
-        $fullname = fullname($record);
+        $fullname = php_report::fullname($record);
 
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {
             $userpage = new userpage(array('id' => $record->userid, 'action' => 'view'));

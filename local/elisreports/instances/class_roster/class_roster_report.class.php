@@ -354,8 +354,8 @@ class class_roster_report extends table_report {
                 foreach ($instructor_records as $record) {
                     $userpage = new userpage(array('id' => $record->id, 'action' => 'view'));
                     $instructors .= '<span class="external_report_link"><a href="'
-                                    . $userpage->url .'">'. fullname($record)
-                                    .'</a></span><br />';
+                            .$userpage->url.'">'.php_report::fullname($record)
+                            .'</a></span><br />';
                 }
 
                 $header_obj = new stdClass;
@@ -383,7 +383,7 @@ class class_roster_report extends table_report {
         $user = new stdClass;
         $user->firstname = $record->firstname;
         $user->lastname = $record->r_student;
-        $fullname = fullname($user);
+        $fullname = php_report::fullname($user);
 
         if (property_exists($record,'r_clst_name')) {
             //reformat userset name(s)

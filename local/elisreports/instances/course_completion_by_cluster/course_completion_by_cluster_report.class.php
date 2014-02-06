@@ -709,17 +709,17 @@ class course_completion_by_cluster_report extends table_report {
                            ON ra.contextid = ctxt.id
                            AND ctxt.instanceid = ?
                            AND ctxt.contextlevel = ?';
-                  $params = array($preferences['php_report_course_completion_by_cluster/clusterrole'],
+                 $params = array($preferences['php_report_course_completion_by_cluster/clusterrole'],
                                   $datum->cluster, CONTEXT_ELIS_USERSET);
-                  $display = '';
+                 $display = '';
 
                  //append all the names together if there are multiple
                  if ($recordset = $DB->get_recordset_sql($sql, $params)) {
                      foreach ($recordset as $record) {
                          if ($display == '') {
-                             $display = fullname($record);
+                             $display = php_report::fullname($record);
                          } else {
-                             $display .= ', '. fullname($record);
+                             $display .= ', '.php_report::fullname($record);
                          }
                      }
                      $recordset->close();
@@ -770,7 +770,7 @@ class course_completion_by_cluster_report extends table_report {
         if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
             $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
             //use the user's full name
-            $element->firstname = fullname($datum);
+            $element->firstname = php_report::fullname($datum);
         }
         //make this a link if we're in HTML format
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {

@@ -656,7 +656,7 @@ class sitewide_time_summary_report extends table_report {
                                                 $totaltime);
 
         // Below must reassign AFTER time since above requires u.id (user_id)
-        $record->user_id = fullname($record);
+        $record->user_id = php_report::fullname($record);
 
         return $record;
     }
@@ -742,7 +742,7 @@ class sitewide_time_summary_report extends table_report {
                                                 $this->grouptotal);
         $this->grouptotal = 0; // reset for next time
 
-        $record->user_id = fullname($record);
+        $record->user_id = php_report::fullname($record);
 
         return $record;
     }

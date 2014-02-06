@@ -256,7 +256,7 @@ class registrants_by_student_report extends table_report {
              $user = new stdClass;
              $user->firstname = $datum->firstname;
              $user->lastname = $datum->lastname;
-             $fullname = fullname($user);
+             $fullname = php_report::fullname($user);
              $result = array($this->add_grouping_header($grouping->label,
                                         $fullname, $export_format));
          } else {

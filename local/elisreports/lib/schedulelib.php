@@ -1054,7 +1054,7 @@ class scheduling_page extends workflowpage {
                 //data row
                 $table->data[] = array($checkbox,
                                        $edit_schedule_link,
-                                       fullname($record),
+                                       php_report::fullname($record),
                                        $lastruntime,
                                        $nextruntime,
                                        userdate($config_data['timemodified']),);

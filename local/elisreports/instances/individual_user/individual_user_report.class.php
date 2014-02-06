@@ -234,7 +234,7 @@ class individual_user_report extends table_report {
         if ($cm_user_id && ($cmuser = new user($cm_user_id))) {
             $cmuser->load();
             $autocomplete_opts['defaults'] = array(
-                    'label' => fullname($cmuser->to_object()),
+                    'label' => $cmuser->moodle_fullname(),
                     'id' => $cm_user_id
                 );
         }

@@ -380,10 +380,10 @@ class class_completion_gas_gauge_report extends gas_gauge_table_report {
         if ($export_format == php_report::$EXPORT_FORMAT_HTML) {
             //convert user name to their full name and link to the CM user page for that user
             $userpage = new userpage(array('id' => $record->cmuserid, 'action' => 'view'));
-            $record->firstname = '<span class="external_report_link"><a href="'. $userpage->url .'" target="_blank">'. fullname($record) .'</a></span>';
+            $record->firstname = '<span class="external_report_link"><a href="'.$userpage->url.'" target="_blank">'.php_report::fullname($record).'</a></span>';
         } else if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
                    $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
-            $record->firstname = fullname($record);
+            $record->firstname = php_report::fullname($record);
         }
 
         //calculate the percentage of completion elements satisfied

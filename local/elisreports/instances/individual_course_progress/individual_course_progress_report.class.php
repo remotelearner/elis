@@ -146,7 +146,7 @@ class individual_course_progress_report extends table_report {
         if (!empty($userobj)) {
             $headerobj = new stdClass;
             $headerobj->label = get_string('header_student', $this->lang_file).':';
-            $headerobj->value = fullname($userobj->to_object());
+            $headerobj->value = $userobj->moodle_fullname();
             $headerobj->css_identifier = '';
             $headers[] = $headerobj;
 
@@ -275,9 +275,9 @@ class individual_course_progress_report extends table_report {
         if ($cm_user_id && ($cmuser = new user($cm_user_id))) {
             $cmuser->load();
             $autocomplete_opts['defaults'] = array(
-                    'label' => fullname($cmuser->to_object()),
-                    'id' => $cm_user_id
-                );
+                'label' => $cmuser->moodle_fullname(),
+                'id' => $cm_user_id
+            );
         }
 
         $filters[] = new generalized_filter_entry(

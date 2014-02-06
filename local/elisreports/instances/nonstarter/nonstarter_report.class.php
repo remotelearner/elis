@@ -355,7 +355,7 @@ class nonstarter_report extends table_report {
     function transform_record($record, $export_format) {
         if ($export_format != php_report::$EXPORT_FORMAT_CSV &&
             $export_format != php_report::$EXPORT_FORMAT_EXCEL) {
-            $record->lastname = fullname($record);
+            $record->lastname = php_report::fullname($record);
             //unset($record->firstname);
         }
         return $record;
