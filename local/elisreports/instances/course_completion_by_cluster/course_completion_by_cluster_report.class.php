@@ -832,7 +832,7 @@ class course_completion_by_cluster_report extends table_report {
      *
      * @return  object $mform  The modified mform object for the filter page
      */
-    function apply_filter_required_rule($mform, $key, $fields) {
+    public static function apply_filter_required_rule($mform, $key, $fields) {
         $elem = "{$key}_grp";
         if ($mform->elementExists($elem)) {
             $mform->addRule($elem, get_string('required'), 'required', null, 'client');

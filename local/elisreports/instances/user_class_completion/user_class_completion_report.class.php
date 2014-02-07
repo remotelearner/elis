@@ -1497,7 +1497,7 @@ class user_class_completion_report extends table_report {
      *
      * @return  object $mform  The modified mform object for the filter page
      */
-    function apply_filter_required_rule($mform, $key, $fields) {
+    public static function apply_filter_required_rule($mform, $key, $fields) {
 
         if ($mform->elementExists($key.'_grp')) {
             $mform->addRule($key.'_grp', get_string('required'), 'required', null, 'client');
