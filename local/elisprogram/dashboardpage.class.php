@@ -101,6 +101,182 @@ class dashboardpage extends pm_page {
         $this->display('default');
     }
 
+    /**
+     * get_tcpdf_info method to get TCPDF library version info
+     * @return array componentname, release, version
+     */
+    public function get_tcpdf_info() {
+        global $CFG;
+        $ret = array(null, null, null);
+        $tcpdfinfofile = $CFG->dirroot.'/local/elisreports/lib/tcpdf/README.TXT';
+        if (file_exists($tcpdfinfofile)) {
+            $tcpdfreadme = file_get_contents($tcpdfinfofile);
+            $matches = array();
+            $name = '';
+            $release = '';
+            $version = '';
+            if (preg_match('/Name: (.*)/', $tcpdfreadme, $matches)) {
+                $name = $matches[1];
+            }
+            if (preg_match('/Version: (.*)/', $tcpdfreadme, $matches)) {
+                $release = $matches[1];
+            }
+            if (preg_match('/Release date: (.*)/', $tcpdfreadme, $matches)) {
+                $version = $matches[1];
+            }
+            $ret = array($name, $release, $version);
+        }
+        return $ret;
+    }
+
+    /**
+     * get_pchart_info method to get pChart library version info
+     * @return array componentname, release, version
+     */
+    public function get_pchart_info() {
+        global $CFG;
+        $ret = array(null, null, null);
+        $pchartinfofile = $CFG->dirroot.'/local/elisreports/lib/pChart.1.27d/pChart/pChart.class';
+        if (file_exists($pchartinfofile)) {
+            $ret = array('pChart', '1.27d', '06/17/2008'); // TBD - get from file?
+        }
+        return $ret;
+    }
+
+    /**
+     * get_jquery_file_info method to get jQuery library version info from specified file
+     * @param array $files list of files to get info from
+     * @param array $infostrings associative array of default values, i.e. array('name' => 'Name', 'version' => 'Version', 'release' => 'Release date')
+     * @return array componentname, release, version
+     */
+    public function get_jquery_file_info($files, $infostrings) {
+        $ret = array(null, null, null);
+        foreach ($files as $filename) {
+            $matches = array();
+            $name = null;
+            if (preg_match("/.*{$infostrings['name']}-([0-9.]*)/", $filename, $matches)) {
+                $name = $infostrings['name'];
+                $release = trim($matches[1], '.');
+                $version = '';
+                $ret = array($name, $release, $version);
+                break;
+            }
+        }
+        return $ret;
+    }
+
+    /**
+     * get_re_jquery_info method to get jQuery library version info
+     * @return array componentname, release, version
+     */
+    public function get_re_jquery_info() {
+        global $CFG;
+        $files = glob($CFG->dirroot.'/local/elisprogram/js/results_engine/jquery-*');
+        return $this->get_jquery_file_info($files, array('name' => 'jquery'));
+    }
+
+    /**
+     * get_re_jquery_ui_info method to get jQuery library version info
+     * @return array componentname, release, version
+     */
+    public function get_re_jquery_ui_info() {
+        global $CFG;
+        $files = glob($CFG->dirroot.'/local/elisprogram/js/results_engine/jquery-ui-*');
+        return $this->get_jquery_file_info($files, array('name' => 'jquery-ui'));
+    }
+
+    /**
+     * get_ds_jquery_info method to get jQuery library version info
+     * @return array componentname, release, version
+     */
+    public function get_ds_jquery_info() {
+        global $CFG;
+        $files = glob($CFG->dirroot.'/local/elisprogram/lib/deepsight/js/jquery-*');
+        return $this->get_jquery_file_info($files, array('name' => 'jquery'));
+    }
+
+    /**
+     * get_ds_jquery_ui_info method to get jQuery library version info
+     * @return array componentname, release, version
+     */
+    public function get_ds_jquery_ui_info() {
+        global $CFG;
+        $files = glob($CFG->dirroot.'/local/elisprogram/lib/deepsight/js/jquery-ui-*');
+        return $this->get_jquery_file_info($files, array('name' => 'jquery-ui'));
+    }
+
+    /**
+     * elis_versions method to get all ELIS PM and component version info
+     * @return string
+     */
+    protected function elis_versions() {
+        $ret = html_writer::script(
+                "function toggle_elis_component_versions() {
+                    var compdiv;
+                    if (compdiv = document.getElementById('eliscomponentversions')) {
+                        if (compdiv.className.indexOf('accesshide') != -1) {
+                            compdiv.className = '';
+                        } else {
+                            compdiv.className = 'accesshide';
+                        }
+                     }
+                 }");
+        $ret .= html_writer::tag('p', get_string('elispmversion', 'local_elisprogram', elispm::$release).'&nbsp;'.
+                html_writer::empty_tag('input', array(
+                    'type' => 'button',
+                    'value' => get_string('alleliscomponents', 'local_elisprogram'),
+                    'onclick' => 'toggle_elis_component_versions();'
+                )));
+        $eliscomponents = array(
+            'block_elisadmin' => null,
+            'block_courserequest' => null,
+            'block_enrolsurvey' => null,
+            'block_repository' => null,
+            'enrol_elis' => null,
+            'local_eliscore' => null,
+            'local_elisprogram' => null,
+            'local_elisreports' => null,
+            'local_datahub' => null,
+            'auth_elisfilessso' => null,
+            'repository_elisfiles' => null,
+            'lib_tcpdf' => array($this, 'get_tcpdf_info'),
+            'lib_pChart' => array($this, 'get_pchart_info'),
+            'lib_jquery1' => array($this, 'get_re_jquery_info'),
+            'lib_jquery_ui1' => array($this, 'get_re_jquery_ui_info'),
+            'lib_jquery2' => array($this, 'get_ds_jquery_info'),
+            'lib_jquery_ui2' => array($this, 'get_ds_jquery_ui_info')
+        );
+        $componenttable = new html_table();
+        $componenttable->attributes = array('width' => '70%', 'border' => '0');
+        $componenttable->head = array(get_string('eliscomponent', 'local_elisprogram'),
+                get_string('eliscomponentrelease', 'local_elisprogram'),
+                get_string('eliscomponentversion', 'local_elisprogram'));
+        $componenttable->data = array();
+        foreach ($eliscomponents as $eliscomponent => $getinfocallback) {
+            list($plugintype, $pluginname) = explode('_', $eliscomponent);
+            if (!empty($getinfocallback)) {
+                list($componentname, $release, $version) = call_user_func($getinfocallback);
+                // error_log("elis_versions(): {$componentname}, {$release}, {$version}");
+                if (!empty($componentname)) {
+                    $componenttable->data[] = array("$componentname (3rd-party library)",
+                            $release, $version);
+                }
+            } else if (($compdir = core_component::get_plugin_directory($plugintype, $pluginname)) && file_exists($compdir.'/version.php')) {
+                $plugin = new stdClass;
+                require($compdir.'/version.php');
+                if (!empty($plugin->version)) {
+                    $version = $plugin->version;
+                    $release = !empty($plugin->release) ? $plugin->release : '';
+                    $componenttable->data[] = array($eliscomponent, $release, $version);
+                }
+            }
+        }
+        $ret .= html_writer::tag('div', html_writer::table($componenttable), array(
+            'id' => 'eliscomponentversions',
+            'class' => 'accesshide'));
+        return $ret;
+    }
+
     function display_default() {
         global $CFG, $USER, $OUTPUT;
 
@@ -113,8 +289,9 @@ class dashboardpage extends pm_page {
             if ($healthpg->can_do_default()) {
                 echo $OUTPUT->box(html_writer::tag('p', get_string('health_check_link', 'local_elisprogram', $CFG)));
             }
-            echo html_writer::tag('p', get_string('elispmversion', 'local_elisprogram', elispm::$release));
-            echo html_writer::tag('p', get_string('elisversion', 'local_eliscore', elis::$release));
+
+            // Output ELIS version info
+            echo  $OUTPUT->box($this->elis_versions());
         }
 
         if ($cmuid = cm_get_crlmuserid($USER->id)) {

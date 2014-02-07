@@ -52,6 +52,7 @@ $string['address2'] = 'Address 2';
 $string['admin_dashboard'] = 'Administrator Dashboard';
 $string['all_items_assigned'] = 'All available items assigned.';
 $string['all_users_already_enrolled'] = 'All users in track already enrolled.';
+$string['alleliscomponents'] = 'Component Details';
 $string['and_all_children'] = '(and all children)';
 $string['assign'] = 'Assign';
 $string['assign_selected'] = 'Assign Selected';
@@ -469,6 +470,9 @@ pages of documentation for ELIS in our <a href="http://rlcommunity.remote-learne
 If you have problems accessing this course, please contact your sales representative.';
 $string['elis_profile'] = 'ELIS profile';
 $string['elis_settings'] = 'ELIS Settings';
+$string['eliscomponent'] = 'Component';
+$string['eliscomponentrelease'] = 'Release';
+$string['eliscomponentversion'] = 'Version';
 $string['elispmversion'] = '<strong>ELIS Program Manager Version:</strong> {$a}';
 $string['elisprogram:assign_class_instructor'] = 'Manage class instance instructor assignments';
 $string['elisprogram:assign_userset_user_class_instructor'] = 'Manage User Set\'s users\' class instance instructor assignments';
