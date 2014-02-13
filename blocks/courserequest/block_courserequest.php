@@ -67,11 +67,10 @@ class block_courserequest extends block_base {
 
         if (has_capability('block/courserequest:config', $context)) {
             //make sure custom fields are enabled for some context
-            $allow_class_fields = !isset($CFG->block_courserequest_use_class_fields) ||
-                                  !empty($CFG->block_courserequest_use_class_fields);
-            $allow_course_fields = !empty($CFG->block_courserequest_use_course_fields);
+            $allowclassfields = get_config('block_courserequest', 'use_class_fields') == '1';
+            $allowcoursefields = get_config('block_courserequest', 'use_course_fields') == '1';
 
-            if ($allow_class_fields || $allow_course_fields) {
+            if ($allowclassfields || $allowcoursefields) {
                 $items[] = '<a href="'.$CFG->wwwroot.'/local/elisprogram/index.php?action=default&s=erp">'.
                         get_string('editrequestpages', 'block_courserequest').'</a>';
             }

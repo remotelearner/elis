@@ -317,7 +317,8 @@ class courserequestapprovepage extends pm_page {
             $newcourse = new course($crsdata);
 
             // make sure custom field data is included
-            if (!empty($CFG->block_courserequest_use_course_fields)) {
+            $usecoursefields = get_config('block_courserequest', 'use_course_fields');
+            if (!empty($usecoursefields)) {
                 // course fields are enabled, so add the relevant data
                 $this->add_custom_fields($formdata, 'course', $newcourse);
             }
@@ -325,9 +326,10 @@ class courserequestapprovepage extends pm_page {
             $newcourse->save(); // ->add()
 
             // do the course role assignment, if applicable
-            if (!empty($CFG->block_courserequest_course_role)) {
+            $courserole = get_config('block_courserequest', 'course_role');
+            if (!empty($courserole)) {
                 if ($context = \local_elisprogram\context\course::instance($newcourse->id)) {
-                    role_assign($CFG->block_courserequest_course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
+                    role_assign($courserole, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
                 }
             }
 
@@ -349,10 +351,10 @@ class courserequestapprovepage extends pm_page {
      */
     function approve_request_class_actions(&$request, $formdata, $courseid) {
         global $CFG, $DB;
-
+        $config = get_config('block_courserequest');
         // Create the new class if we are using an existing course, or if
         // create_class_with_course is on.
-        if (!empty($request->courseid) || !empty($CFG->block_courserequest_create_class_with_course)) {
+        if (!empty($request->courseid) || !empty($config->create_class_with_course)) {
             require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
             $clsdata = array(
                 'courseid'        => $courseid,
@@ -366,9 +368,7 @@ class courserequestapprovepage extends pm_page {
             $newclass = new pmclass($clsdata);
             $newclass->autocreate = false;
 
-            $set_class_fields = !isset($CFG->block_courserequest_use_class_fields) || !empty($CFG->block_courserequest_use_class_fields);
-
-            if ($set_class_fields) {
+            if (!empty($config->use_class_fields)) {
                 // class fields are enabled, so add the relevant data
                 $this->add_custom_fields($formdata, 'class', $newclass);
             }
@@ -380,9 +380,9 @@ class courserequestapprovepage extends pm_page {
             $request->classid = $newclass->id;
 
             // assign role to requester in the newly created class
-            if (!empty($CFG->block_courserequest_class_role)) {
+            if (!empty($config->class_role)) {
                 $context = \local_elisprogram\context\pmclass::instance($newclass->id);
-                role_assign($CFG->block_courserequest_class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
+                role_assign($config->class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
             }
 
             // create a new Moodle course from the CM course template if set on the approve form
@@ -390,11 +390,11 @@ class courserequestapprovepage extends pm_page {
                 moodle_attach_class($newclass->id, 0, '', true, true, true);
 
                 // copy role over into Moodle course
-                if (isset($CFG->block_courserequest_class_role) && $CFG->block_courserequest_class_role) {
+                if (!empty($config->class_role)) {
                     require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
                     if ($class_moodle_record = $DB->get_record(classmoodlecourse::TABLE, array('classid' => $newclass->id))) {
                         $context = context_course::instance($class_moodle_record->moodlecourseid);
-                        role_assign($CFG->block_courserequest_class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
+                        role_assign($config->class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
                     }
                 }
             }
@@ -746,9 +746,8 @@ class pending_request_approve_form extends create_form {
         $mform =& $this->_form;
 
         // go through all configured class fields and remove them if applicable
-        $create_class_with_course = !isset($CFG->block_courserequest_create_class_with_course) || !empty($CFG->block_courserequest_create_class_with_course);
-
-        if (!$create_class_with_course) {
+        $createclasswithcourse = get_config('block_courserequest', 'create_class_with_course');
+        if (empty($createclasswithcourse)) {
             // not forcing the creation of a class with every course created
 
             // remove the fields that will always be there
@@ -757,9 +756,8 @@ class pending_request_approve_form extends create_form {
             $mform->removeElement('usecoursetemplate');
 
             // determine if class fields are enabled
-            $show_class_fields = !isset($CFG->block_courserequest_use_class_fields) || !empty($CFG->block_courserequest_use_class_fields);
-
-            if ($show_class_fields) {
+            $useclassfields = get_config('block_courserequest', 'use_class_fields');
+            if (!empty($useclassfields)) {
                 // class-level custom fields would have been displayed, so remove them
                 $this->remove_form_custom_fields('class');
             }
@@ -843,7 +841,8 @@ class pending_request_approve_form extends create_form {
                 }
             } else {
                 require_once($CFG->dirroot.'/local/elisprogram/lib/data/course.class.php');
-                if (empty($CFG->block_courserequest_create_class_with_course)) {
+                $createclasswithcourse = get_config('block_courserequest', 'create_class_with_course');
+                if (empty($createclasswithcourse)) {
                     // new course with no associated class
                     if (empty($data['crsidnumber'])) {
                         $errors['crsidnumber'] = get_string('required');

@@ -89,7 +89,8 @@ function block_courserequest_get_approval_message($request, $statusnote = null) 
 
     $notice = '';
 
-    if (empty($request->courseid) && empty($CFG->block_courserequest_create_class_with_course)) {
+    $createclasswithcourse = get_config('block_courserequest', 'create_class_with_course');
+    if (empty($request->courseid) && empty($createclasswithcourse)) {
         //just course
         $a = new stdClass;
         $a->link = $CFG->wwwroot.'/local/elisprogram/index.php?action=view&id='.$request->newcourseid.'&s=crs';;
@@ -136,7 +137,8 @@ function block_courserequest_get_denial_message($request, $statusnote = null) {
     $a->link = $CFG->wwwroot.'/local/elisprogram/index.php?action=requests&s=crp';
     $a->coursename = $request->title;
 
-    if (empty($request->courseid) && empty($CFG->block_courserequest_create_class_with_course)) {
+    $createclasswithcourse = get_config('block_courserequest', 'create_class_with_course');
+    if (empty($request->courseid) && empty($createclasswithcourse)) {
         //just course
         $notice = get_string('notification_courserequestdenied', 'block_courserequest', $a);
     } else if (!empty($request->courseid)) {

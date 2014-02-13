@@ -79,7 +79,7 @@ class create_form extends moodleform {
      * validation rules
      */
     protected function add_course_info() {
-        global $CFG, $PAGE, $USER;
+        global $PAGE, $USER;
         $PAGE->requires->js('/blocks/courserequest/forms.js');
         $mform = &$this->_form;
 
@@ -120,7 +120,8 @@ class create_form extends moodleform {
         // only needed for new courses
         $mform->disabledIf('title', 'courseid', 'gt', '0');
 
-        if (!empty($CFG->block_courserequest_use_course_fields)) {
+        $usecoursefields = get_config('block_courserequest', 'use_course_fields');
+        if (!empty($usecoursefields)) {
             // add course-level custom fields to the interface
             $this->add_custom_fields('course', true);
         }
@@ -140,6 +141,7 @@ class create_form extends moodleform {
         // determine if the current user can approve requests
         $syscontext = context_system::instance();
         $can_approve = has_capability('block/courserequest:approve', $syscontext);
+        $config = get_config('block_courserequest');
 
         if ($can_approve) {
             require_once($CFG->dirroot .'/local/elisprogram/lib/data/coursetemplate.class.php');
@@ -151,7 +153,7 @@ class create_form extends moodleform {
             $mform->addElement('text', 'clsidnumber', $label);
             $mform->addRule('clsidnumber', null, 'maxlength', 100);
             $mform->setType('clsidnumber', PARAM_TEXT);
-            if (empty($CFG->block_courserequest_create_class_with_course)) {
+            if (empty($config->create_class_with_course)) {
                 // disable class fields if creating a new course and
                 // create_class_with_course is unset
                 $mform->disabledIf('clsidnumber', 'courseid', 'eq', '0');
@@ -179,15 +181,13 @@ class create_form extends moodleform {
             }
 
             // use config setting to set the default value (works only for self-approval)
-            if (!empty($CFG->block_courserequest_use_template_by_default)) {
-                $mform->setDefault('usecoursetemplate', $CFG->block_courserequest_use_template_by_default);
+            if (!empty($config->use_template_by_default)) {
+                $mform->setDefault('usecoursetemplate', $config->use_template_by_default);
             }
         }
 
         // determine if class fields are enabled
-        $show_class_fields = !isset($CFG->block_courserequest_use_class_fields) || !empty($CFG->block_courserequest_use_class_fields);
-
-        if ($show_class_fields) {
+        if (!empty($config->use_class_fields)) {
             // determine if we still need to display the class header
             $section_header = null;
             if (!$can_approve) {
@@ -285,7 +285,8 @@ class create_form extends moodleform {
                     // non-zero implies existing course
                     $mform->disabledIf($element_name, 'courseid', 'gt', '0');
                 } else {
-                    if (empty($CFG->block_courserequest_create_class_with_course)) {
+                    $createclasswithcourse = get_config('block_courserequest', 'create_class_with_course');
+                    if (!empty($createclasswithcourse)) {
                         // disable class fields if creating a new course and
                         // create_class_with_course is unset
                         $mform->disabledIf($element_name, 'courseid', 'eq', '0');
@@ -338,7 +339,8 @@ class create_form extends moodleform {
         $can_approve = has_capability('block/courserequest:approve', $syscontext);
 
         if ($can_approve) {
-            if ($approval['courseid'] || !empty($CFG->block_courserequest_create_class_with_course)) {
+            $createclasswithcourse = get_config('block_courserequest', 'create_class_with_course');
+            if ($approval['courseid'] || !empty($createclasswithcourse)) {
                 if (empty($approval['clsidnumber'])) {
                     $errors['clsidnumber'] = 'Required';
                 } else if ($DB->record_exists(pmclass::TABLE, array('idnumber' => $approval['clsidnumber']))) {
@@ -466,16 +468,13 @@ class define_request_form {
      * @uses   $CFG
      */
     public function display() {
-        global $CFG;
-
         // use one form for everything because submit buttons need to
         // interact with fields from various contexts
         print '<form class="mform" method="post" action="' . $this->action_url . '">';
 
         // display fields for the course context
-        $display_for_course = !empty($CFG->block_courserequest_use_course_fields);
-
-        if ($display_for_course) {
+        $usecoursefields = get_config('block_courserequest', 'use_course_fields');
+        if (!empty($usecoursefields)) {
             // settings allow this type of configuration
             $field_header = get_string('action_fields_course', 'block_courserequest');
             $button_text = get_string('add_field_course', 'block_courserequest');
@@ -483,9 +482,8 @@ class define_request_form {
         }
 
         // display fields for the class context
-        $display_for_class = !isset($CFG->block_courserequest_use_class_fields) || !empty($CFG->block_courserequest_use_class_fields);
-
-        if ($display_for_class) {
+        $useclassfields = get_config('block_courserequest', 'use_class_fields');
+        if (!empty($useclassfields)) {
             // settings allow this type of configuration
             $field_header = get_string('action_fields_class', 'block_courserequest');
             $button_text = get_string('add_field_class', 'block_courserequest');

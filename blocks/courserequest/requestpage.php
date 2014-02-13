@@ -88,8 +88,6 @@ class RequestPage extends pm_page {
     }
 
     function display_default() { // action_default()
-        global $CFG;
-
         $target = $this->get_new_page(array('action' => 'create'), true);
         $configform = new current_form($target->url);
 
@@ -222,6 +220,7 @@ class RequestPage extends pm_page {
 
             require_once($CFG->dirroot.'/local/elisprogram/lib/notifications.php');
             $syscontext = context_system::instance();
+            $config = get_config('block_courserequest');
 
             if (has_capability('block/courserequest:approve', $syscontext)) {
             // Since we want to automatically approve requests for people approval permission, let's go ahead and create the course/class
@@ -255,7 +254,7 @@ class RequestPage extends pm_page {
 
                     $newcourse = new course($crsdata);
 
-                    if (!empty($CFG->block_courserequest_use_course_fields)) {
+                    if (!empty($config->use_course_fields)) {
                         // course fields are enabled, so add the relevant data
                         $this->add_custom_fields($request->id, 'course', $newcourse);
                     }
@@ -263,10 +262,10 @@ class RequestPage extends pm_page {
                     $newcourse->save(); // ->add()
 
                     // do the course role assignment, if applicable
-                    if (!empty($CFG->block_courserequest_course_role)) {
+                    if (!empty($config->course_role)) {
                         if ($context = \local_elisprogram\context\course::instance($newcourse->id)) {
                             // TBD: role_assign() now throws exceptions!
-                            $result = role_assign($CFG->block_courserequest_course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
+                            $result = role_assign($config->course_role, $request->userid, $context->id, ECR_CD_ROLE_COMPONENT);
                         }
                     }
 
@@ -277,7 +276,7 @@ class RequestPage extends pm_page {
 
                 // Create the new class if we are using an existing course, or if
                 // create_class_with_course is on.
-                if (!empty($request->courseid) || !empty($CFG->block_courserequest_create_class_with_course)) {
+                if (!empty($request->courseid) || !empty($oonfig->create_class_with_course)) {
                     require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
                     $clsdata = array(
                         'name'            => $request->title,
@@ -292,9 +291,7 @@ class RequestPage extends pm_page {
                     $newclass = new pmclass($clsdata);
                     $newclass->autocreate = false;
 
-                    $set_class_fields = !isset($CFG->block_courserequest_use_class_fields) || !empty($CFG->block_courserequest_use_class_fields);
-
-                    if ($set_class_fields) {
+                    if (!empty($config->use_class_fields)) {
                         // class fields are enabled, so add the relevant data
                         $this->add_custom_fields($request->id, 'class', $newclass);
                     }
@@ -309,10 +306,10 @@ class RequestPage extends pm_page {
 
                 // assign role to requester in the newly created class
                 if (!empty($newclass->id)) {
-                    if (isset($CFG->block_courserequest_class_role) && $CFG->block_courserequest_class_role) {
+                    if (!empty($config->class_role)) {
                         $context = \local_elisprogram\context\pmclass::instance($newclass->id);
                         // TBD: role_assign() now throws exceptions!
-                        role_assign($CFG->block_courserequest_class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
+                        role_assign($config->class_role, $request->userid, $context->id, ECR_CI_ROLE_COMPONENT);
                     }
                 }
 
@@ -321,12 +318,12 @@ class RequestPage extends pm_page {
                     moodle_attach_class($newclass->id, 0, '', true, true, true);
 
                     // copy role over into Moodle course
-                    if (isset($CFG->block_courserequest_class_role) && $CFG->block_courserequest_class_role) {
+                    if (!empty($config->class_role)) {
                         require_once($CFG->dirroot.'/local/elisprogram/lib/data/classmoodlecourse.class.php');
                         if ($class_moodle_record = $DB->get_record(classmoodlecourse::TABLE, array('classid' => $newclass->id))) {
                             $context = context_course::instance($class_moodle_record->moodlecourseid);
                             // TBD: role_assign() now throws exceptions!
-                            role_assign($CFG->block_courserequest_class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
+                            role_assign($config->class_role, $request->userid, $context->id, ECR_MC_ROLE_COMPONENT);
                         }
                     }
                 }

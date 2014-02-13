@@ -26,31 +26,33 @@ function xmldb_block_courserequest_install() {
     $result = true;
     $dbman = $DB->get_manager();
 
-    $oldrecord = $DB->get_record('config_plugins', array('plugin' => 'block_course_request', 'name' => 'version'), 'id');
-
-    if (isset($oldrecord->id)) {
+    $blockid = $DB->get_field('block', 'id', array('name' => 'course_request'));
+    if ($blockid) {
         // Convert any existing old course_request block instances to courserequest blocks.
         $sql = "UPDATE {block_instances} SET blockname = 'courserequest' WHERE blockname = 'course_request'";
         $DB->execute($sql);
 
-        // Delete old course_request record in block table.
-        $DB->delete_records('block', array('id' => $oldrecord->id));
-    }
-
-    // Migrate old config settings.
-    $configsettings = array(
-            'course_role',
-            'class_role',
-            'use_template_by_default',
-            'use_course_fields',
-            'use_class_fields',
-            'create_class_with_course'
-    );
-    foreach ($configsettings as $configsetting) {
-        if ($settingvalue = get_config('block_course_request', 'block_course_request_'.$configsetting)) {
-            set_config('block_courserequest_'.$configsetting, $settingvalue, 'block_courserequest');
-            unset_config('block_course_request_'.$configsetting, 'block_course_request');
+        // Migrate old config settings.
+        $configsettings = array(
+                'course_role',
+                'class_role',
+                'use_template_by_default',
+                'use_course_fields',
+                'use_class_fields',
+                'create_class_with_course'
+        );
+        foreach ($configsettings as $configsetting) {
+            $settingvalue = get_config('', 'block_course_request_'.$configsetting);
+            // mtrace("Migrating setting: {$settingvalue} ...");
+            if ($settingvalue !== false) {
+                set_config($configsetting, $settingvalue, 'block_courserequest');
+                unset_config('block_course_request_'.$configsetting, '');
+            }
         }
+        unset_all_config_for_plugin('block_course_request');
+
+        // Delete old course_request record in block table.
+        $DB->delete_records('block', array('id' => $blockid));
     }
 
     // Migrate old block_courserequest table if it exists.
@@ -76,8 +78,6 @@ function xmldb_block_courserequest_install() {
         $dbman->drop_table($newtable);
         $dbman->rename_table($table, 'block_courserequest_data');
     }
-
-    unset_all_config_for_plugin('block_course_request');
 
     return $result;
 }
