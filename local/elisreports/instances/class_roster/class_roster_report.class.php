@@ -291,7 +291,7 @@ class class_roster_report extends table_report {
     }
 
     function get_header_entries($export_format) {
-        global $CFG;
+        global $CFG, $USER;
 
         $header_array = array();
 
@@ -348,7 +348,8 @@ class class_roster_report extends table_report {
             }
 
             // Add instructor names
-            $instructor_records = instructor::get_instructors($classid);
+            $instructor = new instructor(array('userid' => $USER->id, 'classid' => $classid));
+            $instructor_records = $instructor->get_instructors($classid);
             if (!empty($instructor_records)) {
                 $instructors = '';
                 foreach ($instructor_records as $record) {

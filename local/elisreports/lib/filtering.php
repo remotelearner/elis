@@ -504,6 +504,7 @@ function php_report_filtering_reset_form($form_data, $filter_object, $report_nam
 
     if (is_array($reset_array)) {
         // initialize parameters
+        $reset_array['id'] = $report_name;
         $parameter_form->set_constants($reset_array);
     }
 }

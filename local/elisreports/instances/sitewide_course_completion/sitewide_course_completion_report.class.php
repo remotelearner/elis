@@ -84,6 +84,7 @@ class sitewide_course_completion_report extends table_report {
         require_once($CFG->dirroot .'/local/eliscore/lib/filtering/date.php');
         require_once($CFG->dirroot .'/local/eliscore/lib/filtering/simpleselect.php');
         require_once($CFG->dirroot .'/local/eliscore/lib/filtering/radiobuttons.php');
+        require_once($CFG->dirroot.'/local/eliscore/plugins/etl/etl.php');
     }
 
     /**
@@ -234,11 +235,9 @@ class sitewide_course_completion_report extends table_report {
         if ($show_array) {
             $this->show_time_spent = ($show_array[0]['value'] == 1) ? true : false;
             if ($this->show_time_spent) {
-                $sql_total_duration = "SELECT SUM(duration)
-                                       FROM {etl_user_activity} etl
-                                       WHERE etl.userid = mdlusr.id
-                                       AND etl.courseid = clsmdl.moodlecourseid
-                                      ";
+                $sql_total_duration = 'SELECT SUM(duration)
+                                         FROM {'.ETL_TABLE.'} etl
+                                        WHERE etl.userid = mdlusr.id AND etl.courseid = clsmdl.moodlecourseid';
                 $columns[] = new table_report_column("({$sql_total_duration}) AS r_timespent",
                                                      get_string('column_time_spent', $this->lang_file),
                                                      'csstimespent', 'left', true

@@ -489,7 +489,7 @@ class scheduling_page extends workflowpage {
      * @return  boolean  true if allowed, otherwise false
      */
     function can_do_listinstancejobs() {
-        if (has_capability('local/elisreports:manageschedules', context_systen::instance())) {
+        if (has_capability('local/elisreports:manageschedules', context_system::instance())) {
             //user can manage schedules globally, so allow access
             return true;
         }

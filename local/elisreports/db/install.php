@@ -30,7 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool true on success, false otherwise
  */
 function xmldb_local_elisreports_install() {
-    global $CFG, $DB;
+    global $DB;
     $result = true;
 
     $dbman = $DB->get_manager();
@@ -52,6 +52,10 @@ function xmldb_local_elisreports_install() {
             }
         }
     }
+
+    // Remove the old block ...
+    $DB->delete_records('block', array('name' => 'php_report'));
+    $DB->delete_records('config_plugins', array('plugin' => 'block_php_report'));
 
     return $result;
 }
