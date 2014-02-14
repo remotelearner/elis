@@ -72,7 +72,7 @@ class migrator {
     /**
      * Runs all old upgrade steps based on currently installed version.
      */
-    protected function run_old_upgrade_steps_if_necessary() {
+    public function run_old_upgrade_steps_if_necessary() {
         global $DB;
 
         // If we have not yet determined if the old component is installed, do that now.
@@ -95,16 +95,16 @@ class migrator {
     /**
      * Rename tables as needed.
      */
-    protected function migrate_tables() {
+    public function migrate_tables() {
         global $DB;
         $dbman = $DB->get_manager();
         foreach ($this->tablechanges as $oldname => $newname) {
-            $oldtable = new \xmldb_table($oldname);
-            $newtable = new \xmldb_table($newtable);
-            if ($dbman->table_exists($oldtable)) {
-                if ($dbman->table_exists($newtable)) {
+            if ($dbman->table_exists($oldname)) {
+                if ($dbman->table_exists($newname)) {
+                    $newtable = new \xmldb_table($newname);
                     $dbman->drop_table($newtable);
                 }
+                $oldtable = new \xmldb_table($oldname);
                 $dbman->rename_table($oldtable, $newname);
             }
         }
@@ -113,15 +113,20 @@ class migrator {
     /**
      * Migrates all settings in config_plugins from the old component to the new component.
      */
-    protected function migrate_settings() {
+    public function migrate_settings() {
         global $DB;
 
         $oldconfig = $DB->get_recordset('config_plugins', array('plugin' => $this->oldcomponent));
         foreach ($oldconfig as $oldconfigrec) {
+            // We don't want version records.
+            if ($oldconfigrec->name === 'version') {
+                continue;
+            }
+
             // Check if a setting already exists for this name, and delete if it does.
             $newrec = $DB->get_record('config_plugins', array('plugin' => $this->newcomponent, 'name' => $oldconfigrec->name));
             if (!empty($newrec)) {
-                $DB->delete_record('config_plugins', array('id' => $newrec->id));
+                $DB->delete_records('config_plugins', array('id' => $newrec->id));
             }
             $updatedrec = new \stdClass;
             $updatedrec->id = $oldconfigrec->id;
@@ -146,6 +151,7 @@ class migrator {
         } else {
             $this->oldcomponentinstalled = false;
         }
+        return $this->oldcomponentinstalled;
     }
 
     /**

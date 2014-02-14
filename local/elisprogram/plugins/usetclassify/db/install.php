@@ -36,7 +36,7 @@ require_once elispm::file('plugins/usetclassify/lib.php');
  * @return  boolean  true  Returns true to satisfy install procedure
  */
 function xmldb_elisprogram_usetclassify_install() {
-    global $CFG;
+    global $CFG, $DB;
 
     require_once elispm::lib('setup.php');
     require_once elis::lib('data/customfield.class.php');
@@ -90,12 +90,15 @@ function xmldb_elisprogram_usetclassify_install() {
         field_data::set_for_context_and_field(NULL, $field, 'regular');
     }
 
-    $default = new usersetclassification();
-    $default->shortname = 'regular';
-    $default->name = get_string('cluster', 'local_elisprogram');
-    $default->param_autoenrol_curricula = 1;
-    $default->param_autoenrol_tracks = 1;
-    $default->save();
+    $regclassify = $DB->get_record(usersetclassification::TABLE, array('shortname' => 'regular'));
+    if (empty($regclassify)) {
+        $default = new usersetclassification();
+        $default->shortname = 'regular';
+        $default->name = get_string('cluster', 'local_elisprogram');
+        $default->param_autoenrol_curricula = 1;
+        $default->param_autoenrol_tracks = 1;
+        $default->save();
+    }
 
     return true;
 }

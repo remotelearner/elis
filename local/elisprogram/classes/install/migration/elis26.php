@@ -52,7 +52,6 @@ class elis26 extends migrator {
             'crlm_class_moodle' => 'local_elisprogram_cls_mdl',
             'crlm_cluster' => 'local_elisprogram_uset',
             'crlm_cluster_assignments' => 'local_elisprogram_uset_asign',
-            'crlm_cluster_classification' => 'elisprogram_usetclassify',
             'crlm_cluster_curriculum' => 'local_elisprogram_uset_pgm',
             'crlm_cluster_profile' => 'local_elisprogram_uset_prfle',
             'crlm_cluster_track' => 'local_elisprogram_uset_trk',
@@ -84,8 +83,74 @@ class elis26 extends migrator {
         parent::__construct($oldcomponent, $newcomponent, $upgradestepfuncname, $tablechanges);
     }
 
-    protected function run_old_upgrade_steps_if_necessary() {
+    public function run_old_upgrade_steps_if_necessary() {
         require_once(dirname(__FILE__).'/elis26_oldupgradesteps.php');
         parent::run_old_upgrade_steps_if_necessary();
+    }
+
+    /**
+     * Migrate context levels.
+     */
+    public function migrate_context_levels() {
+        global $DB;
+
+        // Migrate old custom context levels.
+        $ctxoldnewmap = array(
+            1001 => \local_eliscore\context\helper::get_level_from_name('curriculum'),
+            1002 => \local_eliscore\context\helper::get_level_from_name('track'),
+            1003 => \local_eliscore\context\helper::get_level_from_name('course'),
+            1004 => \local_eliscore\context\helper::get_level_from_name('class'),
+            1005 => \local_eliscore\context\helper::get_level_from_name('user'),
+            1006 => \local_eliscore\context\helper::get_level_from_name('cluster')
+        );
+        foreach ($ctxoldnewmap as $oldctxlevel => $newctxlevel) {
+            // Update context table.
+            $sql = 'UPDATE {context} SET contextlevel = ? WHERE contextlevel = ?';
+            $params = array($newctxlevel, $oldctxlevel);
+            $DB->execute($sql, $params);
+
+            // Update role context levels.
+            $sql = 'UPDATE {role_context_levels} SET contextlevel = ? WHERE contextlevel = ?';
+            $params = array($newctxlevel, $oldctxlevel);
+            $DB->execute($sql, $params);
+
+            // Update custom field context levels.
+            $sql = 'UPDATE {local_eliscore_field_clevels} SET contextlevel = ? WHERE contextlevel = ?';
+            $params = array($newctxlevel, $oldctxlevel);
+            $DB->execute($sql, $params);
+
+            // Update custom field category context levels.
+            $sql = 'UPDATE {local_eliscore_fld_cat_ctx} SET contextlevel = ? WHERE contextlevel = ?';
+            $params = array($newctxlevel, $oldctxlevel);
+            $DB->execute($sql, $params);
+        }
+    }
+
+    /**
+     * Migrate capabilities.
+     */
+    public function migrate_capabilities() {
+        global $DB;
+        // Migrate capabilities.
+        $oldcapprefix = 'elis/program';
+        $newcapprefix = 'local/elisprogram';
+        $sql = 'SELECT * FROM {role_capabilities} WHERE capability LIKE ?';
+        $params = array($oldcapprefix.'%');
+        $rolecaps = $DB->get_recordset_sql($sql, $params);
+        foreach ($rolecaps as $rolecaprec) {
+            $updaterec = new \stdClass;
+            $updaterec->id = $rolecaprec->id;
+            $updaterec->capability = str_replace($oldcapprefix, $newcapprefix, $rolecaprec->capability);
+            $DB->update_record('role_capabilities', $updaterec);
+        }
+    }
+
+    /**
+     * Perform all migrations.
+     */
+    public function migrate() {
+        parent::migrate();
+        $this->migrate_context_levels();
+        $this->migrate_capabilities();
     }
 }
