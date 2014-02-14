@@ -27,6 +27,9 @@ namespace local_elisprogram\context;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+require_once($CFG->dirroot.'/local/elisprogram/lib/data/curriculum.class.php');
+
 /**
  * ELIS Program Context.
  */

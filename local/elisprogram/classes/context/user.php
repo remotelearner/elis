@@ -27,6 +27,9 @@ namespace local_elisprogram\context;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+require_once($CFG->dirroot.'/local/elisprogram/lib/data/user.class.php');
+
 /**
  * ELIS User Context.
  */
@@ -66,11 +69,12 @@ class user extends \local_eliscore\context\base {
         global $DB;
 
         $name = '';
-        if ($user = $DB->get_record(\user::TABLE, array('id' => $this->_instanceid))) {
+        if ($user = new \user($this->_instanceid)) {
+            $user->load();
             if ($withprefix) {
                 $name = get_string('user', 'local_elisprogram').': ';
             }
-            $name .= fullname($user);
+            $name .= $user->moodle_fullname();
         }
         return $name;
     }
