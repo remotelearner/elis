@@ -148,7 +148,7 @@ class pmclasspage extends managementpage {
     public function __construct(array $params=null) {
         global $DB, $CFG;
 
-        $reports_installed = $DB->record_exists('config_plugins', array('plugin' => 'elisreports', 'name' => 'version'));
+        $reports_installed = $DB->record_exists('config_plugins', array('plugin' => 'local_elisreports', 'name' => 'version'));
         if ($reports_installed && file_exists($CFG->dirroot .'/local/elisreports/php_report_base.php')) {
             require_once($CFG->dirroot .'/local/elisreports/php_report_base.php');
         }
