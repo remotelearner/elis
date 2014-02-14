@@ -26,9 +26,9 @@ function xmldb_block_enrolsurvey_install() {
     $result = true;
     $dbman = $DB->get_manager();
 
-    $oldrecord = $DB->get_record('config_plugins', array('plugin' => 'block_enrol_survey', 'name' => 'version'), 'id');
-
-    if (isset($oldrecord->id)) {
+    // Migrate block instances.
+    $oldrecord = $DB->get_record('block', array('name' => 'enrol_survey'), 'id');
+    if (!empty($oldrecord)) {
         // Convert any existing old enrol_survey block instances to enrolsurvey blocks.
         $sql = "UPDATE {block_instances} SET blockname = 'enrolsurvey' WHERE blockname = 'enrol_survey'";
         $DB->execute($sql);
