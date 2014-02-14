@@ -28,9 +28,9 @@ function xmldb_local_datahub_install() {
     $result = true;
     $dbman = $DB->get_manager();
 
-    $oldrecord = $DB->get_record('config_plugins', array('plugin' => 'block_rlip', 'name' => 'version'), 'id');
-
-    if (isset($oldrecord->id)) {
+    // Migrate block instances.
+    $oldrecord = $DB->get_record('block', array('name' => 'rlip'), 'id');
+    if (!empty($oldrecord)) {
         // Convert any existing old rlip block instances to html blocks.
         $plugins = get_string('plugins', 'local_datahub');
         $logs = get_string('logs', 'local_datahub');
@@ -73,16 +73,26 @@ function xmldb_local_datahub_install() {
         // Migrate any elis_scheduled_tasks entries for block_rlip.
         $tableobj = new xmldb_table('elis_scheduled_tasks');
         if ($dbman->table_exists($tableobj)) {
-            $tasks = $DB->get_recordset($table, array('plugin' => 'block_rlip'));
+            $tasks = $DB->get_recordset('elis_scheduled_tasks', array('plugin' => 'block_rlip'));
             foreach ($tasks as $task) {
                 $task->plugin = 'local_datahub';
                 $task->callfile = '/local/datahub/lib.php';
-                $DB->update_record($table, $task);
+                $DB->update_record('elis_scheduled_tasks', $task);
             }
         }
     }
 
     unset_all_config_for_plugin('block_rlip');
+
+    // Remove the shortname for the old service.
+    $oldservice = $DB->get_record('external_services', array('shortname' => 'rldh_webservices'));
+    if (!empty($oldservice)) {
+        $updated = new \stdClass;
+        $updated->id = $oldservice->id;
+        $updated->shortname = 'rldh_webservices_old';
+        $updated->name = 'RLDH Webservices Old';
+        $DB->update_record('external_services', $updated);
+    }
 
     return $result;
 }
