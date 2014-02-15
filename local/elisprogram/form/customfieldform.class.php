@@ -208,8 +208,8 @@ class customfieldform extends cmform {
         $form->addElement('html', '</fieldset>');
 
         $plugins = core_component::get_plugin_list('elisfields');
-
-        foreach ($plugins as $plugin) {
+        foreach ($plugins as $plugin => $dir) {
+            // error_log("customfieldform: plugin file = ".elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
                 include_once(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));
                 if (function_exists("{$plugin}_field_edit_form_definition")) {
@@ -254,7 +254,7 @@ class customfieldform extends cmform {
 
         // Check for specific plugin definition_after_data functions
         $plugins = core_component::get_plugin_list('elisfields');
-        foreach ($plugins as $plugin) {
+        foreach ($plugins as $plugin => $dir) {
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
                 include_once(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));
                 if (function_exists("{$plugin}_field_edit_form_definition_after_data")) {
@@ -391,9 +391,8 @@ class customfieldform extends cmform {
             }
         }
 
-        $plugins = get_list_of_plugins('local/eliscore/fields');
-
-        foreach ($plugins as $plugin) {
+        $plugins = core_component::get_plugin_list('elisfields');
+        foreach ($plugins as $plugin => $dir) {
             if (is_readable(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'))) {
                 include_once(elis::plugin_file("elisfields_{$plugin}",'custom_fields.php'));
                 if (function_exists("{$plugin}_field_edit_form_validation")) {

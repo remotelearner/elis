@@ -377,8 +377,8 @@ class customfieldpage extends pm_page {
                 }
             }
 
-            $plugins = get_list_of_plugins('local/eliscore/fields');
-            foreach ($plugins as $plugin) {
+            $plugins = core_component::get_plugin_list('elisfields');
+            foreach ($plugins as $plugin => $dir) {
                 if (is_readable($CFG->dirroot.'/local/eliscore/fields/'.$plugin.'/custom_fields.php')) {
                     require_once(elis::plugin_file('elisfields_'.$plugin, 'custom_fields.php'));
                     if (function_exists("{$plugin}_field_save_form_data")) {
@@ -397,6 +397,7 @@ class customfieldpage extends pm_page {
                         print_error('invalid_field_id', 'local_elisprogram');
                     }
                     unset($moodlefield->id);
+                    $data = $moodlefield;
                     $data_array = (array)$moodlefield;
                     $data_array['datatype'] = 'text';
                     $data_array['manual_field_control'] = $moodlefield->datatype;
@@ -428,6 +429,7 @@ class customfieldpage extends pm_page {
                     }
                 } else {
                     $data = new field($id);
+                    $data->load();
                     $manual = new field_owner((!isset($field->owners) || !isset($field->owners['manual'])) ? false : $field->owners['manual']);
                     $menu_src = !empty($manual->options_source)
                                 ? $manual->options_source : 0;
@@ -469,8 +471,8 @@ class customfieldpage extends pm_page {
                         $data_array['defaultdata'] = $defaultdata;
                     }
 
-                    $plugins = get_list_of_plugins('local/eliscore/fields');
-                    foreach ($plugins as $plugin) {
+                    $plugins = core_component::get_plugin_list('elisfields');
+                    foreach ($plugins as $plugin => $dir) {
                         if (is_readable($CFG->dirroot.'/local/eliscore/fields/'.$plugin.'/custom_fields.php')) {
                             include_once($CFG->dirroot.'/local/eliscore/fields/'.$plugin.'/custom_fields.php');
                             if (function_exists("{$plugin}_field_get_form_data")) {
