@@ -1165,6 +1165,7 @@ $string['tab_current_learning_plans'] = 'Current Learning Plans';
 $string['tag_custom_data'] = 'Custom Data for Tag {$a}';
 $string['tag_name'] = 'Name';
 $string['tags'] = 'Tags';
+$string['thirdpartylib'] = '(3rd-party library)';
 $string['timecreated'] = 'Creation time';
 $string['timeofday'] = 'Time of Day';
 $string['time_12h_setting'] = 'Display time selection in a 12 hour format';

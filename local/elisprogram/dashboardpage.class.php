@@ -258,7 +258,8 @@ class dashboardpage extends pm_page {
                 list($componentname, $release, $version) = call_user_func($getinfocallback);
                 // error_log("elis_versions(): {$componentname}, {$release}, {$version}");
                 if (!empty($componentname)) {
-                    $componenttable->data[] = array("$componentname (3rd-party library)",
+                    $thirdpartylib = get_string('thirdpartylib', 'local_elisprogram');
+                    $componenttable->data[] = array("$componentname $thirdpartylib",
                             $release, $version);
                 }
             } else if (($compdir = core_component::get_plugin_directory($plugintype, $pluginname)) && file_exists($compdir.'/version.php')) {
