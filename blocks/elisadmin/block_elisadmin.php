@@ -275,10 +275,10 @@ class block_elisadmin extends block_base {
 
         if (has_capability('moodle/course:managegroups', context_course::instance($SITE->id))) {
             if (elis::$config->elisprogram_usetgroups->site_course_userset_groups) {
-                $pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'pmplugins_userset_groups'), block_elisadmin_get_item_css_class('manageclusters'));
+                $pages[] = new menuitem('frontpagegroups', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/index.php?id={$SITE->id}"), 'admn', get_string('frontpagegroups', 'elisprogram_usetgroups'), block_elisadmin_get_item_css_class('manageclusters'));
             }
             if (elis::$config->elisprogram_usetgroups->userset_groupings) {
-                $pages[] = new menuitem('frontpagegroupings', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/groupings.php?id={$SITE->id}"), 'admn', get_string('frontpagegroupings', 'pmplugins_userset_groups'), block_elisadmin_get_item_css_class('manageclusters'));
+                $pages[] = new menuitem('frontpagegroupings', new menuitempage('url_page', 'lib/menuitem.class.php', "{$CFG->wwwroot}/group/groupings.php?id={$SITE->id}"), 'admn', get_string('frontpagegroupings', 'elisprogram_usetgroups'), block_elisadmin_get_item_css_class('manageclusters'));
             }
         }
 
