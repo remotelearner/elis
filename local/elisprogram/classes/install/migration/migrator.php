@@ -155,6 +155,19 @@ class migrator {
     }
 
     /**
+     * Uninstall the old plugin.
+     */
+    public function uninstall_old_plugin() {
+        global $CFG;
+
+        // Uninstall old component.
+        require_once($CFG->dirroot.'/lib/weblib.php');
+        require_once($CFG->dirroot.'/lib/classes/plugin_manager.php');
+        $pluginman = \core_plugin_manager::instance();
+        $pluginman->uninstall_plugin($this->oldcomponent, new \null_progress_trace());
+    }
+
+    /**
      * Perform all migrations.
      */
     public function migrate() {
@@ -167,5 +180,6 @@ class migrator {
         }
 
         $this->migrate_settings();
+        $this->uninstall_old_plugin();
     }
 }

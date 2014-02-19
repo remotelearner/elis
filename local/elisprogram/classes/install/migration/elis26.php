@@ -149,8 +149,17 @@ class elis26 extends migrator {
      * Perform all migrations.
      */
     public function migrate() {
-        parent::migrate();
+        if (!empty($this->upgradestepfuncname)) {
+            $this->run_old_upgrade_steps_if_necessary();
+        }
+
+        if (!empty($this->tablechanges)) {
+            $this->migrate_tables();
+        }
+
+        $this->migrate_settings();
         $this->migrate_context_levels();
         $this->migrate_capabilities();
+        $this->uninstall_old_plugin();
     }
 }
