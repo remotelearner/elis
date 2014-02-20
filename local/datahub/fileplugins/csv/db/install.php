@@ -23,15 +23,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot.'/local/datahub/lib.php');
-
-function xmldb_dhfile_log_install() {
+function xmldb_dhfile_csv_install() {
     $result = true;
 
-    unset_all_config_for_plugin('rlipfile_log');
-
-    // Ensure that scheduling is setup correctly.
-    rlip_scheduling_init();
+    unset_all_config_for_plugin('rlipfile_csv');
 
     return $result;
 }

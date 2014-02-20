@@ -51,6 +51,24 @@ function xmldb_dhexport_version1_install() {
         $dbman->rename_table($table, 'dhexport_version1_field');
     }
 
+    $oldconfig = $DB->get_recordset('config_plugins', array('plugin' => 'rlipexport_version1'));
+    foreach ($oldconfig as $oldconfigrec) {
+        // We don't want version records.
+        if ($oldconfigrec->name === 'version') {
+            continue;
+        }
+
+        // Check if a setting already exists for this name, and delete if it does.
+        $newrec = $DB->get_record('config_plugins', array('plugin' => 'dhexport_version1', 'name' => $oldconfigrec->name));
+        if (!empty($newrec)) {
+            $DB->delete_records('config_plugins', array('id' => $newrec->id));
+        }
+        $updatedrec = new \stdClass;
+        $updatedrec->id = $oldconfigrec->id;
+        $updatedrec->plugin = 'dhexport_version1';
+        $DB->update_record('config_plugins', $updatedrec);
+    }
+
     unset_all_config_for_plugin('rlipexport_version1');
 
     return true;

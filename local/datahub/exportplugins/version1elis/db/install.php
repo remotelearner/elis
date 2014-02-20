@@ -119,6 +119,24 @@ function xmldb_dhexport_version1elis_install() {
         $dbman->rename_table($table, 'dhexport_version1elis_fld');
     }
 
+    $oldconfig = $DB->get_recordset('config_plugins', array('plugin' => 'rlipexport_version1elis'));
+    foreach ($oldconfig as $oldconfigrec) {
+        // We don't want version records.
+        if ($oldconfigrec->name === 'version') {
+            continue;
+        }
+
+        // Check if a setting already exists for this name, and delete if it does.
+        $newrec = $DB->get_record('config_plugins', array('plugin' => 'dhexport_version1elis', 'name' => $oldconfigrec->name));
+        if (!empty($newrec)) {
+            $DB->delete_records('config_plugins', array('id' => $newrec->id));
+        }
+        $updatedrec = new \stdClass;
+        $updatedrec->id = $oldconfigrec->id;
+        $updatedrec->plugin = 'dhexport_version1elis';
+        $DB->update_record('config_plugins', $updatedrec);
+    }
+
     unset_all_config_for_plugin('rlipexport_version1elis');
 
     return true;
