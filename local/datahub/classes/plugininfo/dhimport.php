@@ -90,12 +90,12 @@ class dhimport extends \core\plugininfo\base {
             $instance = new $plugintypeclass();
             $instance->type = $plugintype;
             $instance->typerootdir = $plugintyperootdir;
-            $instance->name = 'dhimport_'.$pluginname;
+            $instance->name = $pluginname;
             $instance->rootdir = $pluginpath;
-            $instance->displayname = get_string('pluginname', $instance->name);
+            $instance->displayname = get_string('pluginname', $plugintype.'_'.$pluginname);
 
             // Track the current database version.
-            $versiondb = get_config($instance->name, 'version');
+            $versiondb = get_config($plugintype.'_'.$pluginname, 'version');
             $instance->versiondb = ($versiondb !== false) ? $versiondb : null;
 
             // Track the proposed new version.
@@ -105,7 +105,7 @@ class dhimport extends \core\plugininfo\base {
             $instance->init_is_standard(); // Is this really needed?
 
             // Append to results.
-            $result[$instance->name] = $instance;
+            $result[$pluginname] = $instance;
         }
 
         return $result;
