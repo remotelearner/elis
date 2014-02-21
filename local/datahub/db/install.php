@@ -32,27 +32,30 @@ function xmldb_local_datahub_install() {
     $oldrecord = $DB->get_record('block', array('name' => 'rlip'), 'id');
     if (!empty($oldrecord)) {
         // Convert any existing old rlip block instances to html blocks.
-        $plugins = get_string('plugins', 'local_datahub');
-        $logs = get_string('logs', 'local_datahub');
-        $obj = new stdClass();
+        $oldblockinsts = $DB->get_recordset('block_instances', array('blockname' => 'rlip'), '', 'id');
+        if ($oldblockinsts && $oldblockinsts->valid()) {
+            $plugins = get_string('plugins', 'local_datahub');
+            $logs = get_string('logs', 'local_datahub');
+            $obj = new stdClass();
+            $pluginstag = html_writer::tag('a', $plugins, array('href' => $CFG->wwwroot.'/local/datahub/plugins.php', 'title' => $plugins));
+            $logstag = html_writer::tag('a', $logs, array('href' => $CFG->wwwroot.'/local/datahub/viewlogs.php', 'title' => $logs));
+            $obj->text = html_writer::tag('p', $pluginstag).html_writer::tag('p', $logstag);
+            $obj->title = get_string('pluginname', 'local_datahub');
+            $obj->format = 1;
+            $configdata = base64_encode(serialize($obj));
+            $sql = "UPDATE {block_instances} SET blockname = 'html', configdata = ? WHERE blockname = 'rlip'";
+            $DB->execute($sql, array($configdata));
 
-        $blockinstanceid = $DB->get_field('block_instances', 'id', array('blockname' => 'rlip'));
-
-        $pluginstag = html_writer::tag('a', $plugins, array('href' => $CFG->wwwroot.'/local/datahub/plugins.php', 'title' => $plugins));
-        $logstag = html_writer::tag('a', $logs, array('href' => $CFG->wwwroot.'/local/datahub/viewlogs.php', 'title' => $logs));
-        $obj->text = html_writer::tag('p', $pluginstag).html_writer::tag('p', $logstag);
-        $obj->title = get_string('pluginname', 'local_datahub');
-        $obj->format = 1;
-        $configdata = base64_encode(serialize($obj));
-        $sql = "UPDATE {block_instances} SET blockname = 'html', configdata = ? WHERE blockname = 'rlip'";
-        $DB->execute($sql, array($configdata));
-
-        $context = context_block::instance($blockinstanceid);
-        $cap = 'moodle/block:view';
-        $roles = get_roles_with_capability($cap, CAP_ALLOW, $context);
-        foreach ($roles as $role) {
-            if ($role->id != 1) {
-                assign_capability($cap, CAP_PREVENT, $role->id, $context->id);
+            // Hide blocks from all but site admins
+            $cap = 'moodle/block:view';
+            foreach ($oldblockinsts as $oldblockinst) {
+                $context = context_block::instance($oldblockinst->id);
+                $roles = get_roles_with_capability($cap, CAP_ALLOW, $context);
+                foreach ($roles as $role) {
+                    if ($role->id != 1) {
+                        assign_capability($cap, CAP_PREVENT, $role->id, $context->id);
+                    }
+                }
             }
         }
 

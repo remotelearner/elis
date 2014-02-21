@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['automatic'] = 'Automatic';
 $string['confirm_delete_ipjob'] = 'Are you sure to delete DH job #{$a}?';
 $string['configdisableincron'] = 'If enabled, this setting disables this plugin from running in the Moodle cron. Use this setting when running imports & exports via a separate system-level cron.';
+$string['datahub:addinstance'] = 'Add a DataHub instance';
 $string['datahub_settings'] = 'Datahub Settings';
 $string['dateformat'] = 'M/d/Y';
 $string['dblogimportexceedstimelimit'] = 'Failed importing all lines from import file {$a->filename} due to time limit exceeded. Processed {$a->recordsprocessed} of {$a->totalrecords} records.';
