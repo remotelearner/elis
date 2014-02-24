@@ -276,7 +276,7 @@ class RequestPage extends pm_page {
 
                 // Create the new class if we are using an existing course, or if
                 // create_class_with_course is on.
-                if (!empty($request->courseid) || !empty($oonfig->create_class_with_course)) {
+                if (!empty($request->courseid) || !empty($config->create_class_with_course)) {
                     require_once($CFG->dirroot.'/local/elisprogram/lib/data/pmclass.class.php');
                     $clsdata = array(
                         'name'            => $request->title,

@@ -79,5 +79,23 @@ function xmldb_block_courserequest_install() {
         $dbman->rename_table($table, 'block_courserequest_data');
     }
 
+    // Migrate capabilities.
+    $oldcapprefix = 'block/course_request';
+    $newcapprefix = 'block/courserequest';
+    $sql = 'SELECT * FROM {role_capabilities} WHERE capability LIKE ?';
+    $params = array($oldcapprefix.'%');
+    $rolecaps = $DB->get_recordset_sql($sql, $params);
+    foreach ($rolecaps as $rolecap) {
+        $rolecap->capability = str_replace($oldcapprefix, $newcapprefix, $rolecap->capability);
+        $DB->update_record('role_capabilities', $rolecap);
+    }
+    $sql = 'SELECT * FROM {capabilities} WHERE name LIKE ?';
+    $caps = $DB->get_recordset_sql($sql, $params);
+    foreach ($caps as $cap) {
+        $cap->name = str_replace($oldcapprefix, $newcapprefix, $cap->name);
+        $cap->component = str_replace('block_course_request', 'block_courserequest', $cap->component);
+        $DB->update_record('capabilities', $cap);
+    }
+
     return $result;
 }
