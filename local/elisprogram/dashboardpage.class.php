@@ -210,6 +210,7 @@ class dashboardpage extends pm_page {
      * @return string
      */
     protected function elis_versions() {
+        global $CFG;
         $ret = html_writer::script(
                 "function toggle_elis_component_versions() {
                     var compdiv;
