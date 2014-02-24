@@ -36,9 +36,9 @@ $string['pluginname'] = 'ELIS Reports';
 
 // Capability strings.
 $string['blockname'] = 'ELIS Reports';
-$string['php_report:view'] = 'View ELIS reports';
-$string['php_report:schedule'] = 'Schedule ELIS reports';
-$string['php_report:manageschedules'] = 'Manage ELIS report schedules';
+$string['elisreports:view'] = 'View ELIS reports';
+$string['elisreports:schedule'] = 'Schedule ELIS reports';
+$string['elisreports:manageschedules'] = 'Manage ELIS report schedules';
 
 // Report categories
 $string['admin_reports'] = 'Administrative Reports';

@@ -53,9 +53,27 @@ function xmldb_local_elisreports_install() {
         }
     }
 
+    // Migrate capabilities
+    $oldcapprefix = 'block/php_report';
+    $newcapprefix = 'local/elisreports';
+    $sql = 'SELECT * FROM {role_capabilities} WHERE capability LIKE ?';
+    $params = array($oldcapprefix.'%');
+    $rolecaps = $DB->get_recordset_sql($sql, $params);
+    foreach ($rolecaps as $rolecap) {
+        $rolecap->capability = str_replace($oldcapprefix, $newcapprefix, $rolecap->capability);
+        $DB->update_record('role_capabilities', $rolecap);
+    }
+    $sql = 'SELECT * FROM {capabilities} WHERE name LIKE ?';
+    $caps = $DB->get_recordset_sql($sql, $params);
+    foreach ($caps as $cap) {
+        $cap->name = str_replace($oldcapprefix, $newcapprefix, $cap->name);
+        $cap->component = str_replace('block_php_report', 'local_elisreports', $cap->component);
+        $DB->update_record('capabilities', $cap);
+    }
+
     // Remove the old block ...
     $DB->delete_records('block', array('name' => 'php_report'));
-    $DB->delete_records('config_plugins', array('plugin' => 'block_php_report'));
+    unset_all_config_for_plugin('block_php_report');
 
     return $result;
 }

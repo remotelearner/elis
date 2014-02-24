@@ -184,7 +184,7 @@ function php_report_schedule_delete_unmatching_records() {
 
     //query to find the appropriate PHP report task ids
     $sql = "SELECT php_sched.id as id
-            FROM {php_report_schedule} php_sched
+            FROM {local_elisreports_schedule} php_sched
             LEFT JOIN {local_eliscore_sched_tasks} elis_sched
                    ON (elis_sched.taskname = {$concat})
                 WHERE elis_sched.taskname IS NULL";
