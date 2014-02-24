@@ -66,6 +66,13 @@ function xmldb_block_enrolsurvey_install() {
         $updaterec->capability = str_replace($oldcapprefix, $newcapprefix, $rolecaprec->capability);
         $DB->update_record('role_capabilities', $updaterec);
     }
+    $sql = 'SELECT * FROM {capabilities} WHERE name LIKE ?';
+    $caps = $DB->get_recordset_sql($sql, $params);
+    foreach ($caps as $cap) {
+        $cap->name = str_replace($oldcapprefix, $newcapprefix, $cap->name);
+        $cap->component = str_replace('block_enrol_survey', 'block_enrolsurvey', $cap->component);
+        $DB->update_record('capabilities', $cap);
+    }
 
     return $result;
 }
