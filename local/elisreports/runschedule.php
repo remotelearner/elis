@@ -36,7 +36,7 @@ require_once $CFG->dirroot.'/local/elisreports/sharedlib.php';
  * @return  boolean                     true on success, otherwise false
  */
 function php_report_schedule_export_instance($report_schedule, $now = 0) {
-    global $CFG;
+    global $CFG, $USER;
 
     if ($now == 0) {
         $now = time();
@@ -73,11 +73,18 @@ function php_report_schedule_export_instance($report_schedule, $now = 0) {
     $attachment = substr($filename,$start);
     $attachname = $report_schedule->report.$now.'.'.$data['format'];
 
+    // $user->id & all other fields now required by Moodle 2.6+ email_to_user() API which also calls fullname($user)
+    $user = new stdClass;
+    $allfields = get_all_user_name_fields();
+    foreach ($allfields as $field) {
+        $user->$field = null;
+    }
+    $user->id = $USER->id; // let's just use this user as default (TBD)
+    $user->mailformat = 1;
+
     // Attach the file to the recipients
     foreach ($recipients_array as $recipient) {
-        $user = new stdClass;
         $user->email = trim($recipient);
-        $user->mailformat = 1;
         email_to_user($user, $from, $subject, $messagetext, $messagehtml, $attachment, $attachname);
     }
 
