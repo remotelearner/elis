@@ -541,7 +541,21 @@ class repository_elisfiles extends repository {
         $tmp = ob_get_contents();
         ob_end_clean();
         error_log("get_file_by_reference(ref = {$tmp});");
-        return parent::get_file_by_reference($ref); // TBD!!!
+        // return parent::get_file_by_reference($ref); // DEPRECATED
+        if ($this->has_moodle_files() && isset($ref->reference)) {
+            $fs = get_file_storage();
+            $params = file_storage::unpack_reference($ref->reference, true);
+            if (!is_array($params) || !($storedfile = $fs->get_file($params['contextid'],
+                    $params['component'], $params['filearea'], $params['itemid'], $params['filepath'],
+                    $params['filename']))) {
+                return null;
+            }
+            return (object)array(
+                'contenthash' => $storedfile->get_contenthash(),
+                'filesize'    => $storedfile->get_filesize()
+            );
+        }
+        return null;
     }
 
     /**
@@ -952,10 +966,10 @@ class repository_elisfiles extends repository {
      * Add Plugin settings input to Moodle form
      * @param object $mform
      */
-    public static function type_config_form($mform, $classname = 'repository_elisfiles') {
+    public static function type_config_form($mform, $classname = 'repository') {
         global $DB, $CFG, $SESSION, $OUTPUT;
 
-        parent::type_config_form($mform);
+        parent::type_config_form($mform, $classname);
 
         $mform->addElement('text', 'server_host', get_string('serverurl', 'repository_elisfiles'), array('size' => '40'));
         $mform->setDefault('server_host', 'http://localhost');

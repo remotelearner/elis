@@ -210,6 +210,26 @@ function xmldb_repository_elisfiles_install() {
         }
     }
 
+    // Migrate capabilities
+    $oldcapprefix = 'repository/elis_files';
+    $newcapprefix = 'repository/elisfiles';
+    $sql = 'SELECT * FROM {role_capabilities} WHERE capability LIKE ?';
+    $params = array($oldcapprefix.'%');
+    $rolecaps = $DB->get_recordset_sql($sql, $params);
+    foreach ($rolecaps as $rolecaprec) {
+        $updaterec = new stdClass;
+        $updaterec->id = $rolecaprec->id;
+        $updaterec->capability = str_replace($oldcapprefix, $newcapprefix, $rolecaprec->capability);
+        $DB->update_record('role_capabilities', $updaterec);
+    }
+    $sql = 'SELECT * FROM {capabilities} WHERE name LIKE ?';
+    $caps = $DB->get_recordset_sql($sql, $params);
+    foreach ($caps as $cap) {
+        $cap->name = str_replace($oldcapprefix, $newcapprefix, $cap->name);
+        $cap->component = str_replace('repository_elis_files', 'repository_elisfiles', $cap->component);
+        $DB->update_record('capabilities', $cap);
+    }
+
     // Copy any settings from old plugin
     $oldconfig = get_config('elis_files');
     foreach ($oldconfig as $name => $value) {
@@ -217,6 +237,10 @@ function xmldb_repository_elisfiles_install() {
     }
     unset_all_config_for_plugin('elis_files');
     unset_all_config_for_plugin('repository_elis_files');
+
+    // Update repository table
+    $sql = 'UPDATE {repository} SET type = "elisfiles" WHERE type = "elis_files"';
+    $DB->execute($sql);
 
     return $result;
 }
