@@ -190,10 +190,12 @@ abstract class enginepage extends pm_page {
     }
 
     /**
-     * Get the default pate title.
+     * Get the default page title.
+     * @return string The human readable context name.
      */
-    function get_page_title_default() {
-        return print_context_name($this->get_context(), false);
+    public function get_page_title_default() {
+        $ctx = $this->get_context();
+        return $ctx->get_context_name(false);
     }
 
     /**

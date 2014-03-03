@@ -108,11 +108,12 @@ abstract class certificatepage extends pm_page {
     }
 
     /**
-     * Get the default pate title.
-     * @return string the human readable context name.
+     * Get the default page title.
+     * @return string The human readable context name.
      */
     public function get_page_title_default() {
-        return print_context_name($this->get_context(), false);
+        $ctx = $this->get_context();
+        return $ctx->get_context_name(false);
     }
 
     /**
