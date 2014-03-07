@@ -25,14 +25,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2013082102;
-$plugin->requires = 2013051400;  // Requires this Moodle version
+$plugin->version = 2014030700;
+$plugin->requires = 2013111801.11;  // Requires this Moodle version
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '2.5.1.5 (Build: 20131203)';
+$plugin->release = '2.6.1.0 (Build: 20140307)';
 $plugin->dependencies = array(
-    'local_eliscore' => 2013082104
+    'local_eliscore' => 2014030700
 );
 
 if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
-    $plugin->dependencies['local_elisprogram'] = 2013082106;
+    $plugin->dependencies['local_elisprogram'] = 2014030700;
 }

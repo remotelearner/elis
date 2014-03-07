@@ -23,5 +23,8 @@
  *
  */
 
-$plugin->version = 2013082101;
-$plugin->release = '2.6.0.0 (Build: 20131203)';
+$plugin->version = 2014030700;
+$plugin->release = '2.6.1.0 (Build: 20140307)';
+$plugin->dependencies = array(
+    'repository_elisfiles' => 2014030700
+);

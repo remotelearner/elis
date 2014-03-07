@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-function xmldb_rlipimport_version1_upgrade($oldversion=0) {
+function xmldb_dhimport_version1_upgrade($oldversion=0) {
     global $DB;
 
     $result = true;
