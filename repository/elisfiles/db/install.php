@@ -144,7 +144,8 @@ function xmldb_repository_elisfiles_install() {
          * This upgrade step removes backslashes from category titles in the repository_elisfiles_cats
          */
         if ($result && $oldversion < 2012090400)  {
-
+            require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
+            require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
             // Initialize the repo object.
             $repo = repository_factory::factory();
             $table = 'elis_files_categories';
