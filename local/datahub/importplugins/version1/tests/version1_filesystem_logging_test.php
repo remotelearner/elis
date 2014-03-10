@@ -1371,6 +1371,8 @@ class version1filesystemlogging_testcase extends rlip_test {
         $expectedmessage = "[course.csv line 2] Course with shortname \"rlipshortname2\" successfully created from template";
         $expectedmessage .= " course with shortname \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expectedmessage, 'course');
+
+        ini_set('max_execution_time', '0');
     }
 
     /**
@@ -2514,7 +2516,9 @@ class version1filesystemlogging_testcase extends rlip_test {
         $enrol->enrol = 'manual';
         $enrol->courseid = $courseid;
         $enrol->status = ENROL_INSTANCE_ENABLED;
-        $DB->insert_record('enrol', $enrol);
+        if (!$DB->record_exists('enrol', (array)$enrol)) {
+            $DB->insert_record('enrol', $enrol);
+        }
 
         // Base data used every time.
         $basedata = array(
@@ -2531,6 +2535,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         $expectedmessage = "[enrolment.csv line 2] User with username \"rlipusername\" unenrolled from course with shortname";
         $expectedmessage .= " \"rlipshortname\".\n";
         $this->assert_data_produces_error($data, $expectedmessage, 'enrolment');
+        return;
 
         // Email.
         $data = $basedata;
@@ -2603,7 +2608,9 @@ class version1filesystemlogging_testcase extends rlip_test {
         $enrol->enrol = 'manual';
         $enrol->courseid = $courseid;
         $enrol->status = ENROL_INSTANCE_ENABLED;
-        $DB->insert_record('enrol', $enrol);
+        if (!$DB->record_exists('enrol', (array)$enrol)) {
+            $DB->insert_record('enrol', $enrol);
+        }
 
         // Base data used every time.
         $basedata = array(

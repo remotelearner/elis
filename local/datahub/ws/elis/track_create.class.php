@@ -183,7 +183,7 @@ class local_datahub_elis_track_create extends external_api {
         self::validate_context($context);
 
         // Capability checking.
-        require_capability('local/elisprogram:track_create', get_system_context());
+        require_capability('local/elisprogram:track_create', context_system::instance());
 
         $data = (object)$data;
         $record = new stdClass;

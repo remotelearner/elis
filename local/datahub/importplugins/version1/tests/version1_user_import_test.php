@@ -32,6 +32,7 @@ require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
 require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
 require_once($CFG->dirroot.'/local/eliscore/lib/lib.php');
+require_once($CFG->dirroot.'/tag/lib.php');
 
 /**
  * Class for version 1 user import correctness.
@@ -2348,18 +2349,6 @@ class version1userimport_testcase extends rlip_test {
 
         // Send the user an unprocessed message.
         set_config('noemailever', true);
-        $DB->delete_records('message_processors');
-        $message = new stdClass;
-        $message->userfrom = $userid;
-        $message->userto = $userid;
-        $message->component = 'moodle';
-        $message->name = 'notices';
-        $message->subject = 'testsubject';
-        $message->fullmessage = 'testmessage';
-        $message->fullmessagehtml = 'testmessage';
-        $message->smallmessage = 'testmessage';
-        $message->fullmessageformat = FORMAT_PLAIN;
-        message_send($message);
 
         // Set up a user tag.
         tag_set('user', $userid, array('testtag'));
@@ -2396,7 +2385,6 @@ class version1userimport_testcase extends rlip_test {
         $DB->insert_record('user_lastaccess', $lastaccess);
 
         // Assert data condition before delete.
-        $this->assertEquals($DB->count_records('message_read'), 0);
         $this->assertEquals($DB->count_records('tag_instance'), 1);
         $this->assertEquals($DB->count_records('grade_grades'), 1);
         $this->assertEquals($DB->count_records('cohort_members'), 1);
@@ -2411,7 +2399,6 @@ class version1userimport_testcase extends rlip_test {
         $this->run_core_user_import($data, false);
 
         // Assert data condition after delete.
-        $this->assertEquals($DB->count_records('message_read'), 1);
         $this->assertEquals($DB->count_records('grade_grades'), 0);
         $this->assertEquals($DB->count_records('tag_instance'), 0);
         $this->assertEquals($DB->count_records('cohort_members'), 0);

@@ -55,7 +55,7 @@ class curriculum_testcase extends elis_database_test {
      */
     public function test_nocurriculumpermission() {
         $this->load_csv_data();
-
+        $this->setGuestUser();
         $curriculumfilter = array('contexts' => curriculumpage::get_contexts('local/elisprogram:program_view'));
 
         $curricula = clustercurriculum::get_curricula(1, 0, 5, 'cur.priority ASC, cur.name ASC', $curriculumfilter);

@@ -133,6 +133,8 @@ class elis_class_associate_moodle_course_testcase extends rlip_elis_test {
             'enrolplugin' => 'crlm',
             'autocreated' => $dbautocreated
         )));
+
+        ini_set('max_execution_time', '0');
     }
 
     /**
@@ -211,5 +213,7 @@ class elis_class_associate_moodle_course_testcase extends rlip_elis_test {
             'enrolplugin' => 'crlm',
             'autocreated' => $dbautocreated
         )));
+
+        ini_set('max_execution_time', '0');
     }
 }

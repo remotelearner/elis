@@ -414,8 +414,25 @@ class student extends elis_data_object {
      * @uses events_trigger()
      */
     function update() {
+        $statusupdatedtocomplete = false;
+
+        // Determine whether the the completion status is being changed to a complete status (passed/failed).
+        $completestatus = ($this->completestatusid != STUSTATUS_NOTCOMPLETE) ? true : false;
+        if ($completestatus === true) {
+            if (!empty($this->id)) {
+                $oldstatus = $this->_db->get_field(self::TABLE, 'completestatusid', array('id' => $this->id));
+                if ($oldstatus !== false && $oldstatus != $this->completestatusid) {
+                    $statusupdatedtocomplete = true;
+                } else {
+                    $statusupdatedtocomplete = false;
+                }
+            } else {
+                $statusupdatedtocomplete = true;
+            }
+        }
+
         parent::save(); // no return val
-        if ($this->completestatusid != STUSTATUS_NOTCOMPLETE) {
+        if ($statusupdatedtocomplete === true) {
             require_once elispm::lib('notifications.php');
             events_trigger('local_elisprogram_cls_completed', $this);
 

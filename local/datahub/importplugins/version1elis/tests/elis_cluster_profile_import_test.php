@@ -73,7 +73,14 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
             ));
             $field->save();
 
-            // Field owner.
+            // Ensure manual field owner exists for syncing.
+            field_owner::ensure_field_owner_exists($field, 'manual');
+            $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+            $owner = new field_owner($ownerid);
+            $owner->param_control = 'checkbox';
+            $owner->save();
+
+            // Ensure moodle profile field owner exists.
             field_owner::ensure_field_owner_exists($field, 'moodle_profile');
             $DB->execute("UPDATE {".field_owner::TABLE."} SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
 
@@ -89,11 +96,12 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
             $data->shortname = 'testfieldshortname'.$i;
             $data->name = 'testfieldname'.$i;
             $profiledefinecheckbox->define_save($data);
+            $mfield = $DB->get_record('user_info_field', array('shortname' => 'testfieldshortname'.$i));
 
             // The "cluster-profile" association.
             $usersetprofile = new userset_profile(array(
                 'clusterid' => $userset->id,
-                'fieldid' => $field->id,
+                'fieldid' => $mfield->id,
                 'value' => 1
             ));
             $usersetprofile->save();
@@ -132,7 +140,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
         $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array(
             'userid' => $userid,
             'clusterid' => 1,
-            'plugin' => 'moodle_profile'
+            'plugin' => 'moodleprofile'
         )));
     }
 
@@ -168,7 +176,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
         $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array(
             'userid' => 1,
             'clusterid' => 1,
-            'plugin' => 'moodle_profile'
+            'plugin' => 'moodleprofile'
         )));
     }
 
@@ -210,7 +218,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
         $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array(
             'userid' => 1,
             'clusterid' => 1,
-            'plugin' => 'moodle_profile'
+            'plugin' => 'moodleprofile'
         )));
     }
 
@@ -253,7 +261,7 @@ class elis_cluster_profile_import_testcase extends rlip_elis_test {
         $this->assertTrue($DB->record_exists(clusterassignment::TABLE, array(
             'userid' => 1,
             'clusterid' => 1,
-            'plugin' => 'moodle_profile'
+            'plugin' => 'moodleprofile'
         )));
     }
 }

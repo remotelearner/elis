@@ -30,6 +30,7 @@ require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 // Libs.
 require_once($CFG->dirroot.'/local/datahub/lib/rlip_fileplugin.class.php');
 require_once($CFG->dirroot.'/local/datahub/lib/rlip_fslogger.class.php');
+require_once($CFG->dirroot.'/local/datahub/lib.php');
 
 /**
  * Mock object class to track whether a file is open
@@ -404,7 +405,8 @@ class fslogger_testcase extends rlip_test {
         $this->assertEquals(count(file($filename)), 1);
         $pointer = fopen($filename, 'r');
         $line = fgets($pointer);
-        $expectedsubstring = date('M').'/'.date('d').'/'.date('Y');
+        $date = rlip_fslogger::time_display(time(), -5);
+        $expectedsubstring = substr($date, 0, strpos($date, ':'));
         fclose($pointer);
         $this->assertEquals(strpos($line, $expectedsubstring), 1);
     }

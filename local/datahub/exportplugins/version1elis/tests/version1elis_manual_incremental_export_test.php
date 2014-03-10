@@ -282,28 +282,28 @@ class version1elismanualincrementalexport_testcase extends rlip_elis_test {
     }
 
     /**
-     * Provider for basic (core) export data
-     *
-     * @return array The expected column data
-     */
-    public function valid_data_provider() {
-        $expecteddata = array('exportfirstname', 'exportlastname', 'exportusername', 'exportidnumber',
-                              'testcourseidnumber', date('M/d/Y', 1000000000), date('M/d/Y', 1500000000),
-                              'COMPLETED', '70.00000', 'C-');
-        return array(array($expecteddata));
-    }
-
-    /**
      * Validate that the export contains the necessary data when the
      * approriate data is present in the database
      *
      * @param array $expecteddata The expected column data
-     * @dataProvider valid_data_provider
      */
-    public function test_export_contains_valid_data($expecteddata) {
+    public function test_export_contains_valid_data() {
         // Setup.
         $this->load_csv_data();
         $data = $this->get_export_data();
+
+        $expecteddata = array(
+                'exportfirstname',
+                'exportlastname',
+                'exportusername',
+                'exportidnumber',
+                'testcourseidnumber',
+                date('M/d/Y', 1000000000),
+                date('M/d/Y', 1500000000),
+                'COMPLETED',
+                '70.00000',
+                'C-'
+        );
 
         // Validation.
         $this->assertEquals(2, count($data));

@@ -1224,6 +1224,8 @@ class version1elisfilesystemsuccesslogging_testcase extends rlip_elis_test {
      */
     public function test_enrolmentactioncreateslogmessage($action, $context, $username, $email, $idnumber, $messagesuffix,
                                                           $extraparams) {
+        set_config('notify_trackenrol_user', 1, 'local_elisprogram');
+
         // Combine base data with additional info.
         $data = array(
             'action' => $action,
@@ -1260,9 +1262,22 @@ class version1elisfilesystemsuccesslogging_testcase extends rlip_elis_test {
         // String representing identifying fields.
         $identifier = $this->get_user_identifier($username, $email, $idnumber);
 
+        // Redirect emails.
+        $this->setAdminUser();
+        unset_config('noemailever');
+        $sink = $this->redirectEmails();
+
         // Validation.
         $expectedmessage = "[enrolment.csv line 2] User with {$identifier} successfully {$messagesuffix}\n";
         $this->assert_data_produces_message($data, $expectedmessage, 'enrolment');
+
+        if ($action === 'create' && $parts[0] === 'track') {
+            $this->assertEquals(1, count($sink->get_messages()));
+        } else {
+            $this->assertEquals(0, count($sink->get_messages()));
+        }
+
+        $sink->close();
     }
 
     /**

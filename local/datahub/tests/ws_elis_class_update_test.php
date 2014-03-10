@@ -109,8 +109,8 @@ class local_datahub_ws_elis_class_update_testcase extends rlip_test_ws {
         // Get class.
         $expectedclass = array(
             'idnumber' => $class->idnumber,
-            'startdate' => 1359954000,
-            'enddate' => 1362114000,
+            'startdate' => rlip_timestamp(0, 0, 0, 2, 4, 2013),
+            'enddate' => rlip_timestamp(0, 0, 0, 3, 1, 2013),
             'courseid' => $course->id,
             'field_testfield' => 'Test Field 2',
         );

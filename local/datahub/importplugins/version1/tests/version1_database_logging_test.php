@@ -32,6 +32,7 @@ require_once(dirname(__FILE__).'/other/rlip_mock_provider.class.php');
 $file = get_plugin_directory('dhfile', 'csv').'/csv.class.php';
 require_once($file);
 require_once($CFG->dirroot.'/local/datahub/lib/rlip_importplugin.class.php');
+require_once($CFG->dirroot.'/local/datahub/importplugins/version1/version1.class.php');
 require_once($CFG->dirroot.'/local/datahub/tests/other/readmemory.class.php');
 require_once($CFG->dirroot.'/local/datahub/tests/other/rlip_test.class.php');
 
@@ -1002,10 +1003,13 @@ class version1databaselogging_testcase extends rlip_test {
             'filename'  => $filename
         );
 
+        $maxid = $DB->get_field_sql('SELECT id FROM {files} ORDER BY id DESC LIMIT 0, 1');
+
         // Create a file in the Moodle file system with the right content.
         $fs = get_file_storage();
         $fs->create_file_from_pathname($fileinfo, "{$filepath}{$filename}");
-        $fileid = $DB->get_field_select('files', 'id', "filename != '.'");
+
+        $fileid = $DB->get_field_select('files', 'id', "filename != '.' AND id > ?", array($maxid));
         // Run the import.
         $entitytypes = array('user', 'bogus', 'bogus');
         $fileids = array($fileid, false, false);

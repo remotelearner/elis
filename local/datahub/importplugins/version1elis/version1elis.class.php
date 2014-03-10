@@ -293,11 +293,11 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
 
-        $valid = preg_match('|^([a-zA-Z0-9]+)([/\-.])([0-9]+)[/\-.]([0-9]+)[ :]([0-9]+):([0-9]+)|', $date, $matches);
+        $valid = preg_match('|^([a-zA-Z0-9]+)([/\-.])([0-9]+)[/\-.]([0-9]+)[ :]([0-9]+):([0-9]+)$|', $date, $matches);
         // TBD: if ($valid && !$include_time) { return false; }
         // we'll just ignore the time info later if it's not allowed
         if (!$valid) {
-            $valid = preg_match('|^([a-zA-Z0-9]+)([/\-.])([0-9]+)[/\-.]([0-9]+)|', $date, $matches);
+            $valid = preg_match('|^([a-zA-Z0-9]+)([/\-.])([0-9]+)[/\-.]([0-9]+)$|', $date, $matches);
         }
 
         $matchcount = count($matches);
@@ -387,6 +387,9 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             if (!($hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59)) {
                 return false;
             }
+        } elseif ($include_time !== true && $matchcount === 7) {
+            // We got a date with a time when include time wasn't allowed.
+            return false;
         }
 
         // return unix timestamp
@@ -3962,16 +3965,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             $student->locked = $record->locked;
         }
 
-        $student->save();
-
-        $this->newenrolmentemail($student);
-
         //TODO: consider refactoring once ELIS-6546 is resolved
         if (isset($student->completestatusid) && $student->completestatusid == STUSTATUS_PASSED) {
             $student->complete();
         } else {
             $student->save();
         }
+
+        $this->newenrolmentemail($student);
 
         //log success
         $success_message = "User with {$user_descriptor} successfully enrolled in class instance \"{$idnumber}\" as a student.";

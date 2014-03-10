@@ -159,6 +159,13 @@ class elis_userset_course_groups_testcase extends rlip_elis_test {
             ));
             $field->save();
 
+            // Ensure manual field owner exists for syncing.
+            field_owner::ensure_field_owner_exists($field, 'manual');
+            $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+            $owner = new field_owner($ownerid);
+            $owner->param_control = 'checkbox';
+            $owner->save();
+
             field_owner::ensure_field_owner_exists($field, 'moodle_profile');
             $DB->execute("UPDATE {".field_owner::TABLE."} SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
 
@@ -176,11 +183,12 @@ class elis_userset_course_groups_testcase extends rlip_elis_test {
             $data->shortname = 'autoassociate';
             $data->name = 'autoassociate';
             $profiledefinecheckbox->define_save($data);
+            $mfield = $DB->get_record('user_info_field', array('shortname' => 'autoassociate'));
 
             // The "cluster-profile" association.
             $usersetprofile = new userset_profile(array(
                 'clusterid' => $userset->id,
-                'fieldid' => $field->id,
+                'fieldid' => $mfield->id,
                 'value' => true
             ));
             $usersetprofile->save();

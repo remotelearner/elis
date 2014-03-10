@@ -653,7 +653,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
             $task->nextruntime = $ipjob->nextruntime;
             $task->lastruntime = $ipjob->lastruntime;
             $DB->update_record('local_eliscore_sched_tasks', $task);
-            mtrace("{$fcnname}: Similiar task has not completed yet!");
+            // mtrace("{$fcnname}: Similiar task has not completed yet!");
             return false;
         } else if (empty($disabledincron)) {
             //record last runtime
@@ -676,7 +676,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
 
     // Must set last & next run times before exiting!
     if (!empty($disabledincron)) {
-        mtrace("{$fcnname}: Internal {$rlipshortname} cron disabled by settings - aborting job!");
+        // mtrace("{$fcnname}: Internal {$rlipshortname} cron disabled by settings - aborting job!");
         return false; // TBD
     }
 
@@ -692,7 +692,7 @@ function run_ipjob($taskname, $maxruntime = 0) {
     //run the task, specifying the ideal start time, maximum run time & state
     if (($newstate = $instance->run($targetstarttime, $lastruntime, $maxruntime, $state)) !== null) {
         // Task did not complete - RESET nextruntime back & save new state!
-        mtrace("{$fcnname}: {$rlipshortname} scheduled task exceeded time limit of {$maxruntime} secs");
+        // mtrace("{$fcnname}: {$rlipshortname} scheduled task exceeded time limit of {$maxruntime} secs");
         //update next runtime on the scheduled task record
         $task->nextruntime = $targetstarttime;
         $task->lastruntime = $ipjob->lastruntime = $lastruntime;
@@ -913,7 +913,7 @@ function rlip_log_file_name($plugin_type, $plugin, $filepath, $entity = '', $man
     // create directory if it doesn't exist
     if (!file_exists($filepath) && !@mkdir($filepath, 0777, true)) {
         // TBD: log this error to UI and/or elsewhere
-        error_log("/local/datahub/lib.php::rlip_log_file_name('{$plugin_type}', '{$plugin}', '{$filepath}', '{$entity}', {$manual}, {$timestamp}, {$format}, {$timezone}) - Error creating directory: '{$filepath}'");
+        // error_log("/local/datahub/lib.php::rlip_log_file_name('{$plugin_type}', '{$plugin}', '{$filepath}', '{$entity}', {$manual}, {$timestamp}, {$format}, {$timezone}) - Error creating directory: '{$filepath}'");
     }
 
     $pluginparts = explode('_', $plugin);

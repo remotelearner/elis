@@ -182,7 +182,7 @@ class local_datahub_elis_class_create extends external_api {
         self::validate_context($context);
 
         // Capability checking.
-        require_capability('local/elisprogram:class_create', get_system_context());
+        require_capability('local/elisprogram:class_create', context_system::instance());
 
         // Initialize version1elis importplugin for utility functions.
         $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');

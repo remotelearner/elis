@@ -2359,6 +2359,8 @@ class version1courseimport_testcase extends rlip_test {
 
         $exist = $DB->record_exists_sql($sql, array('news', 'rollovertemplateforum', 'rollovertemplateintro', 'rollovershortname'));
         $this->assertTrue($exist);
+
+        ini_set('max_execution_time', '0');
     }
 
     /**
@@ -2389,6 +2391,8 @@ class version1courseimport_testcase extends rlip_test {
         // Validate that the courses are each in their respective categories.
         $this->assert_record_exists('course', array('shortname' => 'categorytemplateshortname', 'category' => $categoryid));
         $this->assert_record_exists('course', array('shortname' => 'categorytemplatecopyshortname', 'category' => $secondcatid));
+
+        ini_set('max_execution_time', '0');
     }
 
     /**
@@ -2572,7 +2576,9 @@ class version1courseimport_testcase extends rlip_test {
         $enrol->enrol = 'manual';
         $enrol->courseid = $courseid;
         $enrol->status = ENROL_INSTANCE_ENABLED;
-        $DB->insert_record('enrol', $enrol);
+        if (!$DB->record_exists('enrol', (array)$enrol)) {
+            $DB->insert_record('enrol', $enrol);
+        }
 
         // Assign the user to the course-level role.
         enrol_try_internal_enrol($courseid, $userid, $roleid);
@@ -2638,12 +2644,14 @@ class version1courseimport_testcase extends rlip_test {
         $ci->add_completion_condition($cmid, COMPLETION_ENABLED);
 
         // Set the block position.
-        $instance = $DB->get_record('block_instances', array('parentcontextid' => $coursecontext->id));
-        $page = new stdClass;
-        $page->context = $coursecontext;
-        $page->pagetype = 'course-view-*';
-        $page->subpage = false;
-        blocks_set_visibility($instance, $page, 1);
+        $instances = $DB->get_records('block_instances', array('parentcontextid' => $coursecontext->id));
+        foreach ($instances as $instance) {
+            $page = new stdClass;
+            $page->context = $coursecontext;
+            $page->pagetype = 'course-view-*';
+            $page->subpage = false;
+            blocks_set_visibility($instance, $page, 1);
+        }
 
         // Create a group.
         $group = new stdClass;
@@ -2761,7 +2769,7 @@ class version1courseimport_testcase extends rlip_test {
          $this->assertEquals($DB->count_records('course_modules_availability'), $initialnumcourse_modules_availability - 1);
         */
         $this->assertEquals($initialnumblockinstances - 4, $DB->count_records('block_instances'));
-        $this->assertEquals($DB->count_records('block_positions'), $initialnumblockpositions - 1);
+        $this->assertEquals($DB->count_records('block_positions'), 0);
         $this->assertEquals($DB->count_records('groups'), $initialnumgroups - 1);
         $this->assertEquals($DB->count_records('groups_members'), $initialnumgroupsmembers - 1);
         $this->assertEquals($DB->count_records('groupings'), $initialnumgroupings - 1);

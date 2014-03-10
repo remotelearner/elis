@@ -142,11 +142,16 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
     }
 
     /**
-     * Provider for basic (core) export data
+     * Validate that the export contains the necessary data when the
+     * approriate data is present in the database
      *
-     * @return array The expected column data
+     * @param array $expecteddata The expected column data
      */
-    public function valid_data_provider() {
+    public function test_exportcontainsvaliddata() {
+        // Setup.
+        $this->load_csv_data();
+        $data = $this->get_export_data();
+
         $expecteddata = array(
                 'exportfirstname',
                 'exportlastname',
@@ -159,20 +164,6 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
                 '70.00000',
                 'C-'
         );
-        return array(array($expecteddata));
-    }
-
-    /**
-     * Validate that the export contains the necessary data when the
-     * approriate data is present in the database
-     *
-     * @param array $expecteddata The expected column data
-     * @dataProvider valid_data_provider
-     */
-    public function test_exportcontainsvaliddata($expecteddata) {
-        // Setup.
-        $this->load_csv_data();
-        $data = $this->get_export_data();
 
         // Validation.
         $this->assertEquals(2, count($data));
@@ -418,7 +409,7 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
                 array('idnumber' => 'a'),
                 array('completetime' => 1500000000),
                 6,
-                date("M/d/Y", 1000000000)
+                '***DATE***'
         );
         $data[] = array(
                 array('idnumber' => 'a'),
@@ -428,7 +419,7 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
                 array('idnumber' => 'a'),
                 array('completetime' => 1000000000),
                 6,
-                date("M/d/Y", 1000000000)
+                '***DATE***'
         );
         // Sort fourth based on completion grade.
         $data[] = array(
@@ -484,6 +475,10 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
                                                  $user2attributes, $cd2attributes, $enrolment2attributes,
                                                  $checkfield, $checkvalue) {
         global $DB;
+
+        if ($checkvalue === '***DATE***') {
+            $checkvalue = date("M/d/Y", 1000000000);
+        }
 
         // Setup.
         $this->load_csv_data(true);
@@ -541,9 +536,9 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
         return array(
                 array(0),
                 array(1000000000),
-                array(time() - 25 * HOURSECS),
-                array(time() - 23 * HOURSECS),
-                array(time())
+                array('timeminus25h'),
+                array('timeminus23h'),
+                array('time')
         );
     }
 
@@ -555,6 +550,14 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
      */
     public function test_exportdoesnotrespectcompletiontime($completiontime) {
         global $CFG, $DB;
+
+        if ($completiontime === 'timeminus25h') {
+            $completiontime = (time() - 25 * HOURSECS);
+        } else if ($completiontime === 'timeminus23h') {
+            $completiontime = (time() - 23 * HOURSECS);
+        } else if ($completiontime === 'time') {
+            $completiontime = time();
+        }
 
         // Data setup.
         $this->load_csv_data();

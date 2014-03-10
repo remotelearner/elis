@@ -136,7 +136,7 @@ class local_datahub_elis_program_create extends external_api {
         self::validate_context($context);
 
         // Capability checking.
-        require_capability('local/elisprogram:program_create', get_system_context());
+        require_capability('local/elisprogram:program_create', context_system::instance());
 
         $data = (object)$data;
 

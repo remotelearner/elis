@@ -101,6 +101,13 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
             ));
             $field->save();
 
+            // Ensure manual field owner exists for syncing.
+            field_owner::ensure_field_owner_exists($field, 'manual');
+            $ownerid = $DB->get_field(field_owner::TABLE, 'id', array('fieldid' => $field->id, 'plugin' => 'manual'));
+            $owner = new field_owner($ownerid);
+            $owner->param_control = 'checkbox';
+            $owner->save();
+
             field_owner::ensure_field_owner_exists($field, 'moodle_profile');
             $DB->execute("UPDATE {".field_owner::TABLE."} SET exclude = ?", array(pm_moodle_profile::sync_to_moodle));
 
@@ -118,11 +125,12 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
             $data->shortname = 'autoassociate';
             $data->name = 'autoassociate';
             $profiledefinecheckbox->define_save($data);
+            $mfield = $DB->get_record('user_info_field', array('shortname' => 'autoassociate'));
 
             // The "cluster-profile" association.
             $usersetprofile = new userset_profile(array(
                 'clusterid' => $userset->id,
-                'fieldid' => 1,
+                'fieldid' => $mfield->id,
                 'value' => 1
             ));
             $usersetprofile->save();
@@ -204,12 +212,13 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
         // Set up the necessary config data.
         set_config('site_course_userset_groups', 1, 'elisprogram_usetgroups');
         set_config('userset_groupings', 1, 'elisprogram_usetgroups');
+        set_config('userset_groups', 1, 'elisprogram_usetgroups');
         set_config('siteguest', '');
 
         // Run the user set enrolment action.
         $record = new stdClass;
         $record->context = 'cluster_testusersetname';
-        $record->username = 'testuserusername';
+        $record->user_username = 'testuserusername';
 
         $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
@@ -237,9 +246,6 @@ class elis_userset_site_groups_testcase extends rlip_elis_test {
         $record = new stdClass;
         $record->action = 'update';
         $record->idnumber = 'testuseridnumber';
-        // TODO: remove the next two fields once we can updated based on just idnumber.
-        $record->username = 'testuserusername';
-        $record->email = 'test@useremail.com';
         $record->autoassociate = 1;
 
         $temp = new user();

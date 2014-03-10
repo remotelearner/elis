@@ -66,9 +66,9 @@ class elis_user_track_enrolment_testcase extends rlip_elis_test {
         require_once(elispm::lib('data/track.class.php'));
         require_once(elispm::lib('data/user.class.php'));
         require_once(elispm::lib('data/usertrack.class.php'));
-
-        // Never send out notification as an email, just in case.
-        set_config('noemailever', true);
+        set_config('notify_trackenrol_user', 1, 'local_elisprogram');
+        $this->setAdminUser();
+        unset_config('noemailever');
 
         $user = new user(array(
             'idnumber' => 'testuseridnumber',
@@ -100,9 +100,16 @@ class elis_user_track_enrolment_testcase extends rlip_elis_test {
             $record->user_idnumber = $user->idnumber;
         }
 
+        // Redirect email.
+        $sink = $this->redirectEmails();
+
         $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
         $importplugin->process_record('enrolment', (object)$record, 'bogus');
+
+        // Assert we sent a message.
+        $this->assertEquals(1, count($sink->get_messages()));
+        $sink->close();
 
         // Validation.
         $this->assertTrue($DB->record_exists(usertrack::TABLE, array('userid' => $user->id, 'trackid' => $track->id)));

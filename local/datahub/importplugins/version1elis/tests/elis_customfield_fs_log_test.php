@@ -401,9 +401,9 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
             'customtestfieldshortname' => $value
         );
 
-        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", ';
-        $message .= 'idnumber "testuseridnumber" could not be created. '.$message."\n";
-        $this->assert_data_produces_error($data, $message, 'user');
+        $errmessage = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", ';
+        $errmessage .= 'idnumber "testuseridnumber" could not be created. '.$message."\n";
+        $this->assert_data_produces_error($data, $errmessage, 'user');
     }
 
     /**
@@ -443,9 +443,9 @@ class elis_customfield_fs_log_testcase extends rlip_elis_test {
             'customtestfieldshortname' => $value
         );
 
-        $message = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", ';
-        $message .= 'idnumber "testuseridnumber" could not be updated. '.$message."\n";
-        $this->assert_data_produces_error($data, $message, 'user');
+        $errmessage = '[user.csv line 2] User with username "testuserusername", email "test@useremail.com", ';
+        $errmessage .= 'idnumber "testuseridnumber" could not be updated. '.$message."\n";
+        $this->assert_data_produces_error($data, $errmessage, 'user');
     }
 
     /**

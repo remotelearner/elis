@@ -47,23 +47,23 @@ class version1elisutility_testcase extends PHPUnit_Framework_TestCase {
         $bogusobj = new stdClass;
         $bogusobj->name = 'bogus';
         return array(
-                array('Jan/02/2010', true, false, 0, 0, rlip_timestamp(0, 0, 0, 1, 2, 2010)),
-                array('01/02/2010', true, false, 0, 0, rlip_timestamp(0, 0, 0, 1, 2, 2010)),
+                array('Jan/02/2010', true, false, 0, 0, array(0, 0, 0, 1, 2, 2010)),
+                array('01/02/2010', true, false, 0, 0, array(0, 0, 0, 1, 2, 2010)),
                 array('Jan/02', true, false, 0, 0, false),
                 array('Janx/02/2010', true, false, 0, 0, false),
                 array('13/02/2010', true, false, 0, 0, false),
                 array('Jan/bogusday/2010', true, false, 0, 0, false),
                 array('Jan/02/bogusyear', true, false, 0, 0, false),
                 array('Feb/31/2010', true, false, 0, 0, false),
-                array('JAN/02/2010 9:45', true, false, 0, 0, rlip_timestamp(0, 0, 0, 1, 2, 2010)),
-                array('jan/02/2010 9:45', true, true, 0, 0, rlip_timestamp(9, 45, 0, 1, 2, 2010)),
+                array('JAN/02/2010 9:45', true, false, 0, 0, false),
+                array('jan/02/2010 9:45', true, true, 0, 0, array(9, 45, 0, 1, 2, 2010)),
                 array('jan/02/2010 9:60', true, true, 0, 0, false),
-                array('jAN/02/2010:9:45', true, true, 0, 0, rlip_timestamp(9, 45, 0, 1, 2, 2010)),
+                array('jAN/02/2010:9:45', true, true, 0, 0, array(9, 45, 0, 1, 2, 2010)),
                 array('Jan/02/2010', true, false, 2011, 0, false),
                 array('Jan/02/2010', true, false, 2008, 2009, false),
-                array('02-01-2010', true, false, 0, 0, rlip_timestamp(0, 0, 0, 1, 2, 2010)),
+                array('02-01-2010', true, false, 0, 0, array(0, 0, 0, 1, 2, 2010)),
                 array('02-01-2010', false, false, 0, 0, false),
-                array('2010.01.02', true, false, 0, 0, rlip_timestamp(0, 0, 0, 1, 2, 2010)),
+                array('2010.01.02', true, false, 0, 0, array(0, 0, 0, 1, 2, 2010)),
                 array('2010.01.02', false, false, 0, 0, false),
                 array('*/01/2013', true, true, 0, 0, false),
                 array('_/01/2013', true, true, 0, 0, false),
@@ -88,6 +88,9 @@ class version1elisutility_testcase extends PHPUnit_Framework_TestCase {
      * @dataProvider pddataprovider
      */
     public function test_version1elisparsedate($instr, $oldformats, $inctime, $minyear, $maxyear, $expected) {
+        if (is_array($expected)) {
+            $expected = call_user_func_array('rlip_timestamp', $expected);
+        }
         $plugin = new rlip_importplugin_version1elis();
         $timestamp = $plugin->parse_date($instr, $oldformats, $inctime, $minyear, $maxyear);
         $this->assertEquals($expected, $timestamp);

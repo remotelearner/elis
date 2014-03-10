@@ -142,7 +142,7 @@ class local_datahub_elis_course_create extends external_api {
         self::validate_context($context);
 
         // Capability checking.
-        require_capability('local/elisprogram:course_create', get_system_context());
+        require_capability('local/elisprogram:course_create', context_system::instance());
 
         $data = (object)$data;
 

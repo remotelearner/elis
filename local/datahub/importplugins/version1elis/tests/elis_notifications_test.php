@@ -55,7 +55,8 @@ class elis_notifications_testcase extends rlip_elis_test {
         set_config('notify_classenrol_user', 1, 'local_elisprogram');
         $message = '%%userenrolname%% has been enrolled in the class instance %%classname%%.';
         set_config('notify_classenrol_message', $message, 'local_elisprogram');
-        set_config('noemailever', 1);
+        $this->setAdminUser();
+        unset_config('noemailever');
         // Force refreshing of configuration.
         elis::$config = new elis_config();
 
@@ -87,7 +88,10 @@ class elis_notifications_testcase extends rlip_elis_test {
 
         $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
+
+        $sink = $this->redirectEmails();
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+        $this->assertEquals(1, count($sink->get_messages()));
 
         // Validation.
         $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
@@ -115,7 +119,7 @@ class elis_notifications_testcase extends rlip_elis_test {
 
             return array(
                     array(student::STUSTATUS_NOTCOMPLETE, false),
-                    array(student::STUSTATUS_FAILED, false),
+                    array(student::STUSTATUS_FAILED, true),
                     array(student::STUSTATUS_PASSED, true)
             );
         } else {
@@ -144,9 +148,10 @@ class elis_notifications_testcase extends rlip_elis_test {
         set_config('notify_classcompleted_user', 1, 'local_elisprogram');
         $message = '%%userenrolname%% has completed the class instance %%classname%%.';
         set_config('notify_classcompleted_message', $message, 'local_elisprogram');
-        set_config('noemailever', 1);
         // Force refreshing of configuration.
         elis::$config = new elis_config();
+        $this->setAdminUser();
+        unset_config('noemailever');
 
         // Setup.
         $user = new user(array(
@@ -176,7 +181,15 @@ class elis_notifications_testcase extends rlip_elis_test {
 
         $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
+
+        $sink = $this->redirectEmails();
         $importplugin->class_enrolment_create($record, 'bogus', 'testclassidnumber');
+        if ($completestatus !== student::STUSTATUS_NOTCOMPLETE) {
+            $this->assertEquals(1, count($sink->get_messages()));
+        } else {
+            $this->assertEquals(0, count($sink->get_messages()));
+        }
+        $sink->close();
 
         // Validation.
         $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
@@ -211,10 +224,10 @@ class elis_notifications_testcase extends rlip_elis_test {
 
             return array(
                     array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_NOTCOMPLETE, false),
-                    array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_FAILED, false),
+                    array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_FAILED, true),
                     array(student::STUSTATUS_NOTCOMPLETE, student::STUSTATUS_PASSED, true),
-                    array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED, false
-            ));
+                    array(student::STUSTATUS_PASSED, student::STUSTATUS_PASSED, false)
+                );
         } else {
             return array();
         }
@@ -246,7 +259,8 @@ class elis_notifications_testcase extends rlip_elis_test {
         set_config('notify_classcompleted_user', 1, 'local_elisprogram');
         $message = '%%userenrolname%% has completed the class instance %%classname%%.';
         set_config('notify_classcompleted_message', $message, 'local_elisprogram');
-        set_config('noemailever', 1);
+        $this->setAdminUser();
+        unset_config('noemailever');
 
         // Setup.
         $user = new user(array(
@@ -278,7 +292,17 @@ class elis_notifications_testcase extends rlip_elis_test {
             'classid' => $class->id,
             'completestatusid' => $oldcompletestatus
         ));
+
+        $sink = $this->redirectEmails();
         $student->save();
+        if ($oldcompletestatus !== student::STUSTATUS_PASSED) {
+            $this->assertEquals(0, count($sink->get_messages()));
+        } else {
+            $this->assertEquals(1, count($sink->get_messages()));
+        }
+        $sink->close();
+
+        $DB->delete_records('message');
 
         // Run the enrolment update action.
         $record = new stdClass;
@@ -288,7 +312,15 @@ class elis_notifications_testcase extends rlip_elis_test {
 
         $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
+
+        $sink = $this->redirectEmails();
         $importplugin->class_enrolment_update($record, 'bogus', 'testclassidnumber');
+        if ($oldcompletestatus !== $newcompletestatus) {
+            $this->assertEquals(1, count($sink->get_messages()));
+        } else {
+            $this->assertEquals(0, count($sink->get_messages()));
+        }
+        $sink->close();
 
         // Validation.
         $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));
@@ -328,9 +360,10 @@ class elis_notifications_testcase extends rlip_elis_test {
         set_config('notify_trackenrol_user', 1, 'local_elisprogram');
         $message = '%%userenrolname%% has been enrolled in the track %%trackname%%.';
         set_config('notify_trackenrol_message', $message, 'local_elisprogram');
-        set_config('noemailever', 1);
         // Force refreshing of configuration.
         elis::$config = new elis_config();
+        $this->setAdminUser();
+        unset_config('noemailever');
 
         // Setup.
         $user = new user(array(
@@ -356,7 +389,11 @@ class elis_notifications_testcase extends rlip_elis_test {
 
         $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
         $importplugin->fslogger = new silent_fslogger(null);
+
+        $sink = $this->redirectEmails();
         $importplugin->track_enrolment_create($record, 'bogus', 'testtrackidnumber');
+        $this->assertEquals(1, count($sink->get_messages()));
+        $sink->close();
 
         // Validation.
         $mdluserid = $DB->get_field('user', 'id', array('username' => 'testuserusername'));

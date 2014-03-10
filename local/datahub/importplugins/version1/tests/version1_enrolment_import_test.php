@@ -348,7 +348,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         $data = $this->get_core_enrolment_data();
         $data['context'] = 'system';
         $data['role'] = 'systemshortname';
-        unset($data['instance']);
+        $data['instance'] = 'system';
         $this->run_core_enrolment_import($data, false);
 
         $data = array();
@@ -1605,7 +1605,7 @@ class version1enrolmentimport_testcase extends rlip_test {
         $where = 'timestart = :timestart AND
                   timecreated >= :timecreated AND
                   timemodified >= :timemodified';
-        $params = array('timestart' => 12345,
+        $params = array('timestart' => strtotime(date('Y/m/d 00:00:00').' -1 day'),
                         'timecreated' => $starttime,
                         'timemodified' => $starttime);
         $exists = $DB->record_exists_select('user_enrolments', $where, $params);

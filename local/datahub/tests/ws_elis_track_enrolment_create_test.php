@@ -51,7 +51,9 @@ class local_datahub_ws_elis_track_enrolment_create_testcase extends rlip_test_ws
      */
     public function test_success() {
         global $DB, $USER;
-
+        set_config('notify_trackenrol_user', 1, 'local_elisprogram');
+        $this->setAdminUser();
+        unset_config('noemailever');
         $this->give_permissions(array('local/elisprogram:track_enrol'));
 
         // Initialize version1elis importplugin for utility functions.
@@ -75,7 +77,15 @@ class local_datahub_ws_elis_track_enrolment_create_testcase extends rlip_test_ws
             'trackid' => $track->id,
         );
 
+        // Redirect emails.
+        $sink = $this->redirectEmails();
+
+        // Run track enrolment create.
         $response = local_datahub_elis_track_enrolment_create::track_enrolment_create($data);
+
+        // Assert we sent a message.
+        $this->assertEquals(1, count($sink->get_messages()));
+        $sink->close();
 
         $this->assertNotEmpty($response);
         $this->assertInternalType('array', $response);
