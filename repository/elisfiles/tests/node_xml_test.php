@@ -565,7 +565,9 @@ class repository_elisfiles_file_node_xml_testcase extends elis_database_test {
         $type = '';
 
         $contentnode = elis_files_process_node($dom, $nodes->item(0), $type);
-        $this->assertEquals(ELIS_files::$type_folder, $type);
+        $elistypefolderparts = explode(':', ELIS_files::$type_folder, 2);
+        $elistypefolder = isset($elistypefolderparts[1]) ? $elistypefolderparts[1] : ELIS_files::$type_folder;
+        $this->assertEquals($elistypefolder, $type);
     }
 
     /**
@@ -579,7 +581,9 @@ class repository_elisfiles_file_node_xml_testcase extends elis_database_test {
         $type = '';
 
         $contentnode = elis_files_process_node($dom, $nodes->item(0), $type);
-        $this->assertEquals(ELIS_files::$type_document, $type);
+        $elistypedocumentparts = explode(':', ELIS_files::$type_document, 2);
+        $elistypedocument = isset($elistypedocumentparts[1]) ? $elistypedocumentparts[1] : ELIS_files::$type_document;
+        $this->assertEquals($elistypedocument, $type);
     }
 
     /**
