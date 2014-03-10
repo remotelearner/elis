@@ -44,6 +44,15 @@ require_once(elispm::file('tests/other/datagenerator.php'));
 class instructor_testcase extends elis_database_test {
 
     /**
+     * Load ELIS config data before every test.
+     * (otherwise config setting changes are lost when loading csv data during group testing)
+     */
+    protected function setUp() {
+        parent::setUp();
+        elis::$config = new elis_config();
+    }
+
+    /**
      * Load initial data from CSVs.
      */
     protected function load_csv_data() {

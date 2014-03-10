@@ -73,8 +73,8 @@ class trackassignmentgetavailableusers_testcase extends elis_database_test {
         $activeuser = new user(array(
             'idnumber' => 'activeuser',
             'username' => 'activeuser',
-            'firstname' => 'activeuser',
-            'lastname' => 'activeuser',
+            'firstname' => 'Activeuser',
+            'lastname' => 'Activeuser',
             'email' => 'active@user.com',
             'country' => 'CA'
         ));

@@ -100,6 +100,8 @@ class autocreatemoodlecourse_testcase extends elis_database_test {
 
         // We want to validate that new moodle course was created.
         $this->assertTrue($recordexists);
+
+        ini_set('max_execution_time', '0');
     }
 
     /**
@@ -128,5 +130,7 @@ class autocreatemoodlecourse_testcase extends elis_database_test {
 
         // We want to validate that new moodle course was created.
         $this->assertTrue($recordexists);
+
+        ini_set('max_execution_time', '0');
     }
 }
