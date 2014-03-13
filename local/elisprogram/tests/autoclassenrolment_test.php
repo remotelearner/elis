@@ -73,7 +73,8 @@ class autoclassenrolment_testcase extends elis_database_test {
         role_assign($roleid, 100, $crsctx->id);
 
         // Attempt the sync.
-        pm_synchronize_moodle_class_grades();
+        $sync = new \local_elisprogram\moodle\synchronize;
+        $sync->synchronize_moodle_class_grades();
 
         // Make sure the student record was created.
         $student = student::find();
