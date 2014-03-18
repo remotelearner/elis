@@ -64,9 +64,7 @@ class usersetclassificationform extends cmform {
         $mform->addHelpButton('param_autoenrol_groupings', 'usersetclassificationform:autoenrol_groupings', 'elisprogram_usetclassify');
 
         // Add option for Alfresco shared organization space creation (if Alfresco code is present)
-        if (file_exists($CFG->dirroot . '/repository/elis_files/lib.php') &&
-            $DB->record_exists('config_plugins', array('plugin'=> 'elis_files'))) {
-
+        if (file_exists($CFG->dirroot.'/repository/elisfiles/lib.php') && $DB->record_exists('config_plugins', array('plugin'=> 'elisfiles'))) {
             $mform->addElement('advcheckbox', 'param_elis_files_shared_folder',
                                get_string('elis_files_shared_folder', 'elisprogram_usetclassify'));
             $mform->addHelpButton('param_elis_files_shared_folder', 'usersetclassificationform:elis_files_shared_folder', 'elisprogram_usetclassify');

@@ -298,7 +298,7 @@ function elis_files_userset_assigned($usersetinfo) {
         return true;
     }
 
-    if (!$userset = $DB->get_record('crlm_cluster', array('id' => $usersetinfo->clusterid))) {
+    if (!$userset = $DB->get_record(userset::TABLE, array('id' => $usersetinfo->clusterid))) {
         return true;
     }
 
@@ -402,7 +402,7 @@ function elis_files_userset_deassigned($usersetinfo) {
         return true;
     }
 
-    if (!($userset = $DB->get_record('crlm_cluster', array('id' => $usersetinfo->clusterid)))) {
+    if (!($userset = $DB->get_record(userset::TABLE, array('id' => $usersetinfo->clusterid)))) {
         return true;
     }
 
