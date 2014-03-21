@@ -24,7 +24,16 @@
  */
 
 // based on /enrol/manual/edit.php
+require_once('../../config.php');
 
+global $DB;
+
+$elisprogramexists =  file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php') &&
+        $DB->record_exists('config_plugins', array('plugin' => 'local_elisprogram', 'name' => 'version'));
+
+if (!$elisprogramexists) {
+    print_error(get_string('missing_elisprogram_dependency', 'enrol_elis'));
+}
 require('../../local/elisprogram/lib/setup.php');
 require(elis::plugin_file('enrol_elis', 'edit_form.php'));
 

@@ -26,7 +26,7 @@
 
 $string['enrol_from_course_catalog'] = 'Allow enrolments from course catalog';
 $string['enrol_from_course_catalog_desc'] = 'If this is enabled, users will be allowed to self-enrol via the course catalog.';
-
+$string['missing_elisprogram_dependency'] = 'Missing dependency: ELIS program';
 $string['pluginname'] = 'ELIS Program Manager enrolments';
 
 $string['elis:config'] = 'Configure ELIS PM enrolment instances';

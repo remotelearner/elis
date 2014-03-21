@@ -25,7 +25,17 @@
 
 // based on /enrol/guest/addinstance.php
 
-require ('../../local/elisprogram/lib/setup.php');
+require_once('../../config.php');
+
+global $DB;
+
+$elisprogramexists =  file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php') &&
+        $DB->record_exists('config_plugins', array('plugin' => 'local_elisprogram', 'name' => 'version'));
+
+if (!$elisprogramexists) {
+    print_error(get_string('missing_elisprogram_dependency', 'enrol_elis'));
+}
+require('../../local/elisprogram/lib/setup.php');
 
 $id = required_param('id', PARAM_INT);
 
