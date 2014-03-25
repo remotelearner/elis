@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -555,14 +555,17 @@ class student extends elis_data_object {
      * This could be extended to allow for application specific editing,
      * for example a Moodle interface to its formslib.
      *
-     * @uses $CFG
-     * @uses $OUTPUT
-     * @uses $PAGE
+     * @param int $classid The class ID.
+     * @param string $type The entity type.
+     * @param string $sort Field to sort on.
+     * @param string $dir Direction of sort.
+     * @param int $page The page to start at.
+     * @param int $perpage Number of records per page.
+     * @param string $namesearch Search string for item name.
+     * @param string $alpha Start initial of item name filter.
      * @return string The form HTML, without the form.
      */
-    function edit_form_html($classid, $type = '', $sort = 'idnumber', $dir = 'ASC', $page = 0,
-                            $perpage = 30, $namesearch = '', $alpha = '') {
-                            // ^^^ set non-zero default for $perpage
+    public function edit_form_html($classid, $type = '', $sort = 'idnumber', $dir = 'ASC', $page = 0, $perpage = 30, $namesearch = '', $alpha = '') {
         global $CFG, $OUTPUT, $PAGE, $SESSION;
         $output = '';
         ob_start();
@@ -708,7 +711,7 @@ class student extends elis_data_object {
 
                         case 'name':
                         case 'idnumber':
-                        case 'description';
+                        case 'description':
                             $tabobj->{$column} = isset($user->{$column}) ? $user->{$column} : '';
                             break;
 
@@ -908,13 +911,17 @@ class student extends elis_data_object {
     /**
      * Return the HTML to for a view page that also allows editing.
      *
-     * @uses $CFG
-     * @uses $OUTPUT
-     * @uses $PAGE
+     * @param int $classid The class ID.
+     * @param string $type The entity type.
+     * @param string $sort Field to sort on.
+     * @param string $dir Direction of sort.
+     * @param int $page The page to start at.
+     * @param int $perpage Number of records per page.
+     * @param string $namesearch Search string for item name.
+     * @param string $alpha Start initial of item name filter.
      * @return string The form HTML, without the form.
      */
-    function view_form_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0,
-                            $perpage = 0, $namesearch = '', $alpha = '') {
+    public function view_form_html($classid, $type = '', $sort = 'name', $dir = 'ASC', $page = 0, $perpage = 0, $namesearch = '', $alpha = '') {
         global $CFG, $OUTPUT, $PAGE, $SESSION;
 
         $pageid = optional_param('id', 1, PARAM_INT);
@@ -1146,7 +1153,7 @@ class student extends elis_data_object {
 
                         case 'name':
                         case 'idnumber':
-                        case 'description';
+                        case 'description':
                             $tabobj->{$column} = $user->{$column};
                             break;
 
