@@ -520,40 +520,63 @@ class elis_summary_log_field_mappings_testcase extends rlip_elis_test {
 
         // Attempt to handle all of the specific messages in as general a way as possible.
 
+        $requiredfields = array();
+        $messageend = 'Please fix the import file and re-upload it.';
         // Testing a custom action mapping value.
         if (isset($mapping['action'])) {
-            $message = 'Import file memoryfile was not processed because it is missing the following required column: ';
-            $message .= $mapping['action'].'. Please fix the import file and re-upload it.';
+            $message = 'Import file memoryfile was not processed because it is missing the following required column: '.$mapping['action'].'.';
         } else if ($entity == 'user' && $data['action'] == 'create') {
+            // echo "\n", 'user create', "\n";
             // User create is only a subset of the required fields.
-            $message = 'Import file memoryfile was not processed because one of the following columns is required but all are ';
-            $message .= 'unspecified: username, email, idnumber. Please fix the import file and re-upload it.';
-            $message = str_replace(array_keys($mapping), array_values($mapping), $message);
+            $message = 'Import file memoryfile was not processed because one of the following columns is required but all are unspecified: ';
+            $possiblefields = array('username', 'email', 'idnumber', 'user_username', 'user_email', 'user_idnumber');
+            foreach ($possiblefields as $possiblefield) {
+                $requiredfields[] = !empty($mapping[$possiblefield]) ? $mapping[$possiblefield] : $possiblefield;
+            }
         } else if ($entity == 'course') {
             // Course actions will only initially display a message if the context field is missing.
-            $message = 'Import file memoryfile was not processed because it is missing the following required column: ';
-            $message .= $mapping['context'].'. Please fix the import file and re-upload it.';
+            $message = 'Import file memoryfile was not processed because it is missing the following required column: '.$mapping['context'].'.';
         } else if ($entity == 'enrolment') {
             // Enrolment actions will only initially display a message if one of the three required fields is missing.
             // (at least one of the three is required).
-            $message = 'Import file memoryfile was not processed because one of the following columns is required but all ';
-            $message .= 'are unspecified: user_idnumber, user_username, user_email. Please fix the import file and re-upload it.';
-            $message = str_replace(array_keys($mapping), array_values($mapping), $message);
+            $message = 'Import file memoryfile was not processed because one of the following columns is required but all are unspecified: ';
+            $possiblefields = array('user_username', 'user_email', 'user_idnumber');
+            foreach ($possiblefields as $possiblefield) {
+                $requiredfields[] = !empty($mapping[$possiblefield]) ? $mapping[$possiblefield] : $possiblefield;
+            }
         } else {
             // Handle generic cases below.
             if (count($mapping) > 1) {
-                $message = 'Import file memoryfile was not processed because one of the following columns is required but all ';
-                $message .= 'are unspecified: '.implode(', ', $mapping).'. Please fix the import file and re-upload it.';
+                // echo 'Generic: count($mapping) > 1', "\n";
+                $message = 'Import file memoryfile was not processed because one of the following columns is required but all are unspecified: ';
+                $requiredfields = $mappings; // TBD
             } else {
                 // We're importing data where some fields are requires in an OR condition, so we just need to replace that.
                 // Single field value with it's custom mapped representation.
-                $message = 'Import file memoryfile was not processed because one of the following columns is required but ';
-                $message .= 'all are unspecified: username, email, idnumber. Please fix the import file and re-upload it.';
-
-                $message = str_replace(key($mapping), current($mapping), $message);
+                $message = 'Import file memoryfile was not processed because one of the following columns is required but all are unspecified: ';
+                $possiblefields = array('user_username', 'user_email', 'user_idnumber', 'username', 'email', 'idnumber');
+                foreach ($possiblefields as $possiblefield) {
+                    $requiredfields[] = !empty($mapping[$possiblefield]) ? $mapping[$possiblefield] : $possiblefield;
+                }
             }
         }
-        $select = "{$DB->sql_compare_text('statusmessage')} = :statusmessage";
-        $this->assertTrue($DB->record_exists_select(RLIP_LOG_TABLE, $select, array('statusmessage' => $message)));
+
+        $logs = $DB->get_records(RLIP_LOG_TABLE);
+        // var_dump($logs);
+        $log = end($logs);
+        // echo 'Required: ';
+        // var_dump($requiredfields);
+        $realmessage = $log->statusmessage;
+        $this->assertEquals(0, strpos($realmessage, $message));
+        $fieldstart = strlen($message);
+        $fieldend = strpos($realmessage, $messageend);
+        $this->assertGreaterThanOrEqual($fieldstart, $fieldend);
+        $fieldsection = substr($realmessage, $fieldstart - 1, $fieldend - $fieldstart);
+        $fieldspresent = explode(', ', trim($fieldsection, ' .'));
+        // echo 'Present: ';
+        // var_dump($fieldspresent);
+        foreach ($requiredfields as $requiredfield) {
+            $this->assertTrue(in_array($requiredfield, $fieldspresent));
+        }
     }
 }

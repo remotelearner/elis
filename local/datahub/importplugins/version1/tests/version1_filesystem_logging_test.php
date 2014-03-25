@@ -552,7 +552,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         // Validation for an empty username field.
         $data = array('action' => 'update', 'customusername' => '');
 
-        $expectederror = "[user.csv line 2] User could not be updated. One of customusername, customemail, customidnumber is ";
+        $expectederror = "[user.csv line 2] User could not be updated. One of user_username, user_email, user_idnumber, customusername, customemail, customidnumber is ";
         $expectederror .= "required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
@@ -572,7 +572,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
 
         $expectederror = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" ";
-        $expectederror .= "could not be updated. customusername value of \"rlipusername\" does not refer to a valid ";
+        $expectederror .= "could not be updated. customusername value of \"rlipusername\", email value of \"rlipuser@rlipdomain.com\" do not refer to a valid ";
         $expectederror .= "user.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
@@ -590,7 +590,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
 
         $expectederror = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", ";
-        $expectederror .= "idnumber \"rlipidnumber\" could not be updated. username value of \"rlipusername\" does not ";
+        $expectederror .= "idnumber \"rlipidnumber\" could not be updated. idnumber value of \"rlipidnumber\", username value of \"rlipusername\", email value of \"rlipuser@rlipdomain.com\" do not ";
         $expectederror .= "refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
@@ -611,7 +611,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
 
         $expectederror = "[user.csv line 2] User with email \"rlipuser@rlipdomain.com\", idnumber \"rlipidnumber\" ";
-        $expectederror .= "could not be updated. customemail value of \"rlipuser@rlipdomain.com\" does not refer to a ";
+        $expectederror .= "could not be updated. idnumber value of \"rlipidnumber\", customemail value of \"rlipuser@rlipdomain.com\" do not refer to a ";
         $expectederror .= "valid user.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
@@ -627,7 +627,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         // Validation for an empty username field.
         $data = array('action' => 'delete', 'customusername' => '');
-        $expectederror = "[user.csv line 2] User could not be deleted. One of customusername, customemail, customidnumber is ";
+        $expectederror = "[user.csv line 2] User could not be deleted. One of user_username, user_email, user_idnumber, customusername, customemail, customidnumber is ";
         $expectederror .= "required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
@@ -647,7 +647,7 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
 
         $expectederror = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\" ";
-        $expectederror .= "could not be deleted. customusername value of \"rlipusername\" does not refer to a valid user.\n";
+        $expectederror .= "could not be deleted. customusername value of \"rlipusername\", email value of \"rlipuser@rlipdomain.com\" do not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
 
@@ -667,8 +667,8 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
 
         $expectederror = "[user.csv line 2] User with username \"rlipusername\", email \"rlipuser@rlipdomain.com\", ";
-        $expectederror .= "idnumber \"rlipidnumber\" could not be deleted. customusername value of \"rlipusername\" ";
-        $expectederror .= "does not refer to a valid user.\n";
+        $expectederror .= "idnumber \"rlipidnumber\" could not be deleted. idnumber value of \"rlipidnumber\", customusername value of \"rlipusername\", ";
+        $expectederror .= "email value of \"rlipuser@rlipdomain.com\" do not refer to a valid user.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
 
@@ -6949,7 +6949,7 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         $data = array('action' => 'create');
         $message = "Import file user.csv was not processed because one of the following columns is required but all are ";
-        $message .= "unspecified: customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
+        $message .= "unspecified: user_username, user_email, user_idnumber, customusername, customemail, customidnumber. Please fix the import file and re-upload it.\n";
         $expectedmessage = "[user.csv line 1] {$message}";
         $this->assert_data_produces_error($data, $expectedmessage, 'user');
 
@@ -7281,8 +7281,8 @@ class version1filesystemlogging_testcase extends rlip_test {
 
         // Assert failure conditions.
         $expectedmessage = "[user.csv line 2] User with username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber";
-        $expectedmessage .= " \"testuser5162b\" could not be updated. username \"testuser5162a\", email \"tu5162c@noreply.com\",";
-        $expectedmessage .= " idnumber \"testuser5162b\" matches multiple users.\n";
+        $expectedmessage .= " \"testuser5162b\" could not be updated. idnumber value of \"testuser5162b\", username value of \"testuser5162a\",";
+        $expectedmessage .= " email value of \"tu5162c@noreply.com\" refer to different users.\n";
         $this->assert_data_produces_error($data, $expectedmessage, 'user');
 
         // Create delete error ...
@@ -7299,9 +7299,8 @@ class version1filesystemlogging_testcase extends rlip_test {
         );
 
         // Assert failure conditions.
-        $expectedmessage = "[user.csv line 2] User with username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber";
-        $expectedmessage .= " \"testuser5162b\" could not be deleted. username \"testuser5162a\", email \"tu5162c@noreply.com\",";
-        $expectedmessage .= " idnumber \"testuser5162b\" matches multiple users.\n";
+        $expectedmessage = "[user.csv line 2] User with username \"testuser5162a\", email \"tu5162c@noreply.com\", idnumber \"testuser5162b\" could not be deleted.";
+        $expectedmessage .= " idnumber value of \"testuser5162b\", username value of \"testuser5162a\", email value of \"tu5162c@noreply.com\" refer to different users.\n";
         $this->assert_data_produces_error($data, $expectedmessage, 'user');
     }
 }

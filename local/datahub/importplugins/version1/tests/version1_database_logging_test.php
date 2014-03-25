@@ -1003,13 +1003,10 @@ class version1databaselogging_testcase extends rlip_test {
             'filename'  => $filename
         );
 
-        $maxid = $DB->get_field_sql('SELECT id FROM {files} ORDER BY id DESC LIMIT 0, 1');
-
         // Create a file in the Moodle file system with the right content.
         $fs = get_file_storage();
         $fs->create_file_from_pathname($fileinfo, "{$filepath}{$filename}");
-
-        $fileid = $DB->get_field_select('files', 'id', "filename != '.' AND id > ?", array($maxid));
+        $fileid = $DB->get_field_select('files', 'id', "filename = '{$filename}'");
         // Run the import.
         $entitytypes = array('user', 'bogus', 'bogus');
         $fileids = array($fileid, false, false);

@@ -654,8 +654,8 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         );
 
         $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is ";
-        $expectederror .= "required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload ";
-        $expectederror .= "it.\n";
+        $expectederror .= "required but all are unspecified: user_username, user_email, user_idnumber, idnumber, username, email. ";
+        $expectederror .= "Please fix the import file and re-upload it.\n";
 
         $this->assert_data_produces_error($data, $expectederror, 'user');
 
@@ -670,8 +670,8 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
         );
 
         $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is ";
-        $expectederror .= "required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload ";
-        $expectederror .= "it.\n";
+        $expectederror .= "required but all are unspecified: user_username, user_email, user_idnumber, idnumber, username, email. ";
+        $expectederror .= "Please fix the import file and re-upload it.\n";
 
         $this->assert_data_produces_error($data, $expectederror, 'user');
 
@@ -685,9 +685,9 @@ class version1elisfilesystemlogging_testcase extends rlip_elis_test {
             'lang'      => 'en'
         );
 
-        $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is ";
-        $expectederror .= "required but all are unspecified: username, email, idnumber. Please fix the import file and re-upload ";
-        $expectederror .= "it.\n";
+        $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is required but all are unspecified: ";
+        $expectederror .= "user_username, user_email, user_idnumber, idnumber, username, email.";
+        $expectederror .= " Please fix the import file and re-upload it.\n";
 
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }

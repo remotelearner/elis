@@ -52,7 +52,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                               'email',
                                               'country');
 
-    static $import_fields_user_update = array(array('username', 'email', 'idnumber'));
+    static $import_fields_user_update = array(); // set in constructor
 
     static $import_fields_user_add = array('idnumber',
                                            'username',
@@ -61,15 +61,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
                                            'email',
                                            'country');
 
-    static $import_fields_user_delete = array(array('username', 'email', 'idnumber'));
-    static $import_fields_user_disable = array(array('username', 'email', 'idnumber'));
+    static $import_fields_user_delete = array(); // set in constructor
+    static $import_fields_user_disable = array(); // set in constructor
 
-    //fields that are available during the "course" (i.e. pm entity) import
+    // Fields that are available during the "user" (i.e. pm entity) import
     static $available_fields_user = array('username', 'password', 'idnumber', 'firstname',
-                                          'lastname', 'mi', 'email', 'email2', 'address','address2',
-                                          'city', 'state', 'postalcode', 'country', 'phone', 'phone2',
-                                          'fax', 'birthdate', 'gender', 'language', 'transfercredits',
-                                          'comments', 'notes', 'inactive');
+            'lastname', 'mi', 'email', 'email2', 'address','address2',
+            'city', 'state', 'postalcode', 'country', 'phone', 'phone2',
+            'fax', 'birthdate', 'gender', 'language', 'transfercredits',
+            'comments', 'notes', 'inactive', 'user_idnumber', 'user_username', 'user_email');
+
     static $user_field_keywords = array('action', 'context', 'username', 'password', 'idnumber', 'firstname',
                                         'lastname', 'mi', 'email', 'email2', 'address','address2',
                                         'city', 'state', 'postalcode', 'country', 'phone', 'phone2',
@@ -225,6 +226,37 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
     //storage for custom fields
     var $fields = array();
+
+    /**
+     * Version1elis import plugin constructor
+     *
+     * @param object $provider The import file provider that will be used to
+     *                         obtain any applicable import files
+     * @param boolean $manual  Set to true if a manual run
+     */
+    function __construct($provider = NULL, $manual = false) {
+        // Build configurable required fields for user_update & delete
+        static::$import_fields_user_update = array(array('user_username', 'user_email', 'user_idnumber'));
+        static::$import_fields_user_delete = array(array('user_username', 'user_email', 'user_idnumber'));
+        static::$import_fields_user_disable = array(array('user_username', 'user_email', 'user_idnumber'));
+
+        $idfields = array('idnumber', 'username', 'email'); // configurable id fields
+        foreach ($idfields as $idfield) {
+            if (get_config('dhimport_version1elis','identfield_'.$idfield)) {
+                static::$import_fields_user_update[0][] = $idfield;
+                static::$import_fields_user_delete[0][] = $idfield;
+                static::$import_fields_user_disable[0][] = $idfield;
+            }
+        }
+        /* Debug code ...
+        ob_start();
+        var_dump(static::$import_fields_user_update);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("dhimport_version1elis:__construct(): import_fields_user_update = {$tmp}");
+        */
+        parent::__construct($provider, $manual);
+    }
 
     /**
      * Specifies the UI labels for the various import files supported by this
@@ -977,6 +1009,103 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     }
 
     /**
+     * Determine userid from user import record
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param bool   $error Returned errors status, true means error, false ok
+     * @param array  $errors Array of error strings (if $error == true)
+     * @param string $errsuffix returned error suffix string
+     * @return int|bool userid on success, false is not found
+     */
+    protected function get_userid_for_user_actions($record, $filename, &$error, &$errors, &$errsuffix) {
+        global $DB;
+        $idfields = array('idnumber', 'username', 'email');
+        $uniquefields = array('idnumber' => 0, 'username' => 0);
+        if (!get_config('dhimport_version1elis','allowduplicateemails')) {
+            $uniquefields['email'] = 0;
+        }
+
+        // First check for new user_ identifying fields
+        $uid = $this->get_userid_from_record($record, $filename);
+        $usingstdident = !isset($record->user_idnumber) && !isset($record->user_username) && !isset($record->user_email);
+        $params = array();
+        $identfields = array();
+        foreach ($idfields as $idfield) {
+            if (isset($record->$idfield)) {
+                $testparams = array($idfield => $record->$idfield);
+                // Moodle bug: get_field will return first record found
+                $fid = false;
+                $numrecs = $DB->count_records(user::TABLE, $testparams);
+                if ($numrecs > 1) {
+                    $fid = -1; // set to non-zero value that won't match a valid user
+                } else if ($numrecs == 1) {
+                    $fid = $DB->get_field(user::TABLE, 'id', $testparams);
+                }
+                if (isset($uniquefields[$idfield])) {
+                    $uniquefields[$idfield] = $fid;
+                }
+                if ($usingstdident && get_config('dhimport_version1elis','identfield_'.$idfield)) {
+                    $identifier = $this->get_field_mapping($idfield);
+                    $params[$idfield] = $record->$idfield;
+                    $identstr = "{$identifier} value of \"".$record->$idfield.'"';
+                    if (!$fid) {
+                        $errors[] = $identstr;
+                        $error = true;
+                    } else {
+                        $identfields[] = $identstr;
+                    }
+                }
+            }
+        }
+        if ($usingstdident && !empty($params)) {
+            try {
+                $uid = $DB->get_field(user::TABLE, 'id', $params);
+            } catch (Exception $e) {
+                $error = true;
+            }
+        }
+
+        $errsuffixsingular = ' does not refer to a valid user.';
+        $errsuffixplural = ' do not refer to a valid user.';
+        if (!$error && !$uid) {
+            $error = true;
+            // error: could not find user with specified identifying fields
+            // or multiple user matches found
+            if (empty($errors)) {
+                foreach ($idfields as $idfield) {
+                    if (isset($record->{'user_'.$idfield})) {
+                        $errors[] = "user_{$idfield} value of \"".$record->{'user_'.$idfield}.'"';
+                    }
+                }
+            }
+            if (empty($errors)) {
+                $errors = $identfields;
+                $errsuffixplural = ' refer to different users.';
+            }
+        }
+
+        if ($uid && !$error) {
+            $errsuffixsingular = ' refers to another user - field must be unique.';
+            $errsuffixplural = ' refer to other user(s) - fields must be unique.';
+            foreach ($uniquefields as $key => $fielduid) {
+                if ($fielduid && $uid != $fielduid) {
+                    // error: user already exists with unique $key field setting
+                    $error = true;
+                    $identifier = $this->get_field_mapping($key);
+                    $errors[] = "$identifier set to \"{$record->$key}\"";
+                }
+            }
+            if ($error) {
+                $uid = false;
+            }
+        }
+
+        $errsuffix = (count($errors) == 1) ? $errsuffixsingular : $errsuffixplural;
+        return $uid;
+    }
+
+    /**
      * Update a user
      *
      * @param object $record One record of import data
@@ -984,7 +1113,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @return boolean true on success, otherwise false
      */
     function user_update($record, $filename) {
-        global $CFG, $DB;
+        global $CFG;
         require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
 
@@ -996,54 +1125,16 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         $errors = array();
         $error = false;
-
-        if (isset($record->username)) {
-            if (!$DB->record_exists(user::TABLE, array('username' => $record->username))) {
-                $identifier = $this->get_field_mapping('username');
-                $errors[] = "$identifier value of \"{$record->username}\"";
-                $error = true;
-            }
-        }
-
-        if (isset($record->email)) {
-            if (!$DB->record_exists(user::TABLE, array('email' => $record->email))) {
-                $identifier = $this->get_field_mapping('email');
-                $errors[] = "$identifier value of \"{$record->email}\"";
-                $error = true;
-            }
-        }
-
-        if (isset($record->idnumber)) {
-            if (!$DB->record_exists(user::TABLE, array('idnumber' => $record->idnumber))) {
-                $identifier = $this->get_field_mapping('idnumber');
-                $errors[] = "$identifier value of \"{$record->idnumber}\"";
-                $error = true;
-            }
-        }
+        $errsuffix = '';
+        $uid = $this->get_userid_for_user_actions($record, $filename, $error, $errors, $errsuffix);
 
         if ($error) {
-            if (count($errors) == 1) {
-                $this->fslogger->log_failure(implode($errors, ", ") . " does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-            } else {
-                $this->fslogger->log_failure(implode($errors, ", ") . " do not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-            }
+            $this->fslogger->log_failure(implode($errors, ", ").$errsuffix, 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
         if (!$this->validate_core_user_data('update', $record, $filename)) {
             return false;
-        }
-
-        // TODO: validation
-        $params = array();
-        if (isset($record->username)) {
-            $params['username'] = $record->username;
-        }
-        if (isset($record->email)) {
-            $params['email'] = $record->email;
-        }
-        if (isset($record->idnumber)) {
-            $params['idnumber'] = $record->idnumber;
         }
 
         //$record->timemodified = time();
@@ -1072,8 +1163,17 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             unset($record->birthdate);
         }
 
-        $user = new user($DB->get_field(user::TABLE, 'id', $params));
+        $user = new user($uid);
         $user->load();
+        if ($user->idnumber !== '' && isset($record->idnumber) && $user->idnumber != $record->idnumber) {
+            // Attempt to change user's idnumber - not allowed.
+            $identifier = $this->get_field_mapping('idnumber');
+            if ($identifier != 'idnumber') {
+                $identifier = "idnumber ({$identifier})";
+            }
+            $this->fslogger->log_failure("User's $identifier cannot be modified from \"{$user->idnumber}\" to \"{$record->idnumber}\".", 0, $filename, $this->linenumber, $record, "user");
+            return false;
+        }
         $user->set_from_data($record);
         $user->save();
 
@@ -1115,48 +1215,15 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $params = array();
         $errors = array();
         $error = false;
-
-        if (isset($record->username)) {
-            if (!$DB->record_exists(user::TABLE, array('username' => $record->username))) {
-                $identifier = $this->get_field_mapping('username');
-                $errors[] = "$identifier value of \"{$record->username}\"";
-                $error = true;
-            } else {
-                $params['username'] = $record->username;
-            }
-        }
-
-        if (isset($record->email)) {
-            if (!$DB->record_exists(user::TABLE, array('email' => $record->email))) {
-                $identifier = $this->get_field_mapping('email');
-                $errors[] = "$identifier value of \"{$record->email}\"";
-                $error = true;
-            } else {
-                $params['email'] = $record->email;
-            }
-        }
-
-        if (isset($record->idnumber)) {
-            if (!$DB->record_exists(user::TABLE, array('idnumber' => $record->idnumber))) {
-                $identifier = $this->get_field_mapping('idnumber');
-                $errors[] = "$identifier value of \"{$record->idnumber}\"";
-                $error = true;
-            } else {
-                $params['idnumber'] = $record->idnumber;
-            }
-        }
+        $errsuffix = '';
+        $uid = $this->get_userid_for_user_actions($record, $filename, $error, $errors, $errsuffix);
 
         if ($error) {
-            if (count($errors) == 1) {
-                $this->fslogger->log_failure(implode($errors, ", ") . " does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-            } else {
-                $this->fslogger->log_failure(implode($errors, ", ") . " do not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-            }
+            $this->fslogger->log_failure(implode($errors, ", ").$errsuffix, 0, $filename, $this->linenumber, $record, "user");
             return false;
         }
 
-        if ($user = $DB->get_record(user::TABLE, $params)) {
-            $user = new user($user);
+        if (($user = new user($uid))) {
             $user->delete();
         }
 
@@ -1188,22 +1255,27 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         $createorupdate = get_config('dhimport_version1elis', 'createorupdate');
 
         if (!empty($createorupdate)) {
-            //determine if any identifying fields are set
-            $username_set = isset($record->username) && $record->username !== '';
-            $email_set = isset($record->email) && $record->email !== '';
-            $idnumber_set = isset($record->idnumber) && $record->idnumber !== '';
+            // check for new user_ prefix fields that are only valid for update
+            if (isset($record->user_idnumber) || isset($record->user_username) || isset($record->user_email)) {
+                return 'update';
+            }
+
+            // determine if any identifying fields are set
+            $usernameset = get_config('dhimport_version1elis','identfield_username') && isset($record->username) && $record->username !== '';
+            $emailset = get_config('dhimport_version1elis','identfield_email') && isset($record->email) && $record->email !== '';
+            $idnumberset = get_config('dhimport_version1elis','identfield_idnumber') && isset($record->idnumber) && $record->idnumber !== '';
 
             //make sure at least one identifying field is set
-            if ($username_set || $email_set || $idnumber_set) {
+            if ($usernameset || $emailset || $idnumberset) {
                 //identify the user
                 $params = array();
-                if ($username_set) {
+                if ($usernameset) {
                     $params['username'] = $record->username;
                 }
-                if ($email_set) {
+                if ($emailset) {
                     $params['email'] = $record->email;
                 }
-                if ($idnumber_set) {
+                if ($idnumberset) {
                     $params['idnumber'] = $record->idnumber;
                 }
 
@@ -4782,26 +4854,31 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
     public static function get_user_descriptor($record, $value_syntax = false, $prefix = '') {
         $fragments = array();
 
-        //the fields we care to check
-        $possible_fields = array('username',
-                                 'email',
-                                 'idnumber');
+        // the fields we care to check
+        $possiblefields = array('username', 'email', 'idnumber');
 
-        foreach ($possible_fields as $field) {
-            //use the prefix to find data, if necessary
-            $customkey = $prefix.$field;
+        // ELIS-8686: always check 'user_' prefix first
+        $prefixes = array('user_', $prefix);
+        foreach (array_unique($prefixes) as $prefix) {
+            foreach ($possiblefields as $field) {
+                // use the prefix to find data, if necessary
+                $customkey = $prefix.$field;
 
-            if (isset($record->$customkey) && $record->$customkey !== '') {
-                //data for that field
-                $value = $record->$customkey;
+                if (isset($record->$customkey) && $record->$customkey !== '') {
+                    // data for that field
+                    $value = $record->$customkey;
 
-                //calculate syntax fragment
-                if ($value_syntax) {
-                    $identifier = $this->mappings[$customkey];
-                    $fragments[] = "{$identifier} value of \"{$value}\"";
-                } else {
-                    $fragments[] = "{$field} \"{$value}\"";
+                    // calculate syntax fragment
+                    if ($value_syntax) {
+                        $identifier = $this->mappings[$customkey];
+                        $fragments[] = "{$identifier} value of \"{$value}\"";
+                    } else {
+                        $fragments[] = "{$field} \"{$value}\"";
+                    }
                 }
+            }
+            if (!empty($fragments)) {
+                break;
             }
         }
 

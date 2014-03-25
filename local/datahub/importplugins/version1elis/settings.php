@@ -28,6 +28,14 @@ defined('MOODLE_INTERNAL') || die;
 // Start of "data handling" section
 $settings->add(new admin_setting_heading('dhimport_version1elis/datahandling', get_string('datahandling', 'dhimport_version1elis'), null));
 
+// New identifying field selection section
+$settings->add(new admin_setting_configcheckbox('dhimport_version1elis/identfield_idnumber',
+        get_string('identfield_idnumber', 'dhimport_version1elis'), '', 1));
+$settings->add(new admin_setting_configcheckbox('dhimport_version1elis/identfield_username',
+        get_string('identfield_username', 'dhimport_version1elis'), '', 1));
+$settings->add(new admin_setting_configcheckbox('dhimport_version1elis/identfield_email',
+        get_string('identfield_email', 'dhimport_version1elis'), get_string('configidentfield', 'dhimport_version1elis'), 1));
+
 // Setting for "create or update"
 $settings->add(new admin_setting_configcheckbox('dhimport_version1elis/createorupdate', get_string('createorupdate', 'dhimport_version1elis'),
         get_string('configcreateorupdate', 'dhimport_version1elis'), 0));

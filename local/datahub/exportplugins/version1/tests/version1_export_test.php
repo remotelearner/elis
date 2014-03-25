@@ -1531,21 +1531,31 @@ class version1export_testcase extends rlip_test {
 
         // Lower bound on starttime.
         $starttime = time();
-        $datestr = date('M_j_Y_His', $starttime);
-        $outputfilename = 'rliptestexport_'.$datestr.'.csv';
+        $datestr = date_format_string($starttime, '%b_%e_%Y_'); // not Windows compatible %e
+        $outputfilename = 'rliptestexport_'.$datestr.'*.csv'; // Wildcard for time
+
         // Run the export.
         $taskname = $DB->get_field('local_eliscore_sched_tasks', 'taskname', array('id' => $taskid));
         run_ipjob($taskname);
 
-        $records = $DB->get_records(RLIP_LOG_TABLE);
-        $exists = file_exists($filepath.'/'.$outputfilename);
+        // Debug code ...
+        /*
+        error_log("Export file name to test for: {$outputfilename}");
+        ob_start();
+        var_dump(glob($filepath.'/*'));
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("Export files: {$tmp}");
+        */
+
+        $files = glob($filepath.'/'.$outputfilename);
+        $exists = !empty($files);
         // Cleanup the new file and folder.
         if ($exists) {
-            unlink($filepath.'/'.$outputfilename);
+            unlink($files[0]);
             rmdir($filepath);
         }
         $this->assertTrue($exists);
-
     }
 
     /**

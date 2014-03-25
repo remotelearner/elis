@@ -44,15 +44,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
                                            'email',
                                            'city',
                                            'country');
-    static $import_fields_user_update = array(array('username',
-                                                    'email',
-                                                    'idnumber'));
-    static $import_fields_user_delete = array(array('username',
-                                                    'email',
-                                                    'idnumber'));
-    static $import_fields_user_disable = array(array('username',
-                                                     'email',
-                                                     'idnumber'));
+
+    static $import_fields_user_update = array(); // set in constructor
+    static $import_fields_user_delete = array(); // set in constructor
+    static $import_fields_user_disable = array(); // set in constructor
 
     static $import_fields_course_create = array('shortname',
                                                 'fullname',
@@ -81,10 +76,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
     //available fields
     static $available_fields_user = array('username', 'auth', 'password', 'firstname',
-                                          'lastname', 'email', 'maildigest', 'autosubscribe',
-                                          'trackforums', 'screenreader', 'city', 'country',
-                                          'timezone', 'theme', 'lang', 'description',
-                                          'idnumber', 'institution', 'department');
+            'lastname', 'email', 'maildigest', 'autosubscribe',
+            'trackforums', 'screenreader', 'city', 'country',
+            'timezone', 'theme', 'lang', 'description',
+            'idnumber', 'institution', 'department', 'user_idnumber', 'user_username', 'user_email');
+
     static $available_fields_course = array('shortname', 'fullname', 'idnumber', 'summary',
                                             'format', 'numsections', 'startdate', 'newsitems',
                                             'showgrades', 'showreports', 'maxbytes', 'guest',
@@ -98,6 +94,37 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
     //cache the list of themes within the lifespan of this plugin
     var $themes = array();
+
+    /**
+     * Version1 import plugin constructor
+     *
+     * @param object $provider The import file provider that will be used to
+     *                         obtain any applicable import files
+     * @param boolean $manual  Set to true if a manual run
+     */
+    function __construct($provider = NULL, $manual = false) {
+        // Build configurable required fields for user_update & delete
+        static::$import_fields_user_update = array(array('user_username', 'user_email', 'user_idnumber'));
+        static::$import_fields_user_delete = array(array('user_username', 'user_email', 'user_idnumber'));
+        static::$import_fields_user_disable = array(array('user_username', 'user_email', 'user_idnumber'));
+
+        $idfields = array('username', 'email', 'idnumber'); // configurable id fields
+        foreach ($idfields as $idfield) {
+            if (get_config('dhimport_version1','identfield_'.$idfield)) {
+                static::$import_fields_user_update[0][] = $idfield;
+                static::$import_fields_user_delete[0][] = $idfield;
+                static::$import_fields_user_disable[0][] = $idfield;
+            }
+        }
+        /* Debug code ...
+        ob_start();
+        var_dump(static::$import_fields_user_update);
+        $tmp = ob_get_contents();
+        ob_end_clean();
+        error_log("rlipimport_version1:__construct(): import_fields_user_update = {$tmp}");
+        */
+        parent::__construct($provider, $manual);
+    }
 
     /**
      * Hook run after a file header is read
@@ -333,23 +360,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
         $createorupdate = get_config('dhimport_version1', 'createorupdate');
 
         if (!empty($createorupdate)) {
-            //determine if any identifying fields are set
-            $username_set = isset($record->username) && $record->username !== '';
-            $email_set = isset($record->email) && $record->email !== '';
-            $idnumber_set = isset($record->idnumber) && $record->idnumber !== '';
+            // check for new user_ prefix fields that are only valid for update
+            if (isset($record->user_idnumber) || isset($record->user_username) || isset($record->user_email)) {
+                return 'update';
+            }
+
+            // Determine if any identifying fields are set
+            $usernameset = get_config('dhimport_version1','identfield_username') && isset($record->username) && $record->username !== '';
+            $emailset = get_config('dhimport_version1','identfield_email') && isset($record->email) && $record->email !== '';
+            $idnumberset = get_config('dhimport_version1','identfield_idnumber') && isset($record->idnumber) && $record->idnumber !== '';
 
             //make sure at least one identifying field is set
-            if ($username_set || $email_set || $idnumber_set) {
+            if ($usernameset || $emailset || $idnumberset) {
                 //identify the user
                 $params = array();
-                if ($username_set) {
+                if ($usernameset) {
                     $params['username'] = $record->username;
                     $params['mnethostid'] = $CFG->mnet_localhost_id;
                 }
-                if ($email_set) {
+                if ($emailset) {
                     $params['email'] = $record->email;
                 }
-                if ($idnumber_set) {
+                if ($idnumberset) {
                     $params['idnumber'] = $record->idnumber;
                 }
 
@@ -401,22 +433,40 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     function get_user_descriptor($record, $value_syntax = false) {
         $fragments = array();
 
-        //the fields we care to check
-        $possible_fields = array('username',
-                                 'email',
-                                 'idnumber');
+        // the fields we care to check
+        $possiblefields = array('user_username', 'user_email', 'user_idnumber');
 
-        foreach ($possible_fields as $field) {
+        foreach ($possiblefields as $field) {
             if (isset($record->$field) && $record->$field !== '') {
                 //data for that field
                 $value = $record->$field;
 
                 //calculate syntax fragment
                 if ($value_syntax) {
-                    $identifier = $this->mappings[$field];
+                    $identifier = $this->mappings[substr($field, 5)];
                     $fragments[] = "{$identifier} value of \"{$value}\"";
                 } else {
                     $fragments[] = "{$field} \"{$value}\"";
+                }
+            }
+        }
+
+        if (empty($fragments)) {
+            // the fields we care to check
+            $possiblefields = array('username', 'email', 'idnumber');
+
+            foreach ($possiblefields as $field) {
+                if (isset($record->$field) && $record->$field !== '') {
+                    // data for that field
+                    $value = $record->$field;
+
+                    // calculate syntax fragment
+                    if ($value_syntax) {
+                        $identifier = $this->mappings[$field];
+                        $fragments[] = "{$identifier} value of \"{$value}\"";
+                    } else {
+                        $fragments[] = "{$field} \"{$value}\"";
+                    }
                 }
             }
         }
@@ -898,6 +948,110 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Determine userid from user import record
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param bool   $error Returned errors status, true means error, false ok
+     * @param array  $errors Array of error strings (if $error == true)
+     * @param string $errsuffix returned error suffix string
+     * @return int|bool userid on success, false is not found
+     */
+    protected function get_userid_for_user_actions($record, $filename, &$error, &$errors, &$errsuffix) {
+        global $CFG, $DB;
+        $idfields = array('idnumber', 'username', 'email');
+        $uniquefields = array('idnumber' => 0, 'username' => 0);
+        if (!get_config('dhimport_version1','allowduplicateemails')) {
+            $uniquefields['email'] = 0;
+        }
+
+        // First check for new user_ identifying fields
+        $params = array();
+        $uid = $this->get_userid_from_record_no_logging($record, $filename, $params, 'user_');
+        $usingstdident = !isset($record->user_idnumber) && !isset($record->user_username) && !isset($record->user_email);
+        $params = array();
+        $identfields = array();
+        foreach ($idfields as $idfield) {
+            if (isset($record->$idfield)) {
+                $testparams = array($idfield => $record->$idfield);
+                if ($idfield == 'username') {
+                    $testparams['mnethostid'] = $CFG->mnet_localhost_id;
+                }
+                // Moodle bug: get_field will return first record found
+                $fid = false;
+                $numrecs = $DB->count_records('user', $testparams);
+                if ($numrecs > 1) {
+                    $fid = -1; // set to non-zero value that won't match a valid user
+                } else if ($numrecs == 1) {
+                    $fid = $DB->get_field('user', 'id', $testparams);
+                }
+                if (isset($uniquefields[$idfield])) {
+                    $uniquefields[$idfield] = $fid;
+                }
+                if ($usingstdident && get_config('dhimport_version1','identfield_'.$idfield)) {
+                    $identifier = $this->mappings[$idfield];
+                    $params[$idfield] = $record->$idfield;
+                    $identstr = "$identifier value of \"{$record->$idfield}\"";
+                    if (!$fid) {
+                        $errors[] = $identstr;
+                        $error = true;
+                    } else {
+                        $identfields[] = $identstr;
+                        if ($idfield == 'username') {
+                            $params['mnethostid'] = $CFG->mnet_localhost_id;
+                        }
+                    }
+                }
+            }
+        }
+        if ($usingstdident && !$error && !empty($params)) {
+            try {
+                $uid = $DB->get_field('user', 'id', $params);
+            } catch (Exception $e) {
+                $error = true;
+            }
+        }
+
+        $errsuffixsingular = ' does not refer to a valid user.';
+        $errsuffixplural = ' do not refer to a valid user.';
+        if (!$error && !$uid) {
+            $error = true;
+            // error: could not find user with specified identifying fields
+            // or multiple user matches found
+            if (empty($errors)) {
+                foreach ($idfields as $idfield) {
+                    if (isset($record->{'user_'.$idfield})) {
+                        $errors[] = "user_{$idfield} value of \"".$record->{'user_'.$idfield}.'"';
+                    }
+                }
+            }
+            if (empty($errors)) {
+                $errors = $identfields;
+                $errsuffixplural = ' refer to different users.';
+            }
+        }
+
+        if ($uid && !$error) {
+            $errsuffixsingular = ' refers to another user - field must be unique.';
+            $errsuffixplural = ' refer to other user(s) - fields must be unique.';
+            foreach ($uniquefields as $key => $fielduid) {
+                if ($fielduid && $uid != $fielduid) {
+                    // error: user already exists with unique $key field setting
+                    $error = true;
+                    $identifier = $this->mappings[$key];
+                    $errors[] = "$identifier set to \"{$record->$key}\"";
+                }
+            }
+            if ($error) {
+                $uid = false;
+            }
+        }
+
+        $errsuffix = (count($errors) == 1) ? $errsuffixsingular : $errsuffixplural;
+        return $uid;
+    }
+
+    /**
      * Update a user
      *
      * @param object $record One record of import data
@@ -929,51 +1083,28 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //find existing user record
-        $params = array();
-        $usernameid = 0;
-        if (isset($record->username)) {
-            $params['username']   = $record->username;
-            $params['mnethostid'] = $CFG->mnet_localhost_id;
-            $updateusername = $DB->get_record('user', $params);
-            if (!$updateusername) {
-                $identifier = $this->mappings['username'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
-            }
-            $usernameid = $updateusername->id;
-        }
-
-        $eamilid = 0;
-        if (isset($record->email)) {
-            $params['email'] = $record->email;
-            $updateemail = $DB->get_record('user', array('email' => $params['email']));
-            if (!$updateemail) {
-                $identifier = $this->mappings['email'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['email']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
-            }
-            $emailid = $updateemail->id;
-        }
-
-        $idnumberid = 0;
-        if (isset($record->idnumber)) {
-            $params['idnumber'] = $record->idnumber;
-            $updateidnumber = $DB->get_record('user', array('idnumber' => $params['idnumber']));
-            if (!$updateidnumber) {
-                $identifier = $this->mappings['idnumber'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['idnumber']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
-            }
-            $idnumberid = $updateidnumber->id;
-        }
-
-        $record->id = $DB->get_field('user', 'id', $params);
-        if (empty($record->id)) {
-            $msg = $this->user_matches_multiple_string($params, $usernameid, $idnumberid, $emailid);
-            $this->fslogger->log_failure($msg, 0, $filename, $this->linenumber,
-                                         $record, "user");
+        // Find existing user record
+        $errors = array();
+        $error = false;
+        $errsuffix = '';
+        $uid = $this->get_userid_for_user_actions($record, $filename, $error, $errors, $errsuffix);
+        if ($error) {
+            $this->fslogger->log_failure(implode($errors, ", ").$errsuffix, 0, $filename, $this->linenumber, $record, "user");
             return false;
+        }
+
+        if ($uid) {
+            $mdluseridnumber = $DB->get_field('user', 'idnumber', array('id' => $uid));
+            if ($mdluseridnumber != '' && isset($record->idnumber) && $mdluseridnumber != $record->idnumber) {
+                // Attempt to change user's idnumber - not allowed.
+                $identifier = $this->mappings['idnumber'];
+                if ($identifier != 'idnumber') {
+                    $identifier = "idnumber ({$identifier})";
+                }
+                $this->fslogger->log_failure("User's $identifier cannot be modified from \"{$mdluseridnumber}\" to \"{$record->idnumber}\".", 0, $filename, $this->linenumber, $record, "user");
+                return false;
+            }
+            $record->id = $uid;
         }
 
         // See if we should force password change.
@@ -1035,47 +1166,18 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             return false;
         }
 
-        //find existing user record
-        $params = array();
-        $usernameid = 0;
-        if (isset($record->username)) {
-            $params['username']   = $record->username;
-            $params['mnethostid'] = $CFG->mnet_localhost_id;
-            $updateusername = $DB->get_record('user', $params);
-            if (!$updateusername) {
-                $identifier = $this->mappings['username'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['username']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
-            }
-            $usernameid = $updateusername->id;
+        // Find existing user record
+        $errors = array();
+        $error = false;
+        $errsuffix = '';
+        $uid = $this->get_userid_for_user_actions($record, $filename, $error, $errors, $errsuffix);
+        if ($error) {
+            $this->fslogger->log_failure(implode($errors, ", ").$errsuffix, 0, $filename, $this->linenumber, $record, "user");
+            return false;
         }
 
-        $emailid = 0;
-        if (isset($record->email)) {
-            $params['email'] = $record->email;
-            $updateemail = $DB->get_record('user', array('email' => $params['email']));
-            if (!$updateemail) {
-                $identifier = $this->mappings['email'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['email']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
-            }
-            $emailid = $updateemail->id;
-        }
-
-        $idnumberid = 0;
-        if (isset($record->idnumber)) {
-            $params['idnumber'] = $record->idnumber;
-            $updateidnumber = $DB->get_record('user', array('idnumber' => $params['idnumber']));
-            if (!$updateidnumber) {
-                $identifier = $this->mappings['idnumber'];
-                $this->fslogger->log_failure("{$identifier} value of \"{$params['idnumber']}\" does not refer to a valid user.", 0, $filename, $this->linenumber, $record, "user");
-                return false;
-            }
-            $idnumberid = $updateidnumber->id;
-        }
-
-        //make the appropriate changes
-        if ($user = $DB->get_record('user', $params)) {
+        // make the appropriate changes
+        if ($user = $DB->get_record('user', array('id' => $uid))) {
             user_delete_user($user);
 
             //string to describe the user
@@ -1089,13 +1191,10 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
             }
             return true;
         } else {
-            // parameters point to different users
-            $msg = $this->user_matches_multiple_string($params, $usernameid, $idnumberid, $emailid);
-            $this->fslogger->log_failure($msg, 0, $filename, $this->linenumber,
-                                         $record, "user");
-            if (!$this->fslogger->get_logfile_status()) {
-                return false;
-            }
+            // string to describe the user
+            $userdescriptor = $this->get_user_descriptor($record);
+            // Generic error
+            $this->fslogger->log_failure("Error deleting user with {$userdescriptor}", 0, $filename, $this->linenumber, $record, "user");
         }
 
         return false;
@@ -1934,42 +2033,70 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
     }
 
     /**
+     * Obtains a userid from a data record without any logging
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param array  $params The returned user parameters found in record
+     * @param string $fieldprefix Optional prefix for identifying fields, default ''
+     * @return mixed The user id, or false if not found
+     */
+    protected function get_userid_from_record_no_logging($record, $filename, &$params, $fieldprefix = '') {
+        global $CFG, $DB;
+
+        $field = $fieldprefix.'username';
+        // echo "get_userid_from_record_no_logging(): checking $field => ";
+        if (isset($record->$field)) {
+            // echo $record->$field, "\n";
+            $params['username']   = $record->$field;
+            $params['mnethostid'] = $CFG->mnet_localhost_id;
+        }
+        $field = $fieldprefix.'email';
+        // echo "get_userid_from_record_no_logging(): checking $field => ";
+        if (isset($record->$field)) {
+            // echo $record->$field, "\n";
+            $params['email'] = $record->$field;
+        }
+        $field = $fieldprefix.'idnumber';
+        // echo "get_userid_from_record_no_logging(): checking $field => ";
+        if (isset($record->$field)) {
+            // echo $record->$field, "\n";
+            $params['idnumber'] = $record->$field;
+        }
+
+        // var_dump($params);
+        if (empty($params) || $DB->count_records('user', $params) != 1 || !($userid = $DB->get_field('user', 'id', $params))) {
+            return false;
+        }
+        // echo "\nget_userid_from_record_no_logging(): Found uid = {$userid}";
+        return $userid;
+    }
+
+    /**
      * Obtains a userid from a data record, logging an error message to the
      * file system log on failure
      *
      * @param object $record One record of import data
      * @param string $filename The import file name, used for logging
+     * @param string $fieldprefix Optional prefix for identifying fields, default ''
      * @return mixed The user id, or false if not found
      */
-    function get_userid_from_record($record, $filename) {
-        global $CFG, $DB;
-
-        //find existing user record
+    public function get_userid_from_record($record, $filename, $fieldprefix = '') {
         $params = array();
-        //track how many fields identify the user
-        $num_identifiers = 0;
-
-        if (isset($record->username)) {
-            $num_identifiers++;
-            $params['username']   = $record->username;
-            $params['mnethostid'] = $CFG->mnet_localhost_id;
-        }
-        if (isset($record->email)) {
-            $num_identifiers++;
-            $params['email'] = $record->email;
-        }
-        if (isset($record->idnumber)) {
-            $num_identifiers++;
-            $params['idnumber'] = $record->idnumber;
-        }
-
-        if (!$userid = $DB->get_field('user', 'id', $params)) {
-            //failure
+        if (!($userid = $this->get_userid_from_record_no_logging($record, $filename, $params, $fieldprefix))) {
+            // Failure
+            if (empty($params)) {
+                $this->fslogger->log_failure("No identifying fields found.",
+                        0, $filename, $this->linenumber, $record, ($fieldprefix == '') ? 'enrolment' : 'user');
+                return false;
+            }
 
             //get description of identifying fields
             $user_descriptor = $this->get_user_descriptor((object)$params, true);
 
-            if ($num_identifiers > 1) {
+            $uniqidentifiers = $params;
+            unset($uniqidentifiers['mnethostid']); // don't count this one
+            if (count($uniqidentifiers) > 1) {
                 $does_token = 'do';
             } else {
                 $does_token = 'does';
@@ -1977,11 +2104,11 @@ class rlip_importplugin_version1 extends rlip_importplugin_base {
 
             //log message
             $this->fslogger->log_failure("{$user_descriptor} {$does_token} not refer to a valid user.",
-                                         0, $filename, $this->linenumber, $record, 'enrolment');
+                    0, $filename, $this->linenumber, $record, ($fieldprefix == '') ? 'enrolment' : 'user');
             return false;
         }
 
-        //success
+        // Success
         return $userid;
     }
 

@@ -37,6 +37,7 @@ $string['configlogfilelocation'] = 'The directory path, relative to moodledata, 
 $string['config_course_schedule_file'] = 'The filename of the \'course\' '.$rlipshortname.' import file.';
 $string['config_schedule_files_path'] = 'The directory path, relative to moodledata, to the location of import files.';
 $string['configfieldstreelink'] = 'Field mapping';
+$string['configidentfield'] = 'The above specify which standard user fields will be used as identifying fields for user import.';
 $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 ELIS Import Fields';
 $string['configcreateorupdate'] = 'If enabled, all create or update actions on users and courses are converted to create
 actions if the entity does not already exist, or update actions if the entity exists.';
@@ -51,6 +52,9 @@ $string['emailnotification'] = 'Email notification';
 $string['enrolmentfile'] = 'Enrolment file';
 $string['enrolment_schedule_file'] = 'Enrolment import filename';
 $string['enrolmenttab'] = 'Enrolment fields';
+$string['identfield_email'] = 'Use email as identifying field';
+$string['identfield_idnumber'] = 'Use idnumber as identifying field';
+$string['identfield_username'] = 'Use username as identifying field';
 $string['import_files_path'] = 'Import files path';
 $string['importfilesheading'] = 'Scheduled Import File Locations';
 $string['logging'] = 'Logging';

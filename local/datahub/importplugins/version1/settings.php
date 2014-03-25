@@ -30,6 +30,14 @@ $url = $CFG->wwwroot.'/local/datahub/importplugins/version1/config_fields.php';
 $attributes = array('href' => $url, 'target' => '_blank');
 $settings->add(new admin_setting_heading('dhimport_version1/datahandling', get_string('datahandling', 'dhimport_version1'), null));
 
+// New identifying field selection section
+$settings->add(new admin_setting_configcheckbox('dhimport_version1/identfield_idnumber',
+        get_string('identfield_idnumber', 'dhimport_version1'), '', 1));
+$settings->add(new admin_setting_configcheckbox('dhimport_version1/identfield_username',
+        get_string('identfield_username', 'dhimport_version1'), '', 1));
+$settings->add(new admin_setting_configcheckbox('dhimport_version1/identfield_email',
+        get_string('identfield_email', 'dhimport_version1'), get_string('configidentfield', 'dhimport_version1'), 1));
+
 // Groups / groupings
 $settings->add(new admin_setting_configcheckbox('dhimport_version1/creategroupsandgroupings', get_string('creategroupsandgroupings', 'dhimport_version1'),
         get_string('configcreategroupsandgroupings', 'dhimport_version1'), ''));

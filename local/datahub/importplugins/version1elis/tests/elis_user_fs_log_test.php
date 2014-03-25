@@ -756,8 +756,8 @@ class elisuserfslogging_testcase extends rlip_elis_test {
         );
 
         $expectederror = "[user.csv line 2] User with username \"invalidtestusername\", email \"invalidtest@user.com\", ";
-        $expectederror .= "idnumber \"invalidtestidnumber\" could not be updated. customusername value of \"invalidtestusername\",";
-        $expectederror .= " email value of \"invalidtest@user.com\", idnumber value of \"invalidtestidnumber\" do not refer to a";
+        $expectederror .= "idnumber \"invalidtestidnumber\" could not be updated. idnumber value of \"invalidtestidnumber\", ";
+        $expectederror .= "customusername value of \"invalidtestusername\", email value of \"invalidtest@user.com\" do not refer to a";
         $expectederror .= " valid user.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
@@ -775,8 +775,8 @@ class elisuserfslogging_testcase extends rlip_elis_test {
             'action' => 'create'
         );
         $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is";
-        $expectederror .= " required but all are unspecified: customusername, customemail, customidnumber. Please fix the import";
-        $expectederror .= " file and re-upload it.\n";
+        $expectederror .= " required but all are unspecified: user_username, user_email, user_idnumber, customidnumber, customusername, customemail.";
+        $expectederror .= " Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
 
         // Create mapping record.
@@ -900,7 +900,7 @@ class elisuserfslogging_testcase extends rlip_elis_test {
             'customidnumber' => ''
         );
 
-        $expectederror = "[user.csv line 2] User could not be updated. One of customusername, customemail, customidnumber is";
+        $expectederror = "[user.csv line 2] User could not be updated. One of user_username, user_email, user_idnumber, customidnumber, customusername, customemail is";
         $expectederror .= " required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
 
@@ -908,8 +908,8 @@ class elisuserfslogging_testcase extends rlip_elis_test {
             'action' => 'update',
         );
         $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is";
-        $expectederror .= " required but all are unspecified: customusername, customemail, customidnumber. Please fix the import";
-        $expectederror .= " file and re-upload it.\n";
+        $expectederror .= " required but all are unspecified: user_username, user_email, user_idnumber, customidnumber, customusername, customemail.";
+        $expectederror .= " Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
 
@@ -958,7 +958,7 @@ class elisuserfslogging_testcase extends rlip_elis_test {
             'customidnumber' => ''
         );
 
-        $expectederror = "[user.csv line 2] User could not be deleted. One of customusername, customemail, customidnumber is";
+        $expectederror = "[user.csv line 2] User could not be deleted. One of user_username, user_email, user_idnumber, customidnumber, customusername, customemail is";
         $expectederror .= " required but all are unspecified or empty.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
 
@@ -966,8 +966,8 @@ class elisuserfslogging_testcase extends rlip_elis_test {
             'action' => 'delete',
         );
         $expectederror = "[user.csv line 1] Import file user.csv was not processed because one of the following columns is";
-        $expectederror .= " required but all are unspecified: customusername, customemail, customidnumber. Please fix the import";
-        $expectederror .= " file and re-upload it.\n";
+        $expectederror .= " required but all are unspecified: user_username, user_email, user_idnumber, customidnumber, customusername, customemail.";
+        $expectederror .= " Please fix the import file and re-upload it.\n";
         $this->assert_data_produces_error($data, $expectederror, 'user');
     }
 

@@ -47,6 +47,25 @@ define('MDL_USER_DOESNOT_EXIST', false);
 define('MDL_USER_DELETED', -1);
 define('NO_TEST_SETUP', -1);
 
+require_once(dirname(__FILE__).'/../version1elis.class.php');
+
+// Must expose protected method for testing
+class open_rlip_importplugin_version1elis extends rlip_importplugin_version1elis {
+    /**
+     * Determine userid from user import record
+     *
+     * @param object $record One record of import data
+     * @param string $filename The import file name, used for logging
+     * @param bool   $error Returned errors status, true means error, false ok
+     * @param array  $errors Array of error strings (if $error == true)
+     * @param string $errsuffix returned error suffix string
+     * @return int|bool userid on success, false is not found
+     */
+    public function get_userid_for_user_actions($record, $filename, &$error, &$errors, &$errsuffix) {
+        return parent::get_userid_for_user_actions($record, $filename, $error, $errors, $errsuffix);
+    }
+}
+
 /**
  * Test user import.
  * @group local_datahub
@@ -73,6 +92,9 @@ class elis_user_import_testcase extends rlip_elis_test {
         global $DB;
         parent::setUp();
         $this->setAdminUser();
+        set_config('identfield_idnumber', '1', 'dhimport_version1elis');
+        set_config('identfield_username', '1', 'dhimport_version1elis');
+        set_config('identfield_email', '1', 'dhimport_version1elis');
     }
 
     /**
@@ -374,6 +396,22 @@ class elis_user_import_testcase extends rlip_elis_test {
             MDL_USER_EXISTS
         );
 
+        // Update tests - all user_ identifying fields.
+        $testdata[] = array(
+            'update',
+            array(
+                'user_idnumber' => 'testidnumber',
+                'user_username' => 'testusername',
+                'user_email'    => 'test@email.com',
+                'firstname'     => 'testfirstnamechange1',
+                'lastname'      => 'testlastnamechange1',
+                'country'       => 'US'
+            ),
+            0, // Test setup index.
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
         // Update - idnumber id only.
         $testdata[] = array(
             'update',
@@ -382,6 +420,20 @@ class elis_user_import_testcase extends rlip_elis_test {
                 'firstname' => 'testfirstnamechange2',
                 'lastname'  => 'testlastnamechange2',
                 'country'   => 'US'
+            ),
+            0, // Test setup index.
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Update - user_idnumber id only.
+        $testdata[] = array(
+            'update',
+            array(
+                'user_idnumber' => 'testidnumber',
+                'firstname'     => 'testfirstnamechange2',
+                'lastname'      => 'testlastnamechange2',
+                'country'       => 'US'
             ),
             0, // Test setup index.
             ELIS_USER_EXISTS,
@@ -402,6 +454,20 @@ class elis_user_import_testcase extends rlip_elis_test {
             MDL_USER_EXISTS
         );
 
+        // Update - user_username id only.
+        $testdata[] = array(
+            'update',
+            array(
+                'user_username'  => 'testusername',
+                'firstname' => 'testfirstnamechange3',
+                'lastname'  => 'testlastnamechange3',
+                'country'   => 'US'
+            ),
+            0, // Test setup index.
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
         // Update - email id only.
         $testdata[] = array(
             'update',
@@ -410,6 +476,20 @@ class elis_user_import_testcase extends rlip_elis_test {
                 'firstname' => 'testfirstnamechange4',
                 'lastname'  => 'testlastnamechange4',
                 'country'   => 'US'
+            ),
+            0, // Test setup index.
+            ELIS_USER_EXISTS,
+            MDL_USER_EXISTS
+        );
+
+        // Update - user_email id only.
+        $testdata[] = array(
+            'update',
+            array(
+                'user_email' => 'test@email.com',
+                'firstname'  => 'testfirstnamechange4',
+                'lastname'   => 'testlastnamechange4',
+                'country'    => 'US'
             ),
             0, // Test setup index.
             ELIS_USER_EXISTS,
@@ -536,11 +616,33 @@ class elis_user_import_testcase extends rlip_elis_test {
             MDL_USER_DELETED
         );
 
+        // Delete - user_idnumber id only.
+        $testdata[] = array(
+            'delete',
+            array(
+                'user_idnumber'  => 'testidnumber',
+            ),
+            0, // Test setup index.
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
+
         // Delete - username id only.
         $testdata[] = array(
             'delete',
             array(
-                'username'  => 'testusername',
+                'username' => 'testusername',
+            ),
+            0, // Test setup index.
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
+
+        // Delete - user_username id only.
+        $testdata[] = array(
+            'delete',
+            array(
+                'user_username' => 'testusername',
             ),
             0, // Test setup index.
             ELIS_USER_DOESNOT_EXIST,
@@ -558,6 +660,17 @@ class elis_user_import_testcase extends rlip_elis_test {
             MDL_USER_DELETED
         );
 
+        // Delete - user_email id only.
+        $testdata[] = array(
+            'delete',
+            array(
+                'user_email' => 'test@email.com',
+            ),
+            0, // Test setup index.
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
+
         // Delete - all id fields.
         $testdata[] = array(
             'delete',
@@ -565,6 +678,19 @@ class elis_user_import_testcase extends rlip_elis_test {
                 'idnumber'  => 'testidnumber',
                 'username'  => 'testusername',
                 'email'     => 'test@email.com',
+            ),
+            0, // Test setup index.
+            ELIS_USER_DOESNOT_EXIST,
+            MDL_USER_DELETED
+        );
+
+        // Delete - all user_ id fields.
+        $testdata[] = array(
+            'delete',
+            array(
+                'user_idnumber' => 'testidnumber',
+                'user_username' => 'testusername',
+                'user_email'    => 'test@email.com',
             ),
             0, // Test setup index.
             ELIS_USER_DOESNOT_EXIST,
@@ -707,7 +833,18 @@ class elis_user_import_testcase extends rlip_elis_test {
         if (array_key_exists('inactive', $input)) {
             unset($input['inactive']);
         }
-
+        if (array_key_exists('user_idnumber', $input)) {
+            $input['idnumber'] = $input['user_idnumber'];
+            unset($input['user_idnumber']);
+        }
+        if (array_key_exists('user_username', $input)) {
+            $input['username'] = $input['user_username'];
+            unset($input['user_username']);
+        }
+        if (array_key_exists('user_email', $input)) {
+            $input['email'] = $input['user_email'];
+            unset($input['user_email']);
+        }
         return $input;
     }
 
@@ -725,6 +862,19 @@ class elis_user_import_testcase extends rlip_elis_test {
 
         if (array_key_exists('password', $input)) {
             unset($input['password']); // TBD: md5( ... + $CFG->salt) ...
+        }
+
+        if (array_key_exists('user_idnumber', $input)) {
+            $input['idnumber'] = $input['user_idnumber'];
+            unset($input['user_idnumber']);
+        }
+        if (array_key_exists('user_username', $input)) {
+            $input['username'] = $input['user_username'];
+            unset($input['user_username']);
+        }
+        if (array_key_exists('user_email', $input)) {
+            $input['email'] = $input['user_email'];
+            unset($input['user_email']);
         }
 
         $comments = null;
@@ -982,5 +1132,238 @@ class elis_user_import_testcase extends rlip_elis_test {
             Full Name: testfirstname testlastname
             Email Address: testemail@example.com</p>';
         $this->assertEquals($expectedtext, $actualtext);
+    }
+
+    /**
+     * Data Provider for test_version1elis_get_userid_for_user_actions
+     * @return array the test data array(array(array(array(usersdata), ...), array(inputdata), array(expected - keys: 'uid', 'error', 'errsuffix', ...)))
+     */
+    public function version1elis_get_userid_for_user_actions_dataprovider() {
+        return array(
+                array( // Test case 1: no existing user w/ std.ident. fields
+                        array(),
+                        array('action' => 'update', 'username' => 'rlipuser1', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => false, 'error' => true,
+                            'errsuffix' => " do not refer to a valid user.",
+                            'errors' => array(
+                                    "username value of \"rlipuser1\"",
+                                    "email value of \"noreply1@remote-learner.net\"",
+                                    "idnumber value of \"rlipuser1\""
+                            )
+                        )
+                ),
+                array( // Test case 2: no existing user w/ user_ prefixed id fields
+                        array(),
+                        array('action' => 'update', 'user_username' => 'rlipuser1', 'user_idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => false, 'error' => true,
+                            'errsuffix' => " do not refer to a valid user.",
+                            'errors' => array(
+                                    "user_username value of \"rlipuser1\"",
+                                    "user_idnumber value of \"rlipuser1\""
+                            )
+                        )
+                ),
+                array( // Test case 3: existing user w/ std.ident. fields
+                        array(
+                                array('username' => 'rlipuser1', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'username' => 'rlipuser1', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => 1, 'error' => false)
+                ),
+                array( // Test case 4: existing w/ user_ prefixed id fields
+                        array(
+                                array('username' => 'rlipuser1', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'user_username' => 'rlipuser1', 'user_idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => 1, 'error' => false)
+                ),
+                array( // Test case 5: update matching multiple users w/ user_ prefixed id fields
+                        array(
+                                array('username' => 'rlipuser1a', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1b', 'idnumber' => 'rlipuser2', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'user_username' => 'rlipuser1a', 'user_idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                            'user_email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => false, 'error' => true,
+                            'errsuffix' => " do not refer to a valid user.",
+                            'errors' => array(
+                                    "user_username value of \"rlipuser1a\"",
+                                    "user_email value of \"noreplyB@remote-learner.net\"",
+                                    "user_idnumber value of \"rlipuser1\""
+                            )
+                        )
+                ),
+                array( // Test case 6: update matching user with others w/ user_ prefixed id fields
+                        array(
+                                array('username' => 'rlipuser1a', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1b', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'user_username' => 'rlipuser1c', 'user_idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => 3, 'error' => false)
+                ),
+                array( // Test case 7: update matching multiple users w/ std. id fields
+                        array(
+                                array('username' => 'rlipuser1a', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1b', 'idnumber' => 'rlipuser2', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'username' => 'rlipuser1a', 'idnumber' => 'rlipuser2', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => false, 'error' => true,
+                            'errsuffix' => " refer to different users.",
+                            'errors' => array(
+                                    "username value of \"rlipuser1a\"",
+                                    "email value of \"noreplyB@remote-learner.net\"",
+                                    "idnumber value of \"rlipuser2\""
+                            )
+                        )
+                ),
+                array( // Test case 8: update matching user with others w/ std. id fields
+                        array(
+                                array('username' => 'rlipuser1a', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1b', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => 3, 'error' => false)
+                ),
+                array( // Test case 9: update no matching user w/ std. id fields
+                        array(
+                                array('username' => 'rlipuser1a', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1b', 'idnumber' => 'rlipuser2', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'username' => 'bogus1', 'firstname' => 'Test', 'lastname' => 'User',
+                            'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => false, 'error' => true,
+                            'errsuffix' => " does not refer to a valid user.",
+                            'errors' => array(
+                                    "username value of \"bogus1\""
+                            )
+                        )
+                ),
+                array( // Test case 10: update no matching w/ user_ prefix id fields
+                        array(
+                                array('username' => 'rlipuser1a', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1b', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'user_username' => 'bogus1', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => false, 'error' => true,
+                            'errsuffix' => " does not refer to a valid user.",
+                            'errors' => array(
+                                    "user_username value of \"bogus1\""
+                            )
+                        )
+                ),
+                array( // Test case 11: update matching ident-field not unique
+                        array(
+                                array('username' => 'rlipuser1a', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1b', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'user_username' => 'rlipuser1a', 'firstname' => 'Test', 'lastname' => 'User',
+                            'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => false, 'error' => true,
+                            'errsuffix' => " refers to another user - field must be unique.",
+                            'errors' => array(
+                                    "email set to \"noreplyC@remote-learner.net\""
+                            )
+                        )
+                ),
+                array( // Test case 12: update matching ident-fields not unique
+                        array(
+                                array('username' => 'rlipuser1a', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreply1@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1b', 'idnumber' => 'rlipuser1', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                                array('username' => 'rlipuser1c', 'idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                                    'email' => 'noreplyC@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        ),
+                        array('action' => 'update', 'user_idnumber' => 'rlipuser3', 'firstname' => 'Test', 'lastname' => 'User',
+                            'username' => 'rlipuser1a', 'email' => 'noreplyB@remote-learner.net', 'password' => 'Test1234!', 'country' => 'CA'),
+                        array('uid' => false, 'error' => true,
+                            'errsuffix' => " refer to other user(s) - fields must be unique.",
+                            'errors' => array(
+                                    "username set to \"rlipuser1a\"",
+                                    "email set to \"noreplyB@remote-learner.net\""
+                            )
+                        )
+                )
+        );
+    }
+
+    /**
+     * Validate method get_userid_for_user_actions
+     * @param array  $usersdata list of users w/ data to insert before test
+     * @param array  $inputdata the user import record
+     * @param array  $expected array of expected return param values
+     * @dataProvider version1elis_get_userid_for_user_actions_dataprovider
+     */
+    public function test_version1elis_get_userid_for_user_actions($usersdata, $inputdata, $expected) {
+        global $CFG, $DB;
+        $dir = get_plugin_directory('dhimport', 'version1elis');
+        require_once($dir.'/lib.php');
+
+        // Create users for test saving ids for later comparison
+        $uids = array(false);
+        foreach ($usersdata as $userdata) {
+            $uids[] = $DB->insert_record(user::TABLE, (object)$userdata);
+        }
+        $provider = new rlipimport_version1elis_importprovider_mockuser(array());
+        $importplugin = new open_rlip_importplugin_version1elis($provider);
+        $importplugin->mappings = rlipimport_version1elis_get_mapping('user');
+        $importplugin->fslogger = $provider->get_fslogger('dhimport_version1elis', 'user');
+        $error = 0;
+        $errors = array();
+        $errsuffix = '';
+        // Cannot use ReflectionMethod for pass-by-reference params in method
+        $uid = $importplugin->get_userid_for_user_actions((object)$inputdata, 'user.csv', $error, $errors, $errsuffix);
+        $expecteduid = $expected['uid'];
+        if ($expecteduid) {
+            $expecteduid = $uids[$expecteduid];
+        }
+        $this->assertEquals($expecteduid, $uid);
+        $this->assertEquals($expected['error'], $error);
+        if (isset($expected['errsuffix'])) {
+            $this->assertEquals($expected['errsuffix'], $errsuffix);
+        }
+        if (isset($expected['errors'])) {
+            foreach ($expected['errors'] as $err) {
+                $this->assertTrue(in_array($err, $errors));
+            }
+        }
     }
 }

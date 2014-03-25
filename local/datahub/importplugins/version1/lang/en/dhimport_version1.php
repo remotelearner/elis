@@ -40,6 +40,7 @@ $string['configcreateorupdate'] = 'If enabled, all create or update actions on u
 actions if the entity does not already exist, or update actions if the entity exists.';
 $string['configemailnotification'] = 'A comma-separated list of email addresses to send import log files to.';
 $string['configfieldstreelink'] = 'Field mapping';
+$string['configidentfield'] = 'The above specify which standard user fields will be used as identifying fields for user import.';
 $string['configlogfilelocation'] = 'The directory path, relative to moodledata, to the location of log files.';
 $string['configurelink'] = 'Click here to configure field mappings to use for importing data';
 $string['configuretitle'] = 'Plugins Blocks: Configure Version 1 Import Fields';
@@ -54,6 +55,9 @@ $string['emailnotification'] = 'Email notification';
 $string['enrolment_schedule_file'] = 'Enrolment import filename';
 $string['enrolmentfile'] = 'Enrolment file';
 $string['enrolmenttab'] = 'Enrolment fields';
+$string['identfield_email'] = 'Use email as identifying field';
+$string['identfield_idnumber'] = 'Use idnumber as identifying field';
+$string['identfield_username'] = 'Use username as identifying field';
 $string['importfields'] = 'Version 1 import fields';
 $string['importfilesheading'] = 'Scheduled Import File Locations';
 $string['import_file_timestamp'] = '%b_%d_%Y_%H%M%S';
