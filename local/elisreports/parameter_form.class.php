@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
  *
  * @package    local_elisreports
  * @author     Remote-Learner.net Inc
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2012 Remote Learner.net Inc http://www.remote-learner.net
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -36,14 +36,14 @@ class parameter_form extends moodleform {
     /**
      * Standard form definition
      */
-    function definition() {
+    public function definition() {
         $mform =& $this->_form;
 
         $mform->addElement('header', 'newfilter', get_string('newfilter','filters'));
 
-        //just define the id field - UI fields added in definition_after_data
+        // Just define the id field - UI fields added in definition_after_data
         $mform->addElement('hidden', 'id');
-        $mform->setType('id', PARAM_INT);
+        $mform->setType('id', PARAM_TEXT);
     }
 
     /**
