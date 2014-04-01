@@ -390,6 +390,9 @@ function pm_migrate_moodle_users($setidnumber = false, $fromtime = 0, $mdluserid
 /**
  * Migrate a single Moodle user to the Program Management system.  Will
  * only do this for users who have an idnumber set.
+ *
+ * @param object $mu Moodle user object
+ * @return boolean Whether user was synchronized or not
  */
 function pm_moodle_user_to_pm($mu) {
     global $CFG, $DB;
@@ -408,9 +411,9 @@ function pm_moodle_user_to_pm($mu) {
     // re-fetch, in case this is from a stale event
     $mu = $DB->get_record('user', array('id' => $mu->id));
 
-    if (user_not_fully_set_up($mu)) {
-        //prevent the sync if a bare-bones user record is being created
-        //by create_user_record
+    if (user_not_fully_set_up($mu) || !$mu->confirmed) {
+        // Prevent the sync if a bare-bones user record is being created by create_user_record
+        // or Moodle user has not yet been confirmed.
         return true;
     }
 
