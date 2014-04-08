@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    dhimport_version1elis
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -727,7 +727,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function user_create($record, $filename) {
+    public function user_create($record, $filename) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
@@ -804,7 +804,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         // TODO: validation
         $user = new user();
         $user->set_from_data($record);
-        $user->save();
+        try {
+            $user->save();
+        } catch (Exception $e) {
+            $identifier = $this->get_field_mapping('idnumber');
+            $this->fslogger->log_failure("Error creating associated Moodle user for $identifier \"{$record->idnumber}\": ".$e->getMessage(),
+                    0, $filename, $this->linenumber, $record, "user");
+            return false;
+        }
 
         //string to describe the user
         $user_descriptor = $this->get_user_descriptor($record);
@@ -1112,7 +1119,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      * @param string $filename The import file name, used for logging
      * @return boolean true on success, otherwise false
      */
-    function user_update($record, $filename) {
+    public function user_update($record, $filename) {
         global $CFG;
         require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/user.class.php'));
@@ -1175,7 +1182,14 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
             return false;
         }
         $user->set_from_data($record);
-        $user->save();
+        try {
+            $user->save();
+        } catch (Exception $e) {
+            $identifier = $this->get_field_mapping('idnumber');
+            $this->fslogger->log_failure("Error creating associated Moodle user for $identifier \"{$record->idnumber}\": ".$e->getMessage(),
+                    0, $filename, $this->linenumber, $record, "user");
+            return false;
+        }
 
         //string to describe the user
         $user_descriptor = $this->get_user_descriptor($record);
@@ -3974,7 +3988,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      *
      * @return boolean true on success, otherwise false
      */
-    function class_enrolment_create_student($record, $filename, $idnumber) {
+    public function class_enrolment_create_student($record, $filename, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
@@ -4041,7 +4055,15 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
         if (isset($student->completestatusid) && $student->completestatusid == STUSTATUS_PASSED) {
             $student->complete();
         } else {
-            $student->save();
+            try {
+                $student->save();
+            } catch (Exception $e) {
+                // Student save may attempt to sync ELIS user to Moodle.
+                $useridnumber = $student->users->idnumber;
+                $this->fslogger->log_failure("Error creating associated Moodle user for idnumber \"{$useridnumber}\": ".$e->getMessage(),
+                        0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
         }
 
         $this->newenrolmentemail($student);
@@ -4256,7 +4278,7 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
      *
      * @return boolean true on success, otherwise false
      */
-    function class_enrolment_update_student($record, $filename, $idnumber) {
+    public function class_enrolment_update_student($record, $filename, $idnumber) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
         require_once(elispm::lib('data/pmclass.class.php'));
@@ -4311,10 +4333,18 @@ class rlip_importplugin_version1elis extends rlip_importplugin_base {
 
         //TODO: consider refactoring once ELIS-6546 is resolved
         if (isset($student->completestatusid) && $student->completestatusid == STUSTATUS_PASSED &&
-            $DB->get_field(student::TABLE, 'completestatusid', array('id' => $student->id)) != STUSTATUS_PASSED) {
+                $DB->get_field(student::TABLE, 'completestatusid', array('id' => $student->id)) != STUSTATUS_PASSED) {
             $student->complete();
         } else {
-            $student->save();
+            try {
+                $student->save();
+            } catch (Exception $e) {
+                // Student save may attempt to sync ELIS user to Moodle.
+                $useridnumber = $student->users->idnumber;
+                $this->fslogger->log_failure("Error creating associated Moodle user for idnumber \"{$useridnumber}\": ".$e->getMessage(),
+                        0, $filename, $this->linenumber, $record, "enrolment");
+                return false;
+            }
         }
 
         //string to describe the user

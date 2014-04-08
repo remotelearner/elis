@@ -599,4 +599,131 @@ class elis_user_student_enrolment_testcase extends rlip_elis_test {
         // Validation.
         $this->assertEquals(0, $DB->count_records(student::TABLE));
     }
+
+    /**
+     * Validate that a missing Moodle user does not produce an error when enrolling an ELIS user to a class.
+     */
+    public function test_elisuserstudentenrolmenthandlesmissingmoodleuser() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        // Create an ELIS course.
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
+        $course->save();
+
+        // Create an ELIS class.
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        // Create a Moodle course.
+        $mdlcoursedata = new stdClass();
+        $mdlcoursedata->shortname = "testcourse";
+        $mdlcoursedata->fullname = "Test Course";
+        $mdlcoursedata->category = 1;
+        $mdlcourse = create_course($mdlcoursedata);
+
+        // Associate ELIS class to Moodle course.
+        $result = moodle_attach_class($class->id, $mdlcourse->id);
+        $this->assertTrue($result);
+
+        // Create an ELIS user.
+        $user = new user(array(
+            'idnumber' => 'testidnumber',
+            'username' => 'testusername',
+            'firstname' => 'testfirstname',
+            'lastname' => 'testlasname',
+            'email' => 'testusername@email.com',
+            'country' => 'CA'
+        ));
+        $user->save();
+
+        // Delete the associated Moodle user record.
+        $DB->execute("DELETE FROM {user} WHERE idnumber = 'testidnumber'");
+
+        // Run the class enrolment create action.
+        $record = new stdClass;
+        $record->action = 'enrol';
+        $record->context = 'class_testclassidnumber';
+        $record->user_username = $user->username;
+        $record->user_email = $user->email;
+        $record->user_idnumber = $user->idnumber;
+
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(null);
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
+
+        // Validation.
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id
+        )));
+    }
+
+    /**
+     * Validate that a Moodle user with duplicate username does not produce an error when enrolling an ELIS user to a class.
+     */
+    public function test_elisuserstudentenrolmenthandlesduplicatemoodleuser() {
+        global $CFG, $DB;
+        require_once($CFG->dirroot.'/local/elisprogram/lib/setup.php');
+        require_once(elispm::lib('data/course.class.php'));
+        require_once(elispm::lib('data/pmclass.class.php'));
+        require_once(elispm::lib('data/user.class.php'));
+
+        // Create an ELIS course.
+        $course = new course(array('name' => 'testcoursename', 'idnumber' => 'testcourseidnumber', 'syllabus' => ''));
+        $course->save();
+
+        // Create an ELIS class.
+        $class = new pmclass(array('courseid' => $course->id, 'idnumber' => 'testclassidnumber'));
+        $class->save();
+
+        // Create a Moodle course.
+        $mdlcoursedata = new stdClass();
+        $mdlcoursedata->shortname = "testcourse";
+        $mdlcoursedata->fullname = "Test Course";
+        $mdlcoursedata->category = 1;
+        $mdlcourse = create_course($mdlcoursedata);
+
+        // Associate ELIS class to Moodle course.
+        $result = moodle_attach_class($class->id, $mdlcourse->id);
+        $this->assertTrue($result);
+
+        // Create an ELIS user.
+        $user = new user(array(
+            'idnumber' => 'testidnumber',
+            'username' => 'testusername',
+            'firstname' => 'testfirstname',
+            'lastname' => 'testlasname',
+            'email' => 'testusername@email.com',
+            'country' => 'CA'
+        ));
+        $user->save();
+
+        // Change the idnumber of the associated Moodle user record.
+        $DB->execute("UPDATE {user} SET idnumber = 'bogus' WHERE idnumber = 'testidnumber'");
+
+        // Remove the ELIS user to Moodle user association record.
+        $DB->execute("DELETE FROM {".usermoodle::TABLE."} WHERE cuserid = ".$user->id);
+
+        // Run the class enrolment create action.
+        $record = new stdClass;
+        $record->action = 'enrol';
+        $record->context = 'class_testclassidnumber';
+        $record->user_username = $user->username;
+        $record->user_email = $user->email;
+        $record->user_idnumber = $user->idnumber;
+
+        $importplugin = rlip_dataplugin_factory::factory('dhimport_version1elis');
+        $importplugin->fslogger = new silent_fslogger(null);
+        $importplugin->process_record('enrolment', (object)$record, 'bogus');
+
+        // Validation.
+        $this->assertTrue($DB->record_exists(student::TABLE, array(
+            'userid' => $user->id,
+            'classid' => $class->id
+        )));
+    }
 }
