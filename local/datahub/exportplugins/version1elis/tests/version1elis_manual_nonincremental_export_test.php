@@ -143,7 +143,7 @@ class version1elismanualnonincrementalexport_testcase extends rlip_elis_test {
 
     /**
      * Validate that the export contains the necessary data when the
-     * approriate data is present in the database
+     * appropriate data is present in the database
      *
      * @param array $expecteddata The expected column data
      */
