@@ -536,11 +536,11 @@ class repository_elisfiles extends repository {
      * @return stdClass|null|false
      */
     public function get_file_by_reference($ref) {
-        ob_start();
-        var_dump($ref);
-        $tmp = ob_get_contents();
-        ob_end_clean();
-        error_log("get_file_by_reference(ref = {$tmp});");
+        // ob_start();
+        // var_dump($ref);
+        // $tmp = ob_get_contents();
+        // ob_end_clean();
+        // error_log("get_file_by_reference(ref = {$tmp});");
         // return parent::get_file_by_reference($ref); // DEPRECATED
         if ($this->has_moodle_files() && isset($ref->reference)) {
             $fs = get_file_storage();

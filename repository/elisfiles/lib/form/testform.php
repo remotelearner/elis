@@ -54,11 +54,11 @@ class alfreso_test_form extends moodleform {
                 $repo = null;
            }
         }
-        ob_start();
-        var_dump($ret);
-        $tmp = ob_get_contents();
-        ob_end_clean();
-        error_log("alfresco_filemanager::test_form:: ret = {$tmp}");
+        // ob_start();
+        // var_dump($ret);
+        // $tmp = ob_get_contents();
+        // ob_end_clean();
+        // error_log("alfresco_filemanager::test_form:: ret = {$tmp}");
 
         $fm_options = array('maxfiles'   => -1,
                             'maxbytes'   => 1000000000,

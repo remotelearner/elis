@@ -43,7 +43,7 @@ function xmldb_repository_elisfiles_install() {
                     $migrate_ok = elis_files_user_created($user);
                     if (!$migrate_ok) {
                         $errors = true;
-                        error_log("xmldb_block_elis_files_upgrade({$oldversion}) - failed migrating user ({$user->id}) to Alfresco.");
+                        // error_log("xmldb_block_elis_files_upgrade({$oldversion}) - failed migrating user ({$user->id}) to Alfresco.");
                     }
                 }
             }

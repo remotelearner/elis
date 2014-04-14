@@ -41,9 +41,9 @@ class repository_elisfiles_search_testcase extends elis_database_test {
      * This function loads data into the PHPUnit tables for testing.
      */
     protected function setup_test_data_xml() {
-        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config.xml')) {
-            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
-            return false;
+        if (!file_exists(__DIR__.'/fixtures/elis_files_config.xml')) {
+            $this->markTestSkipped('You must define elis_files_config.xml inside '.__DIR__.
+                    '/fixtures/ directory to execute this test.');
         }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
@@ -82,34 +82,20 @@ class repository_elisfiles_search_testcase extends elis_database_test {
      * @uses $CFG, $DB
      */
     public function test_folder_search() {
-        $this->markTestIncomplete('This test currently fails with a fatal error');
-
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
-        global $CFG, $DB;
+        $data = null;
+        $listing = null;
 
-        // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot.'/repository/elisfiles/')) {
-            // RL: ELIS files: Alfresco
-            $data = null;
-            $listing = null;
-            $sql = 'SELECT i.name, i.typeid, r.type
-                      FROM {repository} r, {repository_instances} i
-                     WHERE r.type = ? AND i.typeid = r.id';
-            $repository = $DB->get_record_sql($sql, array('elisfiles'));
-            if ($repository) {
-                try {
-                    $repo = new repository_elisfiles('elisfiles', context_system::instance(),
-                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
-                } catch (Exception $e) {
-                    $this->markTestSkipped();
-                }
-            } else {
-                $this->markTestSkipped();
-            }
-        } else {
-            $this->markTestSkipped();
+        $options = array(
+            'ajax' => false,
+            'name' => 'elis files phpunit test',
+            'type' => 'elisfiles'
+        );
+
+        if (!$repo = new repository_elisfiles('elisfiles', context_system::instance(), $options)) {
+            $this->markTestSkipped('Repository not configured or enabled');
         }
 
         $parentfolderuuid = $repo->elis_files->get_root()->uuid;

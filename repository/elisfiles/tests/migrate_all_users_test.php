@@ -41,9 +41,9 @@ class repository_elisfiles_migrate_all_users_testcase extends elis_database_test
      * This function loads data into the PHPUnit tables for testing
      */
     protected function setup_test_data_xml() {
-        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config2.xml')) {
-            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
-            return false;
+        if (!file_exists(__DIR__.'/fixtures/elis_files_config2.xml')) {
+            $this->markTestSkipped('You must define elis_files_config2.xml inside '.__DIR__.
+                    '/fixtures/ directory to execute this test.');
         }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config2.xml'));
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_user_account_data2.xml'));

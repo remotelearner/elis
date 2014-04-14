@@ -6,7 +6,7 @@
         <column>visible</column>
         <row>
             <value>99</value>
-            <value>elis_files</value>
+            <value>elisfiles</value>
             <value>1</value>
         </row>
     </table>

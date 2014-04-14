@@ -39,6 +39,12 @@ require_once($CFG->dirroot.'/repository/elisfiles/tests/constants.php');
  * @group repository_elisfiles
  */
 class repository_elisfiles_file_upload_testcase extends elis_database_test {
+    /** @var array An array of unique ids. */
+    protected $createduuids = array();
+
+    /** @var bool Set to true if we created a test user in the repository. */
+    protected $testusercreated = false;
+
     /**
      * This function create a temp file used by other tests.
      * @uses $CFG
@@ -76,12 +82,13 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
      * This function loads data into the PHPUnit tables for testing.
      */
     protected function setup_test_data_xml() {
+        if (!file_exists(__DIR__.'/fixtures/elis_files_config.xml')) {
+            $this->markTestSkipped('You must define elis_files_config.xml inside '.__DIR__.
+                    '/fixtures/ directory to execute this test.');
+        }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
     }
-
-    /** @var array An array of unique ids. */
-    protected $createduuids = array();
 
     /**
      * This function initializes all of the setup steps required by each step.
@@ -106,6 +113,8 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
      * This function removes any initialized data.
      */
     protected function tearDown() {
+        global $USER;
+
         foreach ($this->createduuids as $uuid) {
             elis_files_delete($uuid);
         }
@@ -117,6 +126,11 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
                 }
             }
         }
+
+        if ($this->testusercreated) {
+            elis_files_delete_user($USER->username, true);
+        }
+
         parent::tearDown();
     }
 
@@ -162,16 +176,14 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
      * @dataProvider file_size_provider
      */
     public function test_upload_incremental_file_sizes($mb) {
+        if (!PHPUNIT_LONGTEST) {
+            // This may take a long time. Only execute if we are allowed to.
+            return;
+        }
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
-        $this->markTestSkipped('Not necessary to test incremental file sizes at this time.');
-
         // Check if Alfresco is enabled, configured and running first
-        if (!$repo = repository_factory::factory('elisfiles')) {
-            $this->markTestSkipped();
-        }
-
         if (!$repo = repository_factory::factory('elisfiles')) {
             $this->markTestSkipped('Repository not configured or enabled');
         }
@@ -196,7 +208,7 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
 
         // Check if Alfresco is enabled, configured and running first
         if (!$repo = repository_factory::factory('elisfiles')) {
-            $this->markTestSkipped();
+            $this->markTestSkipped('Repository not configured or enabled');
         }
 
         // Explicitly set the file transfer method to Web Services
@@ -216,13 +228,23 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
      * Test uploading a file to Alfresco explicitly using the web services method.
      */
     public function test_upload_file_via_ftp() {
+        global $USER, $SESSION;
+
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
         // Check if Alfresco is enabled, configured and running first
         if (!$repo = repository_factory::factory('elisfiles')) {
-            $this->markTestSkipped();
+            $this->markTestSkipped('Repository not configured or enabled');
         }
+
+        // We need to create a user and then force the repository connection to be reinitialized
+        $USER->email = 'noreply@example.org';
+        $this->assertTrue($repo->migrate_user($USER, 'temppass'));
+        unset($SESSION->repo);
+        $this->testusercreated = true;
+
+        $repo = repository_factory::factory('elisfiles');
 
         // Explicitly set the file transfer method to FTP
         set_config('file_transfer_method', ELIS_FILES_XFER_FTP, 'elisfiles');
@@ -262,34 +284,27 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
 
     /**
      * Test uploading a file to Alfresco explicitly using the web services method.
-     * @uses $CFG, $DB
+     *
      * @param string $extension file extension
      * @dataProvider file_extensions_provider
      */
     public function test_upload_file_types_via_ws($extension) {
-        global $CFG, $DB;
+        global $CFG;
 
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
-        // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot.'/repository/elisfiles/')) {
-            // RL: ELIS files: Alfresco
-            $data = null;
-            $listing = null;
-            $sql = 'SELECT i.name, i.typeid, r.type
-                      FROM {repository} r, {repository_instances} i
-                     WHERE r.type = ? AND i.typeid = r.id';
+        $options = array(
+            'ajax' => false,
+            'name' => 'elis files phpunit test',
+            'type' => 'elisfiles'
+        );
 
-            $repository = $DB->get_record_sql($sql, array('elisfiles'));
+        $repo = new repository_elisfiles('elisfiles', context_system::instance(), $options);
 
-            $repo = new repository_elisfiles('elisfiles', context_system::instance(), array(
-                'ajax' => false,
-                'name' => $repository->name,
-                'type' => 'elisfiles'
-            ));
-        } else {
-            $this->markTestSkipped();
+        // Make sure we connected to the repository successfully.
+        if (empty($repo->elis_files)) {
+            $this->markTestSkipped('Repository not configured or enabled');
         }
 
         // Explicitly set the file transfer method to Web Services
@@ -298,7 +313,7 @@ class repository_elisfiles_file_upload_testcase extends elis_database_test {
         // Handle the no extension test case
         $extension = ($extension == 'EMPTY') ? '' : '.'.$extension;
 
-        $filename = $CFG->dirroot.'/repository/elisfiles/tests/'.FILE_NAME_PREFIX.$extension;
+        $filename = $CFG->dirroot.'/repository/elisfiles/tests/fixtures/'.FILE_NAME_PREFIX.$extension;
         $response = $this->call_upload_file($repo, '', $filename, $repo->elis_files->root->uuid);
 
         // Download the file and compare contents

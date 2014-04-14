@@ -48,9 +48,9 @@ class repository_elisfiles_space_creation_testcase extends elis_database_test {
      * This function loads data into the PHPUnit tables for testing.
      */
     protected function setup_test_data_xml() {
-        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config.xml')) {
-            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
-            return false;
+        if (!file_exists(__DIR__.'/fixtures/elis_files_config.xml')) {
+            $this->markTestSkipped('You must define elis_files_config.xml inside '.__DIR__.
+                    '/fixtures/ directory to execute this test.');
         }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
@@ -146,12 +146,14 @@ class repository_elisfiles_space_creation_testcase extends elis_database_test {
      * @param string $checkchar A single character to attempt synchronising
      */
     public function test_course_shortname_values($checkchar) {
-        $this->markTestIncomplete('This test is currently broken and causes a fatal error');
+        global $DB;
+
+        // $this->markTestIncomplete('This test is currently broken and causes a fatal error');
 
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
 
-        global $DB;
+        $repo = repository_factory::factory('elisfiles');
 
         // Test with the special character at the beginning of the course->shortname property
         $courseid = $this->setup_test_course($checkchar, CHAR_POS_L);
@@ -183,14 +185,14 @@ class repository_elisfiles_space_creation_testcase extends elis_database_test {
      * @param string $checkchar A single character to attempt synchronising
      */
     public function test_userset_name_values($checkchar) {
+        global $DB;
+
         if (!self::$haspm) {
-            $this->markTestSkipped('ELIS PM is required for Userset testing');
+            $this->markTestSkipped('local_elisprogram is required for Userset testing');
         }
 
         $this->resetAfterTest(true);
         $this->setup_test_data_xml();
-
-        global $DB;
 
         $repo = repository_factory::factory('elisfiles');
 
@@ -221,7 +223,7 @@ class repository_elisfiles_space_creation_testcase extends elis_database_test {
      */
     public function test_duplicate_userset_creation() {
         if (!self::$haspm) {
-            $this->markTestSkipped('ELIS PM is required for Userset testing');
+            $this->markTestSkipped('local_elisprogram is required for Userset testing');
         }
 
         $this->resetAfterTest(true);

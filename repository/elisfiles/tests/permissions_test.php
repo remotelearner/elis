@@ -42,7 +42,7 @@ require_once($CFG->dirroot.'/repository/elisfiles/tests/constants.php');
  */
 class repository_elisfiles_mock extends repository_elisfiles {
     /** @var string $type this property is required otherwise a bunch of phpunit tests will fail */
-    public $type = 'repository_elisfiles';
+    // public $type = 'repository_elisfiles';
 
     /*
      * Calculate the 'top' of the breadcrumb and then call the requested get_parent_path method
@@ -57,6 +57,10 @@ class repository_elisfiles_mock extends repository_elisfiles {
      */
     public function get_parent_path($uuid, &$path, $cid, $uid, $shared, $oid, $type = 'parent') {
         $path = array($uuid);
+    }
+
+    public function get_name() {
+        return get_string('pluginname', 'repository_elisfiles');
     }
 }
 
@@ -236,9 +240,9 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
      * This function loads data into the PHPUnit tables for testing.
      */
     protected function setup_test_data_xml() {
-        if (!file_exists(dirname(__FILE__).'/fixtures/elis_files_config.xml')) {
-            $this->markTestSkipped('You need to configure the test config file to run ELIS files tests');
-            return false;
+        if (!file_exists(__DIR__.'/fixtures/elis_files_config.xml')) {
+            $this->markTestSkipped('You must define elis_files_config.xml inside '.__DIR__.
+                    '/fixtures/ directory to execute this test.');
         }
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_config.xml'));
         $this->loadDataSet($this->createXMLDataSet(__DIR__.'/fixtures/elis_files_instance.xml'));
@@ -415,7 +419,7 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
 
         // Setup
         $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
+                array('ajax' => false, 'name' => 'mock repository test name', 'type' => 'elisfiles'));
 
         $this->setUser(100);
         // Set the username to the fixed value get_info will return for title
@@ -469,7 +473,7 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
 
         // Setup
         $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
+                array('ajax' => false, 'name' => 'mock repository test name', 'type' => 'elisfiles'));
 
         $courseid = 99;
 
@@ -533,7 +537,7 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
 
         // Setup
         $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
+                array('ajax' => false, 'name' => 'mock repository test name', 'type' => 'elisfiles'));
 
         $userset = new userset(array(
             'name' => 'testusersetname'
@@ -594,7 +598,7 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
 
         // Setup
         $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
+                array('ajax' => false, 'name' => 'mock repository test name', 'type' => 'elisfiles'));
 
         $this->setUser(100);
         $roleid = $this->assign_role_capability($capability);
@@ -631,7 +635,7 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
 
         // Setup
         $repo = @new repository_elisfiles_mock('repository_elisfiles', context_system::instance(),
-                array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
+                array('ajax' => false, 'name' => 'mock repository test name', 'type' => 'elisfiles'));
 
         $this->setUser(100);
         $roleid = $this->assign_role_capability($capability);
@@ -768,7 +772,7 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
      */
     public function test_find_userset_folders_respects_site_files($capability, $createonly, $names) {
         if (!class_exists('elispm')) {
-            $this->markTestSkipped('elis_program needed for test');
+            $this->markTestSkipped('local_elisprogram needed for test');
             return false;
         }
 
@@ -866,7 +870,7 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
      */
     public function test_get_repository_location_respects_capabilities($course, $shared, $userset, $own, $capability) {
         if (!class_exists('elispm')) {
-            $this->markTestSkipped('elis_program needed for test');
+            $this->markTestSkipped('local_elisprogram needed for test');
             return false;
         }
 
@@ -1089,7 +1093,20 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
         // Note: UUID is not currently used in the method we are testing
         $uuid = false;
 
-        $elisfiles = repository_factory::factory();
+        // RL: ELIS files: Alfresco
+        $data = null;
+        $listing = null;
+        $options = array(
+            'ajax' => false,
+            'name' => 'elis files phpunit test',
+            'type' => 'elisfiles'
+        );
+
+        try {
+            $repo = new repository_elisfiles('elisfiles', context_system::instance(), $options);
+        } catch (Exception $e) {
+            $this->markTestSkipped('Exception when creating repository_elisfiles object: '.$e->getMessage());
+        }
 
         if ($course) {
             $id = 99;
@@ -1119,15 +1136,6 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
         }
 
         // Run the permission check method
-        $sql = 'SELECT i.name, i.typeid, r.type
-                  FROM {repository} r, {repository_instances} i
-                 WHERE r.type = ? AND i.typeid = r.id';
-        $repository = $DB->get_record_sql($sql, array('elisfiles'));
-        $repo = new repository_elisfiles('elisfiles', context_user::instance($USER->id), array(
-            'ajax' => false,
-            'name' => $repository->name,
-            'type' => 'elisfiles'
-        ));
         $haspermission = $repo->check_editing_permissions($id, $shared, $oid, $uuid, $userid);
 
         // Validation
@@ -1185,30 +1193,19 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
         $context = context_system::instance();
         role_assign($roleid, $USER->id, $context->id);
 
-        // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot.'/repository/elisfiles/')) {
-            // RL: ELIS files: Alfresco
-            $data = null;
-            $listing = null;
-            $sql = 'SELECT i.name, i.typeid, r.type
-                      FROM {repository} r, {repository_instances} i
-                     WHERE r.type = ? AND i.typeid = r.id';
-            $repository = $DB->get_record_sql($sql, array('elisfiles'));
-            if ($repository) {
-                try {
-                    $repo = new repository_elisfiles('elisfiles', context_system::instance(), array(
-                        'ajax' => false,
-                        'name' => $repository->name,
-                        'type' => 'elisfiles'
-                    ));
-                } catch (Exception $e) {
-                    $this->markTestSkipped();
-                }
-            } else {
-                $this->markTestSkipped();
-            }
-        } else {
-            $this->markTestSkipped();
+        // RL: ELIS files: Alfresco
+        $data = null;
+        $listing = null;
+        $options = array(
+            'ajax' => false,
+            'name' => 'elis files phpunit test',
+            'type' => 'elisfiles'
+        );
+
+        try {
+            $repo = new repository_elisfiles('elisfiles', context_system::instance(), $options);
+        } catch (Exception $e) {
+            $this->markTestSkipped('Exception when creating repository_elisfiles object: '.$e->getMessage());
         }
 
         // Explicitly set the file transfer method to web services
@@ -1273,27 +1270,19 @@ class repository_elisfiles_permissions_testcase extends elis_database_test {
 
         $courseid = 99;
 
-        // Check for ELIS_files repository
-        if (file_exists($CFG->dirroot.'/repository/elisfiles/')) {
-            // RL: ELIS files: Alfresco
-            $data = null;
-            $listing = null;
-            $sql = 'SELECT i.name, i.typeid, r.type
-                      FROM {repository} r, {repository_instances} i
-                     WHERE r.type = ? AND i.typeid = r.id';
-            $repository = $DB->get_record_sql($sql, array('elisfiles'));
-            if ($repository) {
-                try {
-                    $repo = new repository_elisfiles('elisfiles', context_system::instance(),
-                            array('ajax' => false, 'name' => $repository->name, 'type' => 'elisfiles'));
-                } catch (Exception $e) {
-                    $this->markTestSkipped();
-                }
-            } else {
-                $this->markTestSkipped();
-            }
-        } else {
-            $this->markTestSkipped();
+        // RL: ELIS files: Alfresco
+        $data = null;
+        $listing = null;
+        $options = array(
+            'ajax' => false,
+            'name' => 'elis files phpunit test',
+            'type' => 'elisfiles'
+        );
+
+        try {
+            $repo = new repository_elisfiles('elisfiles', context_system::instance(), $options);
+        } catch (Exception $e) {
+            $this->markTestSkipped('Exception when creating repository_elisfiles object: '.$e->getMessage());
         }
 
         // Explicitly set the file transfer method to web services

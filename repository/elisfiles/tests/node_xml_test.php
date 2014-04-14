@@ -303,10 +303,10 @@ class repository_elisfiles_file_node_xml_testcase extends elis_database_test {
 
         $dom = new DOMDocument();
         // load into dom
-        $dom->load($CFG->dirroot.'/repository/elisfiles/tests/folderresponse.xml');
+        $dom->load($CFG->dirroot.'/repository/elisfiles/tests/fixtures/folderresponse.xml');
         if (!$dom) {
-            echo '********************** Error while parsing the folder';
-            exit;
+            $this->markTestIncomplete('Could not parse DOM object from '.$CFG->dirroot.
+                    '/repository/elisfiles/tests/fixtures/folderresponse.xml');
         }
         return $dom;
     }
@@ -320,10 +320,10 @@ class repository_elisfiles_file_node_xml_testcase extends elis_database_test {
 
         $dom = new DOMDocument();
         // load into dom
-        $dom->load($CFG->dirroot.'/repository/elisfiles/tests/fileresponse.xml');
+        $dom->load($CFG->dirroot.'/repository/elisfiles/tests/fixtures/fileresponse.xml');
         if (!$dom) {
-            echo '********************** Error while parsing the file';
-            exit;
+            $this->markTestIncomplete('Could not parse DOM obhect from '.$CFG->dirroot.
+                    '/repository/elisfiles/tests/fixtures/fileresponse.xml');
         }
         return $dom;
     }

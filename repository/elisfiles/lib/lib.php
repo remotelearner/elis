@@ -3,7 +3,7 @@
  * Alfresco CMIS REST interface API for Alfresco version 3.2 / 3.4
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2011 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
  * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -193,7 +193,7 @@ function RLsimpleXMLelement($resp, $displayerrors = false) {
         ($lastentry = strrpos($resp, "<entry>")) !== false) {
         $details = substr($resp, $preend + 7, -7);
         $resp = substr($resp, 0, $lastentry - 1) ."\n</feed>";
-        error_log("repository/elisfiles/lib/lib.php:: WARNING - Alfresco Server Error: {$details}");
+        // error_log("repository/elisfiles/lib/lib.php:: WARNING - Alfresco Server Error: {$details}");
         if ($displayerrors) {
             display_msg(get_string('incompletequeryresponse', 'repository_elisfiles'),
                         $details);
@@ -204,7 +204,7 @@ function RLsimpleXMLelement($resp, $displayerrors = false) {
     try {
         $sxml = new SimpleXMLElement($resp);
     } catch (Exception $e) {
-        error_log("repository/elisfiles/lib/lib.php:: WARNING - Alfresco Server Error: BAD XML => {$details}");
+        // error_log("repository/elisfiles/lib/lib.php:: WARNING - Alfresco Server Error: BAD XML => {$details}");
         if ($displayerrors) {
             display_msg(get_string('badqueryresponse', 'repository_elisfiles'),
                         $details);
@@ -716,7 +716,7 @@ function elis_files_create_dir($name, $uuid, $description = '', $useadmin = true
 
     if ($response === false) {
 //        debugging(get_string('couldnotaccessserviceat', 'repository_elisfiles', $uri), DEBUG_DEVELOPER);
-        error_log('elis_files_create_dir(): '. get_string('couldnotaccessserviceat', 'repository_elisfiles', $uri));
+        // error_log('elis_files_create_dir(): '. get_string('couldnotaccessserviceat', 'repository_elisfiles', $uri));
         return false;
     }
 
@@ -729,7 +729,7 @@ function elis_files_create_dir($name, $uuid, $description = '', $useadmin = true
     $nodes = $dom->getElementsByTagName('entry');
 
     if (!$nodes->length) {
-        error_log('elis_files_create_dir(): empty nodes->length');
+        // error_log('elis_files_create_dir(): empty nodes->length');
         return false;
     }
 
@@ -867,7 +867,7 @@ function elis_files_upload_file($upload = '', $path = '', $uuid = '', $useadmin 
             break;
 
         default: // TBD
-            error_log("elis_files_upload_file(): Invalid ELIS files setting for 'file_transfer_method' = {$xfermethod}");
+            // error_log("elis_files_upload_file(): Invalid ELIS files setting for 'file_transfer_method' = {$xfermethod}");
             return false;
     }
 }
@@ -922,7 +922,7 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         $dir = rtrim(dirname($filepath), '/');
         $upfile = "{$dir}/{$filename}";
         if (!@rename($filepath, $upfile)) {
-            error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed renaming '{$filepath}' to '{$upfile}'");
+            // error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed renaming '{$filepath}' to '{$upfile}'");
             $logger->signal_error(ELIS_FILES_ERROR_WS);
             return false;
         }
@@ -953,11 +953,11 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
                             $useadmin ? '' : $USER->username);
     if (empty($response) || empty($response->code) ||
         (floor($response->code/100) * 100) != 200) {
-        ob_start();
-        var_dump($response);
-        $tmp = ob_get_contents();
-        ob_end_clean();
-        error_log('/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed '. ($overwrite ? 'updating' : 'creating') ." node: response = {$tmp}");
+        // ob_start();
+        // var_dump($response);
+        // $tmp = ob_get_contents();
+        // ob_end_clean();
+        // error_log('/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed '. ($overwrite ? 'updating' : 'creating') ." node: response = {$tmp}");
         $logger->signal_error(ELIS_FILES_ERROR_WS);
         return false;
     }
@@ -969,11 +969,11 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
     } else if (!empty($response->data) &&
                ($sxml = RLsimpleXMLelement($response->data)) &&
                !empty($sxml->node)) {
-        //ob_start();
-        //var_dump($sxml);
-        //$tmp = ob_get_contents();
-        //ob_end_clean();
-        //error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): INFO: sxml = {$tmp}");
+        // ob_start();
+        // var_dump($sxml);
+        // $tmp = ob_get_contents();
+        // ob_end_clean();
+        // error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): INFO: sxml = {$tmp}");
         if (!empty($sxml->node->uuid)) {
             $properties->uuid = $sxml->node->uuid;
         }
@@ -982,11 +982,11 @@ function elis_files_upload_ws($filename, $filepath, $filemime, $filesize, $uuid 
         }
     }
     if (empty($properties->uuid)) {
-        ob_start();
-        var_dump($sxml);
-        $tmp = ob_get_contents();
-        ob_end_clean();
-        error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed getting node data: XML = {$tmp}");
+        // ob_start();
+        // var_dump($sxml);
+        // $tmp = ob_get_contents();
+        // ob_end_clean();
+        // error_log("/repository/elisfiles/lib/lib.php::elis_files_upload_ws(): Failed getting node data: XML = {$tmp}");
         $logger->signal_error(ELIS_FILES_ERROR_WS);
         return false;
     }
@@ -1026,7 +1026,7 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
     $uri = parse_url($config->server_host);
 
     if (!($ftp = ftp_connect($uri['host'], $config->ftp_port, 5))) {
-        error_log('Could not connect to Alfresco FTP server '.$uri['host'].$config->ftp_port);
+        // error_log('Could not connect to Alfresco FTP server '.$uri['host'].$config->ftp_port);
 
         // Signal an FTP failure
         $logger->signal_error(ELIS_FILES_ERROR_FTP);
@@ -1035,7 +1035,7 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
     }
 
     if (!ftp_login($ftp, $config->server_username, $config->server_password)) {
-        error_log('Could not authenticate to Alfresco FTP server');
+        // error_log('Could not authenticate to Alfresco FTP server');
         ftp_close($ftp);
 
         // Signal an FTP failure
@@ -1054,23 +1054,13 @@ function elis_files_upload_ftp($filename, $filepath, $filemime, $filesize, $uuid
         // /Company Home not found, so prepend Alfresco onto the repo path
         $repo_path = 'Alfresco'.$repo_path;
     }
-    // explode the path and chdir for each folder
-    $path_array = explode('/',$repo_path);
-    foreach ($path_array as $path) {
-        if (!@ftp_chdir($ftp, $path)) {
-            error_log("elis_files_upload_ftp('{$filename}', '{$filepath}', {$filemime}, {$filesize}, '{$uuid}', {$useadmin}): repo_path = {$repo_path} - couldn't ftp_chdir() to '{$path}'");
-            ftp_close($ftp);
-            // Signal an FTP failure
-            $logger->signal_error(ELIS_FILES_ERROR_FTP);
-            return false;
-        }
-    }
+    $repo_path .= (substr($repo_path, -1) !== '/' ? '/' : '').$filename;
 
-    $res = ftp_put($ftp, $filename, $filepath, FTP_BINARY);
+    $res = ftp_put($ftp, $repo_path, $filepath, FTP_BINARY);
 
     if ($res != FTP_FINISHED) {
-        error_log('Could not upload file '.$filepath.' to Alfresco: '.$repo_path.'/'.$filename);
-        mtrace('$res = '.$res);
+        // error_log('Could not upload file '.$filepath.' to Alfresco: '.$repo_path.'/'.$filename);
+        // mtrace('$res = '.$res);
         ftp_close($ftp);
 
         // Signal an FTP failure
@@ -3001,7 +2991,7 @@ function elis_files_get_current_path_for_course($courseid, $default = false) {
             }
         } catch (Exception $e) {
             // The parent "repository" class may throw exceptions
-            error_log("/repository/elisfiles/lib/lib.php::elis_files_get_current_path_for_course({$courseid}): Exception: ". $e->getMessage());
+            // error_log("/repository/elisfiles/lib/lib.php::elis_files_get_current_path_for_course({$courseid}): Exception: ". $e->getMessage());
         }
     }
 
