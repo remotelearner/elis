@@ -81,8 +81,8 @@ class dhimport extends \core\plugininfo\base {
         $fileplugins = get_plugin_list('dhimport');
 
         foreach ($fileplugins as $pluginname => $pluginpath) {
-            if (!file_exists("{$pluginpath}/version.php")) {
-                // Test/sample directories false-positive.
+            if (in_array($pluginname, array('sample', 'header', 'multiple'))) {
+                // Filter-out bogus plugins
                 continue;
             }
 
