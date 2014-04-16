@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -1040,28 +1040,28 @@ function rlip_compress_logs_email($plugin, $logids, $manual = false) {
     require_once($CFG->libdir.'/filestorage/zip_archive.php');
 
     if (empty($logids)) {
-        //nothing to compress
+        // Nothing to compress.
         return false;
     }
 
-    //set up the archive
+    // Set up the archive.
     $archive_name = rlip_email_archive_name($plugin, 0, $manual);
     $path = $CFG->dataroot.'/'.$archive_name;
     $archive = new zip_archive();
     $result = $archive->open($path, file_archive::CREATE);
 
-    //sql fragments to get the logs
+    // SQL fragments to get the logs.
     list($sql, $params) = $DB->get_in_or_equal($logids);
     $select = "id {$sql}";
 
-    //add files from log records, tracking whether a valid log path was found
+    // Add files from log records, tracking whether a valid log path was found.
     $found = false;
 
     if ($records = $DB->get_records_select(RLIP_LOG_TABLE, $select, $params)) {
         foreach ($records as $record) {
             if ($record->logpath != NULL) {
                 $archive->add_file_from_pathname(basename($record->logpath), $record->logpath);
-                //have at least one file in the zip
+                // Have at least one file in the zip.
                 $found = true;
             }
         }
@@ -1070,7 +1070,10 @@ function rlip_compress_logs_email($plugin, $logids, $manual = false) {
     $archive->close();
 
     if (!$found) {
-        //no logs, so signal that we don't need to send the email
+        // No logs, so delete the empty archive file and signal that we don't need to send the email.
+        if (file_exists($path)) {
+            @unlink($path);
+        }
         return false;
     }
 

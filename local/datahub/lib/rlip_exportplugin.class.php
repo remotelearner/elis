@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -129,69 +129,71 @@ abstract class rlip_exportplugin_base extends rlip_dataplugin {
      *                             or null on success!
      *         ->result            false on error, i.e. time limit exceeded.
      */
-    function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
+    public function run($targetstarttime = 0, $lastruntime = 0, $maxruntime = 0, $state = null) {
         global $CFG;
 
-        //check that the file directory is valid
+        $csvfilename = $this->fileplugin->get_filename();
+
+        // Check that the file directory is valid.
         $filepath = get_config($this->dblogger->plugin, 'logfilelocation');
         if (!$writable = is_writable($CFG->dataroot.'/'.$filepath)) {
-            //invalid folder specified for the logfile
+            // Invalid folder specified for the logfile.
             $this->fslogger->set_logfile_status(false);
             $this->dblogger->set_logfile_status(false);
-            $this->dblogger->flush($this->fileplugin->get_filename());
+            $this->dblogger->flush($csvfilename);
             return false;
         } else {
             $this->fslogger->set_logfile_status(true);
             $this->dblogger->set_logfile_status(true);
         }
 
-        //check that the export file and filepath are valid
+        // Check that the export file and filepath are valid.
         $exportbase = get_config($this->plugin, 'export_file');
-        $exportpath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR) .
-                      DIRECTORY_SEPARATOR;
+        $exportpath = rtrim($CFG->dataroot, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
         if (get_config($this->plugin, 'export_path')) {
-            $exportpath .= rtrim(trim(get_config($this->plugin, 'export_path'),
-                           DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            $exportpath .= rtrim(trim(get_config($this->plugin, 'export_path'), DIRECTORY_SEPARATOR), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR;
         }
-        $outfile = $exportpath . $exportbase;
+        $outfile = $exportpath.$exportbase;
 
         if ((!file_exists($exportpath) && !@mkdir($exportpath, 0777, true))
             || (file_exists($exportpath) && !is_writable($exportpath))) {
-            $message = "Export file {$exportbase} cannot be processed because the folder: {$exportpath} is not accessible. ".
-            "Please fix the export path.";
+            $message = "Export file {$exportbase} cannot be processed because the folder: {$exportpath} is not accessible. Please fix the export path.";
             $this->fslogger->log_failure($message, 0, $outfile);
             $this->dblogger->set_endtime(time());
             $this->dblogger->set_exportpath_error($message);
-            $this->dblogger->flush($this->fileplugin->get_filename());
+            $this->dblogger->flush($csvfilename);
             return null;
         }
 
-        //track the provided target start time
+        // Track the provided target start time.
         $this->dblogger->set_targetstarttime($targetstarttime);
 
-        //open the output file for writing
+        // Open the output file for writing.
         $this->fileplugin->open(RLIP_FILE_WRITE);
 
-
-        //perform any necessary setup
+        // Perform any necessary setup.
         $this->init($targetstarttime, $lastruntime);
 
-        //run the main export process
+        // Run the main export process.
         $result = $this->export_records($maxruntime);
 
-        //clean up
+        // Clean up.
         $this->close();
 
-        //close the output file
+        // Close the output file.
         $this->fileplugin->close();
 
-        //track the end time as the current time
+        // Track the end time as the current time.
         $this->dblogger->set_endtime(time());
 
-        //flush db log record
-        $this->dblogger->flush($this->fileplugin->get_filename());
+        // Create log file.
+        $message = "Export file ".$csvfilename." successfully created.";
+        $this->fslogger->log_success($message, 0, $outfile);
 
-        //perform any final actions depending on export outcome
+        // Flush db log record.
+        $this->dblogger->flush($csvfilename);
+
+        // Perform any final actions depending on export outcome.
         return $this->finish($result);
     }
 

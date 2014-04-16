@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    dhexport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -155,5 +155,53 @@ class version1exportfilesystemlogging_testcase extends rlip_test {
             rmdir($filepath);
         }
         $this->assertEquals($exists, true);
+    }
+
+    /**
+     * Test that a success log file is created.
+     */
+    public function test_version1exportsuccesslogcreated() {
+        global $CFG, $DB;
+
+        // Setup.
+        $this->load_csv_data();
+        set_config('nonincremental', 1, 'dhexport_version1');
+
+        // Set the filepath to the dataroot.
+        $filepath = $CFG->dataroot.RLIP_DEFAULT_LOG_PATH;
+
+        $inputfile = $CFG->dataroot.'/bogus.csv';
+        touch($inputfile);
+        $fileplugin = new rlip_fileplugin_csv($inputfile);
+
+        // Obtain plugin.
+        $manual = true;
+        $plugin = rlip_dataplugin_factory::factory('dhexport_version1', null, $fileplugin, $manual);
+        $plugin->run(0, 0, 0);
+
+        // Validate that a log file was created.
+        $plugintype = 'export';
+        $plugin = 'dhexport_version1';
+        $format = get_string('logfile_timestamp', 'local_datahub');
+        // Get most recent record.
+        $records = $DB->get_records(RLIP_LOG_TABLE, null, 'starttime DESC');
+        foreach ($records as $record) {
+            $starttime = $record->starttime;
+            break;
+        }
+        $testfilename = $filepath.'/'.$plugintype.'_version1_manual_'.userdate($starttime, $format).'.log';
+        $filename = self::get_current_logfile($testfilename, true);
+        $this->assertTrue(file_exists($filename));
+
+        // Fetch log line.
+        $pointer = fopen($filename, 'r');
+        $line = fgets($pointer);
+        fclose($pointer);
+
+        // Data validation.
+        $prefixlength = strlen('[MMM/DD/YYYY:hh:mm:ss -zzzz] ');
+        $expected = "Export file bogus.csv successfully created.\n";
+        $actual = substr($line, $prefixlength);
+        $this->assertEquals($expected, $actual);
     }
 }

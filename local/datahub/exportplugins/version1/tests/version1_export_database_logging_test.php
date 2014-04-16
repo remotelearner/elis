@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    dhexport_version1
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -449,10 +449,9 @@ class version1exportdatabaselogging_testcase extends rlip_test {
     }
 
     /**
-     * Validate that when a log file is not created, a value of null is stored
-     * in the database summary log record
+     * Validate that we always have a logpath entry in the database summary log record.
      */
-    public function test_version1exportdbloggingdoesnotstorelogpathfornonexistentlogfile() {
+    public function test_version1exportdbloggingalwaysstoreslogpath() {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/local/datahub/lib.php');
 
@@ -469,7 +468,7 @@ class version1exportdatabaselogging_testcase extends rlip_test {
         $result = $this->run_export(1000000000, 0, 0, 0);
 
         // Validation.
-        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, "logpath IS NULL");
+        $exists = $DB->record_exists_select(RLIP_LOG_TABLE, "logpath IS NOT NULL");
         $this->assertTrue($exists);
     }
 }
