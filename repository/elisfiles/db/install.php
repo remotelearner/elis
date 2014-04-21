@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2014 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    repository_elisfiles
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -32,6 +32,8 @@ function xmldb_repository_elisfiles_install() {
     // Run upgrade steps from old plugin if applicable
     $oldversion = get_config('repository_elis_files', 'version');
     if ($oldversion !== false) {
+        require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
+
         if ($oldversion < 2011110301) {
             $errors = false;
             $auths = elis_files_nopasswd_auths();
@@ -145,7 +147,6 @@ function xmldb_repository_elisfiles_install() {
          */
         if ($result && $oldversion < 2012090400)  {
             require_once($CFG->dirroot.'/repository/elisfiles/ELIS_files_factory.class.php');
-            require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
             // Initialize the repo object.
             $repo = repository_factory::factory();
             $table = 'elis_files_categories';
@@ -194,6 +195,8 @@ function xmldb_repository_elisfiles_install() {
                 $DB->update_record('config_plugins', $record);
             }
         }
+
+        $ignoreresult = elis_files_update_references_in_database();
     }
 
     // Convert old tables to new

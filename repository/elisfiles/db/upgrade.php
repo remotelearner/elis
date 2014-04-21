@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2013 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2014 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,21 @@
  */
 
 function xmldb_repository_elisfiles_upgrade($oldversion = 0) {
+    global $DB, $CFG;
+
     $result = true;
 
-    // Migrate language strings
     if ($result && $oldversion < 2014030701) {
+        require_once($CFG->wwwroot.'/repository/elisfiles/lib/lib.php');
+        $ignoreresult = elis_files_update_references_in_database();
+        upgrade_plugin_savepoint(true, 2014030701, 'repository', 'elisfiles');
+    }
+
+    // Migrate language strings
+    if ($result && $oldversion < 2014030702) {
         $migrator = new \local_eliscore\install\migration\migrator('repository_elis_files', 'repository_elisfiles');
         $result = $migrator->migrate_language_strings();
-        upgrade_plugin_savepoint($result, 2014030701, 'repository', 'elisfiles');
+        upgrade_plugin_savepoint($result, 2014030702, 'repository', 'elisfiles');
     }
 
     return $result;

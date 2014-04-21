@@ -3,7 +3,7 @@
  * Alfresco CMIS REST interface API for Alfresco version 3.2 / 3.4
  *
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2011 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2014 onwards Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -3105,4 +3105,15 @@ function elis_files_set_curl_timeouts(&$session) {
     $responsetimeout = get_config('elisfiles', 'response_timeout');
     $responsetimeout = !empty($responsetimeout) ? (int)$responsetimeout : ELIS_FILES_CURL_RESPONSE_TIMEOUT;
     curl_setopt($session, CURLOPT_TIMEOUT, $responsetimeout);
+}
+
+/**
+ * Update any references from alfresco or elis_files to elisfiles in the database.
+ *
+ * @return boolean True upon success
+ */
+function elis_files_update_references_in_database() {
+    $result = db_replace('/repository/alfresco/openfile', '/repository/elisfiles/openfile');
+    $result &= db_replace('/repository/elis_files/', '/repository/elisfiles/');
+    return $result;
 }

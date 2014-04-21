@@ -284,4 +284,33 @@ class repository_elisfiles_utility_methods_testcase extends elis_database_test {
             $i++;
         }
     }
+
+    /**
+     * Test link conversions in database.
+     */
+    public function test_linkconversionsindatabase() {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot.'/lib/adminlib.php');
+
+        $this->resetAfterTest(true);
+
+        $data = new stdClass;
+        $data->fullname = 'Test Course';
+        $data->shortname = 'testcourse';
+        $data->category = 1;
+        $data->summary = '<a href="http://localhost/repository/alfresco/openfile.php?uuid=1">test1</a>'.
+                '<a href="http://localhost/repository/elis_files/openfile.php?uuid=2">test2</a>';
+        $course = $this->getDataGenerator()->create_course((array) $data);
+
+        ob_start();
+        $ignoreresult = elis_files_update_references_in_database();
+        ob_end_clean();
+
+        $expected = '<a href="http://localhost/repository/elisfiles/openfile.php?uuid=1">test1</a>'.
+                '<a href="http://localhost/repository/elisfiles/openfile.php?uuid=2">test2</a>';
+
+        $record = $DB->get_record('course', array('id' => $course->id));
+        $this->assertEquals($expected, $record->summary);
+    }
 }
