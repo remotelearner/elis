@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -68,6 +68,9 @@ function local_elisprogram_upgrade_old_tables($oldversion) {
         $DB->delete_records_select('capabilities', $where, $params);
         upgrade_plugin_savepoint($result, 2013041900, 'elis', 'program');
     }
+
+    // Remove any duplicate user track records before attempting to apply an index.
+    pm_fix_duplicate_usertrack_records('crlm_user_track');
 
     if ($result && $oldversion < 2013042900) {
         // Add indexes to {crlm_user_track} table.

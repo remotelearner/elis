@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -1515,6 +1515,25 @@ function pm_fix_duplicate_pm_users() {
 
     // Drop the temp table
     $result = $result && $DB->execute("DROP TABLE {local_elisprogram_usr_idntmp}");
+
+    return $result;
+}
+
+/**
+ * Remove duplicate entries in the usertrack table.
+ * @param string $usertracktable Optionally send in the name of the user track table (used in upgrade step from old databases).
+ * @return boolean True on success, otherwise false.
+ */
+function pm_fix_duplicate_usertrack_records($usertracktable = null) {
+    global $CFG, $DB;
+
+    require_once($CFG->dirroot.'/lib/ddllib.php');
+    require_once(elispm::lib('data/usertrack.class.php'));
+
+    // Remove any duplicate records that have the same userid and trackid.
+    $tablename = is_null($usertracktable) ? usertrack::TABLE : $usertracktable;
+    $sql = "DELETE ut1 FROM {".$tablename."} ut1, {".$tablename."} ut2 WHERE ut1.id > ut2.id AND ut1.userid = ut2.userid AND ut1.trackid = ut2.trackid";
+    $result = $DB->execute($sql);
 
     return $result;
 }
