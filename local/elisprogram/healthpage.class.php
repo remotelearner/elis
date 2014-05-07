@@ -353,7 +353,6 @@ class health_user_sync extends crlm_health_check_base {
                    AND firstname != ''
                    AND lastname != ''
                    AND email != ''
-                   AND country != ''
                    AND NOT EXISTS (
                          SELECT 'x'
                            FROM {".user::TABLE."} cu

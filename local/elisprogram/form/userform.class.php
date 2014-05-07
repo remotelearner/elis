@@ -142,7 +142,6 @@ class userform extends cmform {
         $default_country[''] = get_string('selectacountry');
         $country = array_merge($default_country, $country);
         $mform->addElement('select', 'country', get_string('country'), $country);
-        $mform->addRule('country', $strrequired, 'required', null, 'client');
 
         $mform->addElement('text', 'phone', get_string('phone'));
         $mform->setType('phone', PARAM_TEXT);

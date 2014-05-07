@@ -153,9 +153,10 @@ class pm_moodle_user_to_pm_testcase extends elis_database_test {
     /**
      * Set up a moodle user.
      * @param object $mfield The moodle custom field to use.
+     * @param bool $setcountry true to set the Moodle user country field, false to leave it unset
      * @return object The created moodle user database object.
      */
-    protected function set_up_muser($mfield) {
+    protected function set_up_muser($mfield, $setcountry = true) {
         global $CFG, $DB;
         require_once($CFG->dirroot.'/admin/tool/uploaduser/locallib.php');
 
@@ -169,7 +170,9 @@ class pm_moodle_user_to_pm_testcase extends elis_database_test {
         $user->firstname = 'Test';
         $user->lastname = 'User';
         $user->email = 'test@example.com';
-        $user->country = 'CA';
+        if ($setcountry) {
+            $user->country = 'CA';
+        }
 
         $profilefieldprop = 'profile_field_'.$mfield->shortname;
         $user->$profilefieldprop = 'onetwothree';
@@ -220,5 +223,26 @@ class pm_moodle_user_to_pm_testcase extends elis_database_test {
         $params = array('cuserid' => $cu->id, 'muserid' => $mu->id, 'idnumber' => $cu->idnumber);
         $usermoodle = $DB->get_record('local_elisprogram_usr_mdl', $params);
         $this->assertNotEmpty($usermoodle);
+    }
+
+    /**
+     * Test pm_moodle_user_to_pm function w/o country specified
+     */
+    public function test_pm_moodle_user_to_pm_no_country() {
+        global $DB;
+
+        $fields = $this->set_up_custom_fields();
+        $mu = $this->set_up_muser($fields['m'], false); // no country set
+        $hascountry = isset($mu->country);
+        $this->assertFalse($hascountry);
+
+        $mu = $DB->get_record('user', array('id' => $mu->id));
+        $result = pm_moodle_user_to_pm($mu);
+        $this->assertTrue($result);
+
+        // Get ELIS user.
+        $cu = $DB->get_record('local_elisprogram_usr', array('username' => $mu->username));
+        $this->assertNotEmpty($cu);
+        $this->assertEquals($mu->idnumber, $cu->idnumber);
     }
 }

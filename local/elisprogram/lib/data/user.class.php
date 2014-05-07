@@ -302,8 +302,7 @@ class user extends data_object_with_custom_fields {
         array('validation_helper', 'is_unique_username'),
         array('validation_helper', 'not_empty_firstname'),
         array('validation_helper', 'not_empty_lastname'),
-        array('validation_helper', 'not_empty_email'),
-        array('validation_helper', 'not_empty_country'),
+        array('validation_helper', 'not_empty_email')
     );
 
     /**
