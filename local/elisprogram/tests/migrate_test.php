@@ -49,7 +49,7 @@ class migrate_testcase extends elis_database_test {
         global $DB;
 
         $oldcomponent = 'testcomponent';
-        $migrator = new \local_elisprogram\install\migration\migrator('testcomponent', 'newcomponent');
+        $migrator = new \local_eliscore\install\migration\migrator('testcomponent', 'newcomponent');
         $this->assertFalse($migrator->old_component_installed());
 
         // Test correct component search.
@@ -126,7 +126,7 @@ class migrate_testcase extends elis_database_test {
         $setting->value = 20140213;
         $DB->insert_record('config_plugins', $setting);
 
-        $migrator = new \local_elisprogram\install\migration\migrator($oldcomponent, $newcomponent);
+        $migrator = new \local_eliscore\install\migration\migrator($oldcomponent, $newcomponent);
         $migrator->migrate_settings();
 
         // There should be no old config records present.
@@ -175,7 +175,7 @@ class migrate_testcase extends elis_database_test {
             'local_elisprogram_aaa' => 'local_elisprogram_cls',
             'local_elisprogram_bbb' => 'local_elisprogram_cls_enrol'
         );
-        $migrator = new \local_elisprogram\install\migration\migrator($oldcomponent, $newcomponent, '', $tablechanges);
+        $migrator = new \local_eliscore\install\migration\migrator($oldcomponent, $newcomponent, '', $tablechanges);
         $migrator->migrate_tables();
 
         // Check tables.
@@ -199,7 +199,7 @@ class migrate_testcase extends elis_database_test {
         $oldcomponent = 'oldcomponent';
         $newcomponent = 'newcomponent';
         $upgradestepfuncname = 'local_elisprogram_tests_migrate_upgradestep';
-        $migrator = new \local_elisprogram\install\migration\migrator($oldcomponent, $newcomponent, $upgradestepfuncname);
+        $migrator = new \local_eliscore\install\migration\migrator($oldcomponent, $newcomponent, $upgradestepfuncname);
         $migrator->run_old_upgrade_steps_if_necessary();
 
         // Upgrade step should not have run as we have not "installed" oldcomponent.
@@ -216,7 +216,7 @@ class migrate_testcase extends elis_database_test {
         $oldcomponent = 'oldcomponent';
         $newcomponent = 'newcomponent';
         $upgradestepfuncname = 'local_elisprogram_tests_migrate_upgradestep';
-        $migrator = new \local_elisprogram\install\migration\migrator($oldcomponent, $newcomponent, $upgradestepfuncname);
+        $migrator = new \local_eliscore\install\migration\migrator($oldcomponent, $newcomponent, $upgradestepfuncname);
         $migrator->run_old_upgrade_steps_if_necessary();
 
         // Ensure indicator record present.

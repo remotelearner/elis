@@ -74,5 +74,9 @@ function xmldb_block_enrolsurvey_install() {
         $DB->update_record('capabilities', $cap);
     }
 
+    // Migrate language strings
+    $migrator = new \local_eliscore\install\migration\migrator('block_enrol_survey', 'block_enrolsurvey');
+    $migrator->migrate_language_strings();
+
     return $result;
 }

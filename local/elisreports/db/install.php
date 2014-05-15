@@ -71,6 +71,10 @@ function xmldb_local_elisreports_install() {
         $DB->update_record('capabilities', $cap);
     }
 
+    // Migrate language strings
+    $migrator = new \local_eliscore\install\migration\migrator('block_php_report', 'local_elisreports');
+    $migrator->migrate_language_strings();
+
     // Remove the old block ...
     $DB->delete_records('block', array('name' => 'php_report'));
     unset_all_config_for_plugin('block_php_report');

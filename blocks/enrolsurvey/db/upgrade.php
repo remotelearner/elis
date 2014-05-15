@@ -28,5 +28,12 @@ defined('MOODLE_INTERNAL') || die();
 function xmldb_block_enrolsurvey_upgrade($oldversion = 0) {
     $result = true;
 
+    // Migrate language strings
+    if ($result && $oldversion < 2014030701) {
+        $migrator = new \local_eliscore\install\migration\migrator('block_enrol_survey', 'block_enrolsurvey');
+        $result = $migrator->migrate_language_strings();
+        upgrade_block_savepoint($result, 2014030701, 'enrolsurvey');
+    }
+
     return $result;
 }

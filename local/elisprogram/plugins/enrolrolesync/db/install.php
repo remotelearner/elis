@@ -35,7 +35,7 @@ function xmldb_elisprogram_enrolrolesync_install() {
     // Migrate component.
     $oldcmp = 'pmplugins_enrolment_role_sync';
     $newcmp = 'elisprogram_enrolrolesync';
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp);
+    $migrator = new \local_eliscore\install\migration\migrator($oldcmp, $newcmp);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }

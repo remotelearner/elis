@@ -29,7 +29,7 @@ function xmldb_block_elisadmin_install() {
     // Migrate component.
     $oldcmp = 'block_curr_admin';
     $newcmp = 'block_elisadmin';
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp);
+    $migrator = new \local_eliscore\install\migration\migrator($oldcmp, $newcmp);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }

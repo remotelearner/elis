@@ -41,7 +41,7 @@ function xmldb_elisprogram_usetthemes_install() {
     $oldcmp = 'pmplugins_userset_themes';
     $newcmp = 'elisprogram_usetthemes';
     $upgradestepfuncname = 'elisprogram_usetthemes_pre26upgradesteps';
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    $migrator = new \local_eliscore\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }

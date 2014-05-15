@@ -35,7 +35,7 @@ function xmldb_usetenrol_moodleprofile_install() {
     $oldcmp = 'usersetenrol_moodle_profile';
     $newcmp = 'usetenrol_moodleprofile';
     $upgradestepfuncname = 'usetenrol_moodleprofile_pre26upgradesteps';
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    $migrator = new \local_eliscore\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }

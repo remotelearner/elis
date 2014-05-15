@@ -49,7 +49,7 @@ function xmldb_elisprogram_usetclassify_install() {
     $tablechanges = array(
         'crlm_cluster_classification' => 'elisprogram_usetclassify'
     );
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname, $tablechanges);
+    $migrator = new \local_eliscore\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname, $tablechanges);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }

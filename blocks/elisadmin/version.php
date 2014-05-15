@@ -19,14 +19,14 @@
  * @package    block_elisadmin
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2014 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.nea)
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2014030700;
+$plugin->version = 2014030701;
 $plugin->release = '2.6.1.1 (Build: 20140415)';
 $plugin->dependencies = array(
-    'local_elisprogram' => 2014030700
+    'local_elisprogram' => 2014030701
 );

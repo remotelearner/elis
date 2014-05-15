@@ -19,7 +19,7 @@
  * @package    block_elisadmin
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2014 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -27,6 +27,13 @@ defined('MOODLE_INTERNAL') || die();
 
 function xmldb_block_elisadmin_upgrade($oldversion = 0) {
     $result = true;
+
+    // Migrate language strings
+    if ($result && $oldversion < 2014030701) {
+        $migrator = new \local_eliscore\install\migration\migrator('block_curr_admin', 'block_elisadmin');
+        $result = $migrator->migrate_language_strings();
+        upgrade_block_savepoint($result, 2014030701, 'elisadmin');
+    }
 
     return $result;
 }

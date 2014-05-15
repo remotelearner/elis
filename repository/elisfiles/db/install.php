@@ -231,6 +231,10 @@ function xmldb_repository_elisfiles_install() {
         $DB->update_record('capabilities', $cap);
     }
 
+    // Migrate language strings
+    $migrator = new \local_eliscore\install\migration\migrator('repository_elis_files', 'repository_elisfiles');
+    $migrator->migrate_language_strings();
+
     // Copy any settings from old plugin
     $oldconfig = get_config('elis_files');
     foreach ($oldconfig as $name => $value) {

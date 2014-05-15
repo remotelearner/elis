@@ -96,6 +96,10 @@ function xmldb_local_datahub_install() {
         }
     }
 
+    // Migrate language strings
+    $migrator = new \local_eliscore\install\migration\migrator('block_rlip', 'local_datahub');
+    $migrator->migrate_language_strings();
+
     unset_all_config_for_plugin('block_rlip');
 
     // Remove the shortname for the old service.

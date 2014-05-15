@@ -41,7 +41,7 @@ function xmldb_elisprogram_usetgroups_install() {
     $oldcmp = 'pmplugins_userset_groups';
     $newcmp = 'elisprogram_usetgroups';
     $upgradestepfuncname = 'elisprogram_usetgroups_pre26upgradesteps';
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    $migrator = new \local_eliscore\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }

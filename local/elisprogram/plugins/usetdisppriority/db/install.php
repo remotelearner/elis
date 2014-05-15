@@ -45,7 +45,7 @@ function xmldb_elisprogram_usetdisppriority_install() {
     $oldcmp = 'pmplugins_userset_display_priority';
     $newcmp = 'elisprogram_usetdisppriority';
     $upgradestepfuncname = 'elisprogram_usetdisppriority_pre26upgradesteps';
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    $migrator = new \local_eliscore\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }

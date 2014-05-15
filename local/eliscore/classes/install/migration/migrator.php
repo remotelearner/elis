@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
  * @package    local_elisprogram
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
-namespace local_elisprogram\install\migration;
+namespace local_eliscore\install\migration;
 
 /**
  * Migrates components from one component to another.
@@ -147,6 +147,33 @@ class migrator {
     }
 
     /**
+     * Migrates all custom language strings from old component to the new component.
+     * @return bool true on success, false otherwise
+     */
+    public function migrate_language_strings() {
+        global $CFG;
+        if ($this->oldcomponent == $this->newcomponent) {
+            return true;
+        }
+        $result = true;
+        $langstringdir = $CFG->dataroot.'/lang/';
+        foreach (glob("{$langstringdir}??_local") as $langdir) {
+            $subdirparts = explode('_', substr($langdir, strlen($langstringdir)));
+            $langcode = trim($subdirparts[0], '/');
+            $oldfile = "{$langdir}/{$this->oldcomponent}.php";
+            if (file_exists($oldfile)) {
+                $newdir = "{$langstringdir}/{$langcode}_local";
+                if ((!file_exists($newdir) && !@mkdir($newdir)) || !@link($oldfile, "{$newdir}/{$this->newcomponent}.php")) {
+                    $result = false;
+                    continue;
+                }
+                @unlink($oldfile);
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Determines whether the old component is installed.
      *
      * @return bool Whether the old component is installed (true) or not (false)
@@ -189,6 +216,7 @@ class migrator {
         }
 
         $this->migrate_settings();
+        $this->migrate_language_strings();
         $this->uninstall_old_plugin();
     }
 }

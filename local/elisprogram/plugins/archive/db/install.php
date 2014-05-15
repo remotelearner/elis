@@ -45,7 +45,7 @@ function xmldb_elisprogram_archive_install() {
     $oldcmp = 'pmplugins_archive';
     $newcmp = 'elisprogram_archive';
     $upgradestepfuncname = 'elisprogram_archive_pre26upgradesteps';
-    $migrator = new \local_elisprogram\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
+    $migrator = new \local_eliscore\install\migration\migrator($oldcmp, $newcmp, $upgradestepfuncname);
     if ($migrator->old_component_installed() === true) {
         $migrator->migrate();
     }

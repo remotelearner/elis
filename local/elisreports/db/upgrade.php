@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    local_elisreports
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL
- * @copyright  (C) 2008-2013 Remote Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -32,5 +32,13 @@ defined('MOODLE_INTERNAL') || die();
  */
 function xmldb_local_elisreports_upgrade($oldversion = 0) {
     $result = true;
+
+    // Migrate language strings
+    if ($result && $oldversion < 2014030701) {
+        $migrator = new \local_eliscore\install\migration\migrator('block_php_report', 'local_elisreports');
+        $result = $migrator->migrate_language_strings();
+        upgrade_plugin_savepoint($result, 2014030701, 'local', 'elisreports');
+    }
+
     return $result;
 }

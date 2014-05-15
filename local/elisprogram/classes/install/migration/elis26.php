@@ -28,7 +28,7 @@ namespace local_elisprogram\install\migration;
 /**
  * Migrates components from one component to another.
  */
-class elis26 extends migrator {
+class elis26 extends \local_eliscore\install\migration\migrator {
 
     /**
      * Constructor.
@@ -158,6 +158,7 @@ class elis26 extends migrator {
         $this->migrate_settings();
         $this->migrate_context_levels();
         $this->migrate_capabilities();
+        $this->migrate_language_strings();
         $this->uninstall_old_plugin();
     }
 }

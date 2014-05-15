@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,20 @@
  * @package    local_datahub
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2014030700;
+$plugin->version = 2014030701;
 $plugin->requires = 2013111801.11;  // Requires this Moodle version
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = '2.6.1.1 (Build: 20140415)';
 $plugin->dependencies = array(
-    'local_eliscore' => 2014030700
+    'local_eliscore' => 2014030701
 );
 
 if (file_exists($CFG->dirroot.'/local/elisprogram/lib/setup.php')) {
-    $plugin->dependencies['local_elisprogram'] = 2014030700;
+    $plugin->dependencies['local_elisprogram'] = 2014030701;
 }

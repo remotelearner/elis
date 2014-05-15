@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  *
  * @package    block_courserequest
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  */
 
 function xmldb_block_courserequest_install() {
@@ -96,6 +96,10 @@ function xmldb_block_courserequest_install() {
         $cap->component = str_replace('block_course_request', 'block_courserequest', $cap->component);
         $DB->update_record('capabilities', $cap);
     }
+
+    // Migrate language strings
+    $migrator = new \local_eliscore\install\migration\migrator('block_course_request', 'block_courserequest');
+    $migrator->migrate_language_strings();
 
     return $result;
 }
