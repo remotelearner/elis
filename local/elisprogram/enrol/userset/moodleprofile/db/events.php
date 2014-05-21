@@ -1,7 +1,7 @@
 <?php
 /**
  * ELIS(TM): Enterprise Learning Intelligence Suite
- * Copyright (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * Copyright (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
  * @package    usetenrol_moodleprofile
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2008-2013 Remote-Learner.net Inc (http://www.remote-learner.net)
+ * @copyright  (C) 2008-2014 Remote-Learner.net Inc (http://www.remote-learner.net)
  *
  */
 
@@ -33,12 +33,12 @@ $handlers = array (
     'user_updated' => array (
          'handlerfile'      => '/local/elisprogram/enrol/userset/moodleprofile/lib.php',
          'handlerfunction'  => 'cluster_profile_update_handler',
-         'schedule'         => 'instant'
+         'schedule'         => 'cron' // ELIS-8792/MDL-45641: this can be put back to 'instant' when MDL issue resolved
      ),
 
     'user_created' => array (
          'handlerfile'      => '/local/elisprogram/enrol/userset/moodleprofile/lib.php',
          'handlerfunction'  => 'cluster_profile_update_handler',
-         'schedule'         => 'instant'
+         'schedule'         => 'cron' // ELIS-8792/MDL-45641: this can be put back to 'instant' when MDL issue resolved
      )
 );
