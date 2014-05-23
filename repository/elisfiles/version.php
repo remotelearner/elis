@@ -18,7 +18,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->version = 2014030701;
-$plugin->release = '2.6.1.1 (Build: 20140415)';
+$plugin->release = '2.6.1.2 (Build: 20140523)';
 $plugin->dependencies = array(
     'auth_elisfilessso' => 2014030700,
     'local_eliscore' => 2014030701

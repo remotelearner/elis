@@ -16,7 +16,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 $plugin->version = 2014030701;
-$plugin->release = '2.6.1.1 (Build: 20140415)';
+$plugin->release = '2.6.1.2 (Build: 20140523)';
 $plugin->dependencies = array(
     'local_eliscore' => 2014030701
 );
