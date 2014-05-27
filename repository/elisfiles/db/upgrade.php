@@ -29,7 +29,7 @@ function xmldb_repository_elisfiles_upgrade($oldversion = 0) {
     $result = true;
 
     if ($result && $oldversion < 2014030701) {
-        require_once($CFG->wwwroot.'/repository/elisfiles/lib/lib.php');
+        require_once($CFG->dirroot.'/repository/elisfiles/lib/lib.php');
         $ignoreresult = elis_files_update_references_in_database();
         upgrade_plugin_savepoint(true, 2014030701, 'repository', 'elisfiles');
     }
